@@ -1,11 +1,12 @@
 # 待办事项
 
-## 当前：M3 反定制规划与 APK 审计 (Decustomization Planning & APK Audit)
+## 当前：M4 ROM 重打包与 AVB 签名 (ROM Repackaging & AVB Signing)
 
-- [ ] 审计 `/system/app/X12`、`/system/app/UBTunnel.6` 和 `/system/app/happycast` 的依赖关系与服务行为。
-- [ ] 审查 `init.rc` 及各组件 init 启动脚本，分析厂商自定义守护进程（Daemons）与开机自启任务。
-- [ ] 提取并分析系统的 `build.prop` 等属性配置，规划反激活或精简的安全参数修改列表。
-- [ ] 制定反定制清理方案，编写自动化精简脚本（保留全部硬件驱动与基本系统组件）。
+- [ ] 选择并锁定适合 Windows 平台的 ext4 镜像生成工具（如 `mke2fs` / `make_ext4fs` 或 Python 自动化打包程序）。
+- [ ] 将已净化修改的逻辑卷目录（`system_extracted`、`vendor_extracted` 等）重新打包编译为 raw `ext4` 分区映像。
+- [ ] 使用 `avbtool.py` 为重新生成的逻辑分区映像计算并追加 AVB Hashtree 校验页，并使用 standard test-keys 重新对 `vbmeta` 等签名。
+- [ ] 使用 `lpmake` (或自研 lpmetadata 拼接器) 重新构建 `super` 逻辑分区映像。
+- [ ] 校验打包镜像的物理结构，确保其大小、对齐与原始分区完全一致。
 
 ## 已完成
 
@@ -21,3 +22,9 @@
   - [x] 使用 `fdt` 成功反编译 `sunxi.fex`、`vendor_boot/dtb` 和 `dtbo.fex` (从 `dtbo.fex` 的 `DT_TABLE` 容器中剥离出来的 entry 0) 到可读的 DTS 源码。
   - [x] 使用 `avbtool` 审计 `vbmeta` 签名链，确认全部使用 AOSP 官方公开 `test-keys` (`SHA256_RSA2048`)。
   - [x] 使用 `lpunpack.py` 对 `super.fex` (Sparse 格式) 进行解包，并利用纯 Python 的 `ext4` 解析器完整提取了 `system_a`, `vendor_a`, `product_a`, `vendor_dlkm_a` 内的全部文件和符号链接。
+- [x] **M3：反定制规划与 APK 审计** (2026-07-19)
+  - [x] 使用 `pyaxmlparser` 静态解析了定制 APK/AP 属性，成功识别核心启动器 `X12`、代理服务 `UBTunnel` 和臃肿投屏 `happycast` 的依赖。
+  - [x] 全面盘点并解析了固件中 222 个 `.rc` 文件中的 custom services，发现 `preinstall.sh` 脚本的 PWM 控制逻辑及 Google Location Wizard 弹窗自动跳过代码。
+  - [x] 深度审计了 `system/build.prop`，发现框架绑定的 `ro.sw.defaultlauncher_package` 属性控制机制。
+  - [x] 制定了反定制与 Launcher 替换策略并写入 `docs/DECISIONS.md` 的 `ADR-0004` 中。
+  - [x] 编写并成功运行了自动化净化清理脚本 `scripts/purify-rom.py`，一键完成了系统裁剪、launcher 指向修改和系统无用日志禁用工作。

@@ -19,10 +19,27 @@
 - 恢复：若 M2 证实无法合法重签，记录阻塞条件，选择经验证的替代交付途径而非强行构建。
 
 ## ADR-0003：采用自研 Python 固件解析脚本而非第三方黑盒二进制工具
-
 - 状态：已接受（2026-07-19）
 - 决策：在 M1/M2 固件提取与校验分析中，统一采用自研的、完全开源可审计的 Python 脚本 `tools/sunxi_image_tool.py`，不使用社区流行的 `imgRePacker.exe` 或其他不开源二进制。
-- 理由：安全性是 ROM 修改首要原则。第三方打包工具一般为闭源预编译的 Windows 可执行文件，无法对源码进行安全审计，且可能引入平台兼容性及自动化集成困难。自研脚本逻辑轻量、无外部依赖、支持跨平台自动化，并已完美验证了 Allwinner 的累加和校验算法。
+- 理由：安全性是 ROM 修改首要原则。第三方打包工具一般为闭源预编译 of Windows 可执行文件，无法对源码进行安全审计，且可能引入平台兼容性及自动化集成困难。自研脚本逻辑轻量、无外部依赖、支持跨平台自动化，并已完美验证了 Allwinner 的累加和校验算法。
 - 收益：完全掌控解析和重打包逻辑；实现 100% 可审计与平台无关；方便在打包阶段自动化重算校验和。
 - 风险：如果后期发现 Allwinner 特殊的压缩格式，可能需要补充开发对应的解压模块。
 - 恢复：如遇到自研脚本无法解析的特殊块，可参考 `OpenixIMG` 等开源项目的 C++ 代码补充修改脚本，或临时在受控沙箱中使用验证过的开源工具。
+
+## ADR-0004：ROM 净化与启动管理器 (Launcher) 替换策略
+
+- 状态：已接受（2026-07-19）
+- 决策：
+  1. **Launcher 替换与框架规避**：由于 Allwinner 固件在框架中硬编码读取 `ro.sw.defaultlauncher_package` 和 `ro.sw.defaultlauncher_class` 系统属性以强制拉起定制的 `X12.apk` (`com.moons.mylauncher10`)。我们不再通过强删 Launcher 引起 Crash，而是直接修改 `system/build.prop` 下的这两项属性，将其指向我们引入的干净 TV 启动管理器（如 preload 的 `SimpleLauncher` 或其他开源 Leanback Launcher）。
+  2. **彻底删除的软件/服务**：
+     - `happycast.apk` (广告投屏，占 107.9MB)。
+     - Allwinner 厂测工具：`DragonAgingTV`、`DragonAtt`、`DragonBox`、`Factory_detection`。
+  3. **保留的硬件驱动与关联服务**：
+     - `BLEAutoPair.apk` (蓝牙遥控配对服务) ➔ **保留**。
+     - `H616_led_blink-s.apk` (基于 `com.mitac.android.i2ctool`，负责 PWM 物理指示灯控制) ➔ **保留**。
+     - `UBTunnel.6.apk` (UnblockTech 内置网络隧道) ➔ **可选择性移除，暂默认保留但禁用开机自启**。
+  4. **日志消减策略**：修改 `build.prop` 以禁用 `persist.debug.logpersistd` 等选项，关闭后台 `awlog_logcatd` / `awlog_kmsgd` 日志守护进程，以节约存储空间与闪存擦写寿命。
+- 理由：此方案可以在不引入底层 Java 框架崩溃风险的前提下，彻底清除流氓广告推广软件和工厂冗余代码，且保证了红外遥控器配对、蓝牙与 front LED 状态指示等核心硬件体验依然完整可用。
+- 收益：精简系统分区近 150MB 空间，极大降低开机后台 CPU 与内存开销，并获得无广告纯净界面。
+- 风险：如果替换的 Launcher 存在 bug，开机可能会卡在 SystemUI 加载页面。
+- 恢复：可以随时使用 `SimpleLauncher.ap` 重装为备用，或者修改 `build.prop` 指回 `X12` 进行功能恢复。

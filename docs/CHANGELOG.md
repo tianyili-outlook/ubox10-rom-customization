@@ -2,6 +2,16 @@
 
 遵循 Keep a Changelog 风格；所有日期使用 ISO 8601。
 
+## [0.3.0] - 2026-07-19
+
+### Added
+- **M3 反定制规划与 APK 审计完成**：
+  - **APK 静态审计**：引入 `pyaxmlparser` 依赖，自动扫描并分析了 `X12.apk` (核心启动器 `com.moons.mylauncher10`，使用 system UID 权限)、`UBTunnel.6.apk` (专有网络代理 `com.yanggis.chinatunnelCOM`)、`happycast.apk` (第三方广告投屏) 以及备份的 `SimpleLauncher.ap` 和 `zysrf.ap`。
+  - **Init RC 服务盘点**：扫描了固件中 222 个 `.rc` 脚本并提取出所有自定义启动项。分析发现了 Allwinner LED 状态灯 PWM 控制机制、工厂 run-in 自动化测试脚本，以及在 `preinstall.sh` 中硬编码自动跳过 Google 初始向导地理位置同意框的 UI 注入代码。
+  - **build.prop 系统属性审计**：深入分析发现 Android TV 框架绑定了 `ro.sw.defaultlauncher_package` 和 `ro.sw.defaultlauncher_class` 属性来强制引导至厂商 `X12` 定制启动器，并找到了后台大量冗余日志的全局 persistent 开关。
+  - **反定制清理策略确立**：在 `docs/DECISIONS.md` 记录 `ADR-0004`，设计了安全精简而不破坏系统框架的 “Launcher 属性指向替换” 与 “广告及诊断程序清退” 方案。
+  - **自动化精简工具开发**：编写并成功运行了自动化裁剪精简脚本 `scripts/purify-rom.py`。一键清理了 107MB 的投屏广告及全部厂测工具，将预载 launcher (`SimpleLauncher`) 重打包为默认启动器，并关闭了后台所有的日志收集服务。
+
 ## [0.2.0] - 2026-07-19
 
 ### Added
