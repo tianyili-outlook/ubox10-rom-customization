@@ -6,13 +6,13 @@ param(
 
 $ErrorActionPreference = 'Stop'
 if (-not (Test-Path -LiteralPath $ImagePath -PathType Leaf)) {
-    throw "找不到固件：$ImagePath"
+    throw "Firmware image not found: $ImagePath"
 }
 
 $resolvedImagePath = (Resolve-Path -LiteralPath $ImagePath).Path
 $actual = (Get-FileHash -LiteralPath $resolvedImagePath -Algorithm SHA256).Hash.ToUpperInvariant()
 if ($actual -ne $ExpectedSha256) {
-    throw "固件 SHA-256 不匹配。期望：$ExpectedSha256；实际：$actual"
+    throw "Firmware SHA-256 mismatch! Expected: $ExpectedSha256, Actual: $actual"
 }
 
-Write-Output "基线验证成功：$actual"
+Write-Output "Baseline verification successful: $actual"
