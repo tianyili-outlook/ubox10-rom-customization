@@ -55,4 +55,14 @@
 * **文件 SHA-256**：`600D1CAB2FC7DE5127FB287F4E2791718DB54EFB1102D0F365DB0D3EC1CCF62E`
 * **适用平台**：跨平台 (Python 3.13+)
 * **调用命令**：`python tools/lpunpack.py <super_img_path> <out_dir>`
-* **验证结果**：待在 M2 阶段对 `super.fex` 进行解包测试。
+* **验证结果**：成功在 M2 阶段对 sparse 格式的 `super.fex` 进行转换与逻辑卷（system_a/vendor_a/product_a/vendor_dlkm_a）提取。
+
+### 6. extract_ext4.py
+* **名称**：纯 Python 跨平台 Ext4 文件递归提取工具 (Ext4 Extractor)
+* **版本/提交**：v1.0.0 (Initial M2 release)
+* **来源**：自研代码 (In-house development)
+* **许可证**：Apache-2.0
+* **文件 SHA-256**：`7F9333A71192A33D3EDCFE505085D9DCBC0C13EB9D811998BC23443443311A59`
+* **适用平台**：跨平台 (Python 3.13+)
+* **调用命令**：`python tools/extract_ext4.py <ext4_image_path> <dest_dir>`
+* **验证结果**：成功在 M2 阶段递归提取了四大 Ext4 逻辑分区的全部 4000+ 文件，并以 `.symlink` 文本文件记录保存了所有符号链接，完美规避了 Windows 无特权创建符号链接的报错。
