@@ -107,3 +107,13 @@
 * **适用平台**：Windows (x86/x64)
 * **调用命令**：`tools/simg2img.exe <sparse_img> <raw_img>`
 * **验证结果**：成功将 1.78 GB 的 sparse `super.fex` 转换回 3.00 GB 的 raw 镜像。
+
+### 11. pack_image.py
+* **名称**：Allwinner IMAGEWTY v3 Firmware Re-packager
+* **版本/提交**：Custom self-contained Python script
+* **来源**：Workspace self-authored
+* **许可证**：Apache-2.0
+* **文件 SHA-256**：`C4406ABDD2BD56A8496DF15126CABE301D5F571FFAD45AA1376E147DC54BEAF5`
+* **适用平台**：跨平台 (Python 3.13+)
+* **调用命令**：`python tools/pack_image.py`
+* **验证结果**：成功在本地运行并生成了重组且校验通过的全志镜像容器文件。
