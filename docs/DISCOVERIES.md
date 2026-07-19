@@ -31,3 +31,32 @@
   3. 固件中共有 46 个文件，其中 10 个主分区（如 `boot.fex`, `vendor_boot.fex`, `super.fex` 等）携带对应的 `V` 伴生文件，所有 10 个校验和均与自研工具计算结果完全匹配。
 - 置信度：极高（数学校验完全吻合）。
 - 影响：我们成功实现了免安装第三方工具的 100% 只读解析与完整性校验。这也为后期 M5 分区打包重建时的“校验和自动更新”打下了坚实的理论与代码基础。
+
+## D-0004 — Android Boot 与 Verified Boot (AVB) 结构审计
+
+- 日期：2026-07-19
+- 来源：对 `boot.fex`, `vendor_boot.fex` 运行 `unpack_bootimg.py`；对 `vbmeta.fex` 运行 `avbtool.py info_image`。
+- 方法：静态结构审计与签名密钥指纹解析。
+- 结论：
+  1. **镜像版本**：`boot.fex` 和 `vendor_boot.fex` 均采用 **Header Version 3** 格式。`boot.fex` 包含 OS 12.0.0 且补丁级别为 2022-02。
+  2. **AVB 签名链**：`vbmeta.fex`、`vbmeta_system.fex` 与 `vbmeta_vendor.fex` 的签名算法均为 `SHA256_RSA2048`，其公钥 SHA1 指纹均为 `4728165bce7c07e3e2df5f4d787a0bfedc5ac133`。该指纹为 **AOSP 官方默认测试密钥 (test-keys)**，属于公开密钥。
+  3. **内核命令行**：`vendor_boot` 携带命令行参数，指定 `buildvariant=userdebug` (测试与 Root 友好) 且 `androidboot.selinux=permissive` (SELinux 宽容模式，降低了内核修改权限阻碍)。
+- 置信度：极高（直接读取 AOSP 标准二进制头部得出）。
+- 影响：这证明了 UBOX10 的安全链完全基于公开的 `test-keys` 构建。我们可以通过标准的 AOSP 密钥链对修改后的 boot/system/vendor 镜像进行重新签名，系统将能正常通过 Verified Boot 校验。
+
+## D-0005 — super.fex 动态分区结构与 Ext4 逻辑分区审计
+
+- 日期：2026-07-19
+- 来源：利用 `lpunpack.py` 提取 `super.fex`，以及使用 Python `ext4` 包对解出的 ext4 分区进行递归只读解压。
+- 方法：动态分区解包与 ext4 文件系统静态提取。
+- 结论：
+  1. **动态分区布局**：`super.fex` 是一个 Sparse 格式镜像，内部包含 `system_a`, `vendor_a`, `product_a`, `vendor_dlkm_a` 逻辑分区（对应的 `_b` 分区为空/0 字节），证明其为 Retrofit A/B 动态分区设计。
+  2. **系统挂载信息**：在 `vendor_boot` 的 `first_stage_ramdisk/fstab.sun50iw9p1` 中指定了 `wait,first_stage_mount,logical,slotselect` 挂载参数。
+  3. **厂商定制 App 盘点**：
+     - `/system/app/UBTunnel.6` (`UBTunnel.6.apk`): 翻墙/流媒体代理隧道（12.1MB）。
+     - `/system/app/X12` (`X12.apk`): 厂商主控/校验/应用市场组件（9.8MB）。
+     - `/system/app/happycast` (`happycast.apk`): 带有广告的第三方乐播投屏（107.9MB，净化ROM的头号目标）。
+     - Allwinner 厂测工具：`/system/app/DragonAgingTV`、`DragonAtt`、`DragonBox`、`Factory_detection`。
+     - `/system/preinstall/`: 包含预安装包 `zysrf.ap` (输入法，17.5MB) 与 `PhotoTable.apk`。
+- 置信度：高（已完美提取全部 2986 个系统文件进行归档）。
+- 影响：通过静态分析提取出的文件，我们定位到了全部的定制/推广应用。下一阶段在进行 ROM 净化时，可以通过删除对应目录直接剔除这些无用或推广组件。
