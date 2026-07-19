@@ -1,6 +1,8 @@
 # 原始固件、提取物和构建产物均不可提交
 firmware/original/*
 !firmware/original/.gitkeep
+firmware/extracted/*
+!firmware/extracted/.gitkeep
 /*.img
 work/*
 !work/.gitkeep
