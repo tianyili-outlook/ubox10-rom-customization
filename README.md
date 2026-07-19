@@ -2,69 +2,129 @@
 
 本仓库用于以可复现、可审计、开源且安全的方式对 UnblockTech UBOX10 (I12 Pro Max / Allwinner H616) Android TV 12 固件进行解包、分析与反定制净化。
 
-当前阶段：**M2 — 分区与启动链审计完成 (等待 M3 反定制规划确认中)**。
+当前阶段：**M3+ 增强裁剪与预装完成 → M4 ROM 重打包中**。
 
 ---
 
 ## 🚀 项目当前状态 (Current Status)
 
-目前项目已成功走完 **M0 基线建立**、**M1 容器解析** 和 **M2 分区审计**，完成了对原始固件的 100% 提取和文件分析。
+项目已完成 **M0–M3+** 全部里程碑，包括固件解包、审计、应用裁剪和预装应用集成。
 
-* **开发分支状态**：`main` 保持干净且与 GitHub 同步。
-* **已解包产物**：全部 46 个分区提取至 `firmware/extracted/`（Git 已忽略以防大体积文件入库）；所有动态逻辑分区（`system`、`vendor`、`product`、`vendor_dlkm`）已递归提取至 `work/` 下。
+* **开发分支状态**：`main` 与 GitHub 同步。
+* **裁剪成果**：已删除 14 个厂商定制/无用应用，释放 **298.7 MB** 空间。
+* **启动器替换**：默认启动器已从安博 X12 替换为开源的 **FLauncher**，SimpleLauncher 保留为紧急 fallback。
+* **预装应用**：FLauncher (默认桌面)、SmartTube (YouTube TV 客户端) 已集成。
 
 ---
 
 ## 💡 核心审计发现 (Key Discoveries)
 
-截至 M2 阶段结束，我们在工程静态审计中取得以下重大发现（详见 [DISCOVERIES.md](file:///c:/Users/tiany/Documents/ubox10-rom改造/docs/DISCOVERIES.md)）：
+1. **AOSP test-keys 签名引导链**
+   固件 `vbmeta` 签名链完全基于 AOSP 官方公开测试密钥 (test-keys)，可直接对修改后的分区重签名通过 Verified Boot。
 
-1. **AOSP test-keys 签名引导链 (D-0004)**
-   固件中的 `vbmeta.fex`、`vbmeta_system.fex` 和 `vbmeta_vendor.fex` 均使用 **SHA256_RSA2048** 算法，并且公钥为 **AOSP 官方公开默认测试密钥 (test-keys)**。
-   * *影响*：我们可以对修改后的分区直接使用公开的 test-keys 重新签名，固件即可通过 Verified Boot (AVB) 引导启动，**无需破解底层安全链**。
-2. **调试与宽容模式内核 (D-0004)**
-   `vendor_boot` 的内核启动参数中明确指定 `buildvariant=userdebug` (调试版) 且 `androidboot.selinux=permissive` (SELinux 宽容模式)。
-   * *影响*：极大地降低了定制 ROM、系统修改和安装 Root 组件（如 Magisk/KernelSU）时的底层策略阻碍。
-3. **已提取的挂载映射 (D-0005)**
-   在 `vendor_boot` 提取出的 `first_stage_ramdisk/fstab.sun50iw9p1` 中锁定了设备的动态分区挂载逻辑，属于 A/B 槽位（Retrofit）动态分区布局。
-4. **定位厂商定制与推广软件 (D-0005)**
-   审计成功锁定如下净化/精简的关键目标：
-   * `/system/app/happycast` (107.9MB 乐播投屏，包含大量推广广告) ➔ **计划直接剔除**。
-   * `/system/app/UBTunnel.6` (12.1MB UnblockTech 专有网络隧道服务) ➔ **待评估是否保留**。
-   * `/system/app/X12` (9.8MB 厂商自定应用市场/校验主控) ➔ **计划精简/替换**。
-   * 厂商工厂老化及测试工具：`DragonAgingTV`、`DragonAtt`、`DragonBox`、`Factory_detection` ➔ **计划直接剔除**。
+2. **调试与宽容模式内核**
+   内核启动参数 `buildvariant=userdebug` + `androidboot.selinux=permissive`，降低了系统修改阻碍。
+
+3. **Framework 启动器强锁定机制**
+   安博固件在 Framework 中强制读取 `ro.sw.defaultlauncher_package` 和 `ro.sw.defaultlauncher_class` 系统属性来锁定启动器。已通过修改 `build.prop` 将默认指向 FLauncher。
+
+4. **LED 指示灯 PWM 依赖**
+   前面板状态灯由 `com.mitac.android.i2ctool` 服务控制，`H616_led_blink-s` 目录绝对不能删除。
+
+---
+
+## 🗑️ 已删除应用清单 (Removed Apps)
+
+### 🔴 P0 强烈推荐删除 (已执行)
+
+| 应用 | 大小 | 删除理由 |
+|------|------|----------|
+| happycast | 107.9 MB | 乐播投屏广告软件 (M3 已删) |
+| X12 | 12.2 MB | 安博定制桌面启动器 |
+| UBTunnel.6 | 12.1 MB | 安博 VPN 翻墙隧道 |
+| settingwizard | 31.7 MB | 安博定制设置向导 |
+| browser-v1.1 | 16.1 MB | 安博定制浏览器 |
+| AwlogSettings | 2.2 MB | 全志日志调试配置 |
+| zysrf | 41.3 MB | Google 注音输入法 |
+| DragonAgingTV/Att/Box/Factory | — | 全志工厂测试工具 (M3 已删) |
+
+### 🟠 P1 推荐删除 (已执行)
+
+| 应用 | 大小 | 删除理由 |
+|------|------|----------|
+| H618_UpgradeV3 | 18.3 MB | 厂商 OTA 升级工具 |
+| NanoOtaBle | 1.9 MB | 蓝牙遥控器 OTA |
+| Update | 1.3 MB | 系统更新检查器 |
+| CZFileManager | 10.1 MB | 第三方文件管理器 |
+| Chrome | 118.4 MB | 浏览器 (用户确认删除) |
+| TvdFileManager | 3.4 MB | 全志文件管理器 |
+| BLEAutoPair | 19.2 MB | 蓝牙自动配对 (用户使用红外遥控器) |
+
+### Vendor 分区
+
+| 文件 | 大小 | 说明 |
+|------|------|------|
+| 111.mp3 | 10.3 MB | 开机音效 |
+
+**累计释放空间：~298.7 MB (不含 M3 阶段已删的 ~108 MB)**
+
+---
+
+## 📦 预装应用 (Preinstalled Apps)
+
+| 应用 | 版本 | 位置 | 来源 |
+|------|------|------|------|
+| **FLauncher** (默认启动器) | v2025.07.001 (osrosal fork) | system/app/ | [GitHub](https://github.com/osrosal/flauncher) |
+| **SimpleLauncher** (fallback) | v1.0 | system/app/ | 原始固件自带 |
+| **SmartTube** (YouTube TV) | v31.94 stable | product/app/ | [GitHub](https://github.com/yuliskov/SmartTube) |
+
+### 待用户手动下载后集成
+
+将 APK 放入 `work/preinstall_apks/` 后重新运行 `python scripts/purify-rom.py`：
+
+| 文件名 | 应用 | 推荐来源 |
+|--------|------|----------|
+| `Gboard.apk` | Google 输入法 | [APKMirror](https://www.apkmirror.com) (arm64-v8a) |
+| `GoogleFiles.apk` | Google Files | [APKMirror](https://www.apkmirror.com) (arm64-v8a) |
+| `VLC.apk` | VLC 视频播放器 | [APKMirror](https://www.apkmirror.com) (arm64-v8a) |
+| `SendFilesToTV.apk` | Send Files to TV | [APKMirror](https://www.apkmirror.com) (arm64-v8a) |
 
 ---
 
 ## 🛠️ 已锁定的固件工具链 (Locked Toolchain)
 
-所有镜像解包、重打包和校验工具的版本、SHA-256 和来源均记录于 [LOCKFILE.md](file:///c:/Users/tiany/Documents/ubox10-rom改造/tools/LOCKFILE.md)，以保证工程的可复现性：
-1. `sunxi_image_tool.py` (自研 PhoenixCard 容器解析器，SHA-256: `8E121C8B...`)
-2. `unpack_bootimg.py` (AOSP 官方启动镜像解包器，SHA-256: `4497241A...`)
-3. `mkbootimg.py` (AOSP 官方启动镜像重打包器，SHA-256: `4616FBEF...`)
-4. `avbtool.py` (AOSP 官方 Verified Boot 校验工具，SHA-256: `1F1FDDD2...`)
-5. `lpunpack.py` (Android Super 分区解包工具，SHA-256: `600D1CAB...`)
-6. `extract_ext4.py` (自研纯 Python 跨平台 Ext4 提取器，SHA-256: `E9F5290A...` - 规避 Windows 下符号链接及 7z 解析局限)
+所有工具的版本、SHA-256 和来源均记录于 [tools/LOCKFILE.md](tools/LOCKFILE.md)：
+
+| # | 工具 | 用途 |
+|---|------|------|
+| 1 | `sunxi_image_tool.py` | 全志 IMAGEWTY v3 容器解析 |
+| 2 | `unpack_bootimg.py` | AOSP 启动镜像解包 |
+| 3 | `mkbootimg.py` | AOSP 启动镜像重打包 |
+| 4 | `avbtool.py` | Verified Boot 签名/校验 |
+| 5 | `lpunpack.py` | Super 分区逻辑卷解包 |
+| 6 | `extract_ext4.py` | 自研 Ext4 文件提取 |
+| 7 | `make_ext4fs.exe` + `cygwin1.dll` | Ext4 镜像编译 (Windows) |
+| 8 | `lpmake.exe` | Super 分区逻辑卷拼装 |
+| 9 | `testkey_rsa2048.pem` | AOSP AVB 测试签名密钥 |
 
 ---
 
-## 📂 目录结构与规范
+## 📂 目录结构
 
-* **[docs/](file:///c:/Users/tiany/Documents/ubox10-rom改造/docs/)**：工程决策文档（ADR）、发现记录（Discoveries）、系统架构与设计说明。
-* **[tools/](file:///c:/Users/tiany/Documents/ubox10-rom改造/tools/)**：已验证版本的 Python 固件工具链及锁定文件。
-* **[scripts/](file:///c:/Users/tiany/Documents/ubox10-rom改造/scripts/)**：一键式构建/解析/校验的自动化脚本管线。
-* **[work/](file:///c:/Users/tiany/Documents/ubox10-rom改造/work/)**：中间提取产物与解包区（此目录不入 Git 库）。
-
-详见 `docs/ARCHITECTURE.md`。
+* **[docs/](docs/)**：工程决策文档 (ADR)、发现记录、变更日志。
+* **[tools/](tools/)**：已验证版本的工具链及锁定文件。
+* **[scripts/](scripts/)**：自动化裁剪/打包脚本。
+* **[work/](work/)**：中间提取产物与解包区（不入 Git 库）。
 
 ---
 
 ## 🧭 固件定制路线图 (Roadmap)
 
-- [x] **Milestone M0**：原始固件基线校验与托管
-- [x] **Milestone M1**：Allwinner 只读容器解析与伴生校验和推导
-- [x] **Milestone M2**：分区解包与 Verified Boot 启动链审计
-- [ ] **Milestone M3**：反定制规划与 APK 静态审计 (等待开始中...)
-- [ ] **Milestone M4**：反定制净化与 System/Product 裁剪
-- [ ] **Milestone M5**：固件封装打包与 PhoenixCard 累加校验和生成
-- [ ] **Milestone M6**：物理设备刷写测试与驱动完整性验证
+- [x] **M0**：原始固件基线校验与托管
+- [x] **M1**：Allwinner 容器解析与伴生校验和推导
+- [x] **M2**：分区解包与 Verified Boot 启动链审计
+- [x] **M3**：反定制规划与 APK/Init 静态审计
+- [x] **M3+**：增强裁剪执行 + 启动器替换 + 预装应用集成
+- [/] **M4**：ROM 重打包与 AVB 签名 *(进行中)*
+- [ ] **M5**：固件封装与 PhoenixCard 校验和生成
+- [ ] **M6**：物理设备刷写测试与驱动验证

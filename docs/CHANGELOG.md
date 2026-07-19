@@ -2,6 +2,21 @@
 
 遵循 Keep a Changelog 风格；所有日期使用 ISO 8601。
 
+## [0.4.0] - 2026-07-19
+
+### Added
+- **M3+ 增强裁剪与预装应用集成**：
+  - **全系统应用审计**：盘点 system/product/vendor 三大分区共 90+ 个应用，按 P0(强烈推荐删除)/P1(推荐删除)/P2(可选)/保留/预装 五级分类。
+  - **启动器方案评审**：对 FLauncher、Projectivy Launcher、SimpleLauncher 三款 Android TV 启动器进行全面对比，确立 FLauncher(默认) + SimpleLauncher(fallback) 方案。
+  - **增强裁剪执行**：新增删除 14 个厂商定制/无用应用 (X12、UBTunnel、settingwizard、browser、AwlogSettings、zysrf、H618_UpgradeV3、NanoOtaBle、Update、CZFileManager、Chrome、TvdFileManager、BLEAutoPair、vendor/111.mp3)，累计释放 298.7 MB。
+  - **预装应用集成**：下载并预装 FLauncher v2025.07.001 (osrosal 社区 fork, arm64) 和 SmartTube v31.94 stable (arm64)。
+  - **build.prop 更新**：默认启动器从 SimpleLauncher 更新为 FLauncher (`me.efesser.flauncher`)。
+  - **裁剪脚本重写**：`scripts/purify-rom.py` 完全重写为支持 P0/P1/Vendor 分级裁剪、FLauncher/SmartTube 预装、可选 APK 检测的一站式自动化管线。
+- **M4 工具链配置**：
+  - 获取并验证 `make_ext4fs.exe` + `cygwin1.dll` (ext4 镜像编译) 和 `lpmake.exe` (Super 分区拼装)。
+  - 下载 AOSP `testkey_rsa2048.pem` 用于 AVB 重签名。
+  - 全部工具 SHA-256 锁入 `tools/LOCKFILE.md`。
+
 ## [0.3.0] - 2026-07-19
 
 ### Added

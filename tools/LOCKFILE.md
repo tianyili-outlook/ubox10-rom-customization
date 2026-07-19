@@ -66,3 +66,24 @@
 * **适用平台**：跨平台 (Python 3.13+)
 * **调用命令**：`python tools/extract_ext4.py <ext4_image_path> <dest_dir>`
 * **验证结果**：成功在 M2 阶段递归提取了四大 Ext4 逻辑分区的全部 4000+ 文件，并以 `.symlink` 文本文件记录保存了所有符号链接，完美规避了 Windows 无特权创建符号链接的报错。
+
+### 7. make_ext4fs.exe & cygwin1.dll
+* **名称**：Android ext4 image creation tool (Cygwin Port)
+* **版本/提交**：Android 8.1.0 branch compatible
+* **来源**：https://github.com/RickyDivjakovski/Android_IMG_Tools_Cygwin
+* **许可证**：Apache-2.0 / GNU GPL
+* **文件 SHA-256 (make_ext4fs.exe)**：`94CF4C2AFF6E88FD657D6DD182256D105F111E4F5E442141AEC43452BBCFFC60`
+* **文件 SHA-256 (cygwin1.dll)**：`F22D44EF78AFE17D48718A8E1616A8A45E488D267F22ED000E61F728225C4661`
+* **适用平台**：Windows (x86/x64)
+* **调用命令**：`tools/make_ext4fs.exe [options] <output_img> <src_dir>`
+* **验证结果**：成功在 Windows 终端内加载并显示帮助文档，确认可用。
+
+### 8. lpmake.exe
+* **名称**：Android Logical Partition Image Maker (super.img builder)
+* **版本/提交**：android-15.0.0_r25
+* **来源**：https://github.com/Rprop/aosp15_partition_tools
+* **许可证**：Apache-2.0
+* **文件 SHA-256**：`602D59D2670F6DCCFEF81D854444AAFE2CAC7995D07E22158271BEF65ACCAF3D`
+* **适用平台**：Windows (x86/x64)
+* **调用命令**：`tools/lpmake.exe [options]`
+* **验证结果**：成功在 Windows 终端内启动并显示用法指南。
