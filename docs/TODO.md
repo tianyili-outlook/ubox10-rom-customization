@@ -1,8 +1,14 @@
 # 待办事项
 
-## 当前：M6 物理烧录与刷卡验证 (Physical Device Flashing & Verification)
+## 当前：M6 物理烧录与实机调试 (Physical Flashing & Device Verification Debugging)
 
-- [ ] 使用 PhoenixCard 将 `x12-purified.img` 写入 TF 卡，并在 UBOX10 设备上上电开机烧录。
+- [/] **实机首次烧录尝试** (2026-07-20)
+  - [x] 使用 diskpart 强行清除 TF 卡 242 锁定状态。
+  - [x] 首次写入 `x12-purified.img` 触发 5%-10% 进度卡死与 LED 蓝绿交替高频闪烁挂起错误。
+  - [x] 成功执行官方镜像对照组实验，证明刷机链路正常，故障 100% 指向重打包固件逻辑。
+- [ ] **物理死锁问题破除**
+  - [ ] **行动 1：静态体积测量与约束**：对比原厂 `super.fex` 与 `lpmake` 生成的 `super.img` 字节数，分析并修正分区表大小上限边界约束。
+  - [ ] **行动 2：UART 串口连接硬件级诊断**：焊接 UBOX10 主板 UART 引脚并直连 PC 抓取 U-Boot 底层 Fatal error panic 异常栈。
 - [ ] 验证 FLauncher 默认桌面启动及各预装应用的使用是否正常。
 - [ ] 验证红外遥控器与前置 LED 指示灯的工作状态。
 

@@ -2,6 +2,16 @@
 
 遵循 Keep a Changelog 风格；所有日期使用 ISO 8601。
 
+## [0.6.0-M6.1] - 2026-07-20
+
+### Added
+- **M6 受控硬件验证与刷机调试**：
+  - **TF 卡 242 锁死排除**：记录 PhoenixCard 格式化报错 242 故障原因，制定 Windows `diskpart clean` 命令行磁盘清理规避规程。
+  - **刷机死锁与 LED 高频报警记录**：记录在物理 UBOX10 上烧录 `x12-purified.img` 触发 5%-10% 进度卡住，前置面板蓝绿 LED 灯高频闪烁挂起硬件级 Fatal Error。
+  - **对照组实验完成**：使用原厂包 `x12-1024.img` 同卡同刷，低频交替闪烁并顺利刷完闭环，验证了物理硬件链路完整性，将故障点定位回定制包 `super` 绝对体积溢出或 sparse 对齐缺陷。
+  - **引入调试文档**：新建 [M6_DEBUG_LOG.md](file:///c:/Users/tiany/Documents/ubox10-rom改造/docs/M6_DEBUG_LOG.md) 详细归档现象与推演。
+  - **制定两项 Debug 行动**：1) 测量 `super` 物理容量约束边界以限制其重打包最大体积；2) 准备主板 UART 串口（波特率 115200）直连抓取 Fatal error panic 异常栈。
+
 ## [0.5.0] - 2026-07-20
 
 ### Added
