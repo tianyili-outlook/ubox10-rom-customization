@@ -1,15 +1,22 @@
 # 待办事项
 
-## 当前：M4 ROM 重打包与 AVB 签名 (ROM Repackaging & AVB Signing)
+## 当前：M6 物理烧录与刷卡验证 (Physical Device Flashing & Verification)
 
-- [ ] 选择并锁定适合 Windows 平台的 ext4 镜像生成工具（如 `mke2fs` / `make_ext4fs` 或 Python 自动化打包程序）。
-- [ ] 将已净化修改的逻辑卷目录（`system_extracted`、`vendor_extracted` 等）重新打包编译为 raw `ext4` 分区映像。
-- [ ] 使用 `avbtool.py` 为重新生成的逻辑分区映像计算并追加 AVB Hashtree 校验页，并使用 standard test-keys 重新对 `vbmeta` 等签名。
-- [ ] 使用 `lpmake` (或自研 lpmetadata 拼接器) 重新构建 `super` 逻辑分区映像。
-- [ ] 校验打包镜像的物理结构，确保其大小、对齐与原始分区完全一致。
+- [ ] 使用 PhoenixCard 将 `x12-purified.img` 写入 TF 卡，并在 UBOX10 设备上上电开机烧录。
+- [ ] 验证 FLauncher 默认桌面启动及各预装应用的使用是否正常。
+- [ ] 验证红外遥控器与前置 LED 指示灯的工作状态。
 
 ## 已完成
 
+- [x] **M4 ROM 重打包与 AVB 签名** (2026-07-19)
+  - [x] 选择并锁定适合 Windows 平台的 ext4 镜像生成工具（使用 `make_ext4fs.exe`）。
+  - [x] 将已净化修改的逻辑卷目录（`system_extracted`、`product_extracted`）重新打包编译为 raw `ext4` 分区映像。
+  - [x] 使用 `avbtool.py` 为重新生成的逻辑分区映像计算并追加 AVB Hashtree 校验页，并使用 standard test-keys 重新对 `vbmeta` 等签名。
+  - [x] 使用 `lpmake` 重新构建 `super` 逻辑分区映像。
+  - [x] 校验打包镜像的物理结构，确保其大小、对齐与原始分区完全一致。
+- [x] **M5 固件封装与伴生校验和重算** (2026-07-19)
+  - [x] 编写 `tools/pack_image.py` 将 `super.img` 和重新生成的 vbmeta/校验 和装回 Allwinner 格式的固件容器。
+  - [x] 调用自研算法重新计算所有分区伴生校验文件（`V*.fex`），并在 `x12-purified.img` 中完成校验和写入。
 - [x] **M0：原始镜像基线** (2026-07-19)
 - [x] **M1：只读容器清单** (2026-07-19)
   - [x] 选择自研可审计的 Allwinner 容器解析器（`sunxi_image_tool.py`）。

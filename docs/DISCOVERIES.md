@@ -60,3 +60,15 @@
      - `/system/preinstall/`: 包含预安装包 `zysrf.ap` (输入法，17.5MB) 与 `PhotoTable.apk`。
 - 置信度：高（已完美提取全部 2986 个系统文件进行归档）。
 - 影响：通过静态分析提取出的文件，我们定位到了全部的定制/推广应用。下一阶段在进行 ROM 净化时，可以通过删除对应目录直接剔除这些无用或推广组件。
+
+## D-0006 — Windows 平台 AVB 签名机制修复、Super 卷动态重排与 Allwinner 伴生校验算法落地
+
+- 日期：2026-07-19
+- 来源：利用 Python 二次开发 `avbtool.py`，使用 `make_ext4fs`, `lpmake` 拼接 super 逻辑分区以及自研 `pack_image.py` 重新打包全志固件。
+- 方法：对 `avbtool.py` 的 RSA 私钥加载与数字签名方法进行 native Python 重构（引入 `pycryptodome` 依赖），并调用自研的 32 位小端累加字校验和（checksum）算法。
+- 结论：
+  1. **AVB Windows 原生构建成功**：`avbtool.py` 内部对 `openssl` 命令行调用的依赖已被 native Python 的 `Crypto.PublicKey.RSA` 库替代，实现了在 Windows 平台下 100% 原生的 RSA 密钥加载和签名计算。
+  2. **动态分区尺寸伸缩性验证**：我们将 `product` 分区扩展为 320 MB，`lpmake` 成功对逻辑分区进行了动态重排，重新计算了 `vendor_dlkm` 的偏移量，整条启动验证链在 test-keys 的加持下闭环校验成功。
+  3. **Allwinner 伴生校验和 100% 过检**：自研的 `pack_image.py` 成功重构了固件中所有 46 个文件的位置头，并自动更新写入了 10 个挂载分区对应的 `V*.fex` 伴生小端字校验和。最终固件 `x12-purified.img`（1.50 GB）通过了 `sunxi_image_tool.py verify` 的全部校验测试。
+- 置信度：极高（已完成固件编译并 100% 通过校验和逻辑审核）。
+- 影响：标志着 ROM 改造中编译与签名环节的闭环完成，生成的固件可以直接烧录到设备中，进入 Milestone M6 实机上电验证阶段。

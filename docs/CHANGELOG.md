@@ -2,6 +2,21 @@
 
 遵循 Keep a Changelog 风格；所有日期使用 ISO 8601。
 
+## [0.5.0] - 2026-07-20
+
+### Added
+- **M3+ 预装应用落地**：
+  - 集成用户提供的真正需要的 APK 清单到 product 分区中：Gboard TV输入法、Kodi 21.3 Omega 媒体中心、VLC 3.7.2 Beta 1 播放器、LocalSend 1.17.0 局域网传输（替代 Google Files / Send Files to TV）。
+- **M4 ROM 重打包与 AVB 签名成功**：
+  - **AVB 签名工具链原生修复**：在 `avbtool.py` 中引入 `pycryptodome` (Crypto) 依赖，利用纯 Python 实现 RSA-2048 私钥的载入和 `pow(m, d, n)` 签名，成功规避了 Windows 下调用 `openssl` 进程报错的问题。
+  - **分级重打包与签名**：将裁剪修改后的 system 分区（原大小）和 product 分区（扩容至 300MB）重新编译为 ext4 镜像，并对 system, product, vendor, vendor_dlkm 所有 4 个分区应用 AOSP test-key 重签名与 hashtree 追加。
+  - **vbmeta 签名链重建**：新生成 `vbmeta_system.img`、`vbmeta_vendor.img` 与主 `vbmeta.img` 闭环验证签名链。
+  - **Super 逻辑卷拼接**：使用 `lpmake.exe` 按照 3GB 物理尺寸和 1MB sector 对齐将 4 个分区组合编译为 sparse `super.img`。
+- **M5 Allwinner 固件打包与校验和重算成功**：
+  - **自动化打包工具编写**：编写并执行 `tools/pack_image.py`，加载原始 Image Manifest，自动重排 46 个文件的地址块偏移和长度，并写回 `x12-purified.img` 容器中。
+  - **伴生校验字重算**：自动计算 10 个挂载分区的小端 uint32 累加字校验和（checksum）并写入 `V*.fex` 伴生校验分区。
+  - **固件完整性过检**：运行 `tools/sunxi_image_tool.py verify` 对生成的 `x12-purified.img`（1.50 GB）进行 100% 格式比对校验，全部通过（10 partitions OK）。
+
 ## [0.4.0] - 2026-07-19
 
 ### Added

@@ -106,6 +106,9 @@
 | 7 | `make_ext4fs.exe` + `cygwin1.dll` | Ext4 镜像编译 (Windows) |
 | 8 | `lpmake.exe` | Super 分区逻辑卷拼装 |
 | 9 | `testkey_rsa2048.pem` | AOSP AVB 测试签名密钥 |
+| 10 | `lpdumps.exe` | Super 分区逻辑卷 Metadata 导出 |
+| 11 | `simg2img.exe` | Sparse 格式镜像转换为 Raw 格式 |
+| 12 | `pack_image.py` | 全志 IMAGEWTY v3 容器打包器 |
 
 ---
 
@@ -125,6 +128,6 @@
 - [x] **M2**：分区解包与 Verified Boot 启动链审计
 - [x] **M3**：反定制规划与 APK/Init 静态审计
 - [x] **M3+**：增强裁剪执行 + 启动器替换 + 预装应用集成
-- [/] **M4**：ROM 重打包与 AVB 签名 *(进行中)*
-- [ ] **M5**：固件封装与 PhoenixCard 校验和生成
-- [ ] **M6**：物理设备刷写测试与驱动验证
+- [x] **M4**：ROM 重打包与 AVB 签名
+- [x] **M5**：固件封装与 PhoenixCard 校验和生成
+- [/] **M6**：物理设备刷写测试与驱动验证 *(进行中)*
