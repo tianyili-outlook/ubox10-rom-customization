@@ -1,0 +1,16 @@
+# 原始固件、提取物和构建产物均不可提交
+firmware/original/*
+!firmware/original/.gitkeep
+/*.img
+work/*
+!work/.gitkeep
+out/*
+!out/.gitkeep
+logs/*
+!logs/.gitkeep
+
+# 本地工具与环境
+tools/local/
+.venv/
+__pycache__/
+*.py[cod]
