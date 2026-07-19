@@ -72,22 +72,22 @@
 
 ## 📦 预装应用 (Preinstalled Apps)
 
-| 应用 | 版本 | 位置 | 来源 |
+### system/app/ (系统级，不可卸载)
+
+| 应用 | 版本 | 来源 |
+|------|------|------|
+| **FLauncher** (默认启动器) | v2025.07.001 (osrosal fork) | [GitHub](https://github.com/osrosal/flauncher) |
+| **SimpleLauncher** (fallback) | v1.0 | 原始固件自带 |
+
+### product/app/ (用户级，可通过设置管理)
+
+| 应用 | 版本 | 大小 | 来源 |
 |------|------|------|------|
-| **FLauncher** (默认启动器) | v2025.07.001 (osrosal fork) | system/app/ | [GitHub](https://github.com/osrosal/flauncher) |
-| **SimpleLauncher** (fallback) | v1.0 | system/app/ | 原始固件自带 |
-| **SmartTube** (YouTube TV) | v31.94 stable | product/app/ | [GitHub](https://github.com/yuliskov/SmartTube) |
-
-### 待用户手动下载后集成
-
-将 APK 放入 `work/preinstall_apks/` 后重新运行 `python scripts/purify-rom.py`：
-
-| 文件名 | 应用 | 推荐来源 |
-|--------|------|----------|
-| `Gboard.apk` | Google 输入法 | [APKMirror](https://www.apkmirror.com) (arm64-v8a) |
-| `GoogleFiles.apk` | Google Files | [APKMirror](https://www.apkmirror.com) (arm64-v8a) |
-| `VLC.apk` | VLC 视频播放器 | [APKMirror](https://www.apkmirror.com) (arm64-v8a) |
-| `SendFilesToTV.apk` | Send Files to TV | [APKMirror](https://www.apkmirror.com) (arm64-v8a) |
+| **SmartTube** (YouTube TV) | v31.94 stable | 25.0 MB | [GitHub](https://github.com/yuliskov/SmartTube) |
+| **Gboard** (Google TV 输入法) | v16.1.02 TV release | 24.6 MB | [APKMirror](https://www.apkmirror.com) |
+| **Kodi** (媒体中心) | v21.3 Omega | 65.0 MB | [kodi.tv](https://kodi.tv) |
+| **VLC** (视频播放器) | v3.7.2 Beta 1 | 45.9 MB | [APKMirror](https://www.apkmirror.com) |
+| **LocalSend** (局域网传输) | v1.17.0 | 16.7 MB | [GitHub](https://github.com/localsend/localsend) |
 
 ---
 

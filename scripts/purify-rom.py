@@ -84,27 +84,27 @@ SMARTTUBE_SRC = os.path.join(PREINSTALL_APKS_DIR, "SmartTube.apk")
 SMARTTUBE_DST_DIR = os.path.join(PRODUCT_DIR, "app/SmartTube")
 SMARTTUBE_DST_APK = os.path.join(SMARTTUBE_DST_DIR, "SmartTube.apk")
 
-# Optional preinstalls (user needs to manually download from Play Store/APKMirror)
+# Optional preinstalls - matched to user's actual APK filenames
 OPTIONAL_PREINSTALLS = {
-    "Gboard.apk": {
+    "com.google.android.inputmethod.latin_16.1.02.808050806-tv_release-arm64-v8a-175416038_minAPI26(arm64-v8a)(nodpi)_apkmirror.com.apk": {
         "dst_dir": os.path.join(PRODUCT_DIR, "app/Gboard"),
         "dst_name": "Gboard.apk",
-        "description": "Gboard Google 输入法",
+        "description": "Gboard Google TV 输入法 v16.1",
     },
-    "GoogleFiles.apk": {
-        "dst_dir": os.path.join(PRODUCT_DIR, "app/GoogleFiles"),
-        "dst_name": "GoogleFiles.apk",
-        "description": "Google Files 文件管理器",
+    "kodi-21.3-Omega-arm64-v8a.apk": {
+        "dst_dir": os.path.join(PRODUCT_DIR, "app/Kodi"),
+        "dst_name": "Kodi.apk",
+        "description": "Kodi 21.3 Omega 媒体中心",
     },
-    "VLC.apk": {
+    "org.videolan.vlc_3.7.2_Beta_1-13070115_minAPI17(armeabi-v7a)(nodpi)_apkmirror.com.apk": {
         "dst_dir": os.path.join(PRODUCT_DIR, "app/VLC"),
         "dst_name": "VLC.apk",
-        "description": "VLC 万能视频播放器",
+        "description": "VLC 3.7.2 万能视频播放器",
     },
-    "SendFilesToTV.apk": {
-        "dst_dir": os.path.join(PRODUCT_DIR, "app/SendFilesToTV"),
-        "dst_name": "SendFilesToTV.apk",
-        "description": "Send Files to TV 局域网传输工具",
+    "LocalSend-1.17.0-android-arm64v8.apk": {
+        "dst_dir": os.path.join(PRODUCT_DIR, "app/LocalSend"),
+        "dst_name": "LocalSend.apk",
+        "description": "LocalSend 1.17.0 局域网文件传输",
     },
 }
 
