@@ -119,10 +119,10 @@ def main():
         data = compiled_files_data[filename]
         
         orig_len = len(data)
-        # Pad to multiple of 16 bytes for Allwinner alignment
-        remainder = orig_len % 16
+        # Pad to multiple of 1024 bytes for Allwinner alignment
+        remainder = orig_len % 1024
         if remainder != 0:
-            padded_data = data + b'\x00' * (16 - remainder)
+            padded_data = data + b'\x00' * (1024 - remainder)
         else:
             padded_data = data
             
