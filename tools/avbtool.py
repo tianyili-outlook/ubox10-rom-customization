@@ -366,33 +366,37 @@ class RSAPublicKey(object):
     # but unfortunately PyCrypto is not available in the builder. So
     # instead just parse openssl(1) output to get this
     # information. It's ugly but...
-    args = ['openssl', 'rsa', '-in', key_path, '-modulus', '-noout']
-    p = subprocess.Popen(args,
-                         stdin=subprocess.PIPE,
-                         stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
-    (pout, perr) = p.communicate()
-    if p.wait() != 0:
-      # Could be just a public key is passed, try that.
-      args.append('-pubin')
+    try:
+      from Crypto.PublicKey import RSA
+      key = RSA.import_key(open(key_path, 'rb').read())
+      self.key_path = key_path
+      self.modulus = key.n
+      self.exponent = getattr(key, 'e', 65537)
+    except Exception as crypto_err:
+      args = ['openssl', 'rsa', '-in', key_path, '-modulus', '-noout']
       p = subprocess.Popen(args,
                            stdin=subprocess.PIPE,
                            stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE)
       (pout, perr) = p.communicate()
       if p.wait() != 0:
-        raise AvbError('Error getting public key: {}'.format(perr))
+        # Could be just a public key is passed, try that.
+        args.append('-pubin')
+        p = subprocess.Popen(args,
+                             stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
+        (pout, perr) = p.communicate()
+        if p.wait() != 0:
+          raise AvbError('Error getting public key: {} (cryptography failed: {})'.format(perr, crypto_err))
 
-    if not pout.lower().startswith(self.MODULUS_PREFIX):
-      raise AvbError('Unexpected modulus output')
+      if not pout.lower().startswith(self.MODULUS_PREFIX):
+        raise AvbError('Unexpected modulus output')
 
-    modulus_hexstr = pout[len(self.MODULUS_PREFIX):]
-
-    # The exponent is assumed to always be 65537 and the number of
-    # bits can be derived from the modulus by rounding up to the
-    # nearest power of 2.
-    self.key_path = key_path
-    self.modulus = int(modulus_hexstr, 16)
+      modulus_hexstr = pout[len(self.MODULUS_PREFIX):]
+      self.key_path = key_path
+      self.modulus = int(modulus_hexstr, 16)
+      self.exponent = 65537
     self.num_bits = round_to_pow2(int(math.ceil(math.log(self.modulus, 2))))
     self.exponent = 65537
 
@@ -480,16 +484,26 @@ class RSAPublicKey(object):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
       else:
-        p = subprocess.Popen(
-            ['openssl', 'rsautl', '-sign', '-inkey', self.key_path, '-raw'],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
-      (pout, perr) = p.communicate(padding_and_hash)
-      retcode = p.wait()
-      if retcode != 0:
-        raise AvbError('Error signing: {}'.format(perr))
-      signature = pout
+        try:
+          from Crypto.PublicKey import RSA
+          key = RSA.import_key(open(self.key_path, 'rb').read())
+          m = int.from_bytes(padding_and_hash, 'big')
+          s = pow(m, key.d, key.n)
+          signature = s.to_bytes(algorithm.signature_num_bytes, 'big')
+        except Exception as e:
+          try:
+            p = subprocess.Popen(
+                ['openssl', 'rsautl', '-sign', '-inkey', self.key_path, '-raw'],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE)
+            (pout, perr) = p.communicate(padding_and_hash)
+            retcode = p.wait()
+            if retcode != 0:
+              raise AvbError('Error signing: {}'.format(perr))
+            signature = pout
+          except Exception as openssl_err:
+            raise AvbError('Error signing: {} (openssl fallback failed: {})'.format(e, openssl_err))
     if len(signature) != algorithm.signature_num_bytes:
       raise AvbError('Error signing: Invalid length of signature')
     return signature

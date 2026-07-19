@@ -87,3 +87,23 @@
 * **适用平台**：Windows (x86/x64)
 * **调用命令**：`tools/lpmake.exe [options]`
 * **验证结果**：成功在 Windows 终端内启动并显示用法指南。
+
+### 9. lpdumps.exe
+* **名称**：Android Logical Partition Metadata Dumper
+* **版本/提交**：android-15.0.0_r25
+* **来源**：https://github.com/Rprop/aosp15_partition_tools
+* **许可证**：Apache-2.0
+* **文件 SHA-256**：`1DC8385534CD9A849750E42BE04CE0AF2AF1CE0C89074E8B88947CBD36035D23`
+* **适用平台**：Windows (x86/x64)
+* **调用命令**：`tools/lpdumps.exe <super_img_path>`
+* **验证结果**：成功在 Windows 终端内运行并提取了 super 分区的完整分区表、对齐参数和组大小。
+
+### 10. simg2img.exe
+* **名称**：Android Sparse to Raw Image Converter
+* **版本/提交**：android-15.0.0_r25
+* **来源**：https://github.com/Rprop/aosp15_partition_tools
+* **许可证**：Apache-2.0
+* **文件 SHA-256**：`5D840C8352D3790712B68077AB5E224D190737DD6ADD80541E6A871B6B205546`
+* **适用平台**：Windows (x86/x64)
+* **调用命令**：`tools/simg2img.exe <sparse_img> <raw_img>`
+* **验证结果**：成功将 1.78 GB 的 sparse `super.fex` 转换回 3.00 GB 的 raw 镜像。
