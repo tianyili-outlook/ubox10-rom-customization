@@ -169,8 +169,11 @@ def main():
         "--prop", "com.android.build.dtbo.fingerprint:Unblocktech/apollo_p1/apollo-p1:12/SP1A.211105.004/hush10241757:userdebug/test-keys"
     ])
 
-    # 7. Assemble dynamic logical partitions into super.img
-    print("\n--- Assembling logical partitions into super.img (lpmake) ---")
+    # 7. Assemble dynamic logical partitions into super.img (RAW format first)
+    print("\n--- Assembling logical partitions into super_raw.img (lpmake) ---")
+    super_raw_path = os.path.join(WORK_DIR, "super_raw.img")
+    super_sparse_path = os.path.join(WORK_DIR, "super.img")
+    
     run_cmd([
         LPMAKE,
         "--device-size", "3221225472",
@@ -193,9 +196,21 @@ def main():
         "--partition", "vendor_dlkm_a:readonly:6680576:sb_a",
         "--image", f"vendor_dlkm_a={PARTITIONS['vendor_dlkm']['raw_img']}",
         "--partition", "vendor_dlkm_b:readonly:0:sb_b",
-        "--sparse",
-        "--output", os.path.join(WORK_DIR, "super.img")
+        "--output", super_raw_path
     ])
+
+    # Convert raw super.img to standard sparse format
+    print("\n--- Converting raw super image to standard sparse format (img2simg) ---")
+    run_cmd([
+        os.path.join(TOOLS_DIR, "img2simg.exe"),
+        super_raw_path,
+        super_sparse_path
+    ])
+
+    # Clean up the large raw file
+    print(f"Cleaning up temporary raw file: {super_raw_path}")
+    if os.path.exists(super_raw_path):
+        os.remove(super_raw_path)
 
     print("\n==============================================================")
     print("ROM Repackaging & AVB Signing Pipeline Complete!")

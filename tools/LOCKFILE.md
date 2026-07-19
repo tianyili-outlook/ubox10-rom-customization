@@ -117,3 +117,13 @@
 * **适用平台**：跨平台 (Python 3.13+)
 * **调用命令**：`python tools/pack_image.py`
 * **验证结果**：成功在本地运行并生成了重组且校验通过的全志镜像容器文件。
+
+### 12. img2simg.exe
+* **名称**：Android Raw to Sparse Image Converter
+* **版本/提交**：android-15.0.0_r25
+* **来源**：https://github.com/Rprop/aosp15_partition_tools
+* **许可证**：Apache-2.0
+* **文件 SHA-256**：`FE9FF41802F61FF1E510F2E012C398D1B2BF7E2C90392967182FD594B9AF5B65`
+* **适用平台**：Windows (x86/x64)
+* **调用命令**：`tools/img2simg.exe <raw_img> <sparse_img>`
+* **验证结果**：成功将 3.00 GB 的 raw `super_raw.img` 转换为兼容 AOSP 标准的 sparse `super.img`。
