@@ -23,7 +23,8 @@ MODIFIED_FILES = {
     "super.fex": "work/super.img",
     "vbmeta.fex": "work/vbmeta.img",
     "vbmeta_system.fex": "work/vbmeta_system.img",
-    "vbmeta_vendor.fex": "work/vbmeta_vendor.img"
+    "vbmeta_vendor.fex": "work/vbmeta_vendor.img",
+    "boot.fex": "work/boot.img"
 }
 
 def calculate_checksum(data):
