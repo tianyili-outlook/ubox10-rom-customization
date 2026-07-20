@@ -210,6 +210,30 @@ def modify_properties(entries):
     prop_entry['fields'][6] = len(new_prop_data)
     print("prop.default successfully updated!")
 
+def modify_init_rc(entries):
+    print("Modifying init.recovery.sun50iw9p1.rc to force USB configuration trigger...")
+    rc_entry = None
+    for entry in entries:
+        if entry.get('filename') == 'init.recovery.sun50iw9p1.rc':
+            rc_entry = entry
+            break
+            
+    if not rc_entry:
+        raise ValueError("Could not find init.recovery.sun50iw9p1.rc in cpio archive!")
+        
+    rc_text = rc_entry['file_data'].decode('utf-8', errors='ignore')
+    
+    # Append the custom "on boot" trigger to force the none -> adb transition
+    custom_trigger = "\n\non boot\n    setprop sys.usb.config none\n    setprop sys.usb.config adb\n"
+    if "setprop sys.usb.config adb" not in rc_text:
+        new_rc_text = rc_text + custom_trigger
+        new_rc_data = new_rc_text.encode('utf-8')
+        rc_entry['file_data'] = new_rc_data
+        rc_entry['fields'][6] = len(new_rc_data)
+        print("init.recovery.sun50iw9p1.rc successfully updated!")
+    else:
+        print("init.recovery.sun50iw9p1.rc already updated.")
+
 def run_cmd(args):
     print("Executing: " + " ".join(args))
     p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="ignore")
@@ -252,6 +276,9 @@ def main():
     
     # 4. Modify prop.default
     modify_properties(entries)
+    
+    # 4b. Modify device-specific init.rc
+    modify_init_rc(entries)
     
     # 5. Re-serialize CPIO
     new_cpio_data = serialize_cpio(entries)
