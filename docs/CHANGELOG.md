@@ -2,6 +2,14 @@
 
 遵循 Keep a Changelog 风格；所有日期使用 ISO 8601。
 
+## [0.7.1] - 2026-07-20
+
+### Added
+- **M6 Fastboot 调试通道发现**：
+  - 成功捕获 USB 握手标识：VID `1F3A` / PID `1010`，确认其为 **Android Fastboot Mode**。
+  - 下载官方 Google USB 驱动，并在 `tools/usb_driver/` 目录下完成 Allwinner Fastboot 硬件 ID 的注入，为免焊接获取系统环境变量与诊断日志打下基础。
+  - 排除并记录了 Recovery 状态下的输入设备（红外、USB键盘）和 ADB 接口的无响应现象。
+
 ## [0.7.0] - 2026-07-20
 
 ### Changed

@@ -147,7 +147,9 @@
 | PhoenixCard 封包 | ✅ | 已生成 |
 | 固件烧录 | ✅ | 进度 100% |
 | Bootloader | ✅ | 已执行 |
-| Recovery | ✅ | 可达 |
+| Recovery | ✅ | 可达 (机器人躺倒界面，无菜单) |
+| Recovery ADB | ❌ | 未启用 |
+| USB Fastboot | ✅ | 已暴露 (VID 1F3A, PID 1010) |
 | Android System | ❌ | 启动失败 |
 | Wi-Fi / 蓝牙 / 以太网 / HDMI / 红外遥控 | ⏳ | 待验证 |
 

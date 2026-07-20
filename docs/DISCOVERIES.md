@@ -68,3 +68,14 @@
 - 状态：已接受
 - 日期：2026-07-20
 - 原则：在再次修改固件之前，每次修改应只回答一个具体问题。避免在单次实验中引入多个变更，否则实验证据将难以解读。此原则适用于所有后续调试工作。
+
+## D-0009 — 物理 USB 设备标识 VID 1F3A & PID 1010 为 Fastboot 模式
+
+- 状态：已验证
+- 日期：2026-07-20
+- 事实：在物理 UBOX10 设备进入 Recovery 界面时，通过特定 USB 口连接 PC 可在设备管理器中枚举出一个 VID `1F3A` / PID `1010` 的 "sunxi" 设备（无驱动，位于其他设备下）。同时，运行 `adb devices` 无法检测到设备。
+- 方法：网络审计与业界 Allwinner SDK/sunxi 文档比对。
+- 结论：
+  1. **排除了 ADB 暴露的可能性**：该定制/官方 Recovery 在当前状态下未暴露任何 ADB 调试接口。
+  2. **确定为 Fastboot 模式**：VID `1F3A` 为 Allwinner 厂商标识，而 PID `1010` 是 Allwinner 设备独有的 **Android Fastboot Mode** 标识。在 U-Boot 阶段或系统发生特定故障退回到 Recovery 状态时，启动链暴露了此 fastboot 接口。
+- 影响：这一发现极其关键！我们不需要立刻诉诸焊接串口（UART），而是可以通过安装 Google USB 驱动程序激活该 Fastboot 接口，利用 `fastboot` 命令行工具直接与 U-Boot 进行会话，读取设备分区表、启动槽位及启动日志变量（如 `fastboot getvar all`）。

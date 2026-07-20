@@ -3,18 +3,21 @@
 ## 当前：M6 系统启动故障调查 (Boot Failure Investigation)
 
 ### 高优先级
-- [ ] 确定 Android 为何进入 Recovery 而非 System。
-- [ ] 获取诊断日志（尝试 Recovery ADB / UART / Recovery 日志提取）。
-- [ ] 验证 Recovery 是否有可用输入方式。
-- [ ] 定位根本原因。
+- [x] 验证 Recovery 是否有可用输入方式（结果：红外/键盘均无响应，未暴露 ADB）。
+- [ ] 开启 Fastboot 调试通道：
+  - [ ] 安装已注入 Allwinner 硬件 ID 的 Google USB 驱动程序（使 sunxi 设备被 Windows 识别）。
+  - [ ] 运行 `fastboot.exe devices` 确认建立通信。
+- [ ] 获取系统诊断数据：
+  - [ ] 运行 `fastboot.exe getvar all` 获取系统槽位（slot_a/b）、分区布局、安全芯片锁等完整环境变量。
+- [ ] 定位根本原因并拟定修复方案。
 
 ### 中优先级
 - [ ] 硬件功能验证（Wi-Fi、蓝牙、以太网、HDMI、红外遥控）。
 - [ ] 系统稳定性测试。
 
 ### 低优先级
-- [ ] 文档整理与仓库清理。
-- [ ] 安装包优化。
+- [ ] 仓库与工具链清理。
+- [ ] 安装包打包脚本优化。
 
 ## 已完成
 
