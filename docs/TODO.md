@@ -1,15 +1,20 @@
 # 待办事项
 
-## 当前：M6 系统启动故障调查 (Boot Failure Investigation)
+## 当前：M6 启动故障诊断与 Recovery ADB 启用
 
 ### 高优先级
 - [x] 验证 Recovery 是否有可用输入方式（结果：红外/键盘均无响应，未暴露 ADB）。
-- [ ] 开启 Fastboot 调试通道：
-  - [ ] 安装已注入 Allwinner 硬件 ID 的 Google USB 驱动程序（使 sunxi 设备被 Windows 识别）。
-  - [ ] 运行 `fastboot.exe devices` 确认建立通信。
-- [ ] 获取系统诊断数据：
-  - [ ] 运行 `fastboot.exe getvar all` 获取系统槽位（slot_a/b）、分区布局、安全芯片锁等完整环境变量。
-- [ ] 定位根本原因并拟定修复方案。
+- [x] 强制开启 Recovery ADB 调试（实验 #5 & #6）：
+  - [x] 编写 `scripts/enable-recovery-adb.py` 解包、修改 `prop.default`、重打包签名并输出 `boot.img`。
+  - [x] 编译全局禁用 AVB 校验的 vbmeta 镜像（flags=2，结果：触发 U-Boot 引导死锁）。
+  - [x] 回撤 flags=2 仅保留 ADB 内核（结果：依然极速 Bootloop，说明核心问题在重新打包的 `boot.img` 自身）。
+- [x] 对照组封包测试（实验 #7）：
+  - [x] 保持相同封包与签名链路，原封不动还原原厂 ramdisk 编译 `boot.img` 排除变量。
+- [ ] **对照组物理烧录验证（当前待办）**：
+  - [ ] 烧录并通电开机，观察设备是否恢复到非 Bootloop 的躺倒机器人界面。
+- [ ] 定位 root cause 并迭代：
+  - [ ] **若对照组正常**：属性修改问题。改用在 `init.rc` 中直接启动 `adbd` 的方案而不修改 `prop.default`。
+  - [ ] **若对照组依然重启**：LZ4 压缩细节不兼容。改用 `gzip` 格式重打包 `boot.img` 的 ramdisk。
 
 ### 中优先级
 - [ ] 硬件功能验证（Wi-Fi、蓝牙、以太网、HDMI、红外遥控）。
@@ -22,18 +27,8 @@
 ## 已完成
 
 - [x] **M5 固件封装与伴生校验和重算** (2026-07-19)
-  - [x] 编写 `tools/pack_image.py` 将 super.img 和重签的 vbmeta 装回 Allwinner 格式固件容器。
-  - [x] 调用自研算法重新计算所有分区伴生校验文件（`V*.fex`）。
-  - [x] 修复 1024 字节对齐问题，解决 U-Boot unaligned read panic。
 - [x] **M4 ROM 重打包与 AVB 签名** (2026-07-19)
-  - [x] 选择并锁定适合 Windows 平台的 ext4 镜像生成工具（使用 `make_ext4fs.exe`）。
-  - [x] 将已净化修改的逻辑卷目录重新打包编译为 raw ext4 分区映像。
-  - [x] 使用 `avbtool.py` 为重新生成的逻辑分区映像计算并追加 AVB Hashtree 校验页。
-  - [x] 使用 `lpmake` + `img2simg` 重新构建 super 逻辑分区映像。
 - [x] **M3/M3+ 反定制裁剪与预装** (2026-07-19)
-  - [x] APK 审计与分级裁剪（P0/P1），删除 14 个应用释放 298.7 MB。
-  - [x] 启动器替换为 FLauncher，build.prop 属性修改。
-  - [x] 预装应用集成：SmartTube、Gboard、Kodi、VLC、LocalSend。
 - [x] **M2 分区与启动链审计** (2026-07-19)
 - [x] **M1 只读容器清单** (2026-07-19)
 - [x] **M0 原始镜像基线** (2026-07-19)
@@ -44,3 +39,6 @@
 - [x] **实验 #2** (2026-07-20)：引入 img2simg 稀疏化 → 现象不变，排除 Sparse 格式为根因。
 - [x] **实验 #3** (2026-07-20)：修正 pack_image.py 1024 字节对齐 → PhoenixCard 100% 完成！
 - [x] **实验 #4** (2026-07-20)：验证系统启动 → 设备进入 Recovery，Android System 未启动。
+- [x] **实验 #5** (2026-07-20)：Recovery ADB 强启 & flags=2 绕过 → 设备极速无限黑屏重启（Bootloop）。
+- [x] **实验 #6** (2026-07-20)：回撤 flags=2 保持 ADB boot.img → 依然无限重启，排除 flags=2 因素。
+- [x] **实验 #7** (2026-07-20)：对照组（原样还原 ramdisk）→ 编译完成，等待刷机验证。

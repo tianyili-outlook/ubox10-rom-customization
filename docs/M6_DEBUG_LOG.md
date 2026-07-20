@@ -83,17 +83,61 @@
 
 ---
 
+## 实验 #5：Recovery ADB 注入与全局 AVB 绕过 (flags=2)
+
+**目标**：强制激活 Recovery 模式下的 ADB 通道，并尝试通过禁用 AVB 校验直接进入系统。
+
+**变更**：
+1. 编写 `scripts/enable-recovery-adb.py`，解包 `boot.fex` 并解压 ramdisk，修改 `prop.default` 强制写入 `ro.debuggable=1`、`ro.secure=0`、`persist.sys.usb.config=adb`、`sys.usb.config=adb`。重新采用 8 MB 块大小压缩为全志 Legacy LZ4 格式，利用 `mkbootimg.py` 重建 `boot.img` 并用 `avbtool.py` 签名。
+2. 修改 `scripts/repack-rom.py`，在生成所有 `vbmeta.img` 时追加 `--flags 2` 参数，关闭全局分区校验。
+
+**结果**：设备开机后，在“白底安博科技” LOGO 界面极速黑屏，随后再次亮屏显示 LOGO，陷入**无限快速重启（Bootloop）**。USB 连接在该状态下随供电复位而断续，无法建立通信。
+
+**结论**：失败。U-Boot 或内核在极早期阶段发生了崩溃重启。
+
+---
+
+## 实验 #6：回撤 flags=2 参数
+
+**目标**：排查是否因 U-Boot 拒绝 `flags=2` 的 `vbmeta` 声明而触发重启。
+
+**变更**：在 `scripts/repack-rom.py` 中移除所有 `--flags 2` 参数（恢复默认的 `flags=0`），但保留修改了 `prop.default` 的 `boot.img`。
+
+**结果**：设备依然保持**无限快速重启**状态，表现与实验 #5 完全一致。
+
+**结论**：失败。快速重启与 `vbmeta` 的 `--flags 2` 无关，根因锁定在**重编译的 `boot.img` 自身**（包括重打包、压缩格式或属性改动）。
+
+---
+
+## 实验 #7：对照组——还原原厂 Ramdisk 内容
+
+**目标**：定位是 `boot.img` 重新打包压缩格式的问题，还是 `prop.default` 安全属性修改导致 userspace `init` 崩溃。
+
+**变更**：修改 `scripts/enable-recovery-adb.py`，**注释掉所有属性修改逻辑**，使用原厂 ramdisk 内容通过我们的 CPIO 序列化、LZ4 压缩和签名管线输出完全相同的控制组 `boot.img`。
+
+**结果**：固件编译完成并校验通过，等待物理烧录验证。
+
+---
+
+## 当前状态总结
+
+| 阶段 | 状态 | 备注 |
+|------|------|------|
+| 固件烧录 | ✅ 已解决 | 进度达到 100% 并顺利完成写入 |
+| Bootloader | ✅ 已执行 | 正常加载引导链 |
+| Boot logo | ✅ 已显示 | 屏幕可显示安博官方 LOGO |
+| Recovery | ⚠️ 倒退 | 实验 #4 可达，但由于引入重建的 `boot.img` 导致发生 Bootloop |
+| USB 调试 | ❌ 阻塞 | 设备处于 Bootloop 复位中，无法建立连接 |
+| Android System | ❌ 未启动 | 未加载开机动画，未能正常进入系统 |
+
+**当前阻塞项**：⚠️ 重建的 `boot.img` 导致系统在极早期引导阶段（U-Boot 解析或内核挂载 initramfs 阶段）发生 Crash 重启。
+
+---
+
 ## 后续行动计划
 
-在再次修改固件之前，需通过 Fastboot 恢复诊断和控制能力：
-
-1. **优先方法 1：安装 Google USB 驱动以建立 Fastboot 通信**
-   - 现已在 `tools/usb_driver/` 目录下准备并注入了 `%SingleFastBootInterface% = USB_Install, USB\VID_1F3A&PID_1010` 的驱动描述。
-   - 在 Windows 设备管理器中右键 “sunxi” 设备，更新驱动指向该文件夹以安装 Google 开发者 USB 驱动。
-2. **优先方法 2：运行 Fastboot 命令拉取设备状态**
-   - 执行 `fastboot.exe devices` 验证连接。
-   - 执行 `fastboot.exe getvar all` 读取设备当前的所有环境变量、分区表信息、启动槽位及启动失败计数等关键诊断数据，以此推断进入 Recovery 的根本原因。
-3. **备用方法 3：UART 串口硬件级诊断**
-   - 只有在 Fastboot 无法建立有效通信或命令被锁锁定时，才考虑焊接 J21 串口（波特率 115200）进行实机抓包。
-
-**工程原则**：每次修改只回答一个具体问题，避免同时引入多个变量。
+1. **优先执行对照组（实验 #7）物理烧录**：
+   - 验证如果 ramdisk 内容完全不改，重打包的固件能否恢复到不重启状态。
+   - **若恢复（机器人正常显示）**：说明压缩格式兼容，无限重启是因为 `prop.default` 中的属性修改（如 `ro.secure=0`）触发了 Android 12 安全锁死，我们需要改用在 `init.rc` 中直接拉起 `adbd` 服务而不改动全局安全属性的策略。
+   - **若依然重启**：说明是 `lz4` 重新压缩的参数格式（如块尾 0 填充、压缩比等）不被 Linux 内核引导头识别。我们将直接更换为最通用的 `gzip` 压缩格式重建 `boot.img`。
+2. **记录结果与迭代**：根据实验 #7 的表现，立刻采取对应的软件调整，确保 Recovery ADB 的最终就绪。

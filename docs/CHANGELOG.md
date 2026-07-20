@@ -2,6 +2,17 @@
 
 遵循 Keep a Changelog 风格；所有日期使用 ISO 8601。
 
+## [0.7.2] - 2026-07-20
+
+### Added
+- **M6 Recovery ADB 编译管线开发**：
+  - 编写了 [enable-recovery-adb.py](file:///c:/Users/tiany/Documents/ubox10-rom改造/scripts/enable-recovery-adb.py)，实现了对 `boot.fex` 的解包、CPIO 归档解析、Legacy LZ4 块重压、`mkbootimg` 重构以及 `avbtool` hash footer 签名的全自动重包装管线。
+
+### Changed
+- **U-Boot 引导死锁排查与对照组集成**：
+  - 排查并撤销了主 vbmeta 镜像生成指令中的 `--flags 2` 参数，以防 U-Boot 引导程序强制锁死启动。
+  - 创建了对照组（实验 #7）测试机制，暂时屏蔽 ramdisk 内部 `prop.default` 属性修改，使用完全相同的打包格式输出原样还原版 `boot.img`，以控制变量法锁定导致 Bootloop 重启的临界位置。
+
 ## [0.7.1] - 2026-07-20
 
 ### Added

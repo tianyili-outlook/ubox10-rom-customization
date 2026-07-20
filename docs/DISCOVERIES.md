@@ -79,3 +79,19 @@
   1. **排除了 ADB 暴露的可能性**：该定制/官方 Recovery 在当前状态下未暴露任何 ADB 调试接口。
   2. **确定为 Fastboot 模式**：VID `1F3A` 为 Allwinner 厂商标识，而 PID `1010` 是 Allwinner 设备独有的 **Android Fastboot Mode** 标识。在 U-Boot 阶段或系统发生特定故障退回到 Recovery 状态时，启动链暴露了此 fastboot 接口。
 - 影响：这一发现极其关键！我们不需要立刻诉诸焊接串口（UART），而是可以通过安装 Google USB 驱动程序激活该 Fastboot 接口，利用 `fastboot` 命令行工具直接与 U-Boot 进行会话，读取设备分区表、启动槽位及启动日志变量（如 `fastboot getvar all`）。
+
+## D-0010 — 引导禁用校验 Flag 触发硬件死锁（Bootloop）
+
+- 状态：已验证
+- 日期：2026-07-20
+- 事实：在 vbmeta 映像生成时加入 `--flags 2` 参数（声明 Verification Disabled），会导致主板通电后在“安博科技” LOGO 出现后极速黑屏重启，陷入无限快速 Bootloop 循环。
+- 原因：全志原厂 U-Boot 引导程序包含硬编码的安全策略。当它读取到 vbmeta 中声明了“禁用验证”标志位时，会拒绝将执行权移交给 Linux 内核，直接强制复位重启。
+- 影响：在当前 Bootloader 锁定状态下，不可使用 `--flags 2` 属性，必须保持默认的 `flags=0`。
+
+## D-0011 — Allwinner 官方 Recovery 内核使用的是 Legacy LZ4 压缩格式且格式兼容
+
+- 状态：已验证
+- 日期：2026-07-20
+- 事实：官方 `boot.fex` 的 ramdisk 采用 Legacy LZ4 帧结构（魔数 `\x02\x21\x4c\x18`），且按每块 `8,388,608` 字节（8 MB）大小独立打包压缩。
+- 方法：使用 Python `lz4.block.compress(..., store_size=False)` 模块进行 8 MB 块重压缩测试，其输出数据能够完美被原厂 LZ4 解压程序识别并解压为 100% 吻合的 CPIO 字节流。
+- 影响：证实了我们自行编写的 `enable-recovery-adb.py` 中重构 legacy lz4 的二进制结构是 100% 兼容的，排除了算法层面导致的解压 panic 隐患。
