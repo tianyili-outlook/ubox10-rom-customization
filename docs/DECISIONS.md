@@ -35,9 +35,9 @@
      - `happycast.apk` (广告投屏，占 107.9MB)。
      - Allwinner 厂测工具：`DragonAgingTV`、`DragonAtt`、`DragonBox`、`Factory_detection`。
   3. **保留的硬件驱动与关联服务**：
-     - `BLEAutoPair.apk` (蓝牙遥控配对服务) ➔ **保留**。
+     - `BLEAutoPair.apk` (蓝牙遥控配对服务) ➔ **已删除**（用户确认使用红外遥控器，非蓝牙遥控器）。
      - `H616_led_blink-s.apk` (基于 `com.mitac.android.i2ctool`，负责 PWM 物理指示灯控制) ➔ **保留**。
-     - `UBTunnel.6.apk` (UnblockTech 内置网络隧道) ➔ **可选择性移除，暂默认保留但禁用开机自启**。
+     - `UBTunnel.6.apk` (UnblockTech 内置网络隧道) ➔ **已删除**。
   4. **日志消减策略**：修改 `build.prop` 以禁用 `persist.debug.logpersistd` 等选项，关闭后台 `awlog_logcatd` / `awlog_kmsgd` 日志守护进程，以节约存储空间与闪存擦写寿命。
 - 理由：此方案可以在不引入底层 Java 框架崩溃风险的前提下，彻底清除流氓广告推广软件和工厂冗余代码，且保证了红外遥控器配对、蓝牙与 front LED 状态指示等核心硬件体验依然完整可用。
 - 收益：精简系统分区近 150MB 空间，极大降低开机后台 CPU 与内存开销，并获得无广告纯净界面。

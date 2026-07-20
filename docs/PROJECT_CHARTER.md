@@ -2,7 +2,7 @@
 
 ## 目标
 
-在保留 UBOX10 硬件适配（Wi‑Fi、蓝牙、以太网、HDMI/CEC、遥控器、音视频解码）的前提下，基于已验证的官方 Android TV 12 固件制作干净的 Android TV 系统。目标软件包含 Projectivy Launcher、SmartTube、Kodi、Jellyfin、Moonlight、AirPlay 接收端及 Google 服务；移除 UnblockTech 的非硬件定制和网络干预组件。
+在保留 UBOX10 硬件适配（Wi‑Fi、蓝牙、以太网、HDMI/CEC、遥控器、音视频解码）的前提下，基于已验证的官方 Android TV 12 固件制作干净、稳定且可维护的 Android TV 系统。预装应用仅包含 FLauncher、SmartTube、Kodi、VLC、LocalSend 及 Gboard；Jellyfin、Moonlight、AirPlay 及 Google 服务等由用户自行安装，不内置于 ROM 中。移除 UnblockTech 的非硬件定制和网络干预组件。
 
 ## 明确不做
 
