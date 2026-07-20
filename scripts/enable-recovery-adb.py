@@ -128,7 +128,7 @@ def serialize_cpio(entries):
     return bytes(out)
 
 def compress_ramdisk_legacy_lz4(cpio_data):
-    print("Compressing CPIO to legacy LZ4 block format...")
+    print("Compressing CPIO to legacy LZ4 block format (High Compression)...")
     chunk_size = 8388608  # 8 MB chunks
     compressed_bytes = bytearray(b'\x02\x21\x4c\x18')  # Magic
     
@@ -138,7 +138,7 @@ def compress_ramdisk_legacy_lz4(cpio_data):
     
     while offset < total_len:
         chunk = cpio_data[offset:offset+chunk_size]
-        compressed_block = lz4.block.compress(chunk, store_size=False)
+        compressed_block = lz4.block.compress(chunk, mode='high_compression', compression=9, store_size=False)
         
         # Write 4-byte size (little-endian)
         compressed_bytes.extend(struct.pack('<I', len(compressed_block)))
@@ -149,8 +149,6 @@ def compress_ramdisk_legacy_lz4(cpio_data):
         offset += chunk_size
         block_idx += 1
         
-    # Terminating block (size 0)
-    compressed_bytes.extend(struct.pack('<I', 0))
     return bytes(compressed_bytes)
 
 def modify_properties(entries):
