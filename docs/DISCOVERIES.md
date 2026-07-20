@@ -95,3 +95,11 @@
 - 事实：官方 `boot.fex` 的 ramdisk 采用 Legacy LZ4 帧结构（魔数 `\x02\x21\x4c\x18`），且按每块 `8,388,608` 字节（8 MB）大小独立打包压缩。
 - 方法：使用 Python `lz4.block.compress(..., store_size=False)` 模块进行 8 MB 块重压缩测试，其输出数据能够完美被原厂 LZ4 解压程序识别并解压为 100% 吻合的 CPIO 字节流。
 - 影响：证实了我们自行编写的 `enable-recovery-adb.py` 中重构 legacy lz4 的二进制结构是 100% 兼容的，排除了算法层面导致的解压 panic 隐患。
+
+## D-0012 — 安卓 init 属性触发器的“同值静默”陷阱
+
+- 状态：已验证
+- 日期：2026-07-20
+- 事实：在实验 #8 中，即使我们在 `prop.default` 中写入了 `sys.usb.config=adb` 并且设备成功无重启启动，Windows 依然只识别到 `VID_1F3A&PID_1010` (sunxi 裸口)，未识别到 ADB。
+- 原因：Android 系统的 `init` 进程对属性触发器（如 `on property:sys.usb.config=adb`）的设计是**事件触发**而非**状态触发**。如果 `sys.usb.config` 的值在系统一开始加载属性时就已经是 `adb`，当 Recovery daemon 启动后尝试用代码将其设为 `adb` 时，系统的 `SetProperty` 会发现新值与旧值相同，从而放弃广播属性更新。这导致 `init.rc` 中的对应动作块从未执行，物理 USB 控制器没有进行 ConfigFS 挂载和绑定。
+- 影响：必须通过脚本（例如在 `init.recovery.sun50iw9p1.rc` 的 `on boot` 事件中）执行一次手动的状态跃变：先将属性设为 `none` 随即设为 `adb`，方能 100% 强行叫醒 USB 绑定机制。

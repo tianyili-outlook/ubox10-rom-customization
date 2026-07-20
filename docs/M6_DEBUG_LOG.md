@@ -130,7 +130,28 @@
 2. **启用高压缩率（High Compression）**：默认 lz4 压缩模式体积比原版大出 1.7 MB，可能越过了引导程序硬编码的缓冲区边界。我们改用 `mode='high_compression', compression=9` 模式，使压缩体积从 14.4 MB 降至 **`12,774,703` 字节**，与官方原厂大小（`12,752,798` 字节）**仅相差 21 KB**，且块尺寸分配基本吻合。
 3. **实验限制**：继续保持 `modify_properties` 逻辑被注释（无属性修改），以作为第 2 次对照组验证。
 
-**结果**：固件编译完成并校验通过，等待物理烧录验证。
+**结果：成功！设备能够顺利展示“白底安博科技”并最终稳定在“黑底躺倒机器人”界面，不再发生 Bootloop 重启。**
+
+**结论**：非常关键的突破！证实了我们的高压缩（等级 9）以及“移除零块终止符”的 Legacy LZ4 重新压缩算法与全志引导链完美兼容！之前快速无限重启的根因确认为 **0 字节终止块引发的解压缩 Panic，或体积过大造成的缓冲区越界。**
+
+---
+
+## 实验 #9：Recovery ADB 激活与 init.rc 启动触发器注入
+
+**目标**：强制激活 `adbd` 服务并令其绑定 ConfigFS 物理 UDC。
+
+**分析与变更**：
+1. **属性跃变逻辑注入**：即使在 `prop.default` 中注入了 `sys.usb.config=adb`，但由于该属性在开机时便处于 `adb` 状态且从未发生值改变，Android `init` 进程在解析 `init.rc` 时不会触发 `on property:sys.usb.config=adb` 动作块。这导致 ADB 守护进程和 USB 控制器绑定逻辑被静默跳过，物理 USB 接口保持在未绑定的 `sunxi (1F3A:1010)` 状态。
+2. **硬件脚本修改**：修改 [enable-recovery-adb.py](file:///c:/Users/tiany/Documents/ubox10-rom改造/scripts/enable-recovery-adb.py)，在 `init.recovery.sun50iw9p1.rc` 尾部追加自定义 `on boot` 触发器：
+   ```rc
+   on boot
+       setprop sys.usb.config none
+       setprop sys.usb.config adb
+   ```
+   该配置通过 `none -> adb` 的物理属性跃变，强制触发 `init.rc` 中对 `adbd` 服务的启动及 ConfigFS UDC 的绑定动作。
+3. **全局属性重启用**：取消注释 `modify_properties` 属性注入，保证 `ro.debuggable=1`、`ro.secure=0` 和 `ro.adb.secure=0` 的状态。
+
+**结果**：固件编译完成并通过校验（Vboot Checksum 匹配最新 `boot.img`），等待物理烧录验证。
 
 ---
 
@@ -141,17 +162,20 @@
 | 固件烧录 | ✅ 已解决 | 进度达到 100% 并顺利完成写入 |
 | Bootloader | ✅ 已执行 | 正常加载引导链 |
 | Boot logo | ✅ 已显示 | 屏幕可显示安博官方 LOGO |
-| Recovery | ⚠️ 倒退 | 由于重打包 LZ4 块解压崩溃，发生极速 Bootloop，当前等待实验 #8 对照测试 |
-| USB 调试 | ❌ 阻塞 | 设备处于 Bootloop 复位中，无法建立连接 |
+| Recovery | ✅ 已恢复 | 开机稳定在躺倒机器人界面（实验 #8 证实打包格式兼容） |
+| USB 调试 | ⚠️ 暴露 | 物理连接暴露为 `1F3A:1010`；正在等待刷入实验 #9 激活 ADB (`18D1:D001`) |
 | Android System | ❌ 未启动 | 未加载开机动画，未能正常进入系统 |
 
-**当前阻塞项**：⚠️ LZ4 重新压缩的参数格式（如 0 字节终止块、压缩比等）不被 Linux 内核引导头识别。
+**当前阻塞项**：⚠️ 正在刷入实验 #9 调试包以突破 ADB 阻碍，抓取系统崩溃日志。
 
 ---
 
 ## 后续行动计划
 
-1. **执行对照组（实验 #8）物理烧录**：
-   - 验证优化了 lz4 高压缩、去除了终止块后，重打包的固件能否恢复到非 Bootloop 的躺倒机器人界面。
-   - **若恢复（机器人正常显示）**：说明我们的 LZ4 底层结构终于兼容。我们将立刻取消注释 `modify_properties` 重新加入 ADB 属性，打包出终版 ADB-Recovery 调试固件。
-   - **若依然重启**：说明是 U-Boot/内核对重打包的 LZ4 其他对齐方式不兼容。我们将直接把编译引擎从 `lz4` 切换为最通用且兼容性最好的 `gzip` 格式重新生成 `boot.img`。
+1. **执行实验 #9 物理烧录**：
+   - 观察设备通电后是否稳定进入机器人界面，且电脑端识别到 Android ADB 设备（`18D1:D001`）。
+2. **提取日志与根因诊断**：
+   - 运行 `adb devices` 确认连接。
+   - 运行 `adb pull /cache/recovery/last_log` 提取崩溃信息。
+   - 运行 `adb shell dmesg > dmesg.txt` 提取内核启动日志。
+   - 对核心分区（System/Product）无法挂载或 init 服务 Crash 进行深度诊断。

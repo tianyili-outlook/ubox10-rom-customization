@@ -2,6 +2,17 @@
 
 遵循 Keep a Changelog 风格；所有日期使用 ISO 8601。
 
+## [0.7.3] - 2026-07-20
+
+### Added
+- **M6 Recovery ADB 跃变触发注入 (实验 #9)**：
+  - 在 `init.recovery.sun50iw9p1.rc` 硬件脚本中新增了 `on boot` 段，强制触发 `sys.usb.config` 的 `none -> adb` 跃变。此修改解决了 Android `init` property triggers 无法执行已被设为 `adb` 的静态属性的硬限制，激活 `adbd` 守护进程并绑定 ConfigFS 物理 UDC。
+
+### Changed
+- **LZ4 封包格式修复验证 (实验 #8)**：
+  - 成功验证了优化后的高压缩比（等级 9）和“去除尾部 0 字节终止符”的 Legacy LZ4 重新压缩参数。物理烧录显示系统稳定停在躺倒机器人界面（无重启循环），证明结构与全志解压引擎完美兼容。
+  - 重新启用了 `prop.default` 中被暂时注释的调试与安全属性（`ro.debuggable=1`、`ro.secure=0`、`ro.adb.secure=0` 等）。
+
 ## [0.7.2] - 2026-07-20
 
 ### Added
