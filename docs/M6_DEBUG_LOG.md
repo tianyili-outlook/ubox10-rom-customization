@@ -194,7 +194,32 @@
        write /config/usb_gadget/g1/UDC "5100000.udc-controller"
    ```
 
-**结果**：固件编译完成并校验通过，等待物理烧录验证。
+**结果**：失败。设备管理器依旧只显示 `sunxi (1F3A:1010)`，ADB 无法连通。
+
+**结论与重大发现（Shadowing Trap）**：
+我们通过解析 `vendor_ramdisk.cpio` (从 `vendor_boot.fex` 提取) 发现了决定性的原因：
+1. **init.rc 覆盖机制**：设备专用的配置文件 `init.recovery.sun50iw9p1.rc` 同时存在于两个位置：`boot.img` (通用 ramdisk) 和 `vendor_boot.img` (vendor ramdisk)。
+2. **挂载覆写规则**：在引导装载过程中，内核将 vendor ramdisk 挂载并覆盖于通用 ramdisk 之上。这会导致 `boot.img` 中所有被修改的 `init.recovery.sun50iw9p1.rc` 配置被 `vendor_boot.img` 中自带的原装未修改版本 **100% 覆盖和丢弃**！
+3. **前功尽弃的原因**：因为上述覆盖机制的存在，先前我们对 `boot.img` 的所有 ConfigFS 手动绑定和 OTG 强制切换逻辑在开机时根本就没有生效，一直被原版的 `vendor_boot` 文件压制着。
+
+---
+
+## 实验 #11：双重编译联动 —— 同步修改 boot.img 与 vendor_boot.img
+
+**目标**：同步解包、修改并重构 `boot.img` 与 `vendor_boot.img` 中的 ramdisk 配置文件，彻底消除覆写阴影。
+
+**变更**：
+1. **联动修改脚本**：重构 [enable-recovery-adb.py](file:///c:/Users/tiany/Documents/ubox10-rom改造/scripts/enable-recovery-adb.py)，在重构 `boot.img` 的同时，自动解包 `vendor_boot.fex` 并对其 ramdisk 根目录下的 `init.recovery.sun50iw9p1.rc` 写入相同的强制 ConfigFS 绑定和物理 USB OTG 切换指令：
+   ```rc
+   on boot
+       copy /sys/devices/platform/soc/usbc0/usb_device /dev/null
+       mount configfs none /config
+       ... (手工强绑 UDC '5100000.udc-controller')
+   ```
+2. **AVB 重签名**：对重新打包生成的 `vendor_boot.img` 使用其原始 Salt（`2e606239ea40f534a157a4514d5ebbda81e01ab51bde9def5d877988e0851ab4`）进行 AVB Hash 重签名，保持安全引导链条完整。
+3. **打包重组重构**：修改 `repack-rom.py` 将 `vbmeta` 生成过程中的描述符来源重定向至 `work/vendor_boot.img`，并更新 `pack_image.py` 将新生成的 `vendor_boot.img` 作为 `vendor_boot.fex` 写入最终输出的 `x12-purified.img`。
+
+**结果**：固件编译、分区重组、AVB 签名验证及全镜像校验成功通过，等待物理烧录验证。
 
 ---
 
@@ -206,16 +231,16 @@
 | Bootloader | ✅ 已执行 | 正常加载引导链 |
 | Boot logo | ✅ 已显示 | 屏幕可显示安博官方 LOGO |
 | Recovery | ✅ 已恢复 | 开机稳定在躺倒机器人界面 |
-| USB 调试 | ⚠️ 暴露 | 物理连接仍卡在 `1F3A:1010`；等待刷入实验 #10 激活 ADB (`18D1:D001`) |
+| USB 调试 | ⚠️ 暴露 | 物理连接仍卡在 `1F3A:1010`；等待刷入实验 #11 激活 ADB (`18D1:D001`) |
 | Android System | ❌ 未启动 | 未加载开机动画，未能正常进入系统 |
 
-**当前阻塞项**：⚠️ 正在刷入实验 #10 强绑调试包以获取 ADB。
+**当前阻塞项**：⚠️ 正在刷入实验 #11 强绑调试包以获取 ADB。
 
 ---
 
 ## 后续行动计划
 
-1. **执行实验 #10 物理烧录**：
+1. **执行实验 #11 物理烧录**：
    - 观察设备通电后是否稳定进入机器人界面，且电脑端识别到 Android ADB 设备（`18D1:D001`）。
 2. **提取日志与根因诊断**：
    - 运行 `adb devices` 确认连接。
