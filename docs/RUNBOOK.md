@@ -1,68 +1,31 @@
-# UBOX10 ROM 改造运行手册 (Runbook)
+# UBOX10 ROM 改造运行手册
 
-本手册详细规范了 UBOX10 固件的反定制净化、编译、重签名与容器重打包的标准工作流。
+## 当前授权范围：M6a 无修改启动链取证
 
----
+当前设备尚未进入 Android System。Fastboot 接口描述符已确认，但 Platform Tools 尚未完成命令握手。**构建、重打包、PhoenixCard 刷写和任何 boot/vendor_boot/vbmeta/Recovery 注入均暂停。** 当前可执行的步骤、风险和退出条件见 [M6 诊断计划](M6_DIAGNOSTIC_PLAN.md)。
 
-## 🛠️ 构建流程 (Build Pipeline)
+允许的动作如下：
 
-### 第一阶段：反定制净化与预集成
+1. 记录 USB 枚举、设备管理器截图、PnP 驱动信息、Platform Tools 版本和原始命令输出。
+2. 在用户明确确认后，进行 [Fastboot 主机 GUID 单变量试验](U1_FASTBOOT_HOST_BINDING_TRIAL.md)；此操作只影响 Windows 主机，只追加而不覆盖现有 `DeviceInterfaceGUIDs`，绝不重绑/安装驱动或关闭签名强制。
+3. 使用 [UART 被动监听手册](UART_RUNBOOK.md) 采集冷启动日志：只接板端 GND 和 TX→适配器 RX，不接 VCC 或适配器 TX。
 
-1. 将预集成第三方 APK 放入 `work/preinstall_apks/` 目录。
-2. 运行净化裁剪脚本：
-   ```powershell
-   python scripts/purify-rom.py
-   ```
+禁止的动作包括：`fastboot flash`、`erase`、`download`、`boot`、`continue`、`reboot`、`set_active`、`oem`、`unlock`，以及任何新的 PhoenixCard 刷写。
 
-### 第二阶段：ROM 分区编译与 AVB 签名
+## M6a 操作顺序
 
-1. 运行重打包脚本：
-   ```powershell
-   python scripts/repack-rom.py
-   ```
-   *注意：需安装 `pycryptodome` 库。脚本先生成 Raw 镜像再调用 `img2simg` 转换为 Sparse 格式。*
+1. 运行 `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\collect-usb-evidence.ps1` 归档 Windows PnP 信息；`Bypass` 仅对该进程生效，脚本默认不向设备发送协议命令。
+2. 审查输出中的驱动提供商、INF、Class GUID、错误码和实例 ID，并附设备管理器截图。
+3. 当前已有 WinUSB 服务。先审查 GUID 单变量试验及备份，获得用户确认后才可应用；不得安装仓库里手工修改过的 Google USB INF，也不得使用 Zadig Bind/Install。
+4. 物理拔插后，只做 `fastboot devices`，成功出现序列号后才执行 `fastboot getvar version`。不要先运行 `getvar all`。
+5. 当前标准握手已验证，但 Allwinner Fastboot 不支持槽位与 userspace 白名单变量；不要扩展为 `getvar all`。直接转为 UART 被动监听以获得启动链证据。
 
-### 第三阶段：全志 Image 封装与校验和计算
+## M6b 以后才恢复的构建流程
 
-1. 运行固件容器打包脚本：
-   ```powershell
-   python tools/pack_image.py
-   ```
-2. 校验固件完整性：
-   ```powershell
-   python tools/sunxi_image_tool.py verify x12-purified.img
-   ```
-   *期待输出：`Verification complete: 10 partitions OK, 0 mismatches/errors.`*
+在 M6a 通过后，先做 [验证计划](VALIDATION_PLAN.md) 中的零内容改动 round-trip：PhoenixCard 容器 → super → ext4。只有每层语义差分通过后，才允许生成一次仅含一个 manifest 变更的候选镜像。
 
----
+## 烧录安全门禁（当前不执行）
 
-## 💾 烧录步骤 (Flash)
+PhoenixCard 写入属**严重风险**。将来需要同时满足：官方原件校验通过、回退介质可用、目标卡的物理磁盘号/容量/盘符已由用户复核、候选镜像和日志哈希已归档、单变量实验已批准。
 
-1. 打开 **PhoenixCard** 工具 (推荐 v4.2.x 或 v4.9.x)。
-2. 选择 **`x12-purified.img`** 固件。
-3. 插入 MicroSD 卡，选择 **Product (量产卡模式)**。
-4. 烧录完成后（进度 100%）拔掉 TF 卡，重新上电。
-
-*如遇格式化报错 242，使用 Windows `diskpart` 执行 `clean` 并重建 FAT32 分区。*
-
----
-
-## 🔍 启动验证 (Boot Validation)
-
-观察以下启动阶段：
-
-1. ✅ Boot logo 显示
-2. ❓ Boot animation 是否出现
-3. ❓ 是否进入 Android System 或 Recovery
-
-记录所有异常行为。
-
----
-
-## 🧪 调试原则 (Debugging Rules)
-
-- 每次实验只测试一个假设。
-- 尽可能只修改一个变量。
-- 记录每次实验结果。
-- 不在缺乏新证据的情况下重复实验。
-- 每次失败的实验至少应排除一个假设。
+`diskpart clean` 会清空目标磁盘；不得把它作为常规排障步骤。若未来确有必要，必须在执行前由用户确认精确磁盘编号、容量和无重要数据。

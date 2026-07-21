@@ -5,6 +5,8 @@
 **固件基线**：`x12-1024.img` (官方原件)  
 **测试对象**：`x12-purified.img` (定制固件)  
 
+> **历史解释校正（2026-07-21）**：本文件保留实验 #1–#11 的操作和观察，便于审计；其中关于 Fastboot、U-Boot、LZ4、init、vendor_boot、SELinux 与 UDC 的“原因/解决”文字均为当时假设，除非 `DISCOVERIES.md` 标为“离线已验证”或“实机已验证”，不得作为当前结论。实验 #11.1 仅完成构建与离线校验，**未进行物理刷写**。
+
 ---
 
 ## 实验 #1：首次烧录尝试
@@ -62,7 +64,7 @@
 - **USB 连线测试**：通过特定 USB 口（OTG 口）连接 PC 时，Windows 成功检测到新设备插入。设备管理器显示 `VID = 1F3A`、`PID = 1010`，设备名为 `sunxi`（位于“其他设备”下，缺失驱动）。
 - **ADB 尝试**：运行 `adb devices` 显示为空（未检测到任何 ADB 设备）。
 
-**结论**：部分成功。启动链显著推进。当前 Recovery 模式未启用 ADB 接口，但通过 USB 暴露了 Allwinner 独有的 **Android Fastboot Mode** (`1F3A:1010`) 接口。
+**结论（已于 2026-07-21 校正）**：设备已枚举出 Allwinner USB 接口 `1F3A:1010`；这不等于标准 Fastboot 已可用。后续 Platform Tools 探测没有建立 Fastboot 握手，见实验 #12。
 
 ---
 
@@ -74,7 +76,7 @@
 | Bootloader | ✅ 已执行 | 正常加载引导链 |
 | Boot logo | ✅ 已显示 | 屏幕可显示安博官方 LOGO |
 | Recovery | ✅ 可达 | 自动进入躺倒机器人界面（但无菜单且无法交互） |
-| USB 调试 | ⚠️ 暴露 | 未暴露 ADB (❌)；但成功暴露 Fastboot Mode (✅, 1F3A:1010) |
+| USB 调试 | ⚠️ 暴露 | 未暴露 ADB；`1F3A:1010` 已枚举。Fastboot-class 描述符后来得到确认，但标准 Fastboot 命令握手仍未建立。 |
 | Android System | ❌ 未启动 | 未加载开机动画，未能正常进入系统 |
 
 **之前的阻塞项**：❌ 烧录失败 → ✅ 已解决
@@ -142,7 +144,7 @@
 
 **分析与变更**：
 1. **属性跃变逻辑注入**：即使在 `prop.default` 中注入了 `sys.usb.config=adb`，但由于该属性在开机时便处于 `adb` 状态且从未发生值改变，Android `init` 进程在解析 `init.rc` 时不会触发 `on property:sys.usb.config=adb` 动作块。这导致 ADB 守护进程和 USB 控制器绑定逻辑被静默跳过，物理 USB 接口保持在未绑定的 `sunxi (1F3A:1010)` 状态。
-2. **硬件脚本修改**：修改 [enable-recovery-adb.py](file:///c:/Users/tiany/Documents/ubox10-rom改造/scripts/enable-recovery-adb.py)，在 `init.recovery.sun50iw9p1.rc` 尾部追加自定义 `on boot` 触发器：
+2. **硬件脚本修改**：修改 [enable-recovery-adb.py](../scripts/enable-recovery-adb.py)，在 `init.recovery.sun50iw9p1.rc` 尾部追加自定义 `on boot` 触发器：
    ```rc
    on boot
        setprop sys.usb.config none
@@ -165,7 +167,7 @@
 **目标**：强制绕过所有的属性触发器和 SELinux 权限，直接以 root 身份调通 USB 控制器并启动 ADB。
 
 **变更与原理**：
-1. **SELinux 宽容模式注入**：在 [enable-recovery-adb.py](file:///c:/Users/tiany/Documents/ubox10-rom改造/scripts/enable-recovery-adb.py) 中，向 `mkbootimg.py` 指令添加 `--cmdline "androidboot.selinux=permissive"`，强行让 Recovery 内核以 SELinux Permissive 模式启动，彻底废除权限拦截。
+1. **SELinux 宽容模式注入**：在 [enable-recovery-adb.py](../scripts/enable-recovery-adb.py) 中，向 `mkbootimg.py` 指令添加 `--cmdline "androidboot.selinux=permissive"`，强行让 Recovery 内核以 SELinux Permissive 模式启动，彻底废除权限拦截。
 2. **Userdebug 属性改造**：在 `prop.default` 修改逻辑中，追加 `'ro.build.type': 'userdebug'` 属性，解除 `user` 构建的系统调试限制。
 3. **USB 物理角色强制切换**：通过分析 vendor `/vendor/etc/init/hw/init.sun50iw9p1.usb.rc`，定位了全志专属的 USB 设备模式转换节点。我们在 `on boot` 的第一行添加了 `copy /sys/devices/platform/soc/usbc0/usb_device /dev/null`，强制内核 OTG 芯片从 Host 状态切为 Device 状态。
 4. **主 init.rc 强制硬编码 import**：因为 `${ro.hardware}` 属性在 init 早期可能为空，导致 `import /init.recovery.${ro.hardware}.rc` 丢失。我们修改了主 `system/etc/init/hw/init.rc`，直接在头部显式添加 `import /init.recovery.sun50iw9p1.rc` 语句，确保加载设备级配置。
@@ -209,7 +211,7 @@
 **目标**：同步解包、修改并重构 `boot.img` 与 `vendor_boot.img` 中的 ramdisk 配置文件，彻底消除覆写阴影。
 
 **变更**：
-1. **联动修改脚本**：重构 [enable-recovery-adb.py](file:///c:/Users/tiany/Documents/ubox10-rom改造/scripts/enable-recovery-adb.py)，在重构 `boot.img` 的同时，自动解包 `vendor_boot.fex` 并对其 ramdisk 根目录下的 `init.recovery.sun50iw9p1.rc` 写入相同的强制 ConfigFS 绑定和物理 USB OTG 切换指令：
+1. **联动修改脚本**：重构 [enable-recovery-adb.py](../scripts/enable-recovery-adb.py)，在重构 `boot.img` 的同时，自动解包 `vendor_boot.fex` 并对其 ramdisk 根目录下的 `init.recovery.sun50iw9p1.rc` 写入相同的强制 ConfigFS 绑定和物理 USB OTG 切换指令：
    ```rc
    on boot
        copy /sys/devices/platform/soc/usbc0/usb_device /dev/null
@@ -219,31 +221,105 @@
 2. **AVB 重签名**：对重新打包生成的 `vendor_boot.img` 使用其原始 Salt（`2e606239ea40f534a157a4514d5ebbda81e01ab51bde9def5d877988e0851ab4`）进行 AVB Hash 重签名，保持安全引导链条完整。
 3. **打包重组重构**：修改 `repack-rom.py` 将 `vbmeta` 生成过程中的描述符来源重定向至 `work/vendor_boot.img`，并更新 `pack_image.py` 将新生成的 `vendor_boot.img` 作为 `vendor_boot.fex` 写入最终输出的 `x12-purified.img`。
 
-**结果**：固件编译、分区重组、AVB 签名验证及全镜像校验成功通过，等待物理烧录验证。
+**结果**：失败。虽然解决了覆写问题，但 USB 依旧卡在 `1F3A:1010` 状态。
+
+**原因分析**：
+1. **ConfigFS 规范限制**：在 Linux USB Gadget 规范中，在用户态守护进程 `adbd` 开启 FunctionFS 端点之前，是不允许向 `/config/usb_gadget/g1/UDC` 写入控制器名称的（会直接报错 `Device or resource busy`）。我们在 `on boot` 中紧跟在 `start adbd` 后同步写入 UDC，由于 `adbd` 尚未初始化完成，该写入操作被静默拒绝，导致绑定未成功。
+2. **设备树中的 UDC 名称**：我们反编译了 `vendor_boot` 的 DTB 文件，发现其 USB 节点兼容性字符串为 `sunxi-udc`。在 Recovery 模式下，注册的控制器名称可能是 `sunxi-udc`，而并非正常 Android 系统下的 `5100000.udc-controller`。
 
 ---
 
-## 当前状态总结
+## 实验 #11.1：异步 ConfigFS 绑定监听与多 UDC 兼容机制
 
-| 阶段 | 状态 | 备注 |
-|------|------|------|
-| 固件烧录 | ✅ 已解决 | 进度达到 100% 并顺利完成写入 |
-| Bootloader | ✅ 已执行 | 正常加载引导链 |
-| Boot logo | ✅ 已显示 | 屏幕可显示安博官方 LOGO |
-| Recovery | ✅ 已恢复 | 开机稳定在躺倒机器人界面 |
-| USB 调试 | ⚠️ 暴露 | 物理连接仍卡在 `1F3A:1010`；等待刷入实验 #11 激活 ADB (`18D1:D001`) |
-| Android System | ❌ 未启动 | 未加载开机动画，未能正常进入系统 |
+**目标**：等待 `adbd` 就绪后异步写入 UDC，并兼容全志平台所有可能的 UDC 控制器名称。
 
-**当前阻塞项**：⚠️ 正在刷入实验 #11 强绑调试包以获取 ADB。
+**变更**：
+1. **异步写入 UDC 触发器**：在 [enable-recovery-adb.py](../scripts/enable-recovery-adb.py) 中，将对 UDC 的写入移出 `on boot` 同步阶段，单独挂载到 `on property:sys.usb.ffs.ready=1` 触发器中。当 `adbd` 正式打开 FunctionFS 端点并就绪后，系统会自动更新该属性，触发 UDC 写入。
+2. **多 UDC 名称顺次尝试**：在触发器中顺次写入所有可能的全志/Inventra/标准 UDC 控制器名字，确保兼容性：
+   ```rc
+   on property:sys.usb.ffs.ready=1
+       write /config/usb_gadget/g1/UDC "sunxi-udc"
+       write /config/usb_gadget/g1/UDC "musb-hdrc.0"
+       write /config/usb_gadget/g1/UDC "musb-hdrc"
+       write /config/usb_gadget/g1/UDC "5100000.udc-controller"
+   ```
+
+**结果**：编译并重构校验通过；因其同时改变多个启动链变量，实验 #11.1 已暂停，未进行物理烧录验证。
 
 ---
 
-## 后续行动计划
+## 实验 #12：标准 Fastboot 只读握手探测（2026-07-21）
 
-1. **执行实验 #11 物理烧录**：
-   - 观察设备通电后是否稳定进入机器人界面，且电脑端识别到 Android ADB 设备（`18D1:D001`）。
-2. **提取日志与根因诊断**：
-   - 运行 `adb devices` 确认连接。
-   - 运行 `adb pull /cache/recovery/last_log` 提取崩溃信息。
-   - 运行 `adb shell dmesg > dmesg.txt` 提取内核启动日志。
-   - 对系统挂载进行深度调试。
+**目标**：确认 `1F3A:1010` 是否实际提供标准 Android Fastboot 传输，不修改设备状态。
+
+**环境**：Windows 设备管理器显示 `sunxi`，硬件 ID 为 `USB\VID_1F3A&PID_1010&REV_0200` / `USB\VID_1F3A&PID_1010`。
+
+**执行命令**：
+
+```powershell
+tools\platform-tools\fastboot.exe devices
+tools\platform-tools\fastboot.exe getvar all
+```
+
+**结果**：两个命令均停留在 `< waiting for any device >`，没有设备序列号、`OKAY`、`FAIL` 或变量输出。
+
+**结论**：标准 Fastboot 会话未建立；当前不能读取 `getvar`，不能将此 USB 接口作为可用 Fastboot 通道。未发生设备写入。
+
+---
+
+## 当前状态总结（2026-07-21）
+
+| 阶段 | 证据等级 | 状态 | 备注 |
+|------|---|---|---|
+| PhoenixCard 容器写入 | 已观察 | 100% 完成 | 仅证明容器可被刷卡工具写入，不证明 Android 可启动。 |
+| Boot logo / Recovery 可视界面 | 已观察 | 可达 | Recovery 触发源及功能完整性未知。 |
+| Android System | 已观察 | 未进入 | 首个失败点未定位。 |
+| Allwinner USB 枚举 | 已观察 | `1F3A:1010` / `sunxi` | Windows PnP 已归档；协议命令事务未建立。 |
+| Fastboot 接口描述符 | 主机离线已验证 | `FF/42/03` | 与 AOSP Fastboot 匹配条件一致；不等于命令握手。 |
+| 标准 Fastboot | 未验证 | 未握手 | 当前 libwdi WinUSB 未注册 Platform Tools 所需 Android GUID；`fastboot` 持续等待设备。 |
+| Recovery ADB | 未验证 | 未建立 | 不再以修改 Recovery 为当前路线。 |
+| 实验 #11.1 | 离线构建 | 暂停且未刷入 | 诊断构建隔离在 M6 门禁之后。 |
+
+**当前阻塞项**：缺少无修改的设备侧启动链证据。下一步是经明确授权的 Windows interface GUID 单变量试验，或被动 UART 监听；任何新刷写均暂停。
+
+---
+
+## 实验 #13：Windows PnP / WinUSB interface GUID 证据审计（2026-07-22）
+
+**目标**：在不向设备发送命令、也不改变设备或驱动绑定的前提下，区分“设备没有 Fastboot 接口”与“Windows 无法让 Platform Tools 枚举已存在接口”。
+
+**输入证据**：用户运行只读采集器生成 `logs/device/20260722-001337/usb-evidence.json`（SHA-256 `9823D913E07031822B41567C22DE3D88539E5D21F70431AFEAD29C2A3F766B33`）和 `fastboot.version.txt`（SHA-256 `69FDB6D057CBB0113153A8D9C069286B0572CFB395408926B5CA10608222F56E`）；另有设备管理器的驱动/事件截图。
+
+**观察**：
+
+1. 设备实例为 `USB\VID_1F3A&PID_1010\992304568773`，`Status=OK`、`Problem=0`，兼容 ID 含 `Class_FF&SubClass_42&Prot_03`。
+2. 当前驱动为 `oem79.inf` / libwdi，服务 `WinUSB`；事件记录显示 2026-07-20 已配置该 INF 并启动 `WinUSB`。
+3. 只读审计发现 `oem79.inf` 注册其自己的 `{9D8998B8-AD0B-4656-B575-AF23D189A1A8}`，而设备的 `DeviceInterfaceGUIDs` 不含 AOSP Android GUID `{F72FE0D4-CBCB-407D-8814-9ED673D0DD6B}`。
+
+**结论**：Fastboot-class 描述符已确认；Platform Tools 未发现设备的高置信原因是主机 interface GUID 注册不匹配。此结论尚未证明设备会回应 Fastboot 命令，也没有执行任何设备协议命令。
+
+**后续控制变量**：已新增 `scripts/test-fastboot-interface-guid.ps1`。默认 `Inspect` 只读；`Apply` 必须管理员权限、显式确认与 PowerShell 高影响确认，并只追加目标 GUID。实施前后按 `U1_FASTBOOT_HOST_BINDING_TRIAL.md` 留存备份、原始输出和回滚记录。
+
+**执行状态（2026-07-22）**：用户已授权 U1 Apply。自动化执行环境未取得 Windows 管理员令牌，脚本在管理员权限预检处退出；未创建主机绑定备份、未写入注册表、未调用 Fastboot，也未发生设备侧操作。下一步须在用户的提升权限 PowerShell 中按 U1 手册执行同一脚本，而非绕过 UAC。
+
+**用户提升权限执行结果（2026-07-22）**：`logs/device/20260722-004314/` 记录 Apply 成功，`ExpectedGuidPresent=true`，且原有三个 GUID 未丢失；`guid-backup.json` 可精确恢复原状态。物理拔插后，`fastboot devices` 输出 `992304568773    fastboot`。这确认 U1 的 Windows interface GUID 假设，尚未执行 Fastboot 命令事务。
+
+## 实验 #14：U2 `getvar version` 自动采集器兼容性修正（2026-07-22）
+
+**目标**：以 15 秒上限归档 `fastboot devices → fastboot getvar version` 的只读 U2 输出。
+
+**首次结果**：`logs/device/20260722-004615/` 已保留。Windows PowerShell 的 `Start-Process` 在创建子进程前因继承环境同时存在 `PATH` / `Path` 键而报重复键异常；两个空的重定向文件表明 `fastboot` 没有启动，因此没有向设备发送任何命令。
+
+**修正**：`collect-usb-evidence.ps1` 的子进程启动改为 .NET `System.Diagnostics.ProcessStartInfo`，显式异步读取 stdout/stderr 并保留同样的超时/终止行为。该修正只影响主机日志采集可靠性，不改变 U2 命令白名单。
+
+**重试结果**：`logs/device/20260722-004720/` 已归档。`fastboot devices` 返回 `992304568773    fastboot`；随后的唯一 Fastboot 命令 `getvar version` 返回 `version: 0.5`（退出码 0，0.009 秒）。标准 Fastboot 协议因此已验证；未执行 `getvar all` 或任何写入/状态变更命令。
+
+## 实验 #15：M6a Fastboot 白名单变量采集（2026-07-22）
+
+**目标**：在已验证协议通道上读取最小变量集，确认是否能从 Fastboot 获得产品、锁定语义、userspace 和 A/B 槽位线索。
+
+**方法**：新增 `scripts/probe-fastboot-readonly-vars.ps1`，先再次验证 `fastboot devices`，再为每一个白名单变量启动独立、15 秒上限的 `getvar` 子进程。脚本拒绝白名单外的变量。
+
+**结果**：所有请求在 0.008–0.012 秒完成，退出码为 0。`product: sunxi`、`secure: yes`；`is-userspace`、`slot-count`、`current-slot`、`has-slot:boot`、`has-slot:vendor_boot`、`has-slot:vbmeta` 与 `has-slot:super` 全部为 `not supported`。原始逐项输出与 SHA-256 清单归档在 `logs/device/20260722-004937/`。
+
+**结论**：该接口是可用但精简的 Allwinner Fastboot 实现。其 `secure` 返回值不能自行解释为 AVB 成功或解锁状态；缺失槽位变量不能反推设备非 A/B。Fastboot 无法进一步定位 Recovery，因此停止扩展探测，转 U3 UART 被动监听。

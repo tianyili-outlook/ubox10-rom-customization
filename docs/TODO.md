@@ -1,58 +1,42 @@
 # 待办事项
 
-## 当前：M6 启动故障诊断与 Recovery ADB 启用
+## 当前：M6a 无修改启动链取证
 
-### 高优先级
-- [x] 验证 Recovery 是否有可用输入方式（结果：红外/键盘均无响应，未暴露 ADB）。
-- [x] 强制开启 Recovery ADB 调试（实验 #5 & #6）：
-  - [x] 编写 `scripts/enable-recovery-adb.py` 解包、修改 `prop.default`、重打包签名并输出 `boot.img`。
-  - [x] 编译全局禁用 AVB 校验的 vbmeta 镜像（flags=2，结果：触发 U-Boot 引导死锁）。
-  - [x] 回撤 flags=2 仅保留 ADB 内核（结果：依然极速 Bootloop，说明核心问题在重新打包的 `boot.img` 自身）。
-- [x] 对照组封包测试（实验 #7）：
-  - [x] 保持相同封包与签名链路，原封不动还原原厂 ramdisk 编译 `boot.img` 排除变量。
-  - [x] 物理烧录验证（结果：依然极速 Bootloop，排除属性原因，确诊为 LZ4 压缩/封包不兼容）。
-- [x] 对照组优化编译与验证（实验 #8）：
-  - [x] 启用高压缩模式且移除 0 字节终止块，还原原厂 ramdisk 输出测试版 `boot.img`。
-  - [x] 物理烧录验证（结果：成功开机！稳定在躺倒机器人界面，确诊原因为 0 字节块/体积冲突）。
-- [x] Recovery ADB 跃变触发注入与验证（实验 #9）：
-  - [x] 重新启用 `prop.default` 调试属性并在 `init.recovery.sun50iw9p1.rc` 注入 `none -> adb` 跃变。
-  - [x] 物理烧录验证（结果：依然只看到 `sunxi` 裸口，ADB 无设备，原因为 user 固件限制及 SELinux Enforcing 导致 adbd Crash）。
-- [x] 命令式 ConfigFS 强绑定与 SELinux 宽容注入（实验 #10）：
-  - [x] 在 `prop.default` 中修改 `'ro.build.type': 'userdebug'` 解除 user 限制。
-  - [x] 在 `init.recovery.sun50iw9p1.rc` 中写入完全手动的命令式 ConfigFS 强绑定序列。
-  - [x] 物理烧录验证（结果：还是 `sunxi` 裸口，确诊为 `vendor_boot.img` 里的 rc 同名脚本发生了挂载覆写，将我们 boot 中的修改完全盖掉了）。
-- [x] 厂商引导 vendor_boot 联动重构与异步绑定优化（实验 #11 & #11.1）：
-  - [x] 联动修改脚本，对 `vendor_boot` 里的 `init.recovery.sun50iw9p1.rc` 写入相同的强绑和 OTG 切换代码，并使用原厂 Salt 进行 AVB 签名。
-  - [x] 修复 ConfigFS 规范时序漏洞，将 UDC 绑定移至 `on property:sys.usb.ffs.ready=1` 异步触发器，并顺次兼容 `sunxi-udc` 等多个全志 UDC 名称。
-  - [x] 升级主 `init.rc` 强行硬编码 import 并移除了 `adbd` 服务定义中的崩溃参数 `--root_seclabel`。
-- [ ] **物理烧录 Experiment #11.1 联动调试固件并提取日志（当前待办）**：
-  - [ ] 烧录并通电开机，确认稳定进入机器人界面。
-  - [ ] 电脑端通过 USB OTG 连通，运行 `adb devices` 检测。
-  - [ ] 提取崩溃日志（`last_log`）和内核日志（`dmesg`）定位系统未启动根因。
+### 已完成证据
 
-### 中优先级
-- [ ] 硬件功能验证（Wi-Fi、蓝牙、以太网、HDMI、红外遥控）。
-- [ ] 系统稳定性测试。
+- [x] 归档 Windows 设备管理器截图：`sunxi`，`USB\VID_1F3A&PID_1010&REV_0200` / `USB\VID_1F3A&PID_1010`。
+- [x] 归档 `logs/device/20260722-001337/` 的 PnP 原始证据、Platform Tools 版本和 SHA-256；设备状态为 `OK`、`Problem=0`，当前服务为 `WinUSB`。
+- [x] 确认 PnP 兼容 ID 含 `USB\\COMPAT_VID_1F3A&Class_FF&SubClass_42&Prot_03`，符合 AOSP Fastboot 接口描述符条件；这不是命令握手。
+- [x] 确认当前 `oem79.inf`（libwdi）只注册 `{9D8998B8-AD0B-4656-B575-AF23D189A1A8}`，而 Android USB interface GUID `{F72FE0D4-CBCB-407D-8814-9ED673D0DD6B}` 缺失。
+- [x] 执行标准 Fastboot 只读探测：`fastboot devices`、`fastboot getvar all` 均等待设备，未建立命令握手。
+- [x] 冻结实验 #11.1：已构建，**未物理刷写**。
 
-### 低优先级
-- [ ] 仓库与工具链清理。
-- [ ] 安装包打包脚本优化。
+### 下一步（按顺序）
 
-## 已完成
+- [x] 审阅并获得 [Fastboot 主机 GUID 单变量试验](U1_FASTBOOT_HOST_BINDING_TRIAL.md) 的用户明确授权。自动化环境没有 Windows 管理员令牌，预检安全退出，未改变主机或设备。
+- [x] 在管理员 PowerShell 中完成 `Apply`：`logs/device/20260722-004314/` 含 `guid-backup.json`、`ExpectedGuidPresent: True` 和 SHA-256 清单；原 GUID 均保留。
+- [x] 物理拔插后，`fastboot devices` 输出 `992304568773    fastboot`。Windows 主机枚举已恢复。
+- [x] 执行并归档 `fastboot getvar version`：`logs/device/20260722-004720/` 返回 `version: 0.5`；标准 Fastboot 现为协议已验证。
+- [x] 自动化逐项读取 M6a Fastboot 白名单，输出在 `logs/device/20260722-004937/`：`product=sunxi`、`secure=yes`，其余槽位/userspace 变量均 `not supported`。
+- [ ] Fastboot 已达到可用证据上限；准备 3.3V UART 适配器、杜邦线与（如 J21 未焊针）pogo pin，执行第一次**只接 GND 和 TX→RX**的冷启动监听。
+- [ ] 采集当前设备状态的被动 UART 冷启动原始日志；记录接线照片、波特率、时间和 SHA-256。
+- [ ] 根据 UART 或协议证据建立“Recovery 触发 / BCB / 槽位 / AVB / super / ext4 / init”假设表，选定下一项**单变量**实验。
 
-- [x] **M5 固件封装与伴生校验和重算** (2026-07-19)
-- [x] **M4 ROM 重打包与 AVB 签名** (2026-07-19)
-- [x] **M3/M3+ 反定制裁剪与预装** (2026-07-19)
-- [x] **M2 分区与启动链审计** (2026-07-19)
-- [x] **M1 只读容器清单** (2026-07-19)
-- [x] **M0 原始镜像基线** (2026-07-19)
+### 明确暂停
 
-## 实验记录
+- [ ] **实验 #11.1** — 暂停，未刷入。恢复条件：M6a 退出条件满足、风险登记册更新、官方回退路径可用、变更缩减为一个可验证假设并获明确批准。
+- [ ] 新的 PhoenixCard 刷写、Recovery ADB 注入、SELinux Permissive、root ADB、AVB 禁用标志和多 UDC “散弹枪”方案均暂停。
 
-- [x] **实验 #1** (2026-07-20)：首次刷写 → PhoenixCard 停滞在 5-10%，LED 高频闪烁。
-- [x] **实验 #2** (2026-07-20)：引入 img2simg 稀疏化 → 现象不变，排除 Sparse 格式为根因。
-- [x] **实验 #3** (2026-07-20)：修正 pack_image.py 1024 字节对齐 → PhoenixCard 100% 完成！
-- [x] **实验 #4** (2026-07-20)：验证系统启动 → 设备进入 Recovery，Android System 未启动。
-- [x] **实验 #5** (2026-07-20)：Recovery ADB 强启 & flags=2 绕过 → 设备极速无限黑屏重启（Bootloop）。
-- [x] **实验 #6** (2026-07-20)：回撤 flags=2 保持 ADB boot.img → 依然无限重启，排除 flags=2 因素。
-- [x] **实验 #7** (2026-07-20)：对照组（原样还原 ramdisk）→ 编译完成，等待刷机验证。
+## 后续里程碑
+
+- [ ] **M6b**：PhoenixCard 容器、super、ext4 的零内容改动 round-trip 和语义差分。
+- [ ] **M6c**：每次只引入一个 APK 删除、属性修改或预装 APK 的受控回归。
+- [ ] **产品 manifest 决策**：在 M6b 后分别确认 Projectivy、SmartTube、Kodi、Jellyfin、Moonlight、AirPlay 和 Google 服务/Play 的来源、许可证、分区位置、签名与回归项目；不沿用历史候选列表作为默认决定。
+- [ ] **M7**：Android System 启动、硬件功能矩阵与官方回退验证后，才准备候选发布。
+
+## 历史工作（仅记录，不代表实机放行）
+
+- [x] M0/M1：官方镜像基线、容器清单与校验。
+- [x] M2/M3：分区、AVB、APK 和 init 静态审计。
+- [x] M4/M5：候选重建与容器校验；运行时验证未完成。
+- [x] 实验 #1–#10：历史物理和离线排查，原始现象见 [M6_DEBUG_LOG.md](M6_DEBUG_LOG.md)。其中因果解释均须以当前发现记录为准。
