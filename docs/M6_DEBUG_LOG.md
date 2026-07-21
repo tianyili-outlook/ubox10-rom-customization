@@ -151,7 +151,50 @@
    该配置通过 `none -> adb` 的物理属性跃变，强制触发 `init.rc` 中对 `adbd` 服务的启动及 ConfigFS UDC 的绑定动作。
 3. **全局属性重启用**：取消注释 `modify_properties` 属性注入，保证 `ro.debuggable=1`、`ro.secure=0` 和 `ro.adb.secure=0` 的状态。
 
-**结果**：固件编译完成并通过校验（Vboot Checksum 匹配最新 `boot.img`），等待物理烧录验证。
+**结果**：失败。虽然成功开机稳定在机器人界面，但 USB 依旧卡在 unbound 的 `1F3A:1010` 状态，`adb devices` 找不到设备。
+
+**结论**：即使通过 `none -> adb` 跃变，Android `init` 依然没有成功绑定 UDC。主要可能由于：
+1. 原厂固件为 `user` 构建，其内置 `sepolicy` 完全去除了 `su` 调试域（`adbd` 尝试以 `--root_seclabel=u:r:su:s0` 运行时会直接 Crash 挂死）。
+2. 在 `user` 构建中，SELinux 强制处于 Enforcing 状态，拦截了 `mount functionfs` 或 ConfigFS 读写。
+3. 依赖 Dynamic Triggers (`sys.usb.ffs.ready=1`) 的链条仍旧由于 `adbd` 未能成功运行而被阻断。
+
+---
+
+## 实验 #10：命令式 ConfigFS 强绑定、Userdebug 改造与 Permissive SELinux 注入
+
+**目标**：强制绕过所有的属性触发器和 SELinux 权限，直接以 root 身份调通 USB 控制器并启动 ADB。
+
+**变更与原理**：
+1. **SELinux 宽容模式注入**：在 [enable-recovery-adb.py](file:///c:/Users/tiany/Documents/ubox10-rom改造/scripts/enable-recovery-adb.py) 中，向 `mkbootimg.py` 指令添加 `--cmdline "androidboot.selinux=permissive"`，强行让 Recovery 内核以 SELinux Permissive 模式启动，彻底废除权限拦截。
+2. **Userdebug 属性改造**：在 `prop.default` 修改逻辑中，追加 `'ro.build.type': 'userdebug'` 属性，解除 `user` 构建的系统调试限制。
+3. **USB 物理角色强制切换**：通过分析 vendor `/vendor/etc/init/hw/init.sun50iw9p1.usb.rc`，定位了全志专属的 USB 设备模式转换节点。我们在 `on boot` 的第一行添加了 `copy /sys/devices/platform/soc/usbc0/usb_device /dev/null`，强制内核 OTG 芯片从 Host 状态切为 Device 状态。
+4. **主 init.rc 强制硬编码 import**：因为 `${ro.hardware}` 属性在 init 早期可能为空，导致 `import /init.recovery.${ro.hardware}.rc` 丢失。我们修改了主 `system/etc/init/hw/init.rc`，直接在头部显式添加 `import /init.recovery.sun50iw9p1.rc` 语句，确保加载设备级配置。
+5. **移除 adbd 崩溃参数 (Root seclabel)**：原厂 `sepolicy` 中不含 `su` 域，`adbd` 携带 `--root_seclabel=u:r:su:s0` 运行时会直接 Crash 挂死。我们在主 `init.rc` 中移除了此参数，防止进程崩溃。
+6. **命令式 ConfigFS 初始化**：在 `init.recovery.sun50iw9p1.rc` 尾部的 `on boot` 事件中，用纯命令式脚本直接接管 USB 绑定的完整动作：
+   ```rc
+   on boot
+       copy /sys/devices/platform/soc/usbc0/usb_device /dev/null
+       mount configfs none /config
+       mkdir /config/usb_gadget/g1 0770 shell shell
+       write /config/usb_gadget/g1/idVendor 0x18D1
+       write /config/usb_gadget/g1/idProduct 0xD001
+       mkdir /config/usb_gadget/g1/strings/0x409 0770
+       write /config/usb_gadget/g1/strings/0x409/serialnumber "ubox10_recovery"
+       write /config/usb_gadget/g1/strings/0x409/manufacturer "Google"
+       write /config/usb_gadget/g1/strings/0x409/product "Recovery ADB"
+       mkdir /config/usb_gadget/g1/functions/ffs.adb
+       mkdir /config/usb_gadget/g1/configs/b.1 0777 shell shell
+       mkdir /config/usb_gadget/g1/configs/b.1/strings/0x409 0770 shell shell
+       write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "adb"
+       symlink /config/usb_gadget/g1/functions/ffs.adb /config/usb_gadget/g1/configs/b.1/f1
+       mkdir /dev/usb-ffs 0775 shell shell
+       mkdir /dev/usb-ffs/adb 0770 shell shell
+       mount functionfs adb /dev/usb-ffs/adb uid=2000,gid=2000
+       start adbd
+       write /config/usb_gadget/g1/UDC "5100000.udc-controller"
+   ```
+
+**结果**：固件编译完成并校验通过，等待物理烧录验证。
 
 ---
 
@@ -162,20 +205,20 @@
 | 固件烧录 | ✅ 已解决 | 进度达到 100% 并顺利完成写入 |
 | Bootloader | ✅ 已执行 | 正常加载引导链 |
 | Boot logo | ✅ 已显示 | 屏幕可显示安博官方 LOGO |
-| Recovery | ✅ 已恢复 | 开机稳定在躺倒机器人界面（实验 #8 证实打包格式兼容） |
-| USB 调试 | ⚠️ 暴露 | 物理连接暴露为 `1F3A:1010`；正在等待刷入实验 #9 激活 ADB (`18D1:D001`) |
+| Recovery | ✅ 已恢复 | 开机稳定在躺倒机器人界面 |
+| USB 调试 | ⚠️ 暴露 | 物理连接仍卡在 `1F3A:1010`；等待刷入实验 #10 激活 ADB (`18D1:D001`) |
 | Android System | ❌ 未启动 | 未加载开机动画，未能正常进入系统 |
 
-**当前阻塞项**：⚠️ 正在刷入实验 #9 调试包以突破 ADB 阻碍，抓取系统崩溃日志。
+**当前阻塞项**：⚠️ 正在刷入实验 #10 强绑调试包以获取 ADB。
 
 ---
 
 ## 后续行动计划
 
-1. **执行实验 #9 物理烧录**：
+1. **执行实验 #10 物理烧录**：
    - 观察设备通电后是否稳定进入机器人界面，且电脑端识别到 Android ADB 设备（`18D1:D001`）。
 2. **提取日志与根因诊断**：
    - 运行 `adb devices` 确认连接。
    - 运行 `adb pull /cache/recovery/last_log` 提取崩溃信息。
    - 运行 `adb shell dmesg > dmesg.txt` 提取内核启动日志。
-   - 对核心分区（System/Product）无法挂载或 init 服务 Crash 进行深度诊断。
+   - 对系统挂载进行深度调试。
