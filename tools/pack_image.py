@@ -26,6 +26,8 @@ MODIFIED_FILES = {
     "vbmeta_vendor.fex": "work/vbmeta_vendor.img",
     "boot.fex": "work/boot.img"
 }
+if os.path.exists("work/vendor_boot.img"):
+    MODIFIED_FILES["vendor_boot.fex"] = "work/vendor_boot.img"
 
 def calculate_checksum(data):
     """Calculate 32-bit little endian word checksum of data."""

@@ -145,6 +145,10 @@ def main():
 
     # 6. Generate main vbmeta.img
     print("\n--- Generating main vbmeta.img ---")
+    vendor_boot_path = os.path.join(WORK_DIR, "vendor_boot.img")
+    if not os.path.exists(vendor_boot_path):
+        vendor_boot_path = os.path.join(EXTRACTED_DIR, "vendor_boot.fex")
+        
     run_cmd([
         sys.executable, AVBTOOL, "make_vbmeta_image",
         "--output", os.path.join(WORK_DIR, "vbmeta.img"),
@@ -155,7 +159,7 @@ def main():
         "--chain_partition", f"vbmeta_vendor:2:{TESTKEY}",
         "--include_descriptors_from_image", os.path.join(WORK_DIR, "boot.img"),
         "--include_descriptors_from_image", os.path.join(EXTRACTED_DIR, "dtbo.fex"),
-        "--include_descriptors_from_image", os.path.join(EXTRACTED_DIR, "vendor_boot.fex"),
+        "--include_descriptors_from_image", vendor_boot_path,
         "--include_descriptors_from_image", PARTITIONS["product"]["raw_img"],
         "--include_descriptors_from_image", PARTITIONS["vendor_dlkm"]["raw_img"],
         "--prop", "com.android.build.boot.fingerprint:Unblocktech/apollo_p1/apollo-p1:12/SP1A.211105.004/hush10241757:userdebug/test-keys",

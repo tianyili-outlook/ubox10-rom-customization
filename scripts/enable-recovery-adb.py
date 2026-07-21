@@ -229,9 +229,10 @@ def modify_init_rc(entries):
     if idx != -1:
         rc_text = rc_text[:idx + len("setenv HOSTNAME console")] + "\n"
         
-    # Append the manual ConfigFS setup and adbd start sequence directly on boot
+    # Append the manual ConfigFS setup, USB device role switch, and adbd start sequence directly on boot
     custom_trigger = (
         "\n\non boot\n"
+        "    copy /sys/devices/platform/soc/usbc0/usb_device /dev/null\n"
         "    mount configfs none /config\n"
         "    mkdir /config/usb_gadget/g1 0770 shell shell\n"
         "    write /config/usb_gadget/g1/idVendor 0x18D1\n"
@@ -256,7 +257,39 @@ def modify_init_rc(entries):
     new_rc_data = new_rc_text.encode('utf-8')
     rc_entry['file_data'] = new_rc_data
     rc_entry['fields'][6] = len(new_rc_data)
-    print("init.recovery.sun50iw9p1.rc successfully updated with manual ConfigFS sequence!")
+    print("init.recovery.sun50iw9p1.rc successfully updated with manual ConfigFS sequence and USB switch!")
+
+def modify_main_init_rc(entries):
+    print("Modifying main system/etc/init/hw/init.rc to guarantee import and safe adbd seclabel...")
+    init_entry = None
+    for entry in entries:
+        if entry.get('filename') == 'system/etc/init/hw/init.rc':
+            init_entry = entry
+            break
+            
+    if not init_entry:
+        raise ValueError("Could not find system/etc/init/hw/init.rc in cpio archive!")
+        
+    init_text = init_entry['file_data'].decode('utf-8', errors='ignore')
+    
+    # 1. Force import of init.recovery.sun50iw9p1.rc explicitly
+    if "import /init.recovery.sun50iw9p1.rc" not in init_text:
+        init_text = init_text.replace(
+            "import /init.recovery.${ro.hardware}.rc",
+            "import /init.recovery.${ro.hardware}.rc\nimport /init.recovery.sun50iw9p1.rc"
+        )
+        
+    # 2. Remove --root_seclabel=u:r:su:s0 to prevent crash on user-build policies where su does not exist
+    if "--root_seclabel=u:r:su:s0" in init_text:
+        init_text = init_text.replace(
+            "service adbd /system/bin/adbd --root_seclabel=u:r:su:s0",
+            "service adbd /system/bin/adbd"
+        )
+        
+    new_init_data = init_text.encode('utf-8')
+    init_entry['file_data'] = new_init_data
+    init_entry['fields'][6] = len(new_init_data)
+    print("system/etc/init/hw/init.rc successfully updated!")
 
 def run_cmd(args):
     print("Executing: " + " ".join(args))
@@ -304,6 +337,9 @@ def main():
     # 4b. Modify device-specific init.rc
     modify_init_rc(entries)
     
+    # 4c. Modify main system init.rc
+    modify_main_init_rc(entries)
+    
     # 5. Re-serialize CPIO
     new_cpio_data = serialize_cpio(entries)
     
@@ -342,6 +378,88 @@ def main():
     print("\n==============================================================")
     print("Recovery ADB boot.img compilation and signing COMPLETE!")
     print(f"Output saved to: {REBUILT_BOOT_IMG}")
+    print("==============================================================")
+    
+    # 9. Also rebuild vendor_boot.img
+    rebuild_vendor_boot()
+
+def rebuild_vendor_boot():
+    print("\n==============================================================")
+    print("Starting Recovery ADB vendor_boot.img Rebuilder")
+    print("==============================================================")
+    
+    vendor_boot_dir = os.path.join(WORK_DIR, "vendor_boot")
+    os.makedirs(vendor_boot_dir, exist_ok=True)
+    
+    orig_vendor_boot = "firmware/extracted/vendor_boot.fex"
+    rebuilt_vendor_boot = os.path.join(WORK_DIR, "vendor_boot.img")
+    
+    # 1. Unpack original vendor_boot.fex
+    if not os.path.isfile(orig_vendor_boot):
+        print(f"ERROR: Original {orig_vendor_boot} not found!")
+        sys.exit(1)
+        
+    run_cmd([
+        sys.executable, UNPACK_BOOTIMG,
+        "--boot_img", orig_vendor_boot,
+        "--out", vendor_boot_dir
+    ])
+    
+    # 2. Decompress vendor ramdisk
+    vendor_ramdisk_path = os.path.join(vendor_boot_dir, "vendor_ramdisk")
+    cpio_data = decompress_ramdisk(vendor_ramdisk_path)
+    
+    # 3. Parse CPIO archive
+    entries = parse_cpio(cpio_data)
+    
+    # 4. Modify init.recovery.sun50iw9p1.rc
+    modify_init_rc(entries)
+    
+    # 5. Re-serialize CPIO
+    new_cpio_data = serialize_cpio(entries)
+    
+    # 6. Re-compress legacy LZ4 ramdisk
+    new_compressed_ramdisk = compress_ramdisk_legacy_lz4(new_cpio_data)
+    
+    # Save the new compressed ramdisk
+    rebuilt_vendor_ramdisk = os.path.join(vendor_boot_dir, "vendor_ramdisk_rebuilt")
+    with open(rebuilt_vendor_ramdisk, 'wb') as f:
+        f.write(new_compressed_ramdisk)
+    print(f"Recompressed vendor ramdisk saved to {rebuilt_vendor_ramdisk} (size: {len(new_compressed_ramdisk)} bytes)")
+    
+    # 7. Rebuild vendor_boot.img (header version 3)
+    print("\n--- Packaging vendor_boot.img (mkbootimg) ---")
+    run_cmd([
+        sys.executable, MKBOOTIMG,
+        "--header_version", "3",
+        "--vendor_boot", rebuilt_vendor_boot,
+        "--vendor_ramdisk", rebuilt_vendor_ramdisk,
+        "--dtb", os.path.join(vendor_boot_dir, "dtb"),
+        "--vendor_cmdline", "loop.max_part=4 androidboot.dynamic_partitions=true androidboot.dynamic_partitions_retrofit=true selinux=1 androidboot.selinux=permissive androidboot.dtbo_idx=0,1,2 firmware_class.path=/vendor/etc/firmware buildvariant=userdebug",
+        "--board", "arm64",
+        "--base", "0x0",
+        "--kernel_offset", "0x40080000",
+        "--ramdisk_offset", "0x43400000",
+        "--tags_offset", "0x40000100",
+        "--dtb_offset", "0x43300000",
+        "--pagesize", "2048"
+    ])
+    
+    # 8. Sign vendor_boot.img with AVB hash footer
+    print("\n--- Signing vendor_boot.img with AVB hash footer ---")
+    # Original salt: 2e606239ea40f534a157a4514d5ebbda81e01ab51bde9def5d877988e0851ab4
+    run_cmd([
+        sys.executable, AVBTOOL, "add_hash_footer",
+        "--image", rebuilt_vendor_boot,
+        "--partition_name", "vendor_boot",
+        "--partition_size", "33554432",
+        "--salt", "2e606239ea40f534a157a4514d5ebbda81e01ab51bde9def5d877988e0851ab4",
+        "--prop", "com.android.build.vendor_boot.fingerprint:Unblocktech/apollo_p1/apollo-p1:12/SP1A.211105.004/hush10241757:userdebug/test-keys"
+    ])
+    
+    print("\n==============================================================")
+    print("Recovery ADB vendor_boot.img compilation and signing COMPLETE!")
+    print(f"Output saved to: {rebuilt_vendor_boot}")
     print("==============================================================")
 
 if __name__ == "__main__":
