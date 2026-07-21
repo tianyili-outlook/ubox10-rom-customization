@@ -14,10 +14,18 @@
 - [x] 对照组优化编译与验证（实验 #8）：
   - [x] 启用高压缩模式且移除 0 字节终止块，还原原厂 ramdisk 输出测试版 `boot.img`。
   - [x] 物理烧录验证（结果：成功开机！稳定在躺倒机器人界面，确诊原因为 0 字节块/体积冲突）。
-- [x] Recovery ADB 跃变触发注入（实验 #9）：
-  - [x] 重新启用 `prop.default` 的 `ro.debuggable=1` 等调试属性。
-  - [x] 修改 `init.recovery.sun50iw9p1.rc` 写入 `none -> adb` 跃变触发，编译并打包 `x12-purified.img`。
-- [ ] **物理烧录调试固件并提取日志（实验 #9）（当前待办）**：
+- [x] Recovery ADB 跃变触发注入与验证（实验 #9）：
+  - [x] 重新启用 `prop.default` 调试属性并在 `init.recovery.sun50iw9p1.rc` 注入 `none -> adb` 跃变。
+  - [x] 物理烧录验证（结果：依然只看到 `sunxi` 裸口，ADB 无设备，原因为 user 固件限制及 SELinux Enforcing 导致 adbd Crash）。
+- [x] 命令式 ConfigFS 强绑定与 SELinux 宽容注入（实验 #10）：
+  - [x] 在 `prop.default` 中修改 `'ro.build.type': 'userdebug'` 解除 user 限制。
+  - [x] 在 `init.recovery.sun50iw9p1.rc` 中写入完全手动的命令式 ConfigFS 强绑定序列。
+  - [x] 物理烧录验证（结果：还是 `sunxi` 裸口，确诊为 `vendor_boot.img` 里的 rc 同名脚本发生了挂载覆写，将我们 boot 中的修改完全盖掉了）。
+- [x] 厂商引导 vendor_boot 联动重构与异步绑定优化（实验 #11 & #11.1）：
+  - [x] 联动修改脚本，对 `vendor_boot` 里的 `init.recovery.sun50iw9p1.rc` 写入相同的强绑和 OTG 切换代码，并使用原厂 Salt 进行 AVB 签名。
+  - [x] 修复 ConfigFS 规范时序漏洞，将 UDC 绑定移至 `on property:sys.usb.ffs.ready=1` 异步触发器，并顺次兼容 `sunxi-udc` 等多个全志 UDC 名称。
+  - [x] 升级主 `init.rc` 强行硬编码 import 并移除了 `adbd` 服务定义中的崩溃参数 `--root_seclabel`。
+- [ ] **物理烧录 Experiment #11.1 联动调试固件并提取日志（当前待办）**：
   - [ ] 烧录并通电开机，确认稳定进入机器人界面。
   - [ ] 电脑端通过 USB OTG 连通，运行 `adb devices` 检测。
   - [ ] 提取崩溃日志（`last_log`）和内核日志（`dmesg`）定位系统未启动根因。

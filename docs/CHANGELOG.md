@@ -2,6 +2,15 @@
 
 遵循 Keep a Changelog 风格；所有日期使用 ISO 8601。
 
+## [0.7.4] - 2026-07-21
+
+### Added
+- **M6 Recovery ADB 联动编译与异步 UDC 绑定 (实验 #11 & #11.1)**：
+  - **同步重构 vendor_boot**：解决了 `vendor_boot.img` 里的 `init.recovery.sun50iw9p1.rc` 强行覆写通用 `boot.img` 文件的“阴影覆写陷阱”。
+  - **异步 FFS 触发绑定**：将 UDC 写入逻辑单独移至 `on property:sys.usb.ffs.ready=1` 异步触发器，避免 adbd 服务未准备就绪时被内核拒绝绑定。
+  - **全平台多 UDC 覆盖**：在异步绑定动作里顺次尝试写入 `sunxi-udc`、`musb-hdrc.0` 等多个常用全志 UDC 控制器名称，彻底匹配 Recovery 内核的硬件定义。
+  - **主 init.rc 优化与 adbd 脱敏**：硬编码显式加载设备 rc 配置；移除 adbd 启动命令里的 `--root_seclabel` 安全标志，规避 user 构建中无 su 安全上下文导致的进程闪退。
+
 ## [0.7.3] - 2026-07-20
 
 ### Added

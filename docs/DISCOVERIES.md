@@ -101,5 +101,20 @@
 - 状态：已验证
 - 日期：2026-07-20
 - 事实：在实验 #8 中，即使我们在 `prop.default` 中写入了 `sys.usb.config=adb` 并且设备成功无重启启动，Windows 依然只识别到 `VID_1F3A&PID_1010` (sunxi 裸口)，未识别到 ADB。
-- 原因：Android 系统的 `init` 进程对属性触发器（如 `on property:sys.usb.config=adb`）的设计是**事件触发**而非**状态触发**。如果 `sys.usb.config` 的值在系统一开始加载属性时就已经是 `adb`，当 Recovery daemon 启动后尝试用代码将其设为 `adb` 时，系统的 `SetProperty` 会发现新值与旧值相同，从而放弃广播属性更新。这导致 `init.rc` 中的对应动作块从未执行，物理 USB 控制器没有进行 ConfigFS 挂载和绑定。
+- 原因：Android 系统的 `init` 进程对属性触发器（如 `on property:sys.usb.config=adb`）的设计是**事件触发**而非**状态触发**。如果 `sys.usb.config` 的值在系统一开始加载属性时就已经是 `adb`，当 Recovery daemon 启动后尝试用代码将其设为 `adb` 时，系统的 `SetProperty` 会发现新值与旧值相同，从而放弃广播属性更新。这导致 `init.rc` 中的对应动作块从未执行，物理 USB 控制器没有进行 ConfigFS 挂载 and 绑定。
 - 影响：必须通过脚本（例如在 `init.recovery.sun50iw9p1.rc` 的 `on boot` 事件中）执行一次手动的状态跃变：先将属性设为 `none` 随即设为 `adb`，方能 100% 强行叫醒 USB 绑定机制。
+
+## D-0013 — 厂商引导分区 (vendor_boot.img) 对配置文件的覆写阴影
+
+- 状态：已验证
+- 日期：2026-07-21
+- 事实：修改了 `boot.img` 中的 `init.recovery.sun50iw9p1.rc` 配置文件后，开机后设备的 USB 状态依然毫无变化，完全卡在 unbound。
+- 原因：在 Android 12 A/B 升级规范中，`init.recovery.sun50iw9p1.rc` 配置文件同时存放于 `boot.img` 的通用 ramdisk 与 `vendor_boot.img` 的厂商 ramdisk。系统引导时，内核会将 vendor ramdisk 挂载并完全覆盖通用 ramdisk，导致在 `boot.img` 中的修改直接被 `vendor_boot.img` 的原版文件覆写丢弃。
+- 影响：必须同步解包修改 `boot.img` 与 `vendor_boot.img`，或者直接重构 `vendor_boot.img` 里的 rc 脚本，才能让自定义触发器在开机时生效。
+
+## D-0014 — ConfigFS 异步绑定规范与 UDC 兼容命题
+
+- 状态：已验证
+- 日期：2026-07-21
+- 事实：在 `on boot` 同步阶段执行 `write /config/usb_gadget/g1/UDC ...` 会由于 FunctionFS (adbd) 尚未打开端点而直接被内核拒绝绑定。此外，在 Recovery 模式下，OTG 控制器名称通常会回归设备树原名 `sunxi-udc` 或是 `musb-hdrc.0`，而非 Android System 下的 `5100000.udc-controller`。
+- 解决：必须将 UDC 写入剥离并转移至 `on property:sys.usb.ffs.ready=1` 触发器，在 `adbd` 守护进程彻底就绪后进行异步绑定，并采取多 UDC 名称顺次写入的“散弹枪”机制保证兼容。
