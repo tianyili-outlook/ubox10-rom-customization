@@ -250,6 +250,11 @@ def modify_init_rc(entries):
         "    mkdir /dev/usb-ffs/adb 0770 shell shell\n"
         "    mount functionfs adb /dev/usb-ffs/adb uid=2000,gid=2000\n"
         "    start adbd\n"
+        "\n"
+        "on property:sys.usb.ffs.ready=1\n"
+        "    write /config/usb_gadget/g1/UDC \"sunxi-udc\"\n"
+        "    write /config/usb_gadget/g1/UDC \"musb-hdrc.0\"\n"
+        "    write /config/usb_gadget/g1/UDC \"musb-hdrc\"\n"
         "    write /config/usb_gadget/g1/UDC \"5100000.udc-controller\"\n"
     )
     
