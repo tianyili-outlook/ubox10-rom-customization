@@ -171,7 +171,8 @@ def modify_properties(entries):
         'persist.sys.usb.config': 'adb',
         'sys.usb.config': 'adb',
         'ro.adb.secure': '0',
-        'service.adb.root': '1'
+        'service.adb.root': '1',
+        'ro.build.type': 'userdebug'
     }
     
     modified_lines = []
@@ -223,16 +224,39 @@ def modify_init_rc(entries):
         
     rc_text = rc_entry['file_data'].decode('utf-8', errors='ignore')
     
-    # Append the custom "on boot" trigger to force the none -> adb transition
-    custom_trigger = "\n\non boot\n    setprop sys.usb.config none\n    setprop sys.usb.config adb\n"
-    if "setprop sys.usb.config adb" not in rc_text:
-        new_rc_text = rc_text + custom_trigger
-        new_rc_data = new_rc_text.encode('utf-8')
-        rc_entry['file_data'] = new_rc_data
-        rc_entry['fields'][6] = len(new_rc_data)
-        print("init.recovery.sun50iw9p1.rc successfully updated!")
-    else:
-        print("init.recovery.sun50iw9p1.rc already updated.")
+    # Revert any previous custom modifications by truncating to standard end of file
+    idx = rc_text.find("setenv HOSTNAME console")
+    if idx != -1:
+        rc_text = rc_text[:idx + len("setenv HOSTNAME console")] + "\n"
+        
+    # Append the manual ConfigFS setup and adbd start sequence directly on boot
+    custom_trigger = (
+        "\n\non boot\n"
+        "    mount configfs none /config\n"
+        "    mkdir /config/usb_gadget/g1 0770 shell shell\n"
+        "    write /config/usb_gadget/g1/idVendor 0x18D1\n"
+        "    write /config/usb_gadget/g1/idProduct 0xD001\n"
+        "    mkdir /config/usb_gadget/g1/strings/0x409 0770\n"
+        "    write /config/usb_gadget/g1/strings/0x409/serialnumber \"ubox10_recovery\"\n"
+        "    write /config/usb_gadget/g1/strings/0x409/manufacturer \"Google\"\n"
+        "    write /config/usb_gadget/g1/strings/0x409/product \"Recovery ADB\"\n"
+        "    mkdir /config/usb_gadget/g1/functions/ffs.adb\n"
+        "    mkdir /config/usb_gadget/g1/configs/b.1 0777 shell shell\n"
+        "    mkdir /config/usb_gadget/g1/configs/b.1/strings/0x409 0770 shell shell\n"
+        "    write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration \"adb\"\n"
+        "    symlink /config/usb_gadget/g1/functions/ffs.adb /config/usb_gadget/g1/configs/b.1/f1\n"
+        "    mkdir /dev/usb-ffs 0775 shell shell\n"
+        "    mkdir /dev/usb-ffs/adb 0770 shell shell\n"
+        "    mount functionfs adb /dev/usb-ffs/adb uid=2000,gid=2000\n"
+        "    start adbd\n"
+        "    write /config/usb_gadget/g1/UDC \"5100000.udc-controller\"\n"
+    )
+    
+    new_rc_text = rc_text + custom_trigger
+    new_rc_data = new_rc_text.encode('utf-8')
+    rc_entry['file_data'] = new_rc_data
+    rc_entry['fields'][6] = len(new_rc_data)
+    print("init.recovery.sun50iw9p1.rc successfully updated with manual ConfigFS sequence!")
 
 def run_cmd(args):
     print("Executing: " + " ".join(args))
@@ -300,6 +324,7 @@ def main():
         "--os_patch_level", "2022-02",
         "--kernel", orig_kernel_path,
         "--ramdisk", REBUILT_RAMDISK,
+        "--cmdline", "androidboot.selinux=permissive",
         "--output", REBUILT_BOOT_IMG
     ])
     
