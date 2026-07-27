@@ -49,8 +49,11 @@
 - [x] Test9a：只加入 `android.software.leanback`；离线验证通过，但实机 Play Store 提示版本不兼容，候选淘汰。
 - [x] Test9b：继续加入 `android.software.leanback_only`；离线验证通过，但实机仍进入 Play Store `AccessRestrictedActivity`，候选淘汰。
 - [x] 确认当前 Play Store 可登录、搜索和安装 Jellyfin TV，但首页失败、界面不适合遥控且没有可见的 Play Protect certification 项。
-- [ ] Test9.1：在刚刷回的 Test8r2 上采集 5 轮 Wi‑Fi 扫描、`dumpsys wifi` 和关键日志，区分 Settings、framework、supplicant/HAL、频段/信道问题。
-- [ ] Test9.1：达到目标 SSID 至少 4/5 轮在 30 秒内出现、重启自动重连且无需开关 Wi‑Fi 的验收标准；确认根因后才构建修复候选。
+- [x] Test9.1：在 Test8r2 上完成 5 轮主动扫描、历史 `WifiScanner`、framework/HAL/驱动和模块加载路径采证；确认存在历史连续零结果扫描、约 30 dB RSSI 双峰与 AIC vendor 能力缺口。
+- [x] Test9.1：确认板上丝印 AW869A，结合官方 1T1R/单天线规格与运行时 `ant_div=Y`，建立可证伪的天线分集假设；未把相关性当作根因结论。
+- [x] Test9.1：构建并离线验证 Test9w1；只对锁定 SHA-256 的 `aic8800_fdrv.ko` 在偏移 `0x2949` 执行 `01→00`，完整 AVB、ext4、super、IMAGEWTY 和 20 项单元测试通过。
+- [ ] Test9.1：刷入 Test9w1，确认启动后、开关 Wi‑Fi 后、重启后 `ant_div` 均为 `N`；目标 SSID 至少 4/5 轮在 30 秒内出现，没有连续零结果或约 30 dB RSSI 双峰。
+- [ ] Test9.1：确认重启自动重连、互联网/TCP ADB稳定，且蓝牙保持 `ON`、可扫描、`Bluetooth crashed 0 times`；任一关键项失败即刷回 Test8r2。
 - [ ] Test9.2：只读审计 TV remote 接收服务、mDNS/局域网发现与监听端口，验证 iPhone 官方 Google TV 应用的发现、配对和文字输入。
 - [ ] Test9.2：若官方接收端缺失，评估可追溯的开源局域网输入方案；先作为 data app 测试，蓝牙键盘作为已验证硬件回退。
 - [ ] Test9.3：提供 SmartTube、Kodi、Jellyfin、Moonlight 的用户态配置安装脚本，选择 AirPlay 接收器和现代文件管理器，完成最终验证。

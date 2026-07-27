@@ -1,5 +1,14 @@
 # 变更日志
 
+## 2026-07-28
+
+- 完成 Test8r2 Wi‑Fi 扫描专项采证：连接链路强且稳定，五轮主动扫描都能完成；历史全频扫描记录却存在连续 `0 results`，目标扫描 RSSI 在约 `-46/-47 dBm` 与 `-75 dBm` 间双峰跳变。
+- 排除 TV Settings 应用扫描节流与 `wificond` 崩溃作为首要原因；记录 AIC vendor HAL background scan/link-layer stats `ERROR_UNKNOWN`、无 scheduled scan，以及 2022 年 AIC8800D 驱动/固件栈。
+- 用户确认无线模块丝印为 `AW869A WiFi6`；官方规格为 AIC8800D40、1T1R、单天线型，而设备运行时 `aic8800_fdrv` 默认 `ant_div=Y`，据此建立可证伪的天线分集假设。
+- 候选构建器新增严格受限的 vendor_dlkm 模块二进制补丁：校验官方来源哈希、路径、偏移和原字节，恢复 mode/UID/GID/SELinux，并验证仅配置内模块内容变化。
+- 生成 Test9w1：仅将 `aic8800_fdrv.ko` 偏移 `0x2949` 的默认值由 `01` 改为 `00`；20 项单元测试、ext4、完整 AVB 链、super 和 IMAGEWTY 全部通过，固件 SHA-256 为 `2D43D4A6B64702F1D0265EDC27B33EB424B4B56A721DC8068B5CCEBB4A310CC5`。
+- Test9w1 重建的 vendor_dlkm 保留 dm-verity、明确关闭 FEC，因为本地没有可信 `fec` 生成器；候选保持实验状态，Test8r2 仍是稳定回退点，待真机完成扫描、模块重载、重启和蓝牙回归。
+
 ## 2026-07-27
 
 - Test8r2 已通过 PhoenixCard 真机刷测：设备直接进入 Projectivy，默认英语，红外遥控、Settings 正常，Wi‑Fi 可连接。

@@ -62,3 +62,11 @@
 - 系统属性同时呈现 Pixel 3/blueline、X12/Unblocktech；Google 账号安全提醒把设备显示为 `A1 ADT-3`。当前身份与 Google 组件栈并不一致，不能靠只改一个 model 或 fingerprint 安全修复。
 - 用户补充了 Wi‑Fi 扫描可靠性问题：成功关联后互联网与 TCP ADB 可用，但目标 SSID 在 Settings 中随机缺失，常需多次开关 Wi‑Fi。此前“Wi‑Fi 正常”仅覆盖连接结果，没有覆盖重复扫描。
 - Test8r2 离线 system 应用目录中未发现明显的 Google TV Remote Service/`com.google.android.tv.remote.service` 接收端。`RemoteProvisioner` 是平台远程配置组件，不应按名称误认为手机遥控服务；仍需在运行时做包、服务和局域网发现审计。
+- Test8r2 连接目标网络时链路本身健康：2.4 GHz 2412 MHz、Wi‑Fi 6、约 `-45/-46 dBm`、103–129 Mbps，采样中没有重试或丢包。连续五轮 shell 主动扫描均在约 5.5–6 秒完成并找到目标，因此故障不是“无线完全不可用”。
+- 同一位置、同一目标的扫描 RSSI 在约 `-46/-47 dBm` 与 `-75 dBm` 两档间交替；本次开机历史中的多次全频扫描则以恰好 `0 results` 完成，且出现连续零结果后自行恢复。这与用户需要反复开关 Wi‑Fi 才看到目标的现象一致。
+- TV Settings 使用 UID 1000 并拥有 `NETWORK_SETTINGS`；Wi‑Fi 框架的应用扫描节流计数为零。`wificond` 崩溃为零、PNO failure 为零，但 `WifiVendorHal` 的 background-scan capability 和 link-layer stats 返回 `ERROR_UNKNOWN`，驱动也不声明 scheduled scan，因此根因优先级落在 AIC HAL/驱动/射频路径，而不是 Settings 应用节流。
+- 板上无线模块丝印为 `AW869A WiFi6`。官方 AW869A 规格使用 AIC8800D40、1T1R，并将 AW869A 标为 `1-ANT type`、AW869A2 标为 `2-ANT type`；设备则识别 `aic8800d` rev 7，加载 `aic8800_fdrv` 2022-11-08 驱动和 2022 年固件，PHY 为单空间流。
+- 运行时 `/sys/module/aic8800_fdrv/parameters/ant_div` 为 `Y`。Wi‑Fi HAL 在每次开关 Wi‑Fi 时卸载并以空参数重新加载 `/vendor/lib/modules/aic8800_fdrv.ko`，所以额外创建 `modules.options` 不能可靠覆盖该路径；当前“单天线模块却启用 antenna diversity”是最符合双峰 RSSI 的待验证假设，不是已经证明的根因。
+- 官方 `aic8800_fdrv.ko` SHA-256 为 `0D713BDAD88323EF4230248DE56416269035561A3254E155C80F601C5FA5FD44`；ELF 重定位把 `ant_div` 参数指向 `.data` 中 `rwnx_mod_params+0x61`，对应文件偏移 `0x2949`，原始默认字节为 `01`。只改为 `00` 后模块 SHA-256 为 `DB43E76827FC2463A0AB54432B22A83D5045722E9C6C84BBEF96A4E1AFE8505B`；逐字节比较确认仅一字节不同，官方模块也没有 Linux 模块签名尾标记，不存在因补丁而破坏既有模块签名的问题。
+- Test9w1 在 Test8r2 基础上只改变上述模块有效载荷的一个预条件字节；构建器验证 vendor_dlkm 路径集与元数据不变、仅该普通文件内容变化，并通过只读 e2fsck、完整 AVB 链、super、IMAGEWTY 和 20 项单元测试。固件 SHA-256 为 `2D43D4A6B64702F1D0265EDC27B33EB424B4B56A721DC8068B5CCEBB4A310CC5`，尚无启动或 Wi‑Fi 修复实证。
+- 官方 `vendor_dlkm` 带 2-root FEC；本地主机没有可信可复现的 `fec` 可执行文件，因此 Test9w1 重建该分区时保留 dm-verity 哈希树但明确关闭 FEC。这不改变正常读取路径，却降低介质位错误时的纠错能力，是实验候选与官方分区之间除目标内容/AVB 元数据外的已知差异。

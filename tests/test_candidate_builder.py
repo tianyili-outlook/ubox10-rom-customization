@@ -87,6 +87,62 @@ class CandidateBuilderTests(unittest.TestCase):
             test9b_destinations - test9a_destinations,
         )
 
+    def test_test9w1_is_test8r2_plus_one_preconditioned_driver_patch(self) -> None:
+        test8r2 = builder.load_candidate_config(
+            REPO / "configs" / "candidates" / "test8r2-restore-contacts-provider.json"
+        )
+        test9w1 = builder.load_candidate_config(
+            REPO / "configs" / "candidates" / "test9w1-disable-aic-ant-div.json"
+        )
+        self.assertEqual(test8r2["remove_roots"], test9w1["remove_roots"])
+        self.assertEqual(test8r2["system_properties"], test9w1["system_properties"])
+        self.assertEqual(
+            [
+                {
+                    key: value
+                    for key, value in injection.items()
+                    if not key.startswith("_")
+                }
+                for injection in test8r2["system_app_injections"]
+            ],
+            [
+                {
+                    key: value
+                    for key, value in injection.items()
+                    if not key.startswith("_")
+                }
+                for injection in test9w1["system_app_injections"]
+            ],
+        )
+        self.assertEqual(
+            [
+                {
+                    "path": "/lib/modules/aic8800_fdrv.ko",
+                    "source_sha256": (
+                        "0D713BDAD88323EF4230248DE56416269035561A3254E155C80F601C5FA5FD44"
+                    ),
+                    "offset": 0x2949,
+                    "before_hex": "01",
+                    "after_hex": "00",
+                    "result_sha256": (
+                        "DB43E76827FC2463A0AB54432B22A83D5045722E9C6C84BBEF96A4E1AFE8505B"
+                    ),
+                }
+            ],
+            test9w1["vendor_dlkm_binary_patches"],
+        )
+
+    def test_binary_patch_requires_exact_original_bytes(self) -> None:
+        patch = {
+            "path": "/lib/modules/example.ko",
+            "offset": 1,
+            "before_hex": "01",
+            "after_hex": "00",
+        }
+        self.assertEqual(b"\xAA\x00\xBB", builder.apply_binary_patch(b"\xAA\x01\xBB", patch))
+        with self.assertRaisesRegex(RuntimeError, "precondition failed"):
+            builder.apply_binary_patch(b"\xAA\x02\xBB", patch)
+
     def test_wsl_path_uses_current_windows_workspace(self) -> None:
         path = builder.wsl_path(REPO / "tools" / "avbtool.py")
         self.assertTrue(path.startswith("/mnt/c/"))

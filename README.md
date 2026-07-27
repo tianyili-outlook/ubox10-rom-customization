@@ -22,9 +22,10 @@
 - 设备采用 64 位 ARM 内核，但 Android 用户空间为纯 32 位：`zygote32`、`armeabi-v7a`，且 system/vendor 没有 `lib64`。当前主线继续保留 32 位厂商栈。
 - **Test7 已实机通过。** Projectivy 已作为 system app 和默认 HOME 正常工作；首次启动的 Launcher 选择框来自仍保留的 X12。
 - **Test8 蓝牙回归已定位并修复。** 原因是 Test6 误删 AOSP ContactsProvider，导致 Bluetooth PBAP 崩溃；Test8r2 已恢复其完整目录并通过端到端自动验证和真机刷测。Projectivy、英语界面、遥控、Settings 和蓝牙正常，蓝牙为 `state: ON` 且 `Bluetooth crashed 0 times`。Test8r2 是当前稳定基线。
-- **Wi‑Fi 连接可用，但扫描可靠性尚未通过。** 连接目标网络后，互联网和 TCP ADB 正常；Settings 扫描目标 SSID 时偶发长期不出现，需要多次开关 Wi‑Fi。下一步先在 Test8r2 上做无修改采证。
+- **Wi‑Fi 扫描采证已完成，Test9w1 待实机验证。** Test8r2 连接后的五轮主动扫描都能完成，但历史全频扫描记录存在连续 `0 results`，同一目标的扫描 RSSI 又在约 `-46/-47 dBm` 与 `-75 dBm` 两档间跳变。板上丝印 `AW869A WiFi6`，官方规格为 AIC8800D40、1T1R、单天线型，而当前 AIC 驱动默认 `ant_div=Y`；Test9w1 因此只把该模块默认值改为关闭，作为可回滚的单变量实验。Test8r2 仍是唯一稳定基线。
 - **Test9a/Test9b 的 TV feature 实验均失败。** 单独加入 `android.software.leanback`，以及继续加入 `android.software.leanback_only` 后，Play Store 29.2.15 都提示版本不兼容并进入访问限制页。两者仅保留为可复现实验，不是稳定基线。
 - 当前 Play Store 能登录、搜索并安装 Jellyfin TV，但界面是手机式、首页加载失败且没有可见的 Play Protect certification 项。真正的 TV Play Store 体验与 64 位平台迁移合并为未来阶段。
+- **Test9w1 已通过离线验证，但尚未成为稳定版。** 镜像为 `out/candidates/test9w1-disable-aic-ant-div-r1/x12-test9w1-disable-aic-ant-div.img`，SHA-256 为 `2D43D4A6B64702F1D0265EDC27B33EB424B4B56A721DC8068B5CCEBB4A310CC5`；其 `vendor_dlkm` 因本地缺少可信 `fec` 生成器而保留 dm-verity、关闭 FEC，必须通过真机扫描、重载、重启和蓝牙回归后才能考虑晋级。
 
 ## 测试版 1：实机通过
 
@@ -122,7 +123,7 @@
 
 ## 后续路线
 
-- Test9.1：在 Test8r2 上定位并修复 Wi‑Fi 扫描结果随机的问题。
+- Test9.1：刷测 Test9w1，验证关闭 AW869A/AIC8800D 驱动的默认天线分集能否消除零结果扫描和约 30 dB 的 RSSI 双峰；失败立即回到 Test8r2。
 - Test9.2：Wi‑Fi 稳定后验证 iPhone 官方 Google TV 遥控/键盘；若系统缺少接收端，再评估可追溯的局域网方案。
 - Test9.3：提供 SmartTube、Kodi、Jellyfin、Moonlight 的配置安装脚本，选择 AirPlay 接收器和现代文件管理器，并完成最终验证。
 - M8：将 arm64/multilib、匹配的 Google TV 组件栈、电视版 Play Store 和一致设备身份作为独立未来平台升级。
@@ -146,6 +147,7 @@
 - 测试版 7：`out/candidates/test7-projectivy-default-home-r1/`
 - 测试版 8：`out/candidates/test8-remove-vendor-home-wizard-cast-r1/`
 - 测试版 8 修订版：`out/candidates/test8r2-restore-contacts-provider-r1/`
+- Test9w1 实验候选：`out/candidates/test9w1-disable-aic-ant-div-r1/`
 - 候选配置：`configs/candidates/`
 - 测试版构建脚本：`scripts/build-candidate-firmware.py`
 - ext4 解析器：`src/ubox10_rom/ext4_image.py`

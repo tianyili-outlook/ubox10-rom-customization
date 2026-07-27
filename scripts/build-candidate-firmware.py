@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import importlib.util
 import json
@@ -45,6 +46,14 @@ INPUTS = {
         "C589DC0B12E150469F179738F127F36F6321943577453A7DB335AB9E647B8FE5",
     ),
 }
+
+VENDOR_DLKM_MANIFEST = (
+    REPO / "out/official-vendor-dlkm-a/20260726-r1/manifest.json"
+)
+VENDOR_DLKM_PARTITION_SIZE = 6680576
+VENDOR_DLKM_SALT = (
+    "523caf2a432189513d46cde728abaf1825f66e083ba17a9d812baa50d017820b"
+)
 
 
 def sha256(path: Path) -> str:
@@ -127,6 +136,7 @@ def load_candidate_config(path: Path) -> dict:
         "system_properties",
         "system_app_injections",
         "system_file_injections",
+        "vendor_dlkm_binary_patches",
     }
     if not required.issubset(config) or not set(config).issubset(allowed):
         raise RuntimeError(
@@ -232,8 +242,109 @@ def load_candidate_config(path: Path) -> dict:
             raise RuntimeError(f"injected system file missing or SHA-256 mismatch: {source}")
         injection["_source"] = source
         seen_destinations.add(destination)
+
+    binary_patches = config.get("vendor_dlkm_binary_patches", [])
+    if not isinstance(binary_patches, list):
+        raise RuntimeError("vendor_dlkm_binary_patches must be a list")
+    official_vendor_dlkm = json.loads(
+        VENDOR_DLKM_MANIFEST.read_text(encoding="utf-8")
+    )
+    official_vendor_dlkm_entries = {
+        entry["path"]: entry for entry in official_vendor_dlkm["entries"]
+    }
+    seen_patch_paths: set[str] = set()
+    required_patch_keys = {
+        "path",
+        "source_sha256",
+        "offset",
+        "before_hex",
+        "after_hex",
+        "result_sha256",
+    }
+    for patch in binary_patches:
+        if not isinstance(patch, dict) or set(patch) != required_patch_keys:
+            raise RuntimeError(
+                "each vendor_dlkm_binary_patch needs path, source_sha256, offset, "
+                "before_hex, after_hex, and result_sha256"
+            )
+        target = patch["path"]
+        if (
+            not isinstance(target, str)
+            or not re.fullmatch(r"/lib/modules/[A-Za-z0-9._-]+\.ko", target)
+            or target in seen_patch_paths
+        ):
+            raise RuntimeError(
+                f"unsafe or duplicate vendor_dlkm binary patch path: {target!r}"
+            )
+        entry = official_vendor_dlkm_entries.get(target)
+        if entry is None or entry.get("type") != "regular":
+            raise RuntimeError(
+                f"vendor_dlkm binary patch target is not an official regular file: {target}"
+            )
+        source_sha256 = patch["source_sha256"]
+        result_sha256 = patch["result_sha256"]
+        for label, value in (
+            ("source_sha256", source_sha256),
+            ("result_sha256", result_sha256),
+        ):
+            if not isinstance(value, str) or not re.fullmatch(
+                r"[0-9A-Fa-f]{64}", value
+            ):
+                raise RuntimeError(
+                    f"invalid vendor_dlkm patch {label}: {value!r}"
+                )
+        if source_sha256.upper() != entry.get("content", {}).get("sha256"):
+            raise RuntimeError(
+                f"vendor_dlkm patch source SHA-256 does not match official manifest: {target}"
+            )
+        if result_sha256.upper() == source_sha256.upper():
+            raise RuntimeError(
+                f"vendor_dlkm patch result SHA-256 must differ from source: {target}"
+            )
+        offset = patch["offset"]
+        if type(offset) is not int or offset < 0:
+            raise RuntimeError(
+                f"vendor_dlkm patch offset must be a non-negative integer: {target}"
+            )
+        before_hex = patch["before_hex"]
+        after_hex = patch["after_hex"]
+        if (
+            not isinstance(before_hex, str)
+            or not isinstance(after_hex, str)
+            or not re.fullmatch(r"(?:[0-9A-Fa-f]{2}){1,32}", before_hex)
+            or not re.fullmatch(r"(?:[0-9A-Fa-f]{2}){1,32}", after_hex)
+            or len(before_hex) != len(after_hex)
+            or before_hex.lower() == after_hex.lower()
+        ):
+            raise RuntimeError(
+                f"invalid vendor_dlkm before/after byte sequence: {target}"
+            )
+        patch_length = len(before_hex) // 2
+        logical_size = entry.get("content", {}).get("logical_size")
+        if not isinstance(logical_size, int) or offset + patch_length > logical_size:
+            raise RuntimeError(
+                f"vendor_dlkm binary patch exceeds target size: {target}"
+            )
+        seen_patch_paths.add(target)
     config["_path"] = resolved
     return config
+
+
+def apply_binary_patch(payload: bytes, patch: dict) -> bytes:
+    """Apply one preconditioned in-file patch and return a new immutable payload."""
+
+    offset = patch["offset"]
+    before = bytes.fromhex(patch["before_hex"])
+    after = bytes.fromhex(patch["after_hex"])
+    observed = payload[offset : offset + len(before)]
+    if observed != before:
+        raise RuntimeError(
+            f"vendor_dlkm patch precondition failed for {patch['path']} at "
+            f"0x{offset:X}: {observed.hex().upper()} != {before.hex().upper()}"
+        )
+    modified = bytearray(payload)
+    modified[offset : offset + len(after)] = after
+    return bytes(modified)
 
 
 def make_debugfs_commands(
@@ -332,6 +443,152 @@ def prepare_build_prop_replacement(config: dict, system: Path, e2fs: str) -> Pat
     return modified
 
 
+def apply_vendor_dlkm_binary_patches(
+    config: dict,
+    vendor_dlkm: Path,
+    e2fs: str,
+) -> None:
+    """Patch allowlisted vendor modules and rebuild a verified no-FEC AVB footer."""
+
+    patches = config.get("vendor_dlkm_binary_patches", [])
+    if not patches:
+        return
+
+    official_manifest = json.loads(VENDOR_DLKM_MANIFEST.read_text(encoding="utf-8"))
+    official_entries = {
+        entry["path"]: entry for entry in official_manifest["entries"]
+    }
+    selinux_value_file = OUT / "security.selinux.vendor_file.bin"
+    selinux_value_file.write_bytes(b"u:object_r:vendor_file:s0\0")
+
+    run(
+        [
+            PYTHON,
+            str(TOOLS / "avbtool.py"),
+            "erase_footer",
+            "--image",
+            str(vendor_dlkm),
+        ],
+        "04a-vendor-dlkm-erase-footer.log",
+    )
+
+    commands: list[str] = []
+    for index, patch in enumerate(patches, start=1):
+        target = patch["path"]
+        entry = official_entries[target]
+        source = OUT / f"vendor-dlkm-{index}-{Path(target).name}.official"
+        modified = OUT / f"vendor-dlkm-{index}-{Path(target).name}.patched"
+        run(
+            [
+                "wsl.exe",
+                "-d",
+                "Ubuntu-24.04",
+                "--",
+                f"{e2fs}/debugfs",
+                "-R",
+                f"dump {target} {wsl_path(source)}",
+                wsl_path(vendor_dlkm),
+            ],
+            f"04b-vendor-dlkm-dump-{index}.log",
+        )
+        if sha256(source) != patch["source_sha256"].upper():
+            raise RuntimeError(
+                f"vendor_dlkm patch source SHA-256 mismatch after dump: {target}"
+            )
+        patched_payload = apply_binary_patch(source.read_bytes(), patch)
+        modified.write_bytes(patched_payload)
+        if sha256(modified) != patch["result_sha256"].upper():
+            raise RuntimeError(
+                f"vendor_dlkm patch result SHA-256 mismatch: {target}"
+            )
+
+        xattrs = {item["name"]: item for item in entry.get("xattrs", [])}
+        selinux_xattr = xattrs.get("security.selinux")
+        if (
+            set(xattrs) != {"security.selinux"}
+            or selinux_xattr is None
+            or base64.b64decode(selinux_xattr["value_b64"])
+            != b"u:object_r:vendor_file:s0\0"
+        ):
+            raise RuntimeError(
+                f"unsupported vendor_dlkm patch target xattrs: {target}"
+            )
+        inode_mode = 0o100000 | int(entry["mode_octal"], 8)
+        commands.extend(
+            [
+                f"rm {target}\n",
+                f"write {wsl_path(modified)} {target}\n",
+                f"set_inode_field {target} mode {inode_mode:07o}\n",
+                f"set_inode_field {target} uid {entry['uid']}\n",
+                f"set_inode_field {target} gid {entry['gid']}\n",
+                (
+                    f"ea_set -f {wsl_path(selinux_value_file)} {target} "
+                    "security.selinux\n"
+                ),
+            ]
+        )
+
+    command_file = OUT / "vendor-dlkm-debugfs.commands"
+    command_file.write_text("".join(commands), encoding="utf-8", newline="\n")
+    run(
+        [
+            "wsl.exe",
+            "-d",
+            "Ubuntu-24.04",
+            "--",
+            f"{e2fs}/debugfs",
+            "-w",
+            "-f",
+            wsl_path(command_file),
+            wsl_path(vendor_dlkm),
+        ],
+        "04c-vendor-dlkm-patch.log",
+    )
+    run(
+        [
+            "wsl.exe",
+            "-d",
+            "Ubuntu-24.04",
+            "--",
+            f"{e2fs}/e2fsck",
+            "-fy",
+            wsl_path(vendor_dlkm),
+        ],
+        "04d-vendor-dlkm-e2fsck.log",
+    )
+    run(
+        [
+            PYTHON,
+            str(TOOLS / "avbtool.py"),
+            "add_hashtree_footer",
+            "--image",
+            str(vendor_dlkm),
+            "--partition_size",
+            str(VENDOR_DLKM_PARTITION_SIZE),
+            "--partition_name",
+            "vendor_dlkm",
+            "--hash_algorithm",
+            "sha256",
+            "--salt",
+            VENDOR_DLKM_SALT,
+            "--algorithm",
+            "NONE",
+            # The local AVB toolchain has no host `fec` binary. This keeps
+            # dm-verity intact and matches the existing modified-system policy.
+            "--do_not_generate_fec",
+            "--prop",
+            (
+                "com.android.build.vendor_dlkm.fingerprint:"
+                "Unblocktech/apollo_p1/apollo-p1:12/SP1A.211105.004/"
+                "hush10241757:userdebug/test-keys"
+            ),
+            "--prop",
+            "com.android.build.vendor_dlkm.os_version:12",
+        ],
+        "04e-vendor-dlkm-avb-footer.log",
+    )
+
+
 def preflight_wsl(e2fs: str) -> None:
     """Fail before creating a candidate directory if WSL cannot read the toolchain or inputs."""
 
@@ -384,6 +641,76 @@ def entry_semantics(entry: dict, *, include_content: bool = True) -> dict:
     if entry.get("type") == "symlink":
         value["symlink"] = entry.get("symlink")
     return value
+
+
+def validate_vendor_dlkm_semantics(config: dict, vendor_dlkm: Path) -> dict:
+    official = json.loads(VENDOR_DLKM_MANIFEST.read_text(encoding="utf-8"))
+    candidate = read_manifest(vendor_dlkm)
+    candidate["source"]["path"] = str(
+        (
+            REPO
+            / "out"
+            / "candidates"
+            / config["candidate_id"]
+            / vendor_dlkm.name
+        ).resolve()
+    )
+    (OUT / "vendor-dlkm-manifest.json").write_text(
+        json.dumps(candidate, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+    official_entries = {entry["path"]: entry for entry in official["entries"]}
+    candidate_entries = {entry["path"]: entry for entry in candidate["entries"]}
+    if set(candidate_entries) != set(official_entries):
+        missing = sorted(set(official_entries) - set(candidate_entries))[:10]
+        added = sorted(set(candidate_entries) - set(official_entries))[:10]
+        raise RuntimeError(
+            "vendor_dlkm path set changed; "
+            f"missing={missing}, unexpected_added={added}"
+        )
+
+    patches = {
+        patch["path"]: patch
+        for patch in config.get("vendor_dlkm_binary_patches", [])
+    }
+    changed_regular_files: list[str] = []
+    for path in sorted(official_entries):
+        before = official_entries[path]
+        after = candidate_entries[path]
+        is_patched = path in patches
+        if entry_semantics(
+            before, include_content=not is_patched
+        ) != entry_semantics(after, include_content=not is_patched):
+            raise RuntimeError(
+                f"unexpected vendor_dlkm common-path semantic change: {path}"
+            )
+        if before.get("type") == "regular":
+            before_sha256 = before.get("content", {}).get("sha256")
+            after_sha256 = after.get("content", {}).get("sha256")
+            if before_sha256 != after_sha256:
+                changed_regular_files.append(path)
+        if is_patched:
+            expected_sha256 = patches[path]["result_sha256"].upper()
+            if (
+                after.get("content", {}).get("sha256") != expected_sha256
+                or after.get("content", {}).get("logical_size")
+                != before.get("content", {}).get("logical_size")
+            ):
+                raise RuntimeError(
+                    f"vendor_dlkm patched content mismatch: {path}"
+                )
+
+    if changed_regular_files != sorted(patches):
+        raise RuntimeError(
+            "unexpected vendor_dlkm regular-file content changes: "
+            f"{changed_regular_files}; expected {sorted(patches)}"
+        )
+    return {
+        "changed_regular_files": changed_regular_files,
+        "path_count": len(candidate_entries),
+    }
 
 
 def expected_added_paths(config: dict, official_paths: set[str]) -> set[str]:
@@ -532,10 +859,25 @@ def validate_candidate(
     e2fs: str,
 ) -> dict:
     run([PYTHON, "-m", "unittest", "discover", "-s", "tests", "-v"], "09-unit-tests.log")
-    semantic_summary = validate_system_semantics(config, system)
+    system_semantic_summary = validate_system_semantics(config, system)
+    vendor_dlkm_semantic_summary = validate_vendor_dlkm_semantics(
+        config, vendor_dlkm
+    )
     run(
         ["wsl.exe", "-d", "Ubuntu-24.04", "--", f"{e2fs}/e2fsck", "-fn", wsl_path(system)],
         "10-e2fsck-readonly.log",
+    )
+    run(
+        [
+            "wsl.exe",
+            "-d",
+            "Ubuntu-24.04",
+            "--",
+            f"{e2fs}/e2fsck",
+            "-fn",
+            wsl_path(vendor_dlkm),
+        ],
+        "10b-vendor-dlkm-e2fsck-readonly.log",
     )
 
     avb_sources = {
@@ -614,8 +956,12 @@ def validate_candidate(
     )
     return {
         "status": "PASS",
-        "system_semantics": semantic_summary,
+        "system_semantics": system_semantic_summary,
+        "vendor_dlkm_semantics": vendor_dlkm_semantic_summary,
         "ext4": "PASS",
+        "vendor_dlkm_fec": (
+            "disabled" if config.get("vendor_dlkm_binary_patches") else "official"
+        ),
         "avb_full_chain": "PASS",
         "super_metadata": "PASS",
         "imagewty_checksums": "PASS",
@@ -670,6 +1016,7 @@ def build_in_staging(config: dict, final_out: Path, e2fs: str, staging: Path) ->
         ],
         "04-system-avb-footer.log",
     )
+    apply_vendor_dlkm_binary_patches(config, vendor_dlkm, e2fs)
 
     key = TOOLS / "testkey_rsa2048.pem"
     chain_key = "tools/testkey_rsa2048.pem"
@@ -786,6 +1133,17 @@ def build_in_staging(config: dict, final_out: Path, e2fs: str, staging: Path) ->
                 "sha256": injection["sha256"].upper(),
             }
             for injection in config.get("system_file_injections", [])
+        ],
+        "vendor_dlkm_binary_patches": [
+            {
+                "path": patch["path"],
+                "source_sha256": patch["source_sha256"].upper(),
+                "offset": patch["offset"],
+                "before_hex": patch["before_hex"].upper(),
+                "after_hex": patch["after_hex"].upper(),
+                "result_sha256": patch["result_sha256"].upper(),
+            }
+            for patch in config.get("vendor_dlkm_binary_patches", [])
         ],
         "firmware": {
             "path": str((final_out / firmware.name).relative_to(REPO)),

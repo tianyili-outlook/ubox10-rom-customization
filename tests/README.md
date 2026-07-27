@@ -8,7 +8,7 @@
 python -m unittest discover -s tests -p "test_*.py" -v
 ```
 
-该命令目前只执行 M6b.1 的小型 JSON root-hierarchy fixture；不会打开官方映像、调用镜像工具或访问设备。
+该命令当前覆盖 IMAGEWTY/LP/ext4 解析与语义门禁、候选配置约束、Test8r2/Test9 系列差异合同，以及 vendor_dlkm 二进制补丁的严格原字节前置条件。单元测试不会修改官方镜像、调用 PhoenixCard 或访问设备；完整候选构建会另外执行 ext4、AVB、super 和 IMAGEWTY 集成验证。
 
 ## 测试层次
 
