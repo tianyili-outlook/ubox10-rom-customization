@@ -35,9 +35,15 @@
 - **保留当前 32 位 Android 用户空间**：H616 和内核支持 64 位，但 system/vendor 只有 32 位运行库和硬件栈；没有匹配的 64 位 BSP/厂商二进制时不迁移 arm64。
 - **大型目标应用使用配置脚本安装**：Kodi、Jellyfin、Moonlight、SmartTube 不固化进只读分区，便于更新和替换；Projectivy 仍在 Test7 注入固件。
 - **Test7 将 Projectivy 注入 `/system/app`**：沿用已验证的 system ext4 修改链，并替换厂商已有的两项默认 Launcher 属性；X12 仅在 Test7 保留作回退。
+- **Test9a/Test9b 只作为失败诊断实验保留**：加入 Leanback/Leanback-only feature 后，Play Store 仍拒绝当前设备组合；配置和通用文件注入能力用于复现证据，但镜像不作为部署基线。
+- **当前阶段不再修补 Play Store APK**：保留现有 Google 服务用于登录、搜索、安装和更新；电视版 Play Store、Play Protect/认证、设备身份一致性与 64 位 BSP 合并到未来平台阶段。
+- **Test9 先网络后手机输入**：Wi‑Fi 扫描可靠性是当前最高优先级；iPhone 官方 Google TV 遥控依赖同一 Wi‑Fi，因此只有网络稳定后才进入配对和文字输入验收。
+- **iPhone 输入采用官方方案优先、局域网最小权限**：先验证系统是否有兼容 TV Remote 接收端；缺失时不移植 Google 专有组件，优先评估可追溯、开源、无需云端的 data app，蓝牙键盘作为回退。
+- **Wi‑Fi 先采证再改固件**：连接与传输已通过，但扫描不可靠；先比较 Settings、shell 扫描和 Wi‑Fi 栈日志，不在无根因时修改 vendor/HAL 或路由器。
 
 ## 后续再决定
 
 - 若未来取得同板型完整 64 位 BSP/固件，再单独评估 arm64/multilib 分支；不与当前净化主线混做。
+- 未来 64 位平台所使用的合法、成套 Google TV 服务和 TV Play Store 方案。
 - AirPlay 接收器和现代文件管理器的最终选择。
 - AwTvProvision、SettingsSetup、AwManager、PackageOverride 是否有继续清理价值。

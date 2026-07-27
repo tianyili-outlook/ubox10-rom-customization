@@ -2,9 +2,14 @@
 
 ## 2026-07-27
 
-- Test8r2 已通过 PhoenixCard 真机刷测：设备直接进入 Projectivy，默认英语，红外遥控、Settings 和 Wi‑Fi 正常。
+- Test8r2 已通过 PhoenixCard 真机刷测：设备直接进入 Projectivy，默认英语，红外遥控、Settings 正常，Wi‑Fi 可连接。
 - ADB 确认 ContactsProvider 来自 `/system/priv-app/ContactsProvider/ContactsProvider.apk`；蓝牙保持 `state: ON`、`Bluetooth crashed 0 times` 并可扫描。
 - ADB 确认 X12、settingwizard 和 HappyCast 三个厂商包均不存在。Test8 因蓝牙回归淘汰，Test8r2 成为当前稳定基线。
+- 构建器新增受限的 `/system/etc/permissions/*.xml` 文件注入、SHA-256/元数据/SELinux/语义差异验证；IMAGEWTY checksum 改为 16 MiB 分块计算，避免整镜像 unpack 导致内存不足，并增加回归测试。
+- 构建并离线验证 Test9a/Test9b，分别加入 Leanback 和 Leanback-only feature；两者真机 Play Store 均提示版本不兼容，明确标记为失败诊断候选。
+- Google 账户登录、GSF check-in 和 Jellyfin TV 安装已验证；当前 Play Store 仍为手机式、首页加载失败且没有可见的 Play Protect certification 项。TV Play Store 与 64 位系统合并为未来平台目标。
+- 修正 Wi‑Fi 状态描述：连接后互联网/TCP ADB 可用，但目标 SSID 扫描随机，进入 Test9.1 专项采证。
+- 新增产品化路线图：Wi‑Fi 扫描可靠性优先，随后验证 iPhone 官方 Google TV 遥控文字输入，再完成应用、AirPlay 和文件管理收尾。
 
 ## 2026-07-26
 

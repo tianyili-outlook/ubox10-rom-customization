@@ -52,5 +52,13 @@
 - 蓝牙回归根因是 Test6 删除 AOSP `ContactsProvider` 后，`BluetoothPbapService` 找不到 `com.android.contacts` provider，导致 `com.android.bluetooth` 持续崩溃；与 settingwizard、蓝牙 HAL 或硬件无关。修订版必须恢复 ContactsProvider。
 - 在 Test8 data 分区临时安装官方 ContactsProvider APK 后，蓝牙立即保持 `ON` 并进入扫描，确认因果；单 APK 因缺少匹配的官方 ODEX/VDEX 会使 acore 异常，实验后已卸载，修订镜像应原样恢复完整目录。
 - Test8r2 原样恢复 ContactsProvider 的 APK、ODEX、VDEX；自动语义检查确认相对官方删除 348 条预期路径、新增 Projectivy 两条路径且共同普通文件仅 `build.prop` 改变。ext4、完整 AVB 链、super 和 IMAGEWTY 均通过。
-- Test8r2 已通过真机验证：Projectivy、英语界面、红外遥控、Settings 和 Wi‑Fi 正常；ContactsProvider 位于 `/system/priv-app`，蓝牙为 `state: ON`、`Bluetooth crashed 0 times` 并可扫描。X12、settingwizard 和 HappyCast 均不存在，因此 Test8r2 是当前稳定基线。
+- Test8r2 已通过真机验证：Projectivy、英语界面、红外遥控和 Settings 正常，Wi‑Fi 可连接；ContactsProvider 位于 `/system/priv-app`，蓝牙为 `state: ON`、`Bluetooth crashed 0 times` 并可扫描。X12、settingwizard 和 HappyCast 均不存在，因此 Test8r2 是当前稳定基线。
 - 构建器现先做 WSL/工具/空间检查，再在继承父 ACL 的唯一临时目录构建；全部自动验证通过后才发布正式目录，失败会删除临时目录。Windows `tempfile.mkdtemp()` 会关闭 ACL 继承，因此不再用于发布级事务目录。
+- Test8r2 运行时具有 `android.hardware.type.television`，但缺少 `android.software.leanback` 和 `android.software.leanback_only`；framework 当前 UI mode 是 TV。单凭 television feature 不能让现有 Play Store 获得正常电视界面。
+- Test9a 加入 `android.software.leanback`，Test9b 再加入 `android.software.leanback_only`；两者实机均由 Play Store 29.2.15 进入 `AccessRestrictedActivity` 并提示版本不兼容，证明缺失 feature 不是唯一原因。
+- Test8r2 上的系统 Play Store 29.2.15 曾自更新到 35.2.19；界面仍为手机式、首页加载失败，但搜索可用。Google 账户付款设置可跳过，之后 Jellyfin 成功安装且为 Android TV 版本。
+- Play Store 设置中没有可见的 Play Protect certification 项。GMS 日志曾出现 `isUncertifiedDevice: false`，但这只是内部观测，不能等同于 Play Store 设置页的设备认证结论。
+- Test9b 直接通过 GMS 账户流程登录成功且 GSF check-in 成功；Play 自更新查询返回 `Server Version=-1`，没有为当前 TV feature 与 Pixel 3/blueline 身份组合提供兼容更新。
+- 系统属性同时呈现 Pixel 3/blueline、X12/Unblocktech；Google 账号安全提醒把设备显示为 `A1 ADT-3`。当前身份与 Google 组件栈并不一致，不能靠只改一个 model 或 fingerprint 安全修复。
+- 用户补充了 Wi‑Fi 扫描可靠性问题：成功关联后互联网与 TCP ADB 可用，但目标 SSID 在 Settings 中随机缺失，常需多次开关 Wi‑Fi。此前“Wi‑Fi 正常”仅覆盖连接结果，没有覆盖重复扫描。
+- Test8r2 离线 system 应用目录中未发现明显的 Google TV Remote Service/`com.google.android.tv.remote.service` 接收端。`RemoteProvisioner` 是平台远程配置组件，不应按名称误认为手机遥控服务；仍需在运行时做包、服务和局域网发现审计。

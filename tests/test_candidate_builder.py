@@ -46,6 +46,47 @@ class CandidateBuilderTests(unittest.TestCase):
             added,
         )
 
+    def test_test9a_adds_only_the_leanback_feature_file(self) -> None:
+        config = builder.load_candidate_config(
+            REPO / "configs" / "candidates" / "test9a-add-leanback-feature.json"
+        )
+        added = builder.expected_added_paths(
+            config,
+            {"/", "/system", "/system/app", "/system/etc", "/system/etc/permissions"},
+        )
+        self.assertEqual(
+            {
+                "/system/app/ProjectivyLauncher",
+                "/system/app/ProjectivyLauncher/ProjectivyLauncher.apk",
+                "/system/etc/permissions/android.software.leanback.xml",
+            },
+            added,
+        )
+        self.assertEqual([], [
+            injection
+            for injection in config["system_file_injections"]
+            if injection["destination"]
+            != "/system/etc/permissions/android.software.leanback.xml"
+        ])
+
+    def test_test9b_adds_only_leanback_only_beyond_test9a(self) -> None:
+        test9a = builder.load_candidate_config(
+            REPO / "configs" / "candidates" / "test9a-add-leanback-feature.json"
+        )
+        test9b = builder.load_candidate_config(
+            REPO / "configs" / "candidates" / "test9b-add-leanback-only-feature.json"
+        )
+        test9a_destinations = {
+            injection["destination"] for injection in test9a["system_file_injections"]
+        }
+        test9b_destinations = {
+            injection["destination"] for injection in test9b["system_file_injections"]
+        }
+        self.assertEqual(
+            {"/system/etc/permissions/android.software.leanback_only.xml"},
+            test9b_destinations - test9a_destinations,
+        )
+
     def test_wsl_path_uses_current_windows_workspace(self) -> None:
         path = builder.wsl_path(REPO / "tools" / "avbtool.py")
         self.assertTrue(path.startswith("/mnt/c/"))

@@ -9,9 +9,10 @@
 - 简洁、现代、适合遥控器的电视 Launcher。
 - 启动、桌面导航、应用启动和视频播放流畅。
 - 服务电视影音和常用电视应用，不追求智能家居、办公、日程或机械最少进程。
-- 支持 Google Play、ADB、APK 安装、USB/文件管理等后续扩展方式。
+- 当前系统保留 Google 服务、ADB、APK 安装、USB/文件管理等扩展方式；真正适合遥控器的 TV Play Store 体验属于未来平台升级，不用随机替换 APK 冒充完成。
+- 提供便捷、安全的 iPhone 局域网遥控与文字输入，减少账号、密码和搜索词的遥控器逐字输入；蓝牙键盘保留为硬件回退。
 - 目标应用包括 Projectivy、SmartTube、Kodi、Jellyfin、Moonlight 和 AirPlay 接收器；第三方 APK 必须记录来源、版本、签名和许可证。
-- 在稳定性、驱动和应用兼容允许时充分利用 CPU、GPU、视频硬解、内存和存储；若 32 位用户空间形成明确瓶颈，再把完整 arm64/multilib 迁移作为独立扩展项目评估。
+- 在稳定性、驱动和应用兼容允许时充分利用 CPU、GPU、视频硬解、内存和存储；将完整 arm64/multilib、匹配的 Google TV 服务栈、TV Play Store 与设备身份一致性作为同一个未来平台阶段评估。
 
 ## 明确不做
 
@@ -32,4 +33,4 @@
 
 ## 当前状态
 
-UART、Fastboot、WSL2、ext4/AVB/super/IMAGEWTY 构建链均已完成。Test8 蓝牙回归已定位为误删 ContactsProvider；Test8r2 已恢复完整目录并通过事务式构建、自动离线验证和真机验收。Projectivy、英语界面、遥控、Settings、Wi‑Fi 和蓝牙正常，Test8r2 是当前稳定基线。
+UART、Fastboot、WSL2、ext4/AVB/super/IMAGEWTY 构建链均已完成。Test8 蓝牙回归已定位为误删 ContactsProvider；Test8r2 已恢复完整目录并通过事务式构建、自动离线验证和真机验收。Projectivy、英语界面、遥控、Settings 和蓝牙正常。Wi‑Fi 连接后可用，但扫描目标 SSID 的可靠性仍待解决；Test8r2 仍是当前稳定基线。

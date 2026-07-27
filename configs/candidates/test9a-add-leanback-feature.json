@@ -1,0 +1,79 @@
+{
+  "candidate_id": "test9a-add-leanback-feature-r1",
+  "firmware_filename": "x12-test9a-add-leanback-feature.img",
+  "remove_roots": [
+    "/system/app/UBTunnel.6",
+    "/system/app/DragonAtt",
+    "/system/app/DragonBox",
+    "/system/app/DragonAgingTV",
+    "/system/app/Factory_detection",
+    "/system/app/AwlogSettings",
+    "/system/app/browser-v1.1",
+    "/system/app/H618_UpgradeV3",
+    "/system/app/Update",
+    "/system/app/CZFileManager3.1.7_official_site",
+    "/system/app/zysrf",
+    "/system/app/GalleryTV",
+    "/system/app/Music",
+    "/system/app/VideoPlayer",
+    "/system/app/TvdVideo",
+    "/system/priv-app/TvdFileManager",
+    "/system/app/ImageParser",
+    "/system/app/NfcNci",
+    "/system/app/SecureElement",
+    "/system/priv-app/MmsService",
+    "/system/app/SimAppDialog",
+    "/system/system_ext/priv-app/CarrierConfig",
+    "/system/system_ext/app/WAPPushManager",
+    "/system/app/PrintSpooler",
+    "/system/priv-app/BuiltInPrintService",
+    "/system/app/PrintRecommendationService",
+    "/system/app/CtsShimPrebuilt",
+    "/system/priv-app/CtsShimPrivPrebuilt",
+    "/system/priv-app/ManagedProvisioning",
+    "/system/app/EasterEgg",
+    "/system/priv-app/BackupRestoreConfirmation",
+    "/system/priv-app/SharedStorageBackup",
+    "/system/priv-app/LocalTransport",
+    "/system/priv-app/DynamicSystemInstallationService",
+    "/system/priv-app/CalendarProvider",
+    "/system/app/HTMLViewer",
+    "/system/app/TimerSwitch",
+    "/system/app/BasicDreams",
+    "/system/app/WebScreensaver",
+    "/system/app/CameraExtensionsProxy",
+    "/system/app/LiveWallpapersPicker",
+    "/system/app/BookmarkProvider",
+    "/system/app/WallpaperBackup",
+    "/system/priv-app/BlockedNumberProvider",
+    "/system/app/BluetoothMidiService",
+    "/system/priv-app/SoundPicker",
+    "/system/system_ext/priv-app/Screenshot",
+    "/system/system_ext/priv-app/WallpaperCropper",
+    "/system/system_ext/priv-app/WallpaperPicker2",
+    "/system/app/X12",
+    "/system/app/settingwizard",
+    "/system/app/happycast"
+  ],
+  "system_properties": {
+    "ro.sw.defaultlauncher_package": "com.spocky.projengmenu",
+    "ro.sw.defaultlauncher_class": "com.spocky.projengmenu.ui.home.MainActivity",
+    "persist.sys.language": "en",
+    "persist.sys.country": "US",
+    "ro.hdmi.set_menu_language": "0"
+  },
+  "system_app_injections": [
+    {
+      "source": "work/preinstall_apks/ProjectivyLauncher-4.71-c95-xda-release.apk",
+      "destination": "/system/app/ProjectivyLauncher/ProjectivyLauncher.apk",
+      "sha256": "6818FC2DB44411A605CA4D7067FB9D7227AAEF2414CFF42DE58FE13E9321B47A"
+    }
+  ],
+  "system_file_injections": [
+    {
+      "source": "assets/system_files/android.software.leanback.xml",
+      "destination": "/system/etc/permissions/android.software.leanback.xml",
+      "sha256": "B3C44B673F0F736184C40A8A56962E7A44B0FF39DC36E074215AE0C9B8C04B51"
+    }
+  ]
+}

@@ -29,16 +29,27 @@ MODIFIED_FILES = {
 if os.path.exists("work/vendor_boot.img"):
     MODIFIED_FILES["vendor_boot.fex"] = "work/vendor_boot.img"
 
+CHECKSUM_CHUNK_BYTES = 16 * 1024 * 1024
+
+
 def calculate_checksum(data):
-    """Calculate 32-bit little endian word checksum of data."""
-    # Pad to multiple of 4 bytes
-    remainder = len(data) % 4
-    if remainder != 0:
-        data += b'\x00' * (4 - remainder)
-    
-    words_count = len(data) // 4
-    words = struct.unpack(f'<{words_count}I', data)
-    return sum(words) & 0xffffffff
+    """Calculate the Allwinner word checksum without unpacking the whole image at once."""
+    view = memoryview(data)
+    full_length = len(view) - (len(view) % 4)
+    checksum = 0
+    for offset in range(0, full_length, CHECKSUM_CHUNK_BYTES):
+        chunk_length = min(CHECKSUM_CHUNK_BYTES, full_length - offset)
+        words_count = chunk_length // 4
+        checksum = (
+            checksum
+            + sum(struct.unpack_from(f"<{words_count}I", view, offset))
+        ) & 0xffffffff
+    if full_length != len(view):
+        checksum = (
+            checksum
+            + int.from_bytes(view[full_length:].tobytes(), "little")
+        ) & 0xffffffff
+    return checksum
 
 def main():
     print("==============================================================")

@@ -21,7 +21,10 @@
 - **Projectivy 4.71 用户态预检通过。** 已设为默认 Launcher，方向键、OK、Back、应用列表、Settings、应用启动和 Home 接管正常；仅观察到轻微卡顿。
 - 设备采用 64 位 ARM 内核，但 Android 用户空间为纯 32 位：`zygote32`、`armeabi-v7a`，且 system/vendor 没有 `lib64`。当前主线继续保留 32 位厂商栈。
 - **Test7 已实机通过。** Projectivy 已作为 system app 和默认 HOME 正常工作；首次启动的 Launcher 选择框来自仍保留的 X12。
-- **Test8 蓝牙回归已定位并修复。** 原因是 Test6 误删 AOSP ContactsProvider，导致 Bluetooth PBAP 崩溃；Test8r2 已恢复其完整目录并通过端到端自动验证和真机刷测。Projectivy、英语界面、遥控、Settings、Wi‑Fi 和蓝牙正常，蓝牙为 `state: ON` 且 `Bluetooth crashed 0 times`。Test8r2 是当前稳定基线。
+- **Test8 蓝牙回归已定位并修复。** 原因是 Test6 误删 AOSP ContactsProvider，导致 Bluetooth PBAP 崩溃；Test8r2 已恢复其完整目录并通过端到端自动验证和真机刷测。Projectivy、英语界面、遥控、Settings 和蓝牙正常，蓝牙为 `state: ON` 且 `Bluetooth crashed 0 times`。Test8r2 是当前稳定基线。
+- **Wi‑Fi 连接可用，但扫描可靠性尚未通过。** 连接目标网络后，互联网和 TCP ADB 正常；Settings 扫描目标 SSID 时偶发长期不出现，需要多次开关 Wi‑Fi。下一步先在 Test8r2 上做无修改采证。
+- **Test9a/Test9b 的 TV feature 实验均失败。** 单独加入 `android.software.leanback`，以及继续加入 `android.software.leanback_only` 后，Play Store 29.2.15 都提示版本不兼容并进入访问限制页。两者仅保留为可复现实验，不是稳定基线。
+- 当前 Play Store 能登录、搜索并安装 Jellyfin TV，但界面是手机式、首页加载失败且没有可见的 Play Protect certification 项。真正的 TV Play Store 体验与 64 位平台迁移合并为未来阶段。
 
 ## 测试版 1：实机通过
 
@@ -119,9 +122,10 @@
 
 ## 后续路线
 
-- Test8r2：实机确认恢复 ContactsProvider 后蓝牙开启和扫描正常；其余已通过项目只做启动 sanity check。
-- Test9：提供 SmartTube、Kodi、Jellyfin、Moonlight 的配置安装脚本，选择 AirPlay 接收器和现代文件管理器，并完成最终验证。
-- arm64/multilib 作为独立扩展项目；只有取得同板型 64 位 BSP 或完整匹配的 64 位硬件库后才进入实作。
+- Test9.1：在 Test8r2 上定位并修复 Wi‑Fi 扫描结果随机的问题。
+- Test9.2：Wi‑Fi 稳定后验证 iPhone 官方 Google TV 遥控/键盘；若系统缺少接收端，再评估可追溯的局域网方案。
+- Test9.3：提供 SmartTube、Kodi、Jellyfin、Moonlight 的配置安装脚本，选择 AirPlay 接收器和现代文件管理器，并完成最终验证。
+- M8：将 arm64/multilib、匹配的 Google TV 组件栈、电视版 Play Store 和一致设备身份作为独立未来平台升级。
 
 ## 重要路径
 
@@ -148,6 +152,7 @@
 - UART 手册：`docs/UART_RUNBOOK.md`
 - 当前待办：`docs/TODO.md`
 - 当前里程碑：`docs/MILESTONES.md`
+- 产品化路线图：`docs/ROADMAP.md`
 
 ## 工作方式
 

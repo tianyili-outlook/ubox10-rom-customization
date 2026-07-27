@@ -123,7 +123,11 @@ def load_candidate_config(path: Path) -> dict:
         raise RuntimeError("candidate config must be inside the repository") from exc
     config = json.loads(resolved.read_text(encoding="utf-8"))
     required = {"candidate_id", "firmware_filename", "remove_roots"}
-    allowed = required | {"system_properties", "system_app_injections"}
+    allowed = required | {
+        "system_properties",
+        "system_app_injections",
+        "system_file_injections",
+    }
     if not required.issubset(config) or not set(config).issubset(allowed):
         raise RuntimeError(
             f"candidate config keys must include {sorted(required)} "
@@ -198,6 +202,36 @@ def load_candidate_config(path: Path) -> dict:
             raise RuntimeError(f"injected APK missing or SHA-256 mismatch: {source}")
         injection["_source"] = source
         seen_destinations.add(destination)
+    file_injections = config.get("system_file_injections", [])
+    if not isinstance(file_injections, list):
+        raise RuntimeError("system_file_injections must be a list")
+    for injection in file_injections:
+        if not isinstance(injection, dict) or set(injection) != {"source", "destination", "sha256"}:
+            raise RuntimeError("each system_file_injection needs source, destination, and sha256")
+        source = (REPO / injection["source"]).resolve()
+        try:
+            source.relative_to((REPO / "assets" / "system_files").resolve())
+        except (TypeError, ValueError) as exc:
+            raise RuntimeError(
+                "injected system file source must be under assets/system_files"
+            ) from exc
+        destination = injection["destination"]
+        if (
+            not isinstance(destination, str)
+            or not re.fullmatch(
+                r"/system/etc/permissions/[A-Za-z0-9._-]+\.xml",
+                destination,
+            )
+            or destination in seen_destinations
+        ):
+            raise RuntimeError(f"unsafe or duplicate system file destination: {destination!r}")
+        expected = injection["sha256"]
+        if not isinstance(expected, str) or not re.fullmatch(r"[0-9A-Fa-f]{64}", expected):
+            raise RuntimeError(f"invalid injected system file SHA-256: {expected!r}")
+        if not source.is_file() or sha256(source) != expected.upper():
+            raise RuntimeError(f"injected system file missing or SHA-256 mismatch: {source}")
+        injection["_source"] = source
+        seen_destinations.add(destination)
     config["_path"] = resolved
     return config
 
@@ -251,6 +285,15 @@ def make_debugfs_commands(
             f"set_inode_field {directory} uid 0\n"
             f"set_inode_field {directory} gid 0\n"
             f"ea_set -f {wsl_path(selinux_value_file)} {directory} security.selinux\n"
+            f"write {wsl_path(injection['_source'])} {destination}\n"
+            f"set_inode_field {destination} mode 0100644\n"
+            f"set_inode_field {destination} uid 0\n"
+            f"set_inode_field {destination} gid 0\n"
+            f"ea_set -f {wsl_path(selinux_value_file)} {destination} security.selinux\n"
+        )
+    for injection in config.get("system_file_injections", []):
+        destination = injection["destination"]
+        commands += (
             f"write {wsl_path(injection['_source'])} {destination}\n"
             f"set_inode_field {destination} mode 0100644\n"
             f"set_inode_field {destination} uid 0\n"
@@ -352,6 +395,14 @@ def expected_added_paths(config: dict, official_paths: set[str]) -> set[str]:
         while parent not in official_paths:
             expected.add(parent)
             parent = parent.rsplit("/", 1)[0]
+    for injection in config.get("system_file_injections", []):
+        destination = injection["destination"]
+        parent = destination.rsplit("/", 1)[0]
+        if parent not in official_paths:
+            raise RuntimeError(
+                f"injected system file parent is not an official directory: {parent}"
+            )
+        expected.add(destination)
     return expected
 
 
@@ -424,6 +475,20 @@ def validate_system_semantics(config: dict, system: Path) -> dict:
             != "dTpvYmplY3RfcjpzeXN0ZW1fZmlsZTpzMAA="
         ):
             raise RuntimeError(f"injected APK metadata mismatch: {destination}")
+
+    for injection in config.get("system_file_injections", []):
+        destination = injection["destination"]
+        injected_file = candidate_entries[destination]
+        xattrs = {item["name"]: item for item in injected_file.get("xattrs", [])}
+        if (
+            injected_file.get("mode_octal") != "0644"
+            or injected_file.get("uid") != 0
+            or injected_file.get("gid") != 0
+            or injected_file.get("content", {}).get("sha256") != injection["sha256"].upper()
+            or xattrs.get("security.selinux", {}).get("value_b64")
+            != "dTpvYmplY3RfcjpzeXN0ZW1fZmlsZTpzMAA="
+        ):
+            raise RuntimeError(f"injected system file metadata mismatch: {destination}")
 
     if config.get("system_properties"):
         original = (OUT / "system.build.prop.original").read_text(encoding="utf-8").splitlines()
@@ -713,6 +778,14 @@ def build_in_staging(config: dict, final_out: Path, e2fs: str, staging: Path) ->
                 "sha256": injection["sha256"].upper(),
             }
             for injection in config.get("system_app_injections", [])
+        ],
+        "system_file_injections": [
+            {
+                "source": injection["source"],
+                "destination": injection["destination"],
+                "sha256": injection["sha256"].upper(),
+            }
+            for injection in config.get("system_file_injections", [])
         ],
         "firmware": {
             "path": str((final_out / firmware.name).relative_to(REPO)),

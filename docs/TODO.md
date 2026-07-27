@@ -1,6 +1,6 @@
 # 待办事项
 
-## 当前：固化 Test8r2 稳定基线并准备 Test9
+## 当前：Test8r2 上完成 Test9 可靠性与体验收尾
 
 - [x] 提取官方 `system_a/product_a/vendor_a/vendor_dlkm_a`。
 - [x] 建立官方 `system_a` 的 3857 条 ext4 语义清单。
@@ -46,8 +46,15 @@
 - [x] 构建器增加 WSL 前置检查、事务式发布、失败自动清理和统一自动验证。
 - [x] 构建并离线验证 Test8r2；恢复 ContactsProvider APK/ODEX/VDEX 完整目录。
 - [x] 刷入 Test8r2，确认蓝牙保持开启、能扫描且 `Bluetooth crashed 0 times`；原 Test8 不作为基线。
-- [ ] Test9：提供 SmartTube、Kodi、Jellyfin、Moonlight 的用户态配置安装脚本，选择 AirPlay 接收器和现代文件管理器，完成最终验证。
-- [ ] Test9 评估 Pixel 3 `blueline` 身份伪装对 Google Play 认证、TV 应用目录和设备显示名称的影响；确认替代方案前不修改 fingerprint。
+- [x] Test9a：只加入 `android.software.leanback`；离线验证通过，但实机 Play Store 提示版本不兼容，候选淘汰。
+- [x] Test9b：继续加入 `android.software.leanback_only`；离线验证通过，但实机仍进入 Play Store `AccessRestrictedActivity`，候选淘汰。
+- [x] 确认当前 Play Store 可登录、搜索和安装 Jellyfin TV，但首页失败、界面不适合遥控且没有可见的 Play Protect certification 项。
+- [ ] Test9.1：在刚刷回的 Test8r2 上采集 5 轮 Wi‑Fi 扫描、`dumpsys wifi` 和关键日志，区分 Settings、framework、supplicant/HAL、频段/信道问题。
+- [ ] Test9.1：达到目标 SSID 至少 4/5 轮在 30 秒内出现、重启自动重连且无需开关 Wi‑Fi 的验收标准；确认根因后才构建修复候选。
+- [ ] Test9.2：只读审计 TV remote 接收服务、mDNS/局域网发现与监听端口，验证 iPhone 官方 Google TV 应用的发现、配对和文字输入。
+- [ ] Test9.2：若官方接收端缺失，评估可追溯的开源局域网输入方案；先作为 data app 测试，蓝牙键盘作为已验证硬件回退。
+- [ ] Test9.3：提供 SmartTube、Kodi、Jellyfin、Moonlight 的用户态配置安装脚本，选择 AirPlay 接收器和现代文件管理器，完成最终验证。
+- [ ] M8：取得匹配的 64 位 BSP 和合法、成套的 Google TV 组件后，再处理 arm64/multilib、TV Play Store、认证与设备身份；当前不修改 fingerprint。
 - [ ] 分析 AwTvProvision、SettingsSetup、AwManager、PackageOverride；只保留确有硬件/平台职责者。
 - [ ] 保留 AOSP `ProxyHandler`、`VpnDialogs`，除非实机证据证明它们参与厂商网络干预。
 
