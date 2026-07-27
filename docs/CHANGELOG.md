@@ -1,146 +1,71 @@
 # 变更日志
 
-遵循 Keep a Changelog 风格；所有日期使用 ISO 8601。
+## 2026-07-27
 
-> 历史版本条目记录当时执行过的构建或实验；如与本节的证据等级、风险结论冲突，以最新的 `Unreleased`、`DISCOVERIES.md` 和 `M6_DEBUG_LOG.md` 为准。
+- Test8r2 已通过 PhoenixCard 真机刷测：设备直接进入 Projectivy，默认英语，红外遥控、Settings 和 Wi‑Fi 正常。
+- ADB 确认 ContactsProvider 来自 `/system/priv-app/ContactsProvider/ContactsProvider.apk`；蓝牙保持 `state: ON`、`Bluetooth crashed 0 times` 并可扫描。
+- ADB 确认 X12、settingwizard 和 HappyCast 三个厂商包均不存在。Test8 因蓝牙回归淘汰，Test8r2 成为当前稳定基线。
 
-## [Unreleased] - 2026-07-22
+## 2026-07-26
 
-### Added
+- 测试版 2 实机通过：Android、Settings、红外遥控、HDMI 音视频、Wi‑Fi 和 bilibili API 正常；ADB 确认五个目标包均已删除。
+- Wi‑Fi ADB 地址确认为 `192.168.1.5:7896`；此前 Ethernet 地址失联源于网线被拔除，并非 adbd 不稳定。
+- ADB 发现厂商浏览器和 H618 Upgrade 拥有安装软件包、写安全设置、重启及 Recovery 等高权限；Test3 确定删除浏览器、H618 Upgrade 和 Softwinner Update。
+- Test3 构建完成；40 个预期路径删除、完整 AVB 启动链和 IMAGEWTY 载荷验证通过。镜像 SHA-256 为 `8E42CB38426E3E80359BA5F2A9A0A21368789B43BF6B8DD86DF2D67630E44B77`。
+- Test3 实机通过：Android、Settings、遥控、HDMI 和 Wi‑Fi 正常；ADB 确认三个目标包消失且 Chrome 保留。
+- Test4 确定批量删除八个不常驻的旧媒体、文件管理和输入应用；默认 LatinIME 和硬件媒体栈保留。
+- Test4 构建完成；95 个预期路径删除、完整 AVB 启动链和 IMAGEWTY 载荷验证通过。镜像 SHA-256 为 `639403FDDB95439401FFC929764E549CA49A7AD4F5BF92DD232FF6955A50CE73`。
+- Test4 实机包验证通过，默认 LatinIME 正常；`com.android.musicfx` 确认为独立音效服务，不是已删除 Music 应用的残留。
+- Test5 确定批量删除 17 个电话、NFC、打印、CTS、企业管理、本地备份和 DSU 组件；ADB 已确认对应硬件/功能未启用。
+- Test5 构建完成；累计 199 个预期路径删除、完整 AVB 启动链和 IMAGEWTY 载荷验证通过。镜像 SHA-256 为 `16332D8E6BC14FA8D5855383BD3C9248D7A374E81A4967DC471B3C6E610F472F`。
+- Test5 实机包验证通过：17 个目标包均消失，Google Play、GMS、蓝牙、TV Settings 和 MusicFX 均保留。
+- 确定后续四批路线；Test6 作为最后一批纯删除，新增清理 16 个旧个人设备 UI、壁纸/屏保、联系人/日历和非目标组件。
+- Test6 构建完成；累计 295 个预期路径删除、完整 AVB 启动链和 IMAGEWTY 载荷验证通过。镜像 SHA-256 为 `D8AA71730952F4388D82E6B919E05B757C50CD3D74805351546566D62125A576`。
+- Test6 实机通过：16 个目标包消失，六个关键电视包保留；纯删除阶段结束。
+- 项目目标修正为现代遥控器电视体验、影音流畅和开放扩展，不再以机械减少包或进程为目标。
+- 将候选构建流程改为 `scripts/build-candidate-firmware.py --config ...`，Test1/Test2 的删除项由 JSON 配置描述。
+- 生成测试版 2：累计移除 UBTunnel 和五个工厂测试/日志工具；ext4 语义差异、完整 AVB 启动链及 IMAGEWTY 载荷验证全部通过。
+- 测试版 2 镜像为 `out/candidates/test2-remove-factory-tools-r1/x12-test2-remove-factory-tools.img`，刷机校验 SHA-256 为 `4789EB9F76FD98E09D4155E95235CD06E38A9AE15E5A7BC7BF5B9F7D2224C964`。
+- 测试版 1 已实机启动；主界面、设置、红外遥控、HDMI 音视频、Wi‑Fi 与目标网站通过。
+- 归档量产 UART 粘贴记录；约 305 秒输出 `CARD OK`、`sprite success`。
+- UART 采集器 schema 升级到 v2，支持按 `Ctrl+C` 或 `Q` 安全停止并保存终止原因、raw、文本和元数据。
+- UART 普通采集不再默认生成 SHA-256；仅显式使用 `-GenerateChecksums` 时生成。
+- 以太网、蓝牙扫描和高码率视频通过；CEC、BBLL 按当前需求跳过。
+- Android USB debugging 开启后仍无 USB 枚举；离线确认固件预设 TCP ADB 端口为 `7896`。
+- 局域网 ADB 通过 `192.168.1.8:7896` 建立；运行时确认 123 个包、UBTunnel 缺失、SELinux Permissive 和厂商 Launcher 强制属性。
+- 两次 positive ext4 fixture 均通过且 SHA-256 相同：`6CA8B1E2B64690B480ECF45DF6B0F2C1270658E39FBFB2265E872A38B82AB1EA`。
+- 完成独立 ext4 解析器并读取官方 `system_a` 的 3857 条语义清单。
+- 测试版 1 仅删除 `/system/app/UBTunnel.6`；AVB、super、ext4 和 IMAGEWTY 离线验证全部通过。
+- 生成 `out/candidates/test1-no-ubtunnel-r3/x12-test1-no-ubtunnel.img`，SHA-256：`3B8F8981E94B9BF209763FE3B67EC7102616B6D42631AA7F93264885C852C776`。
+- 项目文档改为简洁状态模式；旧 M6 材料降为历史参考。
+- Projectivy 4.71 用户态预检通过并接管 Home；记录轻微卡顿，进入 Test7 集成准备。
+- 确认设备为 ARM64 内核加纯 32 位 Android 用户空间；决定当前主线不迁移 arm64。
+- 验收 Kodi 21.3、Jellyfin TV 0.19.9、Moonlight 12.1 和 SmartTube 32.03 Beta 官方 APK，改为最终配置脚本安装。
+- 扩展候选构建器以校验并注入 system APK、修改现有 system 属性，同时恢复 UID/GID/mode 和 SELinux 标签。
+- 生成 Test7：Projectivy 4.71 注入 `/system/app`，默认 Launcher 属性改为 Projectivy，X12 保留；完整离线验证通过。
+- Test7 实机通过；Projectivy system app、默认 HOME、遥控和应用启动正常。记录双 Launcher 首次选择框及默认繁体中文，转入 Test8。
+- 将最终目标补充为在稳定性和驱动兼容允许时充分利用 CPU/GPU/硬解/内存/存储；arm64/multilib 作为独立扩展项目，不阻塞当前 32 位净化主线。
+- Test8 删除 X12、settingwizard 和 HappyCast，将默认语言设为英语并关闭 HDMI 菜单语言覆盖。
+- Test8 离线验证通过：仅 59 个预期路径新增删除、共同文件仅 `build.prop` 变化，ext4、完整 AVB 链、super 和 IMAGEWTY 均通过。
+- 确认 system 使用 Google Pixel 3 `blueline` 身份属性并以 `model2/brand2` 保存真实 X12/Unblocktech 信息；为避免破坏 Google Play，暂不随 Test8 修改。
+- Test8 实机大部分通过，但蓝牙开启约一秒后自动关闭；将 Test8 标记为有回归并开始诊断，其他功能不重复回归。
+- ADB 定位蓝牙回归为 `BluetoothPbapService` 缺少 `com.android.contacts` provider；决定恢复 Test6 误删的 AOSP ContactsProvider。
+- 临时安装官方 ContactsProvider APK 后蓝牙保持开启并扫描，因果验证通过；数据分区实验包随即卸载，修订固件将恢复 APK/ODEX/VDEX 完整目录。
+- 构建器改为 WSL 前置检查、事务式输出和内置自动验证；新增已知 ContactsProvider/Bluetooth 依赖拒绝、失败清理及 Windows ACL 继承测试。
+- Test8r2 恢复 ContactsProvider 完整目录并在一次构建中通过当时的 13 项单元测试、ext4、完整 AVB、super 和 IMAGEWTY 验证；ACL 修复测试加入后当前共 14 项单元测试通过。
 
-- **M6a 无修改启动链取证门禁**：新增 USB 主机侧身份采集、被动 UART 冷启动日志和启动链假设表三项前置条件。
-- **只读 USB 证据采集器**：新增 `scripts/collect-usb-evidence.ps1`，默认仅归档 Windows PnP 信息和本地 Fastboot 版本；协议探测须显式传入参数。
-- **分级验证路线**：新增容器、super、ext4 三层零内容改动 round-trip 的放行规则；诊断构建与发布候选隔离。
-- **证据等级**：统一使用“已观察 / 离线已验证 / 协议已验证 / 实机已验证”，禁止以离线结构校验代替实机结论。
-- **Fastboot 描述符与 PnP 证据归档**：记录 `logs/device/20260722-001337/` 的原始 JSON、Platform Tools 版本和 SHA-256；`FF/42/03` 已确认匹配 AOSP Fastboot 接口条件。
-- **受控主机 GUID 试验**：新增 `docs/U1_FASTBOOT_HOST_BINDING_TRIAL.md` 与 `scripts/test-fastboot-interface-guid.ps1`。脚本默认只读；Apply/Rollback 需要管理员权限、显式确认、精确实例匹配和 JSON 备份，不调用 Fastboot、不安装/卸载/重绑驱动。
+## 2026-07-25
 
-### Changed
+- UART COM3、115200 8N1 被动接收成功，日志位于 `logs/device/20260725-004019/`。
+- 配置 WSL2 Ubuntu 24.04 和私有 e2fsprogs 1.47.2 工具链。
+- 确认旧候选 `system_a` 根层级错误，旧 boot/vendor_boot 含调试修改，全部停止使用。
 
-- **修正 USB 结论**：Windows 已观察到 `USB\VID_1F3A&PID_1010`（`sunxi`）；`fastboot devices` 与 `fastboot getvar all` 均持续等待设备，标准 Fastboot 握手尚未建立。此前“Fastboot 已可用”的表述已撤销。
-- **冻结实验 #11.1**：该镜像仅完成构建与离线校验，**未执行物理刷写**。在取得无修改启动链证据前，不再刷入新的 boot、vendor_boot、vbmeta 或 Recovery 调试镜像。
-- **降级离线结论**：AVB 重签、super 重构、启动器替换和 APK 裁剪仅具离线证据；候选系统尚未启动，不能宣称运行时成功。
-- **发现 ext4 重建语义缺口**：现有提取流程将符号链接保存在 `.symlink` 文本文件，重建流程也未证明恢复所有权、mode、SELinux xattr、capability 和硬链接；该路径暂不得用于运行时放行。
-- **禁用未经审查的 USB 驱动方案**：仓库中手工注入硬件 ID 的 Google USB INF 不作为可安装驱动包；修改后原 Catalog 不再覆盖整个包。不得关闭 Windows 驱动签名强制，也不得直接使用 Zadig 绑定。
-- **收敛 Fastboot 阻塞归因**：当前 libwdi `oem79.inf` 的 WinUSB 绑定未注册 Platform Tools 所需 Android interface GUID；“接口身份已确认”与“命令事务未验证”现被明确分开。该归因仍待单变量试验验证。
-- **U1 授权执行状态**：用户已授权，但自动化环境不具 Windows 管理员令牌；脚本在写入前退出，未修改注册表、驱动或设备。后续只能在提升权限的本地 PowerShell 执行，禁止绕过 UAC。
-- **U1 主机枚举验证通过**：提升权限执行已在唯一实例追加目标 GUID，备份/写后验证记录于 `logs/device/20260722-004314/`；物理拔插后 `fastboot devices` 显示 `992304568773    fastboot`。Fastboot 命令事务仍待 `getvar version` 验证。
-- **U2 采集器兼容性修正**：保留 `logs/device/20260722-004615/` 的未启动子进程证据；将 `collect-usb-evidence.ps1` 从 `Start-Process` 重定向切换到 .NET 进程 API，规避 Windows 同时存在 `PATH` / `Path` 时的重复键异常。该失败未发送设备命令。
-- **标准 Fastboot 协议验证通过**：`logs/device/20260722-004720/` 归档 `fastboot devices` 与 `getvar version → version: 0.5`；后续仅可逐项读取 M6a 白名单变量，写入类命令继续禁止。
-- **白名单变量采集自动化**：新增 `scripts/probe-fastboot-readonly-vars.ps1`，仅接受 M6a 明确列出的变量，为每项独立记录 stdout/stderr、退出码与 SHA-256，拒绝其他变量。
-- **Fastboot 证据上限已确定**：`logs/device/20260722-004937/` 显示 `product=sunxi`、`secure=yes`，但 userspace 和所有 A/B 槽位变量均不支持。项目停止扩展 Fastboot 探测，M6a 转入 UART 被动冷启动日志。
+## 2026-07-22
 
-## [0.7.4] - 2026-07-21
+- Windows WinUSB 接口 GUID 修正后，Fastboot 识别序列号 `992304568773`。
+- `fastboot getvar version` 返回 `0.5`；常见 A/B 槽位变量不受支持。
 
-### Added
-- **M6 Recovery ADB 联动编译与异步 UDC 绑定 (实验 #11 & #11.1)**：
-  - **同步重构 vendor_boot（候选假设）**：为验证同名 rc 优先级而生成过候选代码；实际 ramdisk 拼装/导入顺序未得到启动日志确认。
-  - **异步 FFS 触发绑定（候选假设）**：将 UDC 写入逻辑移至 `on property:sys.usb.ffs.ready=1`，尚未实机验证。
-  - **多 UDC 名称尝试（候选假设）**：`sunxi-udc`、`musb-hdrc.0` 等名称未获设备侧确认，不作为通用方案。
-  - **主 init.rc / adbd 改造（隔离诊断代码）**：不属于发布候选，实验 #11.1 已暂停且未刷入。
+## 2026-07-19 至 2026-07-20
 
-## [0.7.3] - 2026-07-20
-
-### Added
-- **M6 Recovery ADB 跃变触发注入 (实验 #9)**：
-  - 在 `init.recovery.sun50iw9p1.rc` 候选脚本中新增 `none -> adb` 跃变。该方法没有建立 ADB，关于属性触发器的因果解释现已降级为待验证假设。
-
-### Changed
-- **LZ4 封包格式修复验证 (实验 #8)**：
-  - 高压缩和“去除尾部 0 字节终止符”的候选参数曾使设备不再快速重启；这只是部分兼容性证据，不证明完整 boot 镜像 100% 兼容。
-  - 重新启用了 `prop.default` 中被暂时注释的调试与安全属性（`ro.debuggable=1`、`ro.secure=0`、`ro.adb.secure=0` 等）。
-
-## [0.7.2] - 2026-07-20
-
-### Added
-- **M6 Recovery ADB 编译管线开发**：
-  - 编写了 [enable-recovery-adb.py](../scripts/enable-recovery-adb.py)，实现了对 `boot.fex` 的解包、CPIO 归档解析、Legacy LZ4 块重压、`mkbootimg` 重构以及 `avbtool` hash footer 签名的全自动重包装管线。
-
-### Changed
-- **U-Boot 引导死锁排查与对照组集成**：
-  - 排查并撤销了主 vbmeta 镜像生成指令中的 `--flags 2` 参数，以防 U-Boot 引导程序强制锁死启动。
-  - 创建了对照组（实验 #7）测试机制，暂时屏蔽 ramdisk 内部 `prop.default` 属性修改，使用完全相同的打包格式输出原样还原版 `boot.img`，以控制变量法锁定导致 Bootloop 重启的临界位置。
-
-## [0.7.1] - 2026-07-20
-
-### Added
-- **M6 Fastboot 调试通道发现**：
-  - 观察到 USB 枚举 ID：VID `1F3A` / PID `1010`。后续测试未建立标准 Fastboot 握手，因此该记录不构成“可用 Fastboot”结论。
-  - 曾在 Google USB INF 中加入 Allwinner ID；该手工修改后的包已被标为**禁止安装**，因为原 Catalog 不再覆盖修改后的 INF。
-  - 排除并记录了 Recovery 状态下的输入设备（红外、USB键盘）和 ADB 接口的无响应现象。
-
-## [0.7.0] - 2026-07-20
-
-### Changed
-- **项目文档系统重构**：
-  - 项目理念重写，引入"证据驱动调试"和"最小预装"原则。
-  - 项目章程重新定义，目标软件更新为实际预装清单。
-  - 文档统一，移除过时的设计决策。
-  - ADR 与实际实现同步（BLEAutoPair 和 UBTunnel 已标记为已删除）。
-  - Product 分区最终确定为 300 MB。
-  - 引入验证矩阵和工程原则。
-  - 引入证据时间线和实验日志。
-
-### Added
-- **M6 容器写入观察**：
-  - PhoenixCard 烧录进度达到 100%，烧录问题已解决。
-  - 修正 `pack_image.py` 文件对齐（16 字节 → 1024 字节）修复了 U-Boot unaligned read panic。
-- **M6 启动验证**：
-  - 设备可见 Boot logo 和 Android Recovery 界面；启动链首个失败点未定位。
-  - Android System 未能启动，当前调查方向转向启动故障分析。
-- **调试文档**：
-  - 新建 `docs/M6_DEBUG_LOG.md` 记录完整的实验日志和现象归档。
-  - 引入 D-0008 工程原则："修改前先获取证据"。
-
-## [0.6.0-M6.1] - 2026-07-20
-
-### Added
-- **M6 首次物理烧录与调试**：
-  - TF 卡 242 锁死排除（Windows `diskpart clean`）。
-  - 首次刷写停滞 5-10%，LED 高频闪烁。
-  - 引入 img2simg 稀疏化，证明 Sparse 格式非根因。
-  - 修正 pack_image.py 1024 字节对齐，烧录 100% 完成。
-
-## [0.5.0] - 2026-07-20
-
-### Added
-- **M3+ 预装应用落地**：
-  - 集成 Gboard TV输入法、Kodi 21.3 Omega、VLC 3.7.2 Beta 1、LocalSend 1.17.0。
-- **M4 ROM 重打包与 AVB 离线产物生成**：
-  - AVB 签名工具链原生修复（`pycryptodome` 替代 `openssl`）。
-  - 分级重打包与签名（system, product, vendor, vendor_dlkm）。
-  - vbmeta 签名链重建。
-  - Super 逻辑卷拼接（lpmake + img2simg）。
-- **M5 Allwinner 固件打包与校验和重算（离线）**：
-  - `tools/pack_image.py` 自动化打包。
-  - 伴生校验字重算（10 分区全部 Checksum OK）。
-
-## [0.4.0] - 2026-07-19
-
-### Added
-- **M3+ 增强裁剪与预装应用集成**：
-  - 全系统应用审计：90+ 个应用按 P0/P1/P2/保留/预装五级分类。
-  - 启动器方案评审：确立 FLauncher(默认) + SimpleLauncher(fallback) 方案。
-  - 增强裁剪执行：新增删除 14 个应用，累计释放 298.7 MB。
-  - 预装应用集成：FLauncher、SmartTube。
-  - build.prop 更新：默认启动器指向 FLauncher。
-  - 裁剪脚本重写：`scripts/purify-rom.py` 一站式自动化管线。
-- **M4 工具链配置**：
-  - 获取并验证 `make_ext4fs.exe` + `cygwin1.dll`、`lpmake.exe`。
-  - 下载 AOSP `testkey_rsa2048.pem`。
-  - 全部工具 SHA-256 锁入 `tools/LOCKFILE.md`。
-
-## [0.3.0] - 2026-07-19
-
-### Added
-- **M3 反定制规划与 APK 审计完成**。
-
-## [0.2.0] - 2026-07-19
-
-### Added
-- **M2 分区与启动链审计完成**。
-
-## [0.1.0] - 2026-07-19
-
-### Added
-- **M0 + M1 完成**：原始固件基线记录、Allwinner 容器解析、伴生校验和推导。
+- 建立官方 `x12-1024.img` 基线并完成 IMAGEWTY、dynamic super、boot 和 AVB 初步解析。
+- 修正 `pack_image.py` 的 IMAGEWTY 对齐后，PhoenixCard 可完成 100% 写卡。

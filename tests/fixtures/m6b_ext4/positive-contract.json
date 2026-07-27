@@ -1,0 +1,81 @@
+{
+  "schema": "ubox10.ext4-fixture-contract/v1",
+  "filesystem": {
+    "block_size": 4096,
+    "inode_size": 256,
+    "uuid": "12345678-1234-5678-9abc-def012345678",
+    "volume_label": "UBOX10_FIXTURE"
+  },
+  "entries": {
+    "/system": {
+      "type": "directory",
+      "mode_octal": "0755",
+      "uid": 0,
+      "gid": 0
+    },
+    "/system/bin/init": {
+      "type": "regular",
+      "mode_octal": "0755",
+      "uid": 0,
+      "gid": 0,
+      "content_sha256": "803615D5C38A1617BEB42F45DC145C6E1E1C244C2DF13A182DD6602E4051FF02"
+    },
+    "/system/bin/owned-tool": {
+      "type": "regular",
+      "mode_octal": "0750",
+      "uid": 1000,
+      "gid": 1000,
+      "link_count": 2,
+      "content_sha256": "941E3442028C8BDF77F50A5CE47F09957ED1DE3FFF219BAD0D0F817B24487DEC"
+    },
+    "/system/bin/owned-tool-hardlink": {
+      "type": "regular",
+      "mode_octal": "0750",
+      "uid": 1000,
+      "gid": 1000,
+      "link_count": 2,
+      "content_sha256": "941E3442028C8BDF77F50A5CE47F09957ED1DE3FFF219BAD0D0F817B24487DEC"
+    },
+    "/system/bin/tool-link": {
+      "type": "symlink",
+      "mode_octal": "0777",
+      "symlink_target_b64": "L3N5c3RlbS9iaW4vb3duZWQtdG9vbA=="
+    },
+    "/system/etc/selinux-test": {
+      "type": "regular",
+      "mode_octal": "0644",
+      "content_sha256": "48EEE62D01B6A9ADBF973D0DCF5A232E7E985589306BE204CA99D56FF4E59AAF",
+      "xattrs": {
+        "security.selinux": {
+          "sha256": "09AA80E98CEB6F4015CE93C916DB5B8C834BBC7FE4E30D154E3C6C9B6A950691"
+        }
+      }
+    },
+    "/system/bin/cap-test": {
+      "type": "regular",
+      "mode_octal": "0755",
+      "content_sha256": "52D12127381E02D16FDD2FC8901E2E1772A736121583F2A5086E1D4ACB844A33",
+      "xattrs": {
+        "security.capability": {
+          "sha256": "1A30A3B4DE35A8FA5A9277B5B1A55637029D79D4D1CC7B8E4B0A922E8407B547"
+        }
+      }
+    },
+    "/system/etc/acl-test": {
+      "type": "regular",
+      "mode_octal": "0640",
+      "content_sha256": "C8D30614DC4E5E09B9324F29EDB4F38A6386AEF4C8557E309921EB34DB995E10",
+      "xattrs": {
+        "system.posix_acl_access": {
+          "sha256": "67031839E3D746AD2466F7470143BD4DC70A1F5E2461899EB0645C473BE4181A"
+        }
+      }
+    }
+  },
+  "hardlink_groups": [
+    [
+      "/system/bin/owned-tool",
+      "/system/bin/owned-tool-hardlink"
+    ]
+  ]
+}

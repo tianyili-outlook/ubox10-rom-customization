@@ -2,7 +2,16 @@
 
 ## 目标
 
-在保留 UBOX10 硬件适配（Wi‑Fi、蓝牙、以太网、HDMI/CEC、遥控器、音视频解码）的前提下，基于官方 Android TV 12 固件制作干净、稳定且可维护的 Android TV 系统。产品目标是 Projectivy Launcher、SmartTube、Kodi、Jellyfin、Moonlight、AirPlay 接收能力以及现有合法 Google 服务/Google Play 的可用性；具体预装包、来源、许可证、签名和兼容性必须在 M6b 通过后以 manifest 决策。现有 FLauncher / VLC / LocalSend / Gboard 列表只是历史候选集，尚未构成实机产品承诺。移除 UnblockTech 的非硬件定制和网络干预组件。
+在现有硬件和 Android TV 12 能力范围内，把 UBOX10 改造成尽可能接近现代 Android TV 的电视影音设备。保留 Wi‑Fi、蓝牙、以太网、HDMI/CEC、遥控器、音视频解码、Google 服务和开放安装能力，移除 UnblockTech 的非硬件定制、网络干预、广告与无实际用途的后台组件。
+
+产品体验重点：
+
+- 简洁、现代、适合遥控器的电视 Launcher。
+- 启动、桌面导航、应用启动和视频播放流畅。
+- 服务电视影音和常用电视应用，不追求智能家居、办公、日程或机械最少进程。
+- 支持 Google Play、ADB、APK 安装、USB/文件管理等后续扩展方式。
+- 目标应用包括 Projectivy、SmartTube、Kodi、Jellyfin、Moonlight 和 AirPlay 接收器；第三方 APK 必须记录来源、版本、签名和许可证。
+- 在稳定性、驱动和应用兼容允许时充分利用 CPU、GPU、视频硬解、内存和存储；若 32 位用户空间形成明确瓶颈，再把完整 arm64/multilib 迁移作为独立扩展项目评估。
 
 ## 明确不做
 
@@ -11,22 +20,16 @@
 - 不以恢复官方原样固件为成果。
 - 不在未建立可恢复路径前刷写候选镜像。
 
-## 工程不变量
+## 工作原则
 
-1. 原始镜像只读保存，按 SHA-256 身份校验。
-2. 任何改动先由清单（manifest）描述，再由脚本执行。
-3. 修改前后均保留分区哈希、工具版本、命令日志和差异报告。
-4. 未解析功能归属的文件、服务、SELinux 规则不得删除。
-5. AVB 链、动态分区元数据、A/B 槽位语义必须验证，不可凭猜测重建。
-6. 不得仅凭 VID/PID、设备名称或单次推断为设备接口命名协议；协议结论至少需要一次不修改状态的握手。
-7. root ADB、Permissive SELinux、修改 init/boot/vendor_boot 的诊断构建与发布候选必须严格隔离。
-8. 在完成无修改启动链取证前，不刷入新的诊断镜像。
-9. 不复制、重签或重新分发受许可限制的 Google 组件；Google Play 可用性必须以设备原有授权状态和实机回归为准，不能仅由 APK 注入宣称实现。
+1. 保留官方镜像及其 SHA-256，任何测试镜像使用新文件名。
+2. 可恢复的解包、修改、重打包和刷机实验直接推进；失败后用官方 PhoenixCard 镜像恢复。
+3. 只在可能永久损坏 eFuse/OTP/BootROM、唯一密钥、无备份分区表/bootloader 或宿主物理磁盘时暂停。
+4. 文档只保留当前状态、重要事实、关键决定、阻塞、下一步和必须复用的路径/版本/参数；优先替换旧内容，不为普通错误建立风险编号或变更单。
+5. 不复制、重签或重新分发受许可限制的 Google 组件。
+6. 测试只覆盖本次修改最可能影响的功能；普通日志、文档、脚本和中间产物不默认生成哈希。
+7. 不为了减少进程数量机械删除仍有电视价值、兼容价值或扩展价值的组件；每项保留/删除以实际使用场景决定。
 
-## 阶段门禁
+## 当前状态
 
-仅在前一阶段的证据、验证结果和风险记录完整时进入下一阶段。详见 `MILESTONES.md`。
-
-## 当前 M6 强制门禁
-
-Fastboot 协议已通过只读 `getvar version` 验证，但该实现不支持槽位/userspace 变量；实验 #11.1 已构建但暂停，未执行物理刷写。Fastboot 信息增益已耗尽，当前只允许保存既有主机绑定备份与进行 3.3V UART 被动监听。详见 `M6_DIAGNOSTIC_PLAN.md`、`M6_HYPOTHESIS_MATRIX.md` 与 `UART_RUNBOOK.md`。
+UART、Fastboot、WSL2、ext4/AVB/super/IMAGEWTY 构建链均已完成。Test8 蓝牙回归已定位为误删 ContactsProvider；Test8r2 已恢复完整目录并通过事务式构建、自动离线验证和真机验收。Projectivy、英语界面、遥控、Settings、Wi‑Fi 和蓝牙正常，Test8r2 是当前稳定基线。

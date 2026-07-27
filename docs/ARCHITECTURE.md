@@ -1,47 +1,47 @@
 # 工程架构
 
-## 推荐技术栈
+## 技术栈
 
-- **Python 3.11+**：解析元数据、生成清单、哈希、报告与测试；跨平台且适合二进制编排。
-- **PowerShell 7+**：Windows 上的薄包装脚本和环境检查；不承载复杂解析逻辑。
-- **Bash（可选，WSL/容器）**：调用 AOSP/Android 镜像工具。
-- **AOSP 官方工具**：`lpunpack/lpmake/lpdump`、`avbtool.py`、`unpack_bootimg.py/mkbootimg.py`、`simg2img/img2simg`、`mkdtboimg.py`。
-- **Allwinner 专用工具**：待确认来源、版本、许可证与输出可复现性后才纳入锁定清单。PhoenixCard 打包不可在解析完成前假设工具或格式。
+- Python 3.11+：固件容器、LP、ext4、AVB 编排和测试。
+- PowerShell：Windows 设备、UART 和主机环境辅助。
+- WSL2 Ubuntu 24.04：Linux 文件系统工具。
+- e2fsprogs 1.47.2：`mke2fs/debugfs/e2fsck/dumpe2fs`。
+- AOSP/Android 工具：`avbtool`、`lpmake`、`simg2img/img2simg`、boot image 工具。
+- PhoenixCard 4.2.7：制作写入 UBOX eMMC 的量产卡。
 
-## 仓库布局
+## 目录
 
-```
-docs/                 章程、证据、决策、风险、运行手册
-firmware/original/    原始输入（Git 忽略，只读基线）
-firmware/manifests/   输入/输出物的机器可读清单
-scripts/              可重复执行的入口脚本
-src/                  Python 库：容器、分区、APK、策略、验证
-tests/fixtures/       小型、可公开分发的测试样本
-tools/                工具来源、版本与校验值（不提交私有二进制）
-work/                 临时提取与挂载目录（Git 忽略）
-out/                  候选镜像、校验和与签名报告（Git 忽略）
-out/debug-quarantine/ 多变量诊断镜像隔离区（Git 忽略，不可发布）
-logs/                 每次操作日志（Git 忽略）
-logs/device/<run-id>/ USB PnP、UART 原始日志、照片索引与哈希
+```text
+firmware/extracted/   官方容器提取物
+src/ubox10_rom/       可复用 Python 解析代码
+scripts/              构建、提取、检查和采集入口
+tests/                小型 fixture 与单元测试
+tools/                固定工具
+work/                 历史或临时工作树，不作为官方基线
+out/                  提取分区和候选固件
+logs/                 UART、主机和分析结果
+docs/                 当前状态与历史分析文档
 ```
 
-## 分层与数据流
+## 当前构建链
 
-`原始 PhoenixCard 容器 → 容器目录清单 → 分区原件 → 分区/AVB/SELinux/APK 分析报告 → 变更清单 → 可重建分区 → 独立验证 → 候选 PhoenixCard 容器`。
+```text
+官方 x12-1024.img
+  → 官方 super.fex
+  → 提取 system_a/product_a/vendor_a/vendor_dlkm_a
+  → 直接修改 system_a ext4
+  → 重建 system AVB footer 和 vbmeta
+  → lpmake 重建 sparse super
+  → pack_image.py 替换容器载荷
+  → 自动验证 ext4 差异/e2fsck/AVB/super/IMAGEWTY
+  → 验证通过后原子发布候选目录
+  → PhoenixCard 测试固件
+```
 
-每一箭头均生成输入哈希、输出哈希、工具版本和执行日志。`work/` 可删除；`firmware/original/` 与 Git 中的清单共同构成可追溯基线。
+构建前先检查 WSL、工具、输入和磁盘空间；修改在继承正常 Windows ACL 的唯一临时目录中完成，失败自动清理。直接修改 ext4，避免“解出全部文件再重建”造成 SELinux、属主、权限、链接和目录层级丢失。
 
-## 证据层级与 M6 门禁
+## 基线边界
 
-项目使用四级证据标签，禁止跨级推断：
-
-1. **已观察**：屏幕现象、USB 枚举、命令原始输出等物理事实。
-2. **离线已验证**：主机侧镜像、分区、校验和或工具输出一致。
-3. **协议已验证**：真实设备完成不修改状态的协议握手。
-4. **实机已验证**：目标系统启动并完成相应功能回归。
-
-离线校验（容器 checksum、`avbtool info_image`、`lpdump`）只能证明输出可解析，不能证明 Android 可以运行。进入 M6 后必须按下列顺序放行：
-
-`只读硬件取证 → 原始日志/描述符归档 → 启动链假设表 → 零内容改动 round-trip → 单变量受控实验 → 功能回归`。
-
-其中零内容改动 round-trip 必须分别覆盖 PhoenixCard 容器、super 逻辑分区和 ext4 文件系统，并对符号链接、UID/GID、mode、SELinux xattr、capability、硬链接及 ext4 features 做语义比对。诊断镜像放入 `out/debug-quarantine/`，不得与发布候选混用。
+- 官方基线只来自 `x12-1024.img` 和 `firmware/extracted/`。
+- `work/` 与旧 `x12-purified.img` 含历史调试修改，不再使用。
+- 硬件相关的 `vendor`、`vendor_dlkm`、`boot`、`vendor_boot` 和 `dtbo` 在测试版 1 中保持官方内容。

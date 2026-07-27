@@ -1,0 +1,12 @@
+{
+  "candidate_id": "test2-remove-factory-tools-r1",
+  "firmware_filename": "x12-test2-remove-factory-tools.img",
+  "remove_roots": [
+    "/system/app/UBTunnel.6",
+    "/system/app/DragonAtt",
+    "/system/app/DragonBox",
+    "/system/app/DragonAgingTV",
+    "/system/app/Factory_detection",
+    "/system/app/AwlogSettings"
+  ]
+}

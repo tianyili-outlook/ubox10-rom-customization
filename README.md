@@ -1,182 +1,157 @@
-# UBOX10 Android TV 固件定制工程 (ubox10-rom-customization)
+# UBOX10 ROM Customization
 
-本仓库用于以可复现、可审计、开源且安全的方式对 UnblockTech UBOX10 (I12 Pro Max / Allwinner H616) Android TV 12 固件进行解包、分析与反定制净化。
+面向 UnblockTech UBOX10（I12 Pro Max / Allwinner H616 / Android TV 12）的个人固件改造项目。目标是在保留 Wi‑Fi、蓝牙、以太网、HDMI/CEC、遥控器、音频和视频解码支持的前提下，逐步移除厂商软件与网络干预，最终制作干净的 Android TV 固件。
 
-当前阶段：**M6a — 无修改启动链证据采集**。候选镜像可烧录，但 Android System 尚未启动；在取得启动链证据前，暂停新增刷写实验。
+## 当前状态
 
----
+- 官方 PhoenixCard 镜像 `x12-1024.img`、提取分区和 SHA-256 基线已保留，可随时刷回。
+- Fastboot 只读通信可用：序列号 `992304568773`，协议版本 `0.5`。
+- UART 只接收链路可用：COM3、115200 8N1；首份冷启动日志在 `logs/device/20260725-004019/`。
+- WSL2 Ubuntu 24.04 与 e2fsprogs 1.47.2 已配置；两次 synthetic ext4 样本完全可复现。
+- 独立 ext4 解析器可检查目录、文件、链接、UID/GID/mode、SELinux、capability 和 ACL。
+- 官方 `system_a` 已提取并建立 3857 条语义清单。
+- **测试版 1 已实机启动成功。** 主界面、设置、红外遥控、HDMI 音视频、Wi‑Fi、以太网、蓝牙扫描和高码率视频播放正常；Google、YouTube、`bilibili.com`、`api.bilibili.com` 均可访问。量产同时清除了 userdata/metadata，因此尚不能把网络改善完全归因于 UBTunnel。
+- 测试版 1 的局域网 ADB 基线已取得：123 个包、UBTunnel 缺失、SELinux Permissive、厂商 Launcher 仍为 `com.moons.mylauncher10`。
+- **测试版 2 已实机通过。** 它在测试版 1 基础上继续移除五个工厂测试/日志工具；Android、Settings、红外遥控、HDMI 音视频、Wi‑Fi 和 bilibili API 正常。
+- 局域网 ADB 默认使用 Wi‑Fi 地址 `192.168.1.5:7896`；此前 `192.168.1.8:7896` 失联是拔除 Ethernet 网线造成，不是 adbd 故障。
+- **测试版 3 已实机通过。** 它继续移除高权限厂商浏览器、H618 Upgrade 和 Softwinner Update；Android、Settings、遥控、HDMI 和 Wi‑Fi 正常，Chrome 保留。
+- **测试版 4 已启动并通过包/输入法验证。** 八个目标包均已消失，默认输入法仍为 LatinIME；查询中的 `com.android.musicfx` 是独立的 AOSP 音效服务，不是 Music 播放器残留。
+- **测试版 5 已实机通过。** 17 个目标包全部消失；Google Play、TV Settings、蓝牙、MusicFX 和 Google Play services 均保留。
+- **测试版 6 已实机通过。** 16 个新增目标包全部消失，X12、SystemUI、TV Settings、LatinIME、蓝牙和 Google Play 均保留；纯删除阶段结束。
+- **Projectivy 4.71 用户态预检通过。** 已设为默认 Launcher，方向键、OK、Back、应用列表、Settings、应用启动和 Home 接管正常；仅观察到轻微卡顿。
+- 设备采用 64 位 ARM 内核，但 Android 用户空间为纯 32 位：`zygote32`、`armeabi-v7a`，且 system/vendor 没有 `lib64`。当前主线继续保留 32 位厂商栈。
+- **Test7 已实机通过。** Projectivy 已作为 system app 和默认 HOME 正常工作；首次启动的 Launcher 选择框来自仍保留的 X12。
+- **Test8 蓝牙回归已定位并修复。** 原因是 Test6 误删 AOSP ContactsProvider，导致 Bluetooth PBAP 崩溃；Test8r2 已恢复其完整目录并通过端到端自动验证和真机刷测。Projectivy、英语界面、遥控、Settings、Wi‑Fi 和蓝牙正常，蓝牙为 `state: ON` 且 `Bluetooth crashed 0 times`。Test8r2 是当前稳定基线。
 
-## 🚀 项目当前状态 (Current Status)
+## 测试版 1：实机通过
 
-M0–M3 的离线分析已完成；M4 与 M5 仅完成离线构建/容器校验，尚未通过启动链验收。候选固件曾由 PhoenixCard 写入至设备（烧录进度 100%），设备可达 Android Recovery，但 **未能进入 Android System**。
+目的：只删除 `/system/app/UBTunnel.6`，验证 ext4 直接修改、AVB、dynamic super 和 PhoenixCard 封装整条链路。保留官方启动器以及 `boot`、`vendor_boot`、`dtbo`、`product`、`vendor`、`vendor_dlkm`。
 
-* **开发分支状态**：`main` 与 GitHub 同步。
-* **裁剪与预装**：候选构建已包含裁剪与预装计划；因 System 尚未启动，实际运行结果尚未验证。
-* **启动器方案**：FLauncher/SimpleLauncher 是历史离线候选；用户目标为 Projectivy，最终启动器与预装清单将在 M6b 通过后以 manifest 单独评审，均尚未实机验证。
-* **固件烧录**：✅ PhoenixCard 烧录进度 100%；这只证明容器可写入，不代表 Android 可启动。
-* **设备启动**：⚠️ 设备显示官方 boot logo 后自动进入 Android Recovery，未进入 Android System。Recovery 目前无法操作（红外遥控无响应，USB 键盘无输入）。
-* **USB 枚举**：✅ Windows 已观察到 `USB\VID_1F3A&PID_1010`，设备名为 `sunxi`；兼容 ID 含 `Class_FF&SubClass_42&Prot_03`，与 AOSP Fastboot 的接口描述符条件一致。
-* **标准 Fastboot**：✅ 已完成只读协议验证：U1 后 `fastboot devices` 显示 `992304568    fastboot`，`fastboot getvar version` 返回 `version: 0.5`。尚未读写分区或改变设备状态。
-* **Fastboot 白名单变量**：`product=sunxi`、`secure=yes`；`is-userspace`、槽位和 `has-slot:*` 均返回 `not supported`。该精简实现不能确认 A/B 状态，M6a 下一优先级为 UART 被动冷启动日志。
+- 镜像：`out/candidates/test1-no-ubtunnel-r3/x12-test1-no-ubtunnel.img`
+- 大小：2,005,954,560 字节
+- SHA-256：`3B8F8981E94B9BF209763FE3B67EC7102616B6D42631AA7F93264885C852C776`
+- 离线验证：PASS
+  - 只删除 UBTunnel 目录和 APK；共同文件语义无意外变化。
+  - AVB 签名、system/vendor/product/vendor_dlkm hashtree 全部通过。
+  - super 的 LP/ext4 结构通过。
+  - IMAGEWTY 载荷来源与伴生校验通过。
+- 实机验证：PASS
+  - PhoenixCard 量产约 305 秒，最终输出 `CARD OK` 和 `sprite success`。
+  - Android、主界面、设置、UBTunnel 删除、红外遥控、HDMI 音视频、Wi‑Fi、以太网、蓝牙扫描和高码率视频均通过。
+  - Google、YouTube、bilibili 主站和 API 均通过。
+  - CEC 按用户需求跳过；BBLL 以 API 恢复作为当前阶段通过，不单独安装验证。
 
-**当前阻塞项**：在不改写设备的前提下确认实际启动目标、A/B 槽位、BCB/Recovery 触发源，以及 AVB、dm-verity、ext4 或 init 的首个失败点。执行顺序见 `docs/M6_DIAGNOSTIC_PLAN.md`。
+## 测试版 2：实机通过
 
----
+累计删除 `/system/app/UBTunnel.6`、`DragonAtt`、`DragonBox`、`DragonAgingTV`、`Factory_detection` 和 `AwlogSettings`。
 
-## 💡 核心审计发现 (Key Discoveries)
+- 镜像：`out/candidates/test2-remove-factory-tools-r1/x12-test2-remove-factory-tools.img`
+- 大小：2,005,962,752 字节
+- SHA-256：`4789EB9F76FD98E09D4155E95235CD06E38A9AE15E5A7BC7BF5B9F7D2224C964`
+- 离线验证：PASS
+  - ext4 语义差异只有 27 个预期删除路径；无新增内容或解析错误。
+  - 完整 AVB 启动链和各分区哈希树通过。
+  - PhoenixCard IMAGEWTY 中的关键分区载荷及伴生校验通过。
+- 实机验证：PASS
+  - Android 主界面、Settings、红外遥控、HDMI 图像和声音、Wi‑Fi 正常。
+  - `api.bilibili.com` 可访问。
+  - ADB 确认五个目标包均已消失。
 
-1. **AVB 结构可离线解析，但运行时信任未验证**
-   原件和候选镜像均可由 `avbtool` 解析；候选镜像的根信任、密钥一致性和 bootloader 运行时验签仍待启动日志确认。
+## 测试版 3：实机通过
 
-2. **调试启动链构建已隔离**
-   `userdebug`、Permissive SELinux、root ADB 和 Recovery USB 注入只属于历史诊断候选，不属于发布 ROM，也不再作为当前获取日志的路线。
+在 Test2 基础上继续删除 `/system/app/browser-v1.1`、`H618_UpgradeV3` 和 `Update`。Chrome、Launcher、遥控配对、LED、投屏、Google 服务和所有硬件分区保持不变。
 
-3. **Framework 启动器强锁定机制（离线发现）**
-   安博固件在 Framework 中会读取 `ro.sw.defaultlauncher_package` 和 `ro.sw.defaultlauncher_class` 系统属性。历史候选曾将其改为 FLauncher；Projectivy 的最终集成仍须在 M6c 作为独立的单变量回归验证。
+- 镜像：`out/candidates/test3-remove-browser-updaters-r1/x12-test3-remove-browser-updaters.img`
+- 大小：2,005,966,848 字节
+- SHA-256：`8E42CB38426E3E80359BA5F2A9A0A21368789B43BF6B8DD86DF2D67630E44B77`
+- 离线验证：PASS
+  - 只少 40 个配置内的预期路径，没有新增内容、解析错误或意外共同条目变化。
+  - 完整 AVB 启动链和各分区哈希树通过。
+  - PhoenixCard IMAGEWTY 关键载荷及伴生校验通过。
+- 实机验证：PASS
+  - Android、Settings、红外遥控、HDMI 音视频和 Wi‑Fi 正常。
+  - ADB 只匹配到 `com.android.chrome`，三个删除目标均已消失。
 
-4. **LED 指示灯 PWM 依赖**
-   前面板状态灯由 `com.mitac.android.i2ctool` 服务控制，`H616_led_blink-s` 目录绝对不能删除。
+## 测试版 4：实机通过
 
-5. **PhoenixCard 容器可被写入，但根因归属仍需日志**
-   调整 `pack_image.py` 对齐后曾达到 100% 写入；这证明容器路径可用，不足以证明早期失败一定由 U-Boot 的特定 panic 引起，也不证明 Android 可启动。
+在 Test3 基础上继续删除 CZFileManager、Zhuyin、GalleryTV、Music、VideoPlayer、TvdVideo、TvdFileManager 和 ImageParser。保留 Chrome、默认 LatinIME 和全部硬件媒体栈。
 
-6. **设备可达 Recovery，但失败点尚未定位**
-   可见 Recovery 仅证明设备进入了 Recovery 路径；尚不能证明是 System、A/B 槽位、BCB、AVB、挂载或 init 中的哪一环触发。必须以 UART 或已验证的只读 bootloader 查询确认。
+- 镜像：`out/candidates/test4-remove-legacy-user-apps-r1/x12-test4-remove-legacy-user-apps.img`
+- 大小：2,005,966,848 字节
+- SHA-256：`639403FDDB95439401FFC929764E549CA49A7AD4F5BF92DD232FF6955A50CE73`
+- 离线验证：PASS
+  - 只少 95 个配置内预期路径，没有新增内容、解析错误或意外共同条目变化。
+  - 完整 AVB 启动链和各分区哈希树通过。
+  - PhoenixCard IMAGEWTY 关键载荷及伴生校验通过。
+- 实机验证：PASS
+  - Android 和网络 ADB 正常，八个删除目标均不存在。
+  - 默认输入法为 `com.android.inputmethod.latin/.LatinIME`。
 
-7. **当前 ext4 全量重建不具备运行时放行资格**
-   现有提取器将符号链接写成 `.symlink` 文本文件，且重建未恢复文件系统元数据。此路径只能视为离线构建原型，必须先通过零内容改动 round-trip 验证。
+## 测试版 5：实机通过
 
----
+在 Test4 基础上新增删除 17 个非电视平台应用。Google Play、MusicFX、蓝牙、相机扩展、Launcher、配对组件和全部硬件分区保持不变。
 
-## 🗑️ 候选删除清单（离线执行，实机未验证）
+- 镜像：`out/candidates/test5-remove-nontv-platform-apps-r1/x12-test5-remove-nontv-platform-apps.img`
+- 大小：2,005,979,136 字节
+- SHA-256：`16332D8E6BC14FA8D5855383BD3C9248D7A374E81A4967DC471B3C6E610F472F`
+- 离线验证：PASS
+  - 累计只少 199 个配置内预期路径，没有新增内容、解析错误或意外共同条目变化。
+  - 完整 AVB 启动链和各分区哈希树通过。
+  - PhoenixCard IMAGEWTY 关键载荷及伴生校验通过。
+- 实机验证：PASS
+  - 17 个目标包查询无输出。
+  - `com.google.android.gms`、`com.android.vending`、`com.android.bluetooth`、`com.android.tv.settings`、`com.android.musicfx` 均存在。
 
-下表描述候选构建的内容计划，不表示这些删除已经在可启动 ROM 上验证。M6b 后每项删除将改为单变量 manifest 变更并执行硬件回归。
+## 测试版 6：实机通过
 
-### 🔴 P0 强烈推荐删除（候选构建）
+在 Test5 基础上新增删除 16 个旧个人设备 UI 和非目标功能组件。当前 Launcher、SystemUI 壁纸、PhotoTable 屏保、Google Play、蓝牙和硬件分区保持不变。
 
-| 应用 | 大小 | 删除理由 |
-|------|------|----------|
-| happycast | 107.9 MB | 乐播投屏广告软件 (M3 已删) |
-| X12 | 12.2 MB | 安博定制桌面启动器 |
-| UBTunnel.6 | 12.1 MB | 安博 VPN 翻墙隧道 |
-| settingwizard | 31.7 MB | 安博定制设置向导 |
-| browser-v1.1 | 16.1 MB | 安博定制浏览器 |
-| AwlogSettings | 2.2 MB | 全志日志调试配置 |
-| zysrf | 41.3 MB | Google 注音输入法 |
-| DragonAgingTV/Att/Box/Factory | — | 全志工厂测试工具 (M3 已删) |
+- 镜像：`out/candidates/test6-remove-legacy-personal-ui-r1/x12-test6-remove-legacy-personal-ui.img`
+- 大小：2,005,979,136 字节
+- SHA-256：`D8AA71730952F4388D82E6B919E05B757C50CD3D74805351546566D62125A576`
+- 离线验证：PASS
+  - 累计只少 295 个配置内预期路径，没有新增内容、解析错误或意外共同条目变化。
+  - 完整 AVB 启动链和各分区哈希树通过。
+  - PhoenixCard IMAGEWTY 关键载荷及伴生校验通过。
+- 实机验证：PASS
+  - 16 个目标包查询无输出。
+  - X12、SystemUI、TV Settings、LatinIME、蓝牙和 Google Play 六个关键包均存在。
 
-### 🟠 P1 推荐删除（候选构建）
+## 后续路线
 
-| 应用 | 大小 | 删除理由 |
-|------|------|----------|
-| H618_UpgradeV3 | 18.3 MB | 厂商 OTA 升级工具 |
-| NanoOtaBle | 1.9 MB | 蓝牙遥控器 OTA |
-| Update | 1.3 MB | 系统更新检查器 |
-| CZFileManager | 10.1 MB | 第三方文件管理器 |
-| Chrome | 118.4 MB | 浏览器 (用户确认删除) |
-| TvdFileManager | 3.4 MB | 全志文件管理器 |
-| BLEAutoPair | 19.2 MB | 蓝牙自动配对 (用户使用红外遥控器，已确认不需要) |
+- Test8r2：实机确认恢复 ContactsProvider 后蓝牙开启和扫描正常；其余已通过项目只做启动 sanity check。
+- Test9：提供 SmartTube、Kodi、Jellyfin、Moonlight 的配置安装脚本，选择 AirPlay 接收器和现代文件管理器，并完成最终验证。
+- arm64/multilib 作为独立扩展项目；只有取得同板型 64 位 BSP 或完整匹配的 64 位硬件库后才进入实作。
 
-### Vendor 分区
+## 重要路径
 
-| 文件 | 大小 | 说明 |
-|------|------|------|
-| 111.mp3 | 10.3 MB | 开机音效 |
+- 官方固件：`x12-1024.img`
+- 官方提取物：`firmware/extracted/`
+- 官方 system：`out/official-system-a/20260726-r1/system_a.img`
+- 官方 system 清单：`out/official-system-a/20260726-r1/official-system-a-manifest.json`
+- 测试版 1：`out/candidates/test1-no-ubtunnel-r3/`
+- 测试版 1 system 清单：`out/candidates/test1-no-ubtunnel-r3/candidate-system-manifest.json`
+- 测试版 1 logical-system 报告：`logs/analysis/20260726-test1-logical-system/`
+- 测试版 1 实机结果：`logs/device/20260726-test1-product-flash-console-paste/`
+- 测试版 1 ADB 基线：`logs/device/20260726-135417-test1-adb/`
+- 测试版 2：`out/candidates/test2-remove-factory-tools-r1/`
+- 测试版 3：`out/candidates/test3-remove-browser-updaters-r1/`
+- 测试版 4：`out/candidates/test4-remove-legacy-user-apps-r1/`
+- 测试版 5：`out/candidates/test5-remove-nontv-platform-apps-r1/`
+- 测试版 6：`out/candidates/test6-remove-legacy-personal-ui-r1/`
+- 测试版 7：`out/candidates/test7-projectivy-default-home-r1/`
+- 测试版 8：`out/candidates/test8-remove-vendor-home-wizard-cast-r1/`
+- 测试版 8 修订版：`out/candidates/test8r2-restore-contacts-provider-r1/`
+- 候选配置：`configs/candidates/`
+- 测试版构建脚本：`scripts/build-candidate-firmware.py`
+- ext4 解析器：`src/ubox10_rom/ext4_image.py`
+- UART 手册：`docs/UART_RUNBOOK.md`
+- 当前待办：`docs/TODO.md`
+- 当前里程碑：`docs/MILESTONES.md`
 
-**累计释放空间：~298.7 MB (不含 M3 阶段已删的 ~108 MB)**
+## 工作方式
 
----
-
-## 📦 历史候选预装应用（离线集成，实机未验证）
-
-这不是最终产品清单。当前目标见 `PROJECT_CHARTER.md`：Projectivy、SmartTube、Kodi、Jellyfin、Moonlight、AirPlay 与合法 Google 服务/Play 可用性均须在 M6b 后独立审查来源、许可证、签名、分区归属和硬件兼容性。
-
-### system/app/ (系统级，不可卸载)
-
-| 应用 | 版本 | 来源 |
-|------|------|------|
-| **FLauncher**（历史启动器候选） | v2025.07.001 (osrosal fork) | [GitHub](https://github.com/osrosal/flauncher) |
-| **SimpleLauncher**（历史回退候选） | v1.0 | 原始固件自带 |
-
-### product/app/ (用户级，可通过设置管理)
-
-| 应用 | 版本 | 大小 | 来源 |
-|------|------|------|------|
-| **SmartTube** (YouTube TV) | v31.94 stable | 25.0 MB | [GitHub](https://github.com/yuliskov/SmartTube) |
-| **Gboard** (Google TV 输入法) | v16.1.02 TV release | 24.6 MB | [APKMirror](https://www.apkmirror.com) |
-| **Kodi** (媒体中心) | v21.3 Omega | 65.0 MB | [kodi.tv](https://kodi.tv) |
-| **VLC** (视频播放器) | v3.7.2 Beta 1 | 45.9 MB | [APKMirror](https://www.apkmirror.com) |
-| **LocalSend** (局域网传输) | v1.17.0 | 16.7 MB | [GitHub](https://github.com/localsend/localsend) |
-
----
-
-## 🛠️ 已锁定的固件工具链 (Locked Toolchain)
-
-所有工具的版本、SHA-256 和来源均记录于 [tools/LOCKFILE.md](tools/LOCKFILE.md)：
-
-| # | 工具 | 用途 |
-|---|------|------|
-| 1 | `sunxi_image_tool.py` | 全志 IMAGEWTY v3 容器解析 |
-| 2 | `unpack_bootimg.py` | AOSP 启动镜像解包 |
-| 3 | `mkbootimg.py` | AOSP 启动镜像重打包 |
-| 4 | `avbtool.py` | Verified Boot 签名/校验 |
-| 5 | `lpunpack.py` | Super 分区逻辑卷解包 |
-| 6 | `extract_ext4.py` | 自研 Ext4 文件提取 |
-| 7 | `make_ext4fs.exe` + `cygwin1.dll` | Ext4 镜像编译 (Windows) |
-| 8 | `lpmake.exe` | Super 分区逻辑卷拼装 |
-| 9 | `testkey_rsa2048.pem` | AOSP AVB 测试签名密钥 |
-| 10 | `lpdumps.exe` | Super 分区逻辑卷 Metadata 导出 |
-| 11 | `simg2img.exe` | Sparse 格式镜像转换为 Raw 格式 |
-| 12 | `pack_image.py` | 全志 IMAGEWTY v3 容器打包器 |
-| 13 | `img2simg.exe` | Raw 格式镜像转换为 Sparse 格式 |
-| 14 | `platform-tools` r37.0.0 | 主机侧 ADB/Fastboot 探测；当前未与设备建立 Fastboot 握手 |
-
----
-
-## 📂 目录结构
-
-* **[docs/](docs/)**：工程决策文档、发现记录、变更日志，以及 [M6 诊断计划](docs/M6_DIAGNOSTIC_PLAN.md)、[启动失败假设矩阵](docs/M6_HYPOTHESIS_MATRIX.md)、[UART 手册](docs/UART_RUNBOOK.md)、[验证计划](docs/VALIDATION_PLAN.md)。
-* **[tools/](tools/)**：已验证版本的工具链及锁定文件。
-* **[scripts/](scripts/)**：自动化裁剪/打包脚本。
-* **[work/](work/)**：中间提取产物与解包区（不入 Git 库）。
-
----
-
-## ✅ 验证矩阵 (Validation Matrix)
-
-| 组件 | 状态 | 备注 |
-|------|------|------|
-| 固件解包 | ✅ | 已验证 |
-| super 提取 | ✅ | 已验证 |
-| ext4 提取 | ⚠️ | 只读文件提取可用；重建语义不保真，不能放行 |
-| APK 裁剪 | ⚠️ | 候选构建已生成，实机未验证 |
-| 启动器替换 | ⚠️ | 离线集成完成，System 未启动 |
-| Product 分区扩容 | ⚠️ | 离线结构校验通过，实机未验证 |
-| AVB 签名 | ⚠️ | 离线产物已生成，运行时信任未验证 |
-| super 重构 | ⚠️ | 元数据可解析，实机挂载未验证 |
-| PhoenixCard 封包 | ⚠️ | 容器校验通过；端到端启动未通过 |
-| 固件烧录 | ✅ | 进度 100%，运行时仍未通过 |
-| Bootloader USB 枚举 | ✅ | `USB\VID_1F3A&PID_1010` / `sunxi` |
-| Fastboot 接口描述符 | ✅（主机离线证据） | `FF/42/03`，与 AOSP Fastboot 匹配条件一致 |
-| Fastboot 主机枚举 | ✅（主机实测） | U1 后 `992304568773    fastboot`；Windows GUID 变量的因果已验证 |
-| 标准 Fastboot 命令握手 | ✅（协议已验证） | `getvar version` 返回 `version: 0.5`；仅执行读取命令 |
-| Recovery | ✅ | 可达 (机器人躺倒界面，无菜单) |
-| Recovery ADB | ❌ | 未启用 |
-| UART 启动日志 | ⏳ | Fastboot 不支持槽位/用户空间变量；现为定位 Recovery 的第一优先级 |
-| Android System | ❌ | 启动失败 |
-| Wi-Fi / 蓝牙 / 以太网 / HDMI / 红外遥控 | ⏳ | 待验证 |
-
----
-
-## 🧭 固件定制路线图 (Roadmap)
-
-- [x] **M0**：原始固件基线校验与托管
-- [x] **M1**：Allwinner 容器解析与伴生校验和推导
-- [x] **M2**：分区解包与 Verified Boot 启动链审计
-- [x] **M3**：反定制规划与 APK/Init 静态审计
-- [x] **M3+**：增强裁剪执行 + 启动器替换 + 预装应用集成
-- [/] **M4**：ROM 重打包与 AVB 签名 *(离线构建完成；ext4 语义保真和实机启动待验证)*
-- [/] **M5**：固件封装与 PhoenixCard 校验和生成 *(容器可烧录；端到端启动待验证)*
-- [/] **M6a**：无修改启动链取证 *(设备可达 Recovery；Fastboot 描述符已确认，等待经批准的主机 GUID 单变量试验或 UART 日志)*
-- [ ] **M6b**：零内容改动重建对照 *(依赖 M6a)*
-- [ ] **M7**：候选发布
+- 可恢复修改完成最低限度检查后直接构建、刷机和测试；失败就刷回官方固件。
+- 只有 eFuse/OTP/BootROM、唯一密钥、无备份分区表或 bootloader、宿主物理磁盘等不可恢复操作才暂停。
+- 文档只维护后续继续工作需要的当前事实；旧的 M6 详细文档作为历史分析资料，不代表当前门禁。
+- 普通文档、日志、脚本和中间产物不默认生成 SHA-256；只在下载/传输、长期保存的原件或刷机镜像存在明确完整性风险时使用。

@@ -1,0 +1,23 @@
+{
+  "candidate_id": "test4-remove-legacy-user-apps-r1",
+  "firmware_filename": "x12-test4-remove-legacy-user-apps.img",
+  "remove_roots": [
+    "/system/app/UBTunnel.6",
+    "/system/app/DragonAtt",
+    "/system/app/DragonBox",
+    "/system/app/DragonAgingTV",
+    "/system/app/Factory_detection",
+    "/system/app/AwlogSettings",
+    "/system/app/browser-v1.1",
+    "/system/app/H618_UpgradeV3",
+    "/system/app/Update",
+    "/system/app/CZFileManager3.1.7_official_site",
+    "/system/app/zysrf",
+    "/system/app/GalleryTV",
+    "/system/app/Music",
+    "/system/app/VideoPlayer",
+    "/system/app/TvdVideo",
+    "/system/priv-app/TvdFileManager",
+    "/system/app/ImageParser"
+  ]
+}

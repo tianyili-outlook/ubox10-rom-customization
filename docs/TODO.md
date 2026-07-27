@@ -1,42 +1,60 @@
 # 待办事项
 
-## 当前：M6a 无修改启动链取证
+## 当前：固化 Test8r2 稳定基线并准备 Test9
 
-### 已完成证据
+- [x] 提取官方 `system_a/product_a/vendor_a/vendor_dlkm_a`。
+- [x] 建立官方 `system_a` 的 3857 条 ext4 语义清单。
+- [x] 只删除 `/system/app/UBTunnel.6` 并生成测试版。
+- [x] 验证 AVB、dynamic super、ext4 和 IMAGEWTY 容器。
+- [x] 用 PhoenixCard 刷入 `x12-test1-no-ubtunnel.img`；`CARD OK`、`sprite success`。
+- [x] Android、主界面、设置正常，UBTunnel 已消失。
+- [x] 红外遥控、HDMI 音视频、Wi‑Fi、以太网、蓝牙扫描和高码率视频正常。
+- [x] `google.com`、YouTube、`bilibili.com`、`api.bilibili.com` 可访问。
+- [x] CEC 按用户需求跳过；BBLL 以 API 恢复作为本阶段通过。
+- [x] 通过 `192.168.1.8:7896` 建立局域网 ADB并取得最小运行时基线。
+- [x] 构建测试版 2：累计删除 UBTunnel、DragonAtt、DragonBox、DragonAgingTV、Factory_detection、AwlogSettings。
+- [x] 验证测试版 2 的 ext4 语义差异、完整 AVB 启动链和 IMAGEWTY 载荷。
+- [x] 用 PhoenixCard Product 模式刷入测试版 2。
+- [x] 最小回归：Android/Settings、红外遥控、HDMI 音视频、Wi‑Fi 和 bilibili API。
+- [x] ADB 确认五个工厂测试/日志应用不再存在。
+- [x] 通过只读 ADB 确定测试版 3 目标：厂商浏览器、H618 Upgrade 和 Softwinner Update。
+- [x] 构建并离线验证测试版 3。
+- [x] 刷入测试版 3，验证启动、遥控、HDMI，并确认三个目标包消失。
+- [x] 确定 Test4：批量删除八个旧媒体、文件管理和输入应用目录。
+- [x] 构建并离线验证 Test4。
+- [x] 刷入 Test4，Android 启动且默认 LatinIME 正常。
+- [x] ADB 确认八个目标包消失。
+- [x] 确定 Test5：删除 17 个无对应硬件或当前未使用的平台应用。
+- [x] 构建并离线验证 Test5。
+- [x] 刷入 Test5，Android、网络 ADB 和 Google 核心包正常。
+- [x] ADB 确认 17 个新增目标包消失且五个关键保留包存在。
+- [x] 确定 Test6：新增删除 16 个旧个人设备 UI 和非目标功能组件。
+- [x] 构建并离线验证 Test6。
+- [x] 刷入 Test6 并完成最小实机验收。
+- [x] 从官方 GitHub 下载并核对 Projectivy 4.71。
+- [x] 通过 ADB 将 Projectivy 4.71 安装为用户应用。
+- [x] 在电视端启动 Projectivy并设为默认 Launcher；遥控、应用列表、Settings、应用启动和 Home 行为通过，仅有轻微卡顿。
 
-- [x] 归档 Windows 设备管理器截图：`sunxi`，`USB\VID_1F3A&PID_1010&REV_0200` / `USB\VID_1F3A&PID_1010`。
-- [x] 归档 `logs/device/20260722-001337/` 的 PnP 原始证据、Platform Tools 版本和 SHA-256；设备状态为 `OK`、`Problem=0`，当前服务为 `WinUSB`。
-- [x] 确认 PnP 兼容 ID 含 `USB\\COMPAT_VID_1F3A&Class_FF&SubClass_42&Prot_03`，符合 AOSP Fastboot 接口描述符条件；这不是命令握手。
-- [x] 确认当前 `oem79.inf`（libwdi）只注册 `{9D8998B8-AD0B-4656-B575-AF23D189A1A8}`，而 Android USB interface GUID `{F72FE0D4-CBCB-407D-8814-9ED673D0DD6B}` 缺失。
-- [x] 执行标准 Fastboot 只读探测：`fastboot devices`、`fastboot getvar all` 均等待设备，未建立命令握手。
-- [x] 冻结实验 #11.1：已构建，**未物理刷写**。
+## 后续批次
 
-### 下一步（按顺序）
+- [x] 构建并离线验证 Test7：注入 Projectivy、设为默认 Launcher，保留 X12 回退。
+- [x] 刷入 Test7：Projectivy system app、默认 HOME、遥控/Home/Settings 和应用启动通过；首次启动因保留两个 HOME 出现选择框。
+- [x] 构建并离线验证 Test8：移除 X12、settingwizard、HappyCast，默认语言改为英语。
+- [x] 刷入 Test8：单一 Projectivy HOME、英语、遥控/HDMI、Wi‑Fi 和目标包删除结果通过。
+- [x] 定位蓝牙回归：Bluetooth PBAP 因 Test6 删除 ContactsProvider 而崩溃，与 settingwizard/HAL 无关。
+- [x] 临时恢复 ContactsProvider 后蓝牙保持开启并进入扫描；实验包已卸载。
+- [x] 构建器增加 WSL 前置检查、事务式发布、失败自动清理和统一自动验证。
+- [x] 构建并离线验证 Test8r2；恢复 ContactsProvider APK/ODEX/VDEX 完整目录。
+- [x] 刷入 Test8r2，确认蓝牙保持开启、能扫描且 `Bluetooth crashed 0 times`；原 Test8 不作为基线。
+- [ ] Test9：提供 SmartTube、Kodi、Jellyfin、Moonlight 的用户态配置安装脚本，选择 AirPlay 接收器和现代文件管理器，完成最终验证。
+- [ ] Test9 评估 Pixel 3 `blueline` 身份伪装对 Google Play 认证、TV 应用目录和设备显示名称的影响；确认替代方案前不修改 fingerprint。
+- [ ] 分析 AwTvProvision、SettingsSetup、AwManager、PackageOverride；只保留确有硬件/平台职责者。
+- [ ] 保留 AOSP `ProxyHandler`、`VpnDialogs`，除非实机证据证明它们参与厂商网络干预。
 
-- [x] 审阅并获得 [Fastboot 主机 GUID 单变量试验](U1_FASTBOOT_HOST_BINDING_TRIAL.md) 的用户明确授权。自动化环境没有 Windows 管理员令牌，预检安全退出，未改变主机或设备。
-- [x] 在管理员 PowerShell 中完成 `Apply`：`logs/device/20260722-004314/` 含 `guid-backup.json`、`ExpectedGuidPresent: True` 和 SHA-256 清单；原 GUID 均保留。
-- [x] 物理拔插后，`fastboot devices` 输出 `992304568773    fastboot`。Windows 主机枚举已恢复。
-- [x] 执行并归档 `fastboot getvar version`：`logs/device/20260722-004720/` 返回 `version: 0.5`；标准 Fastboot 现为协议已验证。
-- [x] 自动化逐项读取 M6a Fastboot 白名单，输出在 `logs/device/20260722-004937/`：`product=sunxi`、`secure=yes`，其余槽位/userspace 变量均 `not supported`。
-- [ ] Fastboot 已达到可用证据上限；准备 3.3V UART 适配器、杜邦线与（如 J21 未焊针）pogo pin，执行第一次**只接 GND 和 TX→RX**的冷启动监听。
-- [ ] 采集当前设备状态的被动 UART 冷启动原始日志；记录接线照片、波特率、时间和 SHA-256。
-- [ ] 根据 UART 或协议证据建立“Recovery 触发 / BCB / 槽位 / AVB / super / ext4 / init”假设表，选定下一项**单变量**实验。
+## 后续准备
 
-### 明确暂停
-
-- [ ] **实验 #11.1** — 暂停，未刷入。恢复条件：M6a 退出条件满足、风险登记册更新、官方回退路径可用、变更缩减为一个可验证假设并获明确批准。
-- [ ] 新的 PhoenixCard 刷写、Recovery ADB 注入、SELinux Permissive、root ADB、AVB 禁用标志和多 UDC “散弹枪”方案均暂停。
-
-## 后续里程碑
-
-- [ ] **M6b**：PhoenixCard 容器、super、ext4 的零内容改动 round-trip 和语义差分。
-- [ ] **M6c**：每次只引入一个 APK 删除、属性修改或预装 APK 的受控回归。
-- [ ] **产品 manifest 决策**：在 M6b 后分别确认 Projectivy、SmartTube、Kodi、Jellyfin、Moonlight、AirPlay 和 Google 服务/Play 的来源、许可证、分区位置、签名与回归项目；不沿用历史候选列表作为默认决定。
-- [ ] **M7**：Android System 启动、硬件功能矩阵与官方回退验证后，才准备候选发布。
-
-## 历史工作（仅记录，不代表实机放行）
-
-- [x] M0/M1：官方镜像基线、容器清单与校验。
-- [x] M2/M3：分区、AVB、APK 和 init 静态审计。
-- [x] M4/M5：候选重建与容器校验；运行时验证未完成。
-- [x] 实验 #1–#10：历史物理和离线排查，原始现象见 [M6_DEBUG_LOG.md](M6_DEBUG_LOG.md)。其中因果解释均须以当前发现记录为准。
+- 需要确定现代文件管理器和 AirPlay 接收器的可追溯 APK 来源、版本与许可证。
+- SmartTube 曾发生构建环境/签名密钥事件，纳入固件前必须单独核对当前官方稳定版和签名；不得使用随机 APK 镜像站。
+- 待下载的原始 APK 统一放入 `work/preinstall_apks/incoming/`，保留原文件名和来源 URL。
+- Kodi 21.3、Jellyfin TV 0.19.9、Moonlight 12.1 和 SmartTube 32.03 Beta 均已匹配官方发布；最终通过配置脚本安装，不固化进 system/product。
+- USB ADB 无枚举，但 TCP ADB 已验证可用；默认连接 `192.168.1.5:7896`。

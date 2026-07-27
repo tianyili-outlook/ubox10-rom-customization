@@ -1,0 +1,44 @@
+{
+  "schema": "ubox10.ext4-semantic-manifest/v1",
+  "manifest_kind": "materialized-tree",
+  "root_contract": {
+    "logical_root": "/",
+    "root_entry_digest": "SHA256:FIXTURE_WRONG_ROOT",
+    "root_subtree_digest": "SHA256:FIXTURE_SYSTEM_CHILDREN",
+    "required_directories": [
+      "/system"
+    ],
+    "required_child_names": [
+      "system"
+    ],
+    "observed_direct_child_names": [
+      "bin",
+      "etc"
+    ],
+    "source_root_identity": "sha256:fixture-official-system-subtree",
+    "prohibited_subtree_root_identities": [
+      {
+        "logical_path": "/system",
+        "subtree_identity": "sha256:fixture-official-system-subtree"
+      }
+    ]
+  },
+  "entries": [
+    {
+      "path": "/",
+      "type": "directory"
+    },
+    {
+      "path": "/bin",
+      "type": "directory"
+    },
+    {
+      "path": "/bin/init",
+      "type": "regular"
+    },
+    {
+      "path": "/etc",
+      "type": "directory"
+    }
+  ]
+}

@@ -12,7 +12,14 @@ logs/*
 !logs/.gitkeep
 
 # 本地工具与环境
+PROJECT_HANDOFF.md
 tools/local/
+tools/PhoenixCard_v4.2.7/
+tools/platform-tools/
+tools/usb_driver/
+tools/cygwin1.dll
+tools/make_ext4fs.exe
+tools/zadig.exe
 .venv/
 __pycache__/
 *.py[cod]

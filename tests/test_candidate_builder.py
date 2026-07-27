@@ -1,0 +1,91 @@
+"""Regression tests for candidate configuration and path safety."""
+
+from __future__ import annotations
+
+import importlib.util
+from pathlib import Path
+import os
+import shutil
+import subprocess
+import tempfile
+import unittest
+from unittest import mock
+
+
+REPO = Path(__file__).resolve().parents[1]
+SCRIPT = REPO / "scripts" / "build-candidate-firmware.py"
+SPEC = importlib.util.spec_from_file_location("candidate_builder", SCRIPT)
+assert SPEC is not None and SPEC.loader is not None
+builder = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(builder)
+
+
+class CandidateBuilderTests(unittest.TestCase):
+    def test_known_contacts_provider_removal_is_rejected(self) -> None:
+        with self.assertRaisesRegex(RuntimeError, "BluetoothPbapService"):
+            builder.load_candidate_config(
+                REPO / "configs" / "candidates" / "test8-remove-vendor-home-wizard-cast.json"
+            )
+
+    def test_test8r2_preserves_contacts_provider(self) -> None:
+        config = builder.load_candidate_config(
+            REPO / "configs" / "candidates" / "test8r2-restore-contacts-provider.json"
+        )
+        self.assertNotIn("/system/priv-app/ContactsProvider", config["remove_roots"])
+
+    def test_injected_apk_expected_paths_include_parent(self) -> None:
+        config = builder.load_candidate_config(
+            REPO / "configs" / "candidates" / "test8r2-restore-contacts-provider.json"
+        )
+        added = builder.expected_added_paths(config, {"/", "/system", "/system/app"})
+        self.assertEqual(
+            {
+                "/system/app/ProjectivyLauncher",
+                "/system/app/ProjectivyLauncher/ProjectivyLauncher.apk",
+            },
+            added,
+        )
+
+    def test_wsl_path_uses_current_windows_workspace(self) -> None:
+        path = builder.wsl_path(REPO / "tools" / "avbtool.py")
+        self.assertTrue(path.startswith("/mnt/c/"))
+        self.assertTrue(path.endswith("/tools/avbtool.py"))
+
+    def test_failed_transaction_removes_staging_and_publishes_nothing(self) -> None:
+        with tempfile.TemporaryDirectory(dir=REPO / "out") as directory:
+            parent = Path(directory)
+            final_out = parent / "test-transaction"
+            config = {"candidate_id": "test-transaction"}
+            with mock.patch.object(
+                builder, "build_in_staging", side_effect=RuntimeError("simulated failure")
+            ):
+                with self.assertRaisesRegex(RuntimeError, "simulated failure"):
+                    builder.transactional_build(config, final_out, "/unused")
+            self.assertFalse(final_out.exists())
+            self.assertEqual([], list(parent.iterdir()))
+
+    @unittest.skipUnless(os.name == "nt", "Windows ACL inheritance test")
+    def test_staging_directory_inherits_parent_acl(self) -> None:
+        parent = REPO / "out" / "candidates"
+        staging = builder.create_staging_directory(parent, "acl-inheritance-test")
+        try:
+            result = subprocess.run(
+                [
+                    "powershell.exe",
+                    "-NoProfile",
+                    "-Command",
+                    f"(Get-Acl -LiteralPath '{staging}').AreAccessRulesProtected",
+                ],
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                capture_output=True,
+                check=True,
+            )
+            self.assertEqual("False", result.stdout.strip())
+        finally:
+            shutil.rmtree(staging)
+
+
+if __name__ == "__main__":
+    unittest.main()

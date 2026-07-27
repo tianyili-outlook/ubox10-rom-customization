@@ -1,0 +1,17 @@
+{
+  "name": "Projectivy Launcher",
+  "package": "com.spocky.projengmenu",
+  "version_name": "4.71",
+  "version_code": 95,
+  "min_sdk": 23,
+  "target_sdk": 37,
+  "home_activity": "com.spocky.projengmenu/.ui.home.MainActivity",
+  "release_url": "https://github.com/spocky/miproja1/releases/tag/4.71",
+  "download_url": "https://github.com/spocky/miproja1/releases/download/4.71/ProjectivyLauncher-4.71-c95-xda-release.apk",
+  "published_at": "2026-07-13T22:55:53Z",
+  "filename": "ProjectivyLauncher-4.71-c95-xda-release.apk",
+  "bytes": 11316610,
+  "sha256": "6818FC2DB44411A605CA4D7067FB9D7227AAEF2414CFF42DE58FE13E9321B47A",
+  "local_path": "work/preinstall_apks/ProjectivyLauncher-4.71-c95-xda-release.apk",
+  "distribution_note": "Keep the APK local under ignored work/. Do not commit or redistribute it without the developer's permission."
+}

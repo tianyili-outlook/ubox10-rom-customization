@@ -138,7 +138,7 @@
 * **文件 SHA-256 (`fastboot.exe`)**：`DD55FEF77AB2753B6423F37F39D91CB00CE53AB4539A2431577F07C4ABCAA32A`
 * **文件 SHA-256 (`adb.exe`)**：`957E46B8615F7AF5B7292A2DDABE98D2E61940C3FB2B0545756507F080613E71`
 * **用途**：仅用于 `fastboot --version`、`fastboot devices` 和握手成功后的只读 `fastboot getvar version`。
-* **当前结果**：`1F3A:1010` 设备未建立标准 Fastboot 握手；不得执行任何写入或状态变化命令。
+* **当前结果**：U1 后 `fastboot devices` 返回 `992304568773    fastboot`，`getvar version` 返回 `0.5`；协议已验证。白名单变量仅得到 `product=sunxi`、`secure=yes`，槽位/userspace 变量不支持。不得执行任何写入或状态变化命令。
 
 ### 13a. 当前 Windows host binding（观察记录，非可分发工具）
 
@@ -146,8 +146,28 @@
 * **证据**：`logs/device/20260722-001337/usb-evidence.json`，SHA-256 `9823D913E07031822B41567C22DE3D88539E5D21F70431AFEAD29C2A3F766B33`。
 * **当前设备/服务**：`USB\VID_1F3A&PID_1010\992304568773`，`WinUSB` / `\Driver\WINUSB`，`Status=OK`，`Problem=0`。
 * **当前驱动包**：`C:\Windows\INF\oem79.inf`（Provider `libwdi`），只读审计 SHA-256 `5B13785711DC58CE2041D5DD9BAF15EFBFFF276A824BEFDBC3BC1F70F3CF1532`。
-* **关键差异**：当前 `DeviceInterfaceGUIDs` 没有 `{F72FE0D4-CBCB-407D-8814-9ED673D0DD6B}`。该 GUID 是 Platform Tools Windows 枚举的前提之一；详情和可回滚试验见 `docs/U1_FASTBOOT_HOST_BINDING_TRIAL.md`。
+* **关键差异与结果**：初始 `DeviceInterfaceGUIDs` 没有 `{F72FE0D4-CBCB-407D-8814-9ED673D0DD6B}`。U1 已在完整备份后仅追加该 GUID，保留原值；物理拔插后 Fastboot 枚举/协议成功。详情和精确回滚见 `docs/U1_FASTBOOT_HOST_BINDING_TRIAL.md` 与 `logs/device/20260722-004314/`。
 * **限制**：这是现场状态记录，不授权复制/分发/安装该驱动，也不作为发布 ROM 工具链的一部分。
+
+### 13b. 本地 Android `mke2fs`（M6b.2 观察项，尚未放行）
+
+* **文件**：`tools/platform-tools/mke2fs.exe`
+* **运行时报告**：`mke2fs 1.47.2`；EXT2FS library `android-platform-15.0.0_r5-314-ga1f793f6b`
+* **文件 SHA-256**：`BE42ABB5D1651C8766E230E7AF834BD8E0F2085857CCB483463F58BA5AD65E1A`
+* **配置 SHA-256 (`mke2fs.conf`)**：`AD58A58DCDD24D85055814CA9CAC67DB89D4E67C434E96774BDCE0D0A007D067`
+* **观察**：usage 支持 `-d root-directory|tarball`；本次仅运行 `-V` 和无输出路径 usage，未生成文件系统。
+* **状态**：**尚未锁定/不得用于 M6b fixture 或 Android 分区生产**。D-0041 已确认目录输入依赖宿主 `lstat`/编译期 xattr，tarball 依赖 libarchive；usage 不能证明 Windows/NTFS 上的完整语义。当前又缺配套 `debugfs/e2fsck/dumpe2fs` 与第二解析实现。详见 D-0040、D-0041、ADR-0010、R-019/R-020。
+
+### 13c. 计划中的 Linux e2fsprogs fixture oracle（尚未下载/构建）
+
+* **角色**：只作为 M6b Gate 1 synthetic ext4 fixture 作者与作者侧结构检查器；不自动成为 Android system 生产构建器。
+* **计划版本**：upstream e2fsprogs `1.47.2`。
+* **官方来源**：https://www.kernel.org/pub/linux/kernel/people/tytso/e2fsprogs/v1.47.2/
+* **计划源码归档**：`e2fsprogs-1.47.2.tar.xz`。
+* **官方签名清单中的 SHA-256**：`08242E64CA0E8194D9C1CAAD49762B19209A06318199B63CE74AE4EF2D74E63C`。
+* **所需产物**：`mke2fs`、`debugfs`、`e2fsck`、`dumpe2fs`；每个产物的版本、SHA-256、构建环境和 configure/make 命令均待实际构建后填写。
+* **状态**：**设计锁定、物料未取得、不可调用**。D-0043/D-0045/D-0046/D-0052 已确认 CPU 能力、系统盘恢复边界、SVM H2b 和 H2c 双 feature Apply；当前 firmware virtualization=true，WSL/VMP 已 Enabled，系统等待重启。D-0053 已将正常重启、Linux/WSL runtime、联网下载和基础依赖纳入用户自管 B1 批次，完成后统一验收；上游源码、签名、工具哈希、toolchain manifest 和 fixture 仍继续分门。取得后必须先验证签名清单与源码 SHA-256，只生成 toolchain manifest 供评审；不得直接生成 fixture。
+* **详细设计**：`docs/M6B_EXT4_FIXTURE_ORACLE_DESIGN.md` / ADR-0010。
 
 ### 14. 手工修改的 Google USB INF（禁止安装）
 

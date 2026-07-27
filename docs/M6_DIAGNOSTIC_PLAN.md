@@ -1,5 +1,7 @@
 # M6a 无修改启动链诊断计划
 
+> 历史资料：M6a 已完成，本文件不再定义当前操作范围。当前任务见 `RUNBOOK.md`。
+
 ## 目标与边界
 
 目标是在**不改写设备**的前提下，确认 USB 接口的可访问性，并取得能够定位 Recovery 路径的启动链证据。当前阶段不尝试修复 ADB、不重建 boot/vendor_boot、不改 AVB，也不刷 PhoenixCard。
@@ -8,8 +10,8 @@
 |---|---|---|
 | Windows 显示 `sunxi`，硬件 ID 为 `USB\VID_1F3A&PID_1010` | 已观察 | 物理枚举正常；不能单独证明协议。 |
 | PnP 兼容 ID 为 `Class_FF&SubClass_42&Prot_03` | 主机离线已验证 | 与 AOSP Fastboot 的接口描述符筛选条件一致；不等于命令事务已成功。 |
-| 当前服务为 `WinUSB`，libwdi 注册 GUID 不含 Android interface GUID | 主机离线已验证 | Platform Tools 未枚举的高置信主机侧解释；等待单变量试验验证。 |
-| `fastboot devices` 与 `fastboot getvar all` 只显示 `< waiting for any device >` | 已观察 | 标准 Fastboot 会话未建立。 |
+| 当前服务为 `WinUSB`；U1 已为唯一实例追加 Android interface GUID 并保留原值 | 协议已验证 | 物理拔插后 Platform Tools 已枚举设备；主机侧阻塞原因已通过可回滚单变量试验验证。 |
+| 初始 `fastboot devices` / `getvar all` 曾只显示 `< waiting for any device >`；U1 后 `devices` 与 `getvar version` 成功 | 协议已验证 | 当前标准 Fastboot 会话已建立，但该 Allwinner 实现不支持槽位/userspace 白名单变量。 |
 | 设备可见 Recovery 机器人界面，Android System 未进入 | 已观察 | Recovery 触发源和首个失败点未知。 |
 | #11.1 已构建但未刷入 | 离线已验证 | 不可作为当前设备行为的证据。 |
 
@@ -75,13 +77,31 @@ U0 已完成，当前结果为：`oem79.inf` / libwdi 使用 `WinUSB`，但只�
 
 执行前必须阅读 [UART 被动监听手册](UART_RUNBOOK.md)。第一次只连接 GND 与板端 TX→适配器 RX，不连接 VCC 或主机 TX；这不会向目标板发送数据。
 
+**U3 实际结果（2026-07-25）**：`logs/device/20260725-004019/` 已归档首次 90 秒冷启动捕获。`uart-capture.json` 记录 `COM3`、115200、8N1、无流控、`DTR/RTS=false`、15,173 字节以及仅 `J21 GND → FT232RL GND`、`J21 TX → FT232RL RXD` 的接线。JSON、raw 与 text 的 SHA-256 均已复算一致。日志显示 eMMC、U-Boot 和 Linux 内核均开始运行；`Kernel init done` 后第一个存储失败信号为 `mmcblk0p20`“找不到 ext4 文件系统”，177 ms 后出现 `bootloader` 重启。第二次 U-Boot 出现 `bootmode[2]:0x5f` 并初始化 Sunxi Fastboot。此结果足以把 p20 与本次早期失败窗口关联起来，但尚不足以证明 p20 错误由哪段 init/vendor 代码处理或单独导致重启；AOSP init 的默认致命重启目标本来就是 bootloader。它不解释 p20 为什么无有效 ext4，也不替代跳帽/VCCIO 的电气测量。
+
+## 阶段 U3.2：`metadata` 格式化责任离线审计
+
+**风险等级：低。** 只读取仓库中的官方提取物、候选工作副本和脚本；可以写入新的分析报告或隔离控制样本，但不连接 UBOX10，不调用 Fastboot，也不修改 PhoenixCard 容器。
+
+1. 从 GPT/`sys_partition.fex` 复核 p20 的名称、边界与 16 MiB 大小，并记录输入文件哈希。
+2. 从 first-stage fstab/ramdisk 审计 `/metadata` 的挂载选项、`formattable` 语义以及实际可用的格式化工具或厂商脚本。U3.2-b 已由 `logs/analysis/20260725-u3.2-metadata-init-audit-r2/` 完成：官方和当前候选的 `init`、`mke2fs`、`e2fsdroid`、`libfs_mgr.so` 及 metadata fstab 均相同。它排除“候选删掉已审计格式化能力”，**不证明**当前启动调用了任何格式化路径。
+3. 审计官方容器条目和 `tools/pack_image.py`：已确认没有 `metadata` 有效载荷或映射；当前候选封装链不能传递该分区。不得由此反推官方镜像必然不可启动。
+4. 审计第二阶段 `init.rc` 的实际触发顺序和所有 `reboot_on_failure`：重新解包的 boot/vendor_boot 都不含 `apexd`、`apexd.rc` 或 `init.formatdevice.rc`，也没有 `reboot_on_failure` 命中。后续 logical-system 审计已将工作树 APEXd/init 归属为官方 `system_a`，并确认候选把同一内容放错到 ext4 根相对路径；该线索不能归因给 boot/vendor_boot，也尚不是设备运行时证据。
+5. U3.2-d 已由 `logs/analysis/20260725-u3.2-imagewty-boot-provenance-r1/` 完成：`x12-purified.img` 的 boot/vendor_boot payload 分别与 `work/boot.img`、`work/vendor_boot.img` 字节级相同，官方容器也与 `firmware/extracted/` 相同，伴生 IMAGEWTY 校验均通过。该结论仍不能证明物理设备实装内容。
+6. U3.2-e：从官方/候选 super 的 logical `system` 分区建立 APEXd、`apexd.rc`、`init.formatdevice.rc` 与 `init.rc` 的输入哈希、文件存在性和差分 manifest；不得把工作树用作来源证据。D-0034 已确认输入来源为 `firmware/extracted/super.fex` 与 `work/super.img`。`tools/lpunpack.py` 对稀疏输入即使 `--info` 也会在输入同级写 `.unsparse.img`，故不得直接针对这些输入运行；必须使用流式读取方案或显式、全新的证据输出目录。
+   - U3.2-e 已完成：工作树的 APEXd/init 哈希来自官方 `system_a`；候选将官方 `/system` 子树扁平化到 ext4 根目录，官方 `system/...` 路径缺失但根相对文件哈希一致（D-0036）。这确认候选 super 的离线结构缺陷，但不证明设备因果。
+7. U3.2-f：**已完成**。`logs/analysis/20260725-u3.2-rebuild-system-root-audit-r1/` 以 AST 只读审计确认：`purify-rom.py` 在 `work/system_extracted` 的 `system/...` 子树中修改内容，而 `repack-rom.py:27` 将 `work/system_extracted/system` 直接传给 `make_ext4fs`。报告字段 `confirmed_root_flattening_chain=true` 将该选择与候选根级 `/system` 缺失建立了可复核的本地因果链（D-0037）。不得就地修补脚本或生成新 super；M6b.0/M6b.1/M6b.2 已把修复转化为语义合同、JSON guard 与独立 fixture oracle 门禁。H1、H2a、H2b、H2c 和 B1 已通过；真实 ext4 fixture 之前仍须先完成 [R2 toolchain manifest](M6B_TOOLCHAIN_MANIFEST_RUNBOOK.md)。
+8. **M6a 内不生成 16 MiB `metadata` 控制样本。** p20 的格式化责任仍未知，而候选已经有独立、足以阻止运行时归因的 system 根层级缺陷。M6b.0 设计、M6b.1 JSON guard 与 M6b.2 oracle 路线已经完成，但真实 ext4 fixture/toolchain 门禁尚未通过。只有该门禁通过、仍有明确的单变量信息增益、且 R-015 被重新评审后，才可另行提议隔离的非封装控制样本。该样本不得命名为发布物、不得加入 `MODIFIED_FILES`、不得封装或刷写。
+
+**通过条件**：将“p20 无有效 ext4”“谁应初始化 p20”“当前候选来自哪里”“候选 system 的已证实根层级缺陷”和“谁/为何请求 bootloader 重启”明确分开；给出支持/反证和下一项最小单变量实验。若责任仍无法确定，停在离线证据阶段，而不是尝试 `flash`、`erase`、VCC/TXD 或 UART 交互。
+
 ## M6a 退出条件
 
 以下四项必须全部满足，才可提议 M6b；并不自动授权刷写：
 
 1. 已归档 USB PnP 原始证据，且 USB 状态被准确标注为“协议已验证”或“未建立标准 Fastboot”。
-2. 已获得至少一份完整冷启动 UART 原始日志；若物理上无法取得，须记录 J21 实际形态、已尝试的无损方法和客观阻塞证据。
-3. 已列出 Recovery、BCB、槽位、AVB、super、ext4 与 init 的假设、支持/反驳证据和下一项最小实验。
+2. 已获得至少一份完整冷启动 UART 原始日志；**已由 `logs/device/20260725-004019/` 满足**。若以后物理上无法取得，须记录 J21 实际形态、已尝试的无损方法和客观阻塞证据。
+3. 已列出 Recovery、BCB、槽位、AVB、super、ext4 与 init 的假设、支持/反驳证据和下一项最小实验；U3.2 已确认历史候选的错误 ext4 根输入，但 `metadata` 初始化责任与设备侧重启因果仍开放。M6b.0/M6b.1/M6b.2 设计门禁、管理员 H1、schema v2 H2a、SVM H2b、WSL/VMP H2c Apply、D-0054 的 B1 post-reboot/Ubuntu 环境和 D-0055 的 Linux oracle 工具链验收均已完成；下一步通过真实 synthetic fixture 后重新评估。
 4. 官方原件、候选构建哈希、恢复介质和风险登记册都可追溯；下一项实验只改一个明确变量。
 
 ## 参考

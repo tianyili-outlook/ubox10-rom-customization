@@ -1,81 +1,43 @@
-# 架构决策记录（ADR）
+# 关键技术决策
 
-## ADR-0001：原始固件保持在根目录直到验证副本存在
+## 当前有效
 
-- 状态：已接受（2026-07-19）
-- 决策：不移动、重命名、覆盖或复制当前唯一的 `x12-1024.img`。脚本暂以项目根目录为默认输入。
-- 理由：原件是全部恢复与分析工作的唯一锚点；无验证副本时改变其位置会增加人为失误风险。
-- 收益：降低丢失原件和误操作概率，保留可验证身份。
-- 风险：目录结构暂不完全符合长期归档布局。
-- 恢复：取得第二份并逐一 SHA-256 校验相同后，以记录化操作迁移一份到 `firmware/original/`。
+- **官方镜像永不覆盖**：`x12-1024.img` 是统一恢复入口，所有候选使用新文件名。
+- **采用可恢复的快速实机迭代**：离线完成路径、原件和恢复方式检查后直接刷测；启动失败就刷回官方镜像。
+- **先直接编辑 ext4，不做全量重建**：测试版 1 用 `debugfs` 删除 UBTunnel，最大限度保留官方文件系统语义。
+- **首个候选只删除 UBTunnel**：这是最小且与网络问题直接相关的变量；官方 Launcher 和全部硬件分区保持不变。
+- **暂不删除 ProxyHandler/VpnDialogs**：它们是 AOSP 系统组件，不是仅凭名称即可判定的 UnblockTech 定制。
+- **AVB 保持开启并重新签名**：不使用禁用校验 flags；测试密钥能否被本机启动链接受由 UART 实机结果决定。
+- **应用和硬件分批回归**：每次只删除一组明确目标，启动后测试网络和硬件，避免一次改动过多导致无法定位。
+- **文档保持简洁**：主入口只保留当前事实、决定、阻塞和下一步；旧 M6 文档仅作历史参考。
+- **测试版 1 作为新的可启动净化基线**：后续候选从相同官方分区直接修改路线继续，不再回到旧 `work/` 全量重建流程。
+- **测试与完整性检查按实际风险选择**：只测本次变更最可能影响的项目；普通日志和中间产物不生成哈希，刷机镜像与长期保存原件除外。
+- **ADB 优先使用厂商预设 TCP 端口 7896**：Android USB 完全未枚举，而官方 boot 已明确配置网络端口；只有 TCP ADB 也失败时才采集短 UART 诊断。
+- **测试版 2 只增加五个低风险删除项**：DragonAtt、DragonBox、DragonAgingTV、Factory_detection、AwlogSettings；保留 Launcher、投屏、蓝牙配对、LED 和 OTA 组件。
+- **候选构建改为配置驱动**：统一使用 `scripts/build-candidate-firmware.py --config configs/candidates/<候选>.json`，避免为每批删除复制一套脚本。
+- **候选构建从 Windows PowerShell 启动**：Windows Python 负责 `lpmake.exe` 和 IMAGEWTY，脚本内部再调用 WSL ext4 工具；不要从 WSL 直接启动构建器。
+- **网络测试按变更范围执行**：普通应用删除不再重复测试 bilibili API；只有修改网络服务、代理、VPN、DNS、证书或相关 framework 配置时才复测。
+- **测试版 3 删除厂商浏览器和两个更新应用**：删除 `browser-v1.1`、`H618_UpgradeV3`、`Update`；Chrome 可替代浏览器，固件恢复继续使用 PhoenixCard 官方镜像。
+- **按证据处理厂商组件**：settingwizard 曾暂留到 Test7，确认不是硬件依赖后已随 Test8 删除；BLEAutoPair、NanoOtaBle 和 LED 仍可能参与遥控器配对或硬件状态，在取得依赖证据前继续保留。
+- **Test4 扩大可替代用户应用批次**：在保持每个删除根目录可追踪的前提下，可以一次移除一组播放器、图库、音乐、文件管理器和未使用输入法，不再按单个 APK 刷机。
+- **Test4 删除八个旧用户应用目录**：CZFileManager、Zhuyin、GalleryTV、Music、VideoPlayer、TvdVideo、TvdFileManager、ImageParser；保留 Chrome 和默认 LatinIME，后续由 Kodi/Jellyfin 等目标应用接替媒体功能。
+- **包验证使用精确行匹配**：检查删除结果时在包名后使用 `$`，避免 `com.android.music` 错误匹配 `com.android.musicfx`。
+- **Test5 批量删除 17 个非电视平台应用**：包括电话/NFC/打印、CTS shim、ManagedProvisioning、EasterEgg、本地备份确认和 DSU；保留 Google Play、MusicFX、蓝牙、相机扩展与电视核心组件。
+- **Test6 作为最后一批纯删除**：新增删除 16 个旧个人设备 UI、壁纸/屏保工具、联系人/日历、相机扩展、蓝牙 MIDI、定时开关和厂商截图组件；之后不再继续无目标地精简 AOSP 核心。
+- **Test8 集中清理厂商界面**：删除 X12、settingwizard 和 HappyCast，固定 `en-US` 默认语言；标准 Settings、BLEAutoPair/NanoOtaBle 和 Miracast 保留，AirPlay 后续以可更新应用补回。
+- **Test8 不修改 Google `blueline` 身份属性**：这些属性可能维持现有 GMS/Play 认证；清除厂商品牌不应以失去 Google Play 或 TV 应用兼容为代价，留到 Test9 单独实验。
+- **恢复 AOSP ContactsProvider**：Android 12 的 Bluetooth PBAP 对 `com.android.contacts` provider 有硬依赖；它没有必要的用户界面，但属于蓝牙兼容基础设施，不能按“电视不需要联系人”删除。
+- **候选采用事务式构建并自动验收**：WSL 前置检查在复制大文件前完成；候选只在 ext4 语义、只读 e2fsck、完整 AVB、super、IMAGEWTY 和单元测试全部通过后发布，失败临时目录自动清理。
+- **优化目标是电视体验而非最少进程**：保留对遥控、影音、Google Play、APK 安装、ADB、USB/文件访问或兼容性有价值的组件。
+- **补回现代文件管理能力**：旧文件管理器已删除；最终固件应预装或明确提供一个遥控器友好的现代文件管理器，确保 USB 浏览和本地 APK 安装方便。
+- **第三方 APK 二进制不提交公共仓库**：仓库记录官方来源、版本、包名和下载校验；APK 保存在已忽略的 `work/preinstall_apks/`，构建时本地注入。
+- **Projectivy 先作为用户应用试跑**：4.71 用户态和 Test7 system app 均已实机通过；Test8 因此删除 X12。
+- **保留当前 32 位 Android 用户空间**：H616 和内核支持 64 位，但 system/vendor 只有 32 位运行库和硬件栈；没有匹配的 64 位 BSP/厂商二进制时不迁移 arm64。
+- **大型目标应用使用配置脚本安装**：Kodi、Jellyfin、Moonlight、SmartTube 不固化进只读分区，便于更新和替换；Projectivy 仍在 Test7 注入固件。
+- **Test7 将 Projectivy 注入 `/system/app`**：沿用已验证的 system ext4 修改链，并替换厂商已有的两项默认 Launcher 属性；X12 仅在 Test7 保留作回退。
 
-## ADR-0002：先解析证据，后决定 AVB 和删改策略
+## 后续再决定
 
-- 状态：已接受（2026-07-19）
-- 决策：禁止在 M1/M2 期间禁用 AVB 或预先承诺重签名方案。
-- 理由：Android 12 A/B 动态分区的实际验证链、密钥可得性及启动加载链尚未知。
-- 收益：避免把启动失败隐藏为“绕过验证”，保持可维护的安全模型。
-- 风险：前期进度较慢。
-- 恢复：若 M2 证实无法合法重签，记录阻塞条件，选择经验证的替代交付途径而非强行构建。
-
-## ADR-0003：采用自研 Python 固件解析脚本而非第三方黑盒二进制工具
-- 状态：已接受（2026-07-19）
-- 决策：在 M1/M2 固件提取与校验分析中，统一采用自研的、完全开源可审计的 Python 脚本 `tools/sunxi_image_tool.py`，不使用社区流行的 `imgRePacker.exe` 或其他不开源二进制。
-- 理由：安全性是 ROM 修改首要原则。第三方打包工具一般为闭源预编译 of Windows 可执行文件，无法对源码进行安全审计，且可能引入平台兼容性及自动化集成困难。自研脚本逻辑轻量、无外部依赖、支持跨平台自动化，并已完美验证了 Allwinner 的累加和校验算法。
-- 收益：完全掌控解析和重打包逻辑；实现 100% 可审计与平台无关；方便在打包阶段自动化重算校验和。
-- 风险：如果后期发现 Allwinner 特殊的压缩格式，可能需要补充开发对应的解压模块。
-- 恢复：如遇到自研脚本无法解析的特殊块，可参考 `OpenixIMG` 等开源项目的 C++ 代码补充修改脚本，或临时在受控沙箱中使用验证过的开源工具。
-
-## ADR-0004：ROM 净化与启动管理器 (Launcher) 替换策略
-
-- 状态：已接受（2026-07-19）
-- 决策：
-  1. **Launcher 替换与框架规避**：由于 Allwinner 固件在框架中硬编码读取 `ro.sw.defaultlauncher_package` 和 `ro.sw.defaultlauncher_class` 系统属性以强制拉起定制的 `X12.apk` (`com.moons.mylauncher10`)。我们不再通过强删 Launcher 引起 Crash，而是直接修改 `system/build.prop` 下的这两项属性，将其指向我们引入的干净 TV 启动管理器（如 preload 的 `SimpleLauncher` 或其他开源 Leanback Launcher）。
-  2. **彻底删除的软件/服务**：
-     - `happycast.apk` (广告投屏，占 107.9MB)。
-     - Allwinner 厂测工具：`DragonAgingTV`、`DragonAtt`、`DragonBox`、`Factory_detection`。
-  3. **保留的硬件驱动与关联服务**：
-     - `BLEAutoPair.apk` (蓝牙遥控配对服务) ➔ **已删除**（用户确认使用红外遥控器，非蓝牙遥控器）。
-     - `H616_led_blink-s.apk` (基于 `com.mitac.android.i2ctool`，负责 PWM 物理指示灯控制) ➔ **保留**。
-     - `UBTunnel.6.apk` (UnblockTech 内置网络隧道) ➔ **已删除**。
-  4. **日志消减策略**：修改 `build.prop` 以禁用 `persist.debug.logpersistd` 等选项，关闭后台 `awlog_logcatd` / `awlog_kmsgd` 日志守护进程，以节约存储空间与闪存擦写寿命。
-- 理由：此方案可以在不引入底层 Java 框架崩溃风险的前提下，彻底清除流氓广告推广软件和工厂冗余代码，且保证了红外遥控器配对、蓝牙与 front LED 状态指示等核心硬件体验依然完整可用。
-- 收益：精简系统分区近 150MB 空间，极大降低开机后台 CPU 与内存开销，并获得无广告纯净界面。
-- 风险：如果替换的 Launcher 存在 bug，开机可能会卡在 SystemUI 加载页面。
-- 恢复：可以随时使用 `SimpleLauncher.ap` 重装为备用，或者修改 `build.prop` 指回 `X12` 进行功能恢复。
-
-## ADR-0005：先取证，再修改启动链
-
-- 状态：已接受（2026-07-21）
-- 决策：暂停实验 #11.1 及所有新的 boot、vendor_boot、vbmeta、Recovery 写入。M6a 只允许 USB 枚举和主机驱动身份采集、经用户确认的可逆主机驱动验证，以及 3.3V UART 被动监听。
-- 理由：当前设备可以进入 Recovery，但 Recovery 触发原因、活动槽位、BCB 状态和第一个启动失败点均未得到设备侧证据。#11.1 同时更改 init、SELinux、USB Gadget、boot 与 vendor_boot，无法建立因果关系。
-- 收益：恢复单变量实验能力，避免叠加变量造成反复刷写和错误归因。
-- 风险：诊断速度降低；UART 可能需要额外适配器或接触针。
-- 恢复：本决策本身不改写设备。被动 UART 仅接收时拔线即可恢复；任何后续刷写须先完成 M6a 退出条件并获得单独确认。
-
-## ADR-0006：USB 协议以握手判定，而非仅以 VID/PID 或友好名称判定
-
-- 状态：已接受（2026-07-21）
-- 决策：`USB\VID_1F3A&PID_1010` 及友好名称只能证明枚举；`FF/42/03` 兼容 ID可记录为“Fastboot 接口身份已确认”；只有获得一次无修改 `fastboot devices → getvar version` 事务后才标为“协议已验证”。
-- 理由：AOSP Fastboot 的 Windows 实现匹配 `0xff/0x42/0x03` 接口，但当前 Platform Tools 仍无法发现该设备；描述符不能证明 Windows interface GUID、端点访问或命令传输状态。
-- 收益：避免向错误协议发送命令，避免误把主机驱动问题当作设备故障。
-- 风险：需要额外收集 Windows PnP 信息或使用 UART。
-- 恢复：采集与 `fastboot getvar version` 均为无写入操作；若出现异常，断开 USB 即可恢复。
-
-## ADR-0008：先复用现有 WinUSB，进行可回滚的 Android interface GUID 单变量试验
-
-- 状态：已接受并完成主机枚举验证（2026-07-22）
-- 决策：不重绑、不安装、不卸载 Windows 驱动。针对唯一已连接实例的既有 `DeviceInterfaceGUIDs`，在完整备份后仅追加 AOSP Android USB interface GUID `{F72FE0D4-CBCB-407D-8814-9ED673D0DD6B}`；物理拔插后只测试 `fastboot devices`。若失败，按备份原样恢复。
-- 理由：PnP 已确认驱动栈为 `WinUSB`，但当前 libwdi 注册的接口 GUID 不含 Platform Tools 使用的 Android GUID。这是当前唯一能解释“描述符匹配而 fastboot 无法枚举”的主机侧变量。
-- 收益：一次实验只改变一个 Windows 注册表多字符串值，保留现有驱动和设备存储；能区分“Windows 枚举不匹配”与“设备传输层不响应”。实际结果为物理拔插后 `fastboot devices` 显示 `992304568773    fastboot`，确认该主机变量是枚举阻塞。
-- 风险：写错实例或覆盖既有 GUID 会破坏该主机的设备接口注册；管理员权限不足会导致试验无法执行。该试验不是可分发驱动方案。
-- 恢复：脚本在写前保存完整原值并要求显式确认；失败后用同一备份精确恢复、物理拔插。没有设备刷写、解锁或状态变化命令。
-
-## ADR-0007：ext4 必须先通过零内容改动语义 round-trip
-
-- 状态：已接受（2026-07-21）
-- 决策：在删除 APK、修改属性或预装新 APK 前，先完成 PhoenixCard 容器、super 逻辑分区、每个 ext4 文件系统的零内容改动重建和语义差分。
-- 理由：当前提取与重建流程尚未保留所有符号链接和文件系统元数据；“可生成镜像”和“可启动”不是同一结论。
-- 收益：把工具链缺陷与 ROM 内容变更分离，形成可复现的失败定位点。
-- 风险：需要补充元数据导出、比较器和测试夹具。
-- 恢复：round-trip 使用官方原始副本作为输入，不覆盖原件；失败产物仅保留在隔离输出目录。
+- 若未来取得同板型完整 64 位 BSP/固件，再单独评估 arm64/multilib 分支；不与当前净化主线混做。
+- AirPlay 接收器和现代文件管理器的最终选择。
+- AwTvProvision、SettingsSetup、AwManager、PackageOverride 是否有继续清理价值。
