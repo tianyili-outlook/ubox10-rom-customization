@@ -40,16 +40,16 @@ python .\scripts\build-candidate-firmware.py `
 
 构建器需要至少 7 GiB 临时空间，并在唯一事务目录完成 ext4、AVB、super、IMAGEWTY 和单元测试验证后才发布候选。目标目录已经存在时会拒绝覆盖。
 
-Test8r2/Test9r1 依赖本地、未提交 Git 的 Projectivy 官方 APK：
+Test8r2/Test9r1/Test9r2 依赖本地、未提交 Git 的 Projectivy 官方 APK：
 
 ```text
 work/preinstall_apks/ProjectivyLauncher-4.71-c95-xda-release.apk
 SHA-256 6818FC2DB44411A605CA4D7067FB9D7227AAEF2414CFF42DE58FE13E9321B47A
 ```
 
-## Test9r1 Remote 准备工具链
+## Test9r1/Test9r2 Remote 准备工具链
 
-Test9r1 额外使用本地、不提交 Git 的：
+Test9r1/Test9r2 额外使用本地、不提交 Git 的：
 
 - Eclipse Temurin JDK 17.0.19+10；
 - Android API 31 platform；

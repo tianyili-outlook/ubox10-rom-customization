@@ -1,5 +1,13 @@
 # 变更日志
 
+## 2026-07-29
+
+- Test9r1 真机确认 feature、`com.android.media.tv.remoteprovider` shared library、Remote Service 5.2.473254133 和 privileged permissions 已加载，但 `/system/overlay` 中的静态 RRO 未被 Package Manager 注册；framework lookup 为空，`TvRemoteProviderWatcher` 持续拒绝未配置/白名单化的 provider，6466/6467 未监听，iPhone 无法发现电视。
+- Test9r1 上的 Play Store 29.2.15 同时确认失效：package/Launcher 入口存在，但启动进入 `com.google.android.finsky.accessrestricted.AccessRestrictedActivity`；Remote Service 多次报告 Play Store “missing”。因此不改变 leanback/Google stack 的 Test9r2 只作 remote 分层探针，即使 remote 成功也不能晋级。
+- 启动日志显示该固件扫描 `/system/system_ext/overlay` 和 `/product/overlay`，且明确报告前者为空；据此从 Test8r2 创建 Test9r2，只把同一 RRO 移至 `/system/system_ext/overlay`，不改变 remoteprovider、权限、donor、feature 或 `vendor_dlkm`。
+- Test9r2 的 25 项单元测试套件、ext4/e2fsck、完整 AVB、super、IMAGEWTY 10 分区校验全部 PASS；固件大小 2,005,946,368 bytes，SHA-256 `27B54FB83E96D3863FAE2EF2718E8EC9ADDD863E5ED123082D5E6C8CA6FFFD52`，等待真机验证 RRO 注册/lookup 后再测试 iPhone。
+- 删除 Test9r1 失败镜像、Test9r2 中间镜像和一次超时探针留下的重复临时分区，共 7,404,837,598 bytes；保留配置、日志和清单。四个官方逻辑分区缓存合计 1,888,006,144 bytes，按用户指令改为长期保留，不再为节省空间重复删除。
+
 ## 2026-07-28
 
 - 完成 Test9w1 真机收束：`ant_div=N`，5 GHz 网络稳定、目标 2.4 GHz SSID 仍未出现，蓝牙 `ON` 且崩溃 0 次；没有证据证明补丁实质改善，实验退役，后续恢复从 Test8r2 构筑。

@@ -1,0 +1,104 @@
+{
+  "candidate_id": "test9r2-android-tv-remote-service-rro-path-r1",
+  "firmware_filename": "x12-test9r2-android-tv-remote-service-rro-path.img",
+  "remove_roots": [
+    "/system/app/UBTunnel.6",
+    "/system/app/DragonAtt",
+    "/system/app/DragonBox",
+    "/system/app/DragonAgingTV",
+    "/system/app/Factory_detection",
+    "/system/app/AwlogSettings",
+    "/system/app/browser-v1.1",
+    "/system/app/H618_UpgradeV3",
+    "/system/app/Update",
+    "/system/app/CZFileManager3.1.7_official_site",
+    "/system/app/zysrf",
+    "/system/app/GalleryTV",
+    "/system/app/Music",
+    "/system/app/VideoPlayer",
+    "/system/app/TvdVideo",
+    "/system/priv-app/TvdFileManager",
+    "/system/app/ImageParser",
+    "/system/app/NfcNci",
+    "/system/app/SecureElement",
+    "/system/priv-app/MmsService",
+    "/system/app/SimAppDialog",
+    "/system/system_ext/priv-app/CarrierConfig",
+    "/system/system_ext/app/WAPPushManager",
+    "/system/app/PrintSpooler",
+    "/system/priv-app/BuiltInPrintService",
+    "/system/app/PrintRecommendationService",
+    "/system/app/CtsShimPrebuilt",
+    "/system/priv-app/CtsShimPrivPrebuilt",
+    "/system/priv-app/ManagedProvisioning",
+    "/system/app/EasterEgg",
+    "/system/priv-app/BackupRestoreConfirmation",
+    "/system/priv-app/SharedStorageBackup",
+    "/system/priv-app/LocalTransport",
+    "/system/priv-app/DynamicSystemInstallationService",
+    "/system/priv-app/CalendarProvider",
+    "/system/app/HTMLViewer",
+    "/system/app/TimerSwitch",
+    "/system/app/BasicDreams",
+    "/system/app/WebScreensaver",
+    "/system/app/CameraExtensionsProxy",
+    "/system/app/LiveWallpapersPicker",
+    "/system/app/BookmarkProvider",
+    "/system/app/WallpaperBackup",
+    "/system/priv-app/BlockedNumberProvider",
+    "/system/app/BluetoothMidiService",
+    "/system/priv-app/SoundPicker",
+    "/system/system_ext/priv-app/Screenshot",
+    "/system/system_ext/priv-app/WallpaperCropper",
+    "/system/system_ext/priv-app/WallpaperPicker2",
+    "/system/app/X12",
+    "/system/app/settingwizard",
+    "/system/app/happycast"
+  ],
+  "system_properties": {
+    "ro.sw.defaultlauncher_package": "com.spocky.projengmenu",
+    "ro.sw.defaultlauncher_class": "com.spocky.projengmenu.ui.home.MainActivity",
+    "persist.sys.language": "en",
+    "persist.sys.country": "US",
+    "ro.hdmi.set_menu_language": "0"
+  },
+  "system_app_injections": [
+    {
+      "source": "work/preinstall_apks/ProjectivyLauncher-4.71-c95-xda-release.apk",
+      "destination": "/system/app/ProjectivyLauncher/ProjectivyLauncher.apk",
+      "sha256": "6818FC2DB44411A605CA4D7067FB9D7227AAEF2414CFF42DE58FE13E9321B47A"
+    },
+    {
+      "source": "work/preinstall_apks/AndroidTvRemoteService-5.2.473254133.apk",
+      "destination": "/system/priv-app/AndroidTvRemoteService/AndroidTvRemoteService.apk",
+      "sha256": "9D1B5C5EF0E293F8ED17C26E8F62DE661ACC7F2DDC2AAA8EF23E4CABE430B973"
+    }
+  ],
+  "system_file_injections": [
+    {
+      "source": "assets/system_files/android.software.leanback.xml",
+      "destination": "/system/etc/permissions/android.software.leanback.xml",
+      "sha256": "B3C44B673F0F736184C40A8A56962E7A44B0FF39DC36E074215AE0C9B8C04B51"
+    },
+    {
+      "source": "assets/system_files/com.android.media.tv.remoteprovider.xml",
+      "destination": "/system/etc/permissions/com.android.media.tv.remoteprovider.xml",
+      "sha256": "AAC33E2012534D039906D01626F7AA9C2111453FDF388DA3E0B0E6E54D53CBEC"
+    },
+    {
+      "source": "assets/system_files/privapp-permissions-com.google.android.tv.remote.service.xml",
+      "destination": "/system/etc/permissions/privapp-permissions-com.google.android.tv.remote.service.xml",
+      "sha256": "6568B8667785E335F7ED330B10096E6DBAFB0FB22AF23AEEC13CB54B07847DD9"
+    },
+    {
+      "source": "work/system_injections/com.android.media.tv.remoteprovider.jar",
+      "destination": "/system/framework/com.android.media.tv.remoteprovider.jar",
+      "sha256": "F5D12973FBD264097C14922D121FA5EA68330994A340CDC55410509F5EA1C523"
+    },
+    {
+      "source": "work/system_injections/UBOX10TvRemoteConfigOverlay.apk",
+      "destination": "/system/system_ext/overlay/UBOX10TvRemoteConfigOverlay.apk",
+      "sha256": "D6930D23D4C9BCFA4A6BC0B7892A871E55E9D3ADD2E512A2BCCEFE256C2EC0E9"
+    }
+  ]
+}

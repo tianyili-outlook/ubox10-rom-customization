@@ -38,4 +38,4 @@
 
 ## 当前状态
 
-UART、Fastboot、WSL2、ext4/AVB/super/IMAGEWTY 构建链均已完成。Test8r2 是唯一稳定基线；Test9w1 未证明改善并已退役，当前 Test9r1 从 Test8r2 验证官方 Google TV iPhone 遥控与文字输入。M8.0 可与真机刷测并行进行只读 ELF/HAL/VINTF/图形/媒体/DRM 盘点，但在图形栈与 DRM 基线明确前不制作 64 位候选；M8.INPUT 明确不以 UBOX Input 替代。
+UART、Fastboot、WSL2、ext4/AVB/super/IMAGEWTY 构建链均已完成。Test8r2 是唯一稳定基线；Test9w1 未证明改善并已退役，Test9r1 已定位为 RRO 扫描路径失败，当前 Test9r2 从 Test8r2 验证官方 Google TV iPhone 遥控与文字输入。M8.0 可与真机刷测并行进行只读 ELF/HAL/VINTF/图形/媒体/DRM 盘点，但在图形栈与 DRM 基线明确前不制作 64 位候选；M8.INPUT 明确不以 UBOX Input 替代。

@@ -6,9 +6,12 @@
   `out/candidates/test8r2-restore-contacts-provider-r1/x12-test8r2-restore-contacts-provider.img`
 - Wi‑Fi 连接、互联网与 TCP ADB 可稳定使用；用户家庭 5 GHz 网络始终可见，主要缺失的是另一个 2.4 GHz SSID。Test9w1 将 `ant_div` 改为 `N` 后仍未使该 2.4 GHz SSID 出现，因此没有证据把驱动补丁提升为产品修复。
 - Test9w1 已退役：配置和哈希用于历史复现，镜像删除；所有后续候选继续从 Test8r2 构筑。
-- 当前候选是 Test9r1：
-  `out/candidates/test9r1-android-tv-remote-service-r1/x12-test9r1-android-tv-remote-service.img`
-  离线验证通过，等待 iPhone 官方 Google TV 应用真机验收。
+- Test9r1 真机已确认因 RRO 放在该固件不扫描的 `/system/overlay` 而失败；
+  feature、shared library、APK 和权限本身均加载成功。
+- 当前候选是 Test9r2：
+  `out/candidates/test9r2-android-tv-remote-service-rro-path-r1/x12-test9r2-android-tv-remote-service-rro-path.img`
+  它仍从 Test8r2 构筑，只把同一 RRO 移到启动日志明确扫描的
+  `/system/system_ext/overlay`；离线验证通过，等待 iPhone 真机复测。
 - Test9a/Test9b 只是 Google Play/TV feature 的诊断实验。两者均通过离线构建验证，但实机 Play Store 都进入 `AccessRestrictedActivity` 并提示当前版本不兼容，因此不得作为日常或后续开发基线。
 - 当前 32 位系统继续保留现有 Google 服务作为登录、应用安装与更新基础设施；不再把手机式 Play Store 界面当作当前阶段的主要电视入口。
 
@@ -36,18 +39,28 @@ UBOX Input。
   library 缺失而失败。
 - Test9r1 从 Test8r2 加入 AOSP runtime library、共享库 XML、leanback、
   framework RRO、privapp allowlist 和本地 donor；完整离线验证通过。
+- Test9r1 真机中 RRO 文件虽存在于 `/system/overlay`，Package Manager 却未
+  注册它，framework lookup 为空，provider watcher 因 package 未配置/白名单
+  而拒绝绑定，6466/6467 未监听。
+- Test9r1 的 Play Store 29.2.15 同时进入 `AccessRestrictedActivity`；Remote
+  Service 日志还把 Play Store 判定为 “missing”。这使 Test9r2 即使修好
+  remote 也只能是技术 `PARTIAL`。
+- Test9r2 只修正 RRO 预置路径，其他 system 内容和官方 `vendor_dlkm` 合同
+  不变；完整离线验证通过。
 - Google APK 不进入 Git 或项目再分发；AOSP library 由锁定源码复现。
 
-### Test9r1 真机顺序
+### Test9r2 真机顺序
 
-1. 用 PhoenixCard 刷入 Test9r1，先确认 Android、Projectivy、Settings、实体
+1. 用 PhoenixCard 刷入 Test9r2，先确认 Android、Projectivy、Settings、实体
    遥控、Wi‑Fi 和蓝牙。
-2. ADB 验证 feature、shared library、provider package、RRO lookup、privapp
-   权限、监听端口和相关日志。
-3. iPhone 与电视连接同一 5 GHz 网络，验证发现、配对码、方向/OK/Back/Home。
-4. 在搜索、账号、密码和 Unicode 文本框验证文字输入，随后重启复验。
-5. 检查 Play Store；若再次因 leanback 进入不兼容页面，即使遥控成功也不得
-   将 Test9r1 晋级为日常基线。
+2. ADB 先验证 overlay package 来自 `/system/system_ext/overlay`、已注册并
+   启用，framework lookup 精确返回 provider package，watcher 不再拒绝。
+3. 再验证 feature、shared library、provider package、privapp 权限、监听
+   端口和相关日志。
+4. iPhone 与电视连接同一 5 GHz 网络，验证发现、配对码、方向/OK/Back/Home。
+5. 在搜索、账号、密码和 Unicode 文本框验证文字输入，随后重启复验。
+6. 记录已知的 Play Store `AccessRestrictedActivity` 回归；即使遥控成功也
+   不得将 Test9r2 晋级，采证后刷回 Test8r2。
 
 ### 验收标准
 
@@ -60,8 +73,22 @@ UBOX Input。
   `TvRemoteProvider`/uinput 桥。
 - Projectivy、Settings、Play Store、Wi‑Fi、蓝牙和重启无新增关键回归。
 
+### Test9r2 后的 32 位分叉
+
+Android 12 `SystemServer` 只在 `FEATURE_LEANBACK` 存在时启动
+`TvRemoteService`，而本项目 Test9a/Test9b/Test9r1 已连续证明 leanback 会让
+当前手机式 Play Store 进入受限页。因此：
+
+- Test9r2 只用于确认 RRO/provider/官方 iPhone 输入链能否工作；
+- 若 remote 通过，另立从 Test8r2 出发的候选，移除 leanback并定点改变
+  framework 的 TvRemoteService 启动 gate；
+- 不同时更换 Play Store/GMS、身份、donor 或网络参数；
+- 若 framework 定点修改风险不可接受，32 位分支记录 `BLOCKED`，正式能力
+  留给 M8 源码级 ATV product。
+
 完整设计、哈希与判错树见
-`experiments/TEST9R1_ANDROID_TV_REMOTE_SERVICE.md`。
+`experiments/TEST9R1_ANDROID_TV_REMOTE_SERVICE.md` 和
+`experiments/TEST9R2_RRO_SCAN_PATH.md`。
 
 ## Test9.3：当前 32 位系统产品化收尾
 
@@ -77,7 +104,7 @@ M8 不再以“找到一套 Google TV APK”定义，而是两项相互关联但
 1. 建立真实 arm64/multilib Android userspace 和匹配 H616 的硬件栈；
 2. 从源码继承 Android 12 AOSP ATV product，替代手机产品配置加 Launcher/feature 的伪装路线。
 
-M8.0 可与 Test9r1 真机验收并行进行，只允许本地/ADB 只读盘点，不制作
+M8.0 可与 Test9r2 真机验收并行进行，只允许本地/ADB 只读盘点，不制作
 64 位固件。
 
 ### 阶段与出口

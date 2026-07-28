@@ -230,9 +230,16 @@ def load_candidate_config(path: Path) -> dict:
             destination,
         ):
             required_source_root = (REPO / "assets" / "system_files").resolve()
+        elif destination == "/system/overlay/UBOX10TvRemoteConfigOverlay.apk":
+            if config["candidate_id"] != "test9r1-android-tv-remote-service-r1":
+                raise RuntimeError(
+                    "legacy /system/overlay RRO path is allowed only for historical "
+                    "Test9r1 reproduction"
+                )
+            required_source_root = (REPO / "work" / "system_injections").resolve()
         elif destination in {
             "/system/framework/com.android.media.tv.remoteprovider.jar",
-            "/system/overlay/UBOX10TvRemoteConfigOverlay.apk",
+            "/system/system_ext/overlay/UBOX10TvRemoteConfigOverlay.apk",
         }:
             required_source_root = (REPO / "work" / "system_injections").resolve()
         else:

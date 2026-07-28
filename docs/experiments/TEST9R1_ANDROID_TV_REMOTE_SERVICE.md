@@ -1,5 +1,12 @@
 # Test9r1：Android TV Remote Service 移植实验
 
+> 真机结论（2026-07-29）：**FAIL，产品集成路径错误。** APK、shared
+> library、leanback 和 privileged permissions 均加载成功，但静态 RRO 位于
+> 此设备不会扫描的 `/system/overlay`，所以
+> `config_tvRemoteServicePackage` 仍为空，framework 拒绝 provider。后继
+> Test9r2 只把同一 RRO 移到 `/system/system_ext/overlay`；见
+> [TEST9R2_RRO_SCAN_PATH.md](TEST9R2_RRO_SCAN_PATH.md)。
+
 状态：**离线构建与完整性验证通过，等待真机刷测。**
 
 目标是在不开发 UBOX Input、不开放通用网络输入端口的前提下，让 iPhone

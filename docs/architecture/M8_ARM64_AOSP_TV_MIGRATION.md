@@ -22,7 +22,7 @@
 | 稳定基线 | Test8r2 | CONFIRMED |
 | Wi‑Fi 实验 | Test9w1 真机未证明改善，已退役；后续从 Test8r2 继续 | CONFIRMED |
 | 手机遥控 framework | 已有 TvRemoteService/provider watcher/uinput bridge，缺 product 集成 | CONFIRMED |
-| 手机遥控候选 | Test9r1 从 Test8r2 构建并通过离线验证，真机待测 | UNKNOWN |
+| 手机遥控候选 | Test9r1 因 RRO 未进入实际扫描路径而失败；Test9r2 单变量修正并通过离线验证，真机待测 | UNKNOWN |
 | Play Protect | Play Store 无可见认证项；实际认证结论未取得 | UNKNOWN |
 | Widevine/TEE/HDCP/secure decoder | 尚无完整基线 | UNKNOWN |
 | Netflix | 安装、登录、播放和最大分辨率尚未建立基线 | UNKNOWN |
@@ -31,11 +31,11 @@
 
 | 产品体验线 | 架构研究线 |
 |---|---|
-| Test9r1 验证官方 Google TV iPhone 遥控与文字输入 | M8.0 只读盘点当前 ELF/HAL/VINTF/DRM |
+| Test9r2 验证官方 Google TV iPhone 遥控与文字输入 | M8.0 只读盘点当前 ELF/HAL/VINTF/DRM |
 | Test9.3 完成应用、AirPlay、文件管理和整体验收 | M8.1 锁定并审计 H618 BSP 供体 |
 | 当前 32 位产品完成最终交叉回归 | M8.2 建立 Android 12 AOSP ATV 差异基线 |
 
-M8.0 可以在 Test9r1 刷测期间推进；M8.3 之后的可刷写迁移必须等待
+M8.0 可以在 Test9r2 刷测期间推进；M8.3 之后的可刷写迁移必须等待
 M8.0–M8.2 的 Go/No-Go 结论。
 
 ## 4. 目标与非目标
@@ -187,8 +187,10 @@ overlays/Settings/Launcher/input/power/network/display、SELinux、
 ## 8. M8.INPUT：官方 Google TV 手机遥控与文字输入
 
 Test9r1 已证明当前 Android 12 framework 包含 TV remote 服务端骨架，也证明
-普通 data-app 安装会被缺失的 required shared library 拒绝。M8 不继承
-Test9r1 二进制，而是继承以下产品合同：
+普通 data-app 安装会被缺失的 required shared library 拒绝；真机还证明
+“RRO 文件存在”不等于 Package Manager 实际扫描、注册并应用。Test9r2 用于
+验证修正后的扫描路径。M8 不继承 Test9r1/Test9r2 二进制，而是继承以下产品
+合同：
 
 1. 从锁定 Android 12 AOSP 源码构建
    `com.android.media.tv.remoteprovider`；
@@ -223,16 +225,16 @@ Widevine L1、Play Protect、TV Play Store 分发和 Netflix HD/4K 资格互不�
 
 ## 10. 当前下一步
 
-Test9r1 刷测期间只推进无写设备风险的 M8.0：
+Test9r2 刷测期间只推进无写设备风险的 M8.0：
 
 1. 建立 M8 研究索引和数据脱敏规则；
 2. 编写 ELF inventory 工具；
 3. 生成当前图形、媒体、Wi‑Fi/BT 组件清单；
 4. 形成 BPI H618 source-lock 方案，不下载大型源码；
-5. 将 Test9r1 的 remoteprovider/RRO/权限和真机日志结论写入 M8.INPUT
+5. 将 Test9r1/Test9r2 的 remoteprovider/RRO/权限和真机日志结论写入 M8.INPUT
    component map；
 6. 设计原厂/Test8r2 DRM 只读采集；若原厂基线需要重新刷机，必须另行排期，
-   不与 Test9r1 回归混做。
+   不与 Test9r2 回归混做。
 
 ## 11. 主要资料
 

@@ -42,6 +42,10 @@
 - **允许做本地、不可再分发的 Google Remote Service 兼容实验**：只接受版本、哈希和 Google 签名证书锁定的原始 APK；它保存在已忽略的 `work/`，不进入 Git、公共镜像或项目下载。仓库只提交 AOSP 源码构建脚本、配置、哈希和非专有 XML/RRO source。
 - **Remote 输入走 framework provider bridge**：从 Android 12 AOSP 构建 `com.android.media.tv.remoteprovider`，由 RRO 指定 provider package；纯 signature 的 `INJECT_EVENTS` 不伪授予，事件必须经过 `TvRemoteProvider`/uinput。
 - **Test9r1 必须从 Test8r2 单变量构筑**：不继承 Test9w1 的 driver patch 或无 FEC vendor_dlkm；只新增 remote stack 所需 system 路径。
+- **Test9r1 因 RRO 预置路径错误退役**：真机已证明 APK、shared library 和权限加载，但 `/system/overlay` 不进入该固件的 Package Manager overlay 扫描，provider 未获 framework package allowlist。保留配置/日志，删除镜像。
+- **Test9r2 只修正 RRO 扫描路径**：仍从 Test8r2 构筑，同一 RRO 移到启动日志明确扫描的 `/system/system_ext/overlay`；在 RRO package、lookup 和 watcher 通过前，不混入蓝牙运行时授权或 mDNS 改动。
+- **Test9r2 只作一次性 remote 技术探针**：Test9r1 已确认 Play Store 进入 `AccessRestrictedActivity`，且 Remote Service 报告 Store “missing”；Test9r2 保留相同 leanback/Google stack，故无论 remote 结果如何都不晋级，完成采证后回到 Test8r2。
+- **保住当前 Play Store 的后续 32 位路径必须单独立项**：AOSP `SystemServer` 以 `FEATURE_LEANBACK` 作为 `TvRemoteService` 启动 gate；若 Test9r2 证明 remote 链有效，下一候选才考虑移除 leanback并定点修改 framework gate，不同时修改 GMS/Play、身份、donor 或网络。
 - **Wi‑Fi 先采证再改固件**：连接与传输已通过，但扫描不可靠；先比较 Settings、shell 扫描和 Wi‑Fi 栈日志，不在无根因时修改 vendor/HAL 或路由器。
 - **Test9w1 只检验 AW869A 天线分集假设**：在 Test8r2 的 system 内容不变前提下，只把已锁定来源哈希的 `aic8800_fdrv.ko` 默认 `ant_div` 字节由 `01` 改为 `00`；不替换未知版本的 AIC 驱动/固件，不修改 Wi‑Fi HAL，也不把推断写成已证实根因。
 - **不在当前 TCP ADB 会话中热卸载 Wi‑Fi 模块**：控制链本身依赖 Wi‑Fi，热卸载可能同时失去诊断与恢复通道；参数持久性改由可刷回的 Test9w1 在启动、一次 Wi‑Fi 开关和重启后三次验证。
@@ -54,7 +58,8 @@
 - **真正 TV 化从 Android 12 ATV product 开始**：AOSP ATV 可自主完成；Google TV/GMS TV、TV Play Store 商业资格和 Play Protect 认证不能靠复制组件保证。
 - **M8.INPUT 继承官方手机遥控验收，不继承 Test9r1 二进制**：remoteprovider 从锁定 AOSP 源码构建，product 原生声明共享库/provider/权限；用户本地提供官方原签名 APK。若 GMS TV 许可、签名或认证构成外部阻塞，记为 `BLOCKED`，不把 UBOX Input 当作替代通过。
 - **Netflix 采用 N0–N3 分级且不规避安全机制**：N1 是正式目标，N2 条件性，N3 机会型；Widevine L1 不等于 Netflix HD。不得复制密钥、证书、ESN、secure storage 或伪造认证。
-- **只长期保留三份可刷写镜像**：官方恢复/来源原件、Test8r2、当前 Test9r1；Test9w1 与其他淘汰镜像和旧工作树删除，配置、脚本、哈希与 Git 历史承担复现。官方原件不受“只保留当前候选”清理规则影响。
+- **只长期保留三份可刷写镜像**：官方恢复/来源原件、Test8r2、当前 Test9r2；Test9r1/Test9w1 与其他淘汰镜像和旧工作树删除，配置、脚本、哈希与 Git 历史承担复现。官方原件不受“只保留当前候选”清理规则影响。
+- **长期保留四个官方逻辑分区缓存**：`system_a/product_a/vendor_a/vendor_dlkm_a` 已由官方原件重建并命中固定哈希；不再在候选构建后删除，避免后续每次重复提取。它们不是可刷写候选，不改变三份 IMAGEWTY 保留集。
 
 ## 后续再决定
 

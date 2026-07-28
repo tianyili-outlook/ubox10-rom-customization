@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 import os
 import shutil
@@ -213,6 +214,121 @@ class CandidateBuilderTests(unittest.TestCase):
             },
             added,
         )
+
+    def test_test9r2_changes_only_the_test9r1_rro_scan_path(self) -> None:
+        test9r1 = builder.load_candidate_config(
+            REPO
+            / "configs"
+            / "candidates"
+            / "test9r1-android-tv-remote-service.json"
+        )
+        test9r2 = builder.load_candidate_config(
+            REPO
+            / "configs"
+            / "candidates"
+            / "test9r2-android-tv-remote-service-rro-path.json"
+        )
+
+        self.assertEqual(test9r1["remove_roots"], test9r2["remove_roots"])
+        self.assertEqual(test9r1["system_properties"], test9r2["system_properties"])
+        self.assertEqual(
+            [
+                {
+                    key: value
+                    for key, value in injection.items()
+                    if not key.startswith("_")
+                }
+                for injection in test9r1["system_app_injections"]
+            ],
+            [
+                {
+                    key: value
+                    for key, value in injection.items()
+                    if not key.startswith("_")
+                }
+                for injection in test9r2["system_app_injections"]
+            ],
+        )
+        self.assertNotIn("vendor_dlkm_binary_patches", test9r2)
+
+        r1_files = {
+            injection["source"]: {
+                key: value
+                for key, value in injection.items()
+                if not key.startswith("_")
+            }
+            for injection in test9r1["system_file_injections"]
+        }
+        r2_files = {
+            injection["source"]: {
+                key: value
+                for key, value in injection.items()
+                if not key.startswith("_")
+            }
+            for injection in test9r2["system_file_injections"]
+        }
+        self.assertEqual(set(r1_files), set(r2_files))
+        overlay_source = "work/system_injections/UBOX10TvRemoteConfigOverlay.apk"
+        for source in sorted(set(r1_files) - {overlay_source}):
+            self.assertEqual(r1_files[source], r2_files[source])
+        self.assertEqual(
+            "/system/overlay/UBOX10TvRemoteConfigOverlay.apk",
+            r1_files[overlay_source]["destination"],
+        )
+        self.assertEqual(
+            "/system/system_ext/overlay/UBOX10TvRemoteConfigOverlay.apk",
+            r2_files[overlay_source]["destination"],
+        )
+        self.assertEqual(
+            r1_files[overlay_source]["sha256"],
+            r2_files[overlay_source]["sha256"],
+        )
+
+        added = builder.expected_added_paths(
+            test9r2,
+            {
+                "/",
+                "/system",
+                "/system/app",
+                "/system/priv-app",
+                "/system/etc",
+                "/system/etc/permissions",
+                "/system/framework",
+                "/system/system_ext",
+            },
+        )
+        self.assertIn("/system/system_ext/overlay", added)
+        self.assertIn(
+            "/system/system_ext/overlay/UBOX10TvRemoteConfigOverlay.apk",
+            added,
+        )
+        self.assertNotIn("/system/overlay", added)
+
+    def test_legacy_system_overlay_path_is_historical_test9r1_only(self) -> None:
+        source = (
+            REPO
+            / "configs"
+            / "candidates"
+            / "test9r2-android-tv-remote-service-rro-path.json"
+        )
+        config = json.loads(source.read_text(encoding="utf-8"))
+        for injection in config["system_file_injections"]:
+            if injection["source"].endswith("UBOX10TvRemoteConfigOverlay.apk"):
+                injection["destination"] = (
+                    "/system/overlay/UBOX10TvRemoteConfigOverlay.apk"
+                )
+                break
+        else:
+            self.fail("Test9r2 overlay injection is missing")
+
+        with tempfile.TemporaryDirectory(dir=REPO / "work") as temp_dir:
+            path = Path(temp_dir) / "unsafe-rro-path.json"
+            path.write_text(json.dumps(config), encoding="utf-8")
+            with self.assertRaisesRegex(
+                RuntimeError,
+                "allowed only for historical Test9r1 reproduction",
+            ):
+                builder.load_candidate_config(path)
 
     def test_binary_patch_requires_exact_original_bytes(self) -> None:
         patch = {

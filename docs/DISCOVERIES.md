@@ -74,8 +74,8 @@
 - AOSP `device/google/atv` 提供独立分支和版本 tag；M8 的 Android 12 ATV 参考必须锁定对应 tag，不能直接依据当前 `main`。
 - 当前没有原厂 ROM 与 Test8r2 的 Widevine、DRM HAL、OEMCrypto/TEE、secure decoder、protected buffer、HDCP 或 Netflix 实际最大分辨率对照报告。Play Store 无可见 Play Protect certification 项只证明 UI 观察，认证结论仍为未知。
 - Android DRM Framework 只提供统一接口，具体 DRM scheme 与安全强度由设备实现决定；因此 SoC 解码规格、Widevine level、Play Protect、TV Play Store 分发和 Netflix HD/4K 资格必须分开验证。
-- 清理前工作区共有 149 个 `.img`、约 85.677 GiB；第一轮清理后曾保留官方恢复原件、Test8r2 和 Test9w1，共 3 个 `.img`、约 5.617 GiB。连同旧工作树共释放约 81.604 GiB；当前保留集已把 Test9w1 替换为 Test9r1。
-- 四个官方逻辑分区缓存全部删除后，`prepare-candidate-inputs.py` 已从保留的 `x12-1024.img`/`super.fex` 成功重建 `system_a`、`product_a`、`vendor_a` 和 `vendor_dlkm_a`，且全部命中锁定 SHA-256；因此这些缓存可安全按需生成，不需要长期保留。
+- 清理前工作区共有 149 个 `.img`、约 85.677 GiB；第一轮清理后曾保留官方恢复原件、Test8r2 和 Test9w1，共 3 个可刷写 `.img`、约 5.617 GiB。连同旧工作树共释放约 81.604 GiB；当前可刷写保留集已切换为 Test9r2。
+- 四个官方逻辑分区缓存全部删除后，`prepare-candidate-inputs.py` 已从保留的 `x12-1024.img`/`super.fex` 成功重建 `system_a`、`product_a`、`vendor_a` 和 `vendor_dlkm_a`，且全部命中锁定 SHA-256。它们虽可复现，但现按用户指令长期保留，以缩短连续候选构建时间。
 - Test9w1 已真机运行且 `/sys/module/aic8800_fdrv/parameters/ant_div` 为 `N`；五轮扫描中当前连接的 5 GHz SSID 稳定、目标 2.4 GHz SSID 仍未出现，蓝牙保持 `ON`、`Bluetooth crashed 0 times`。这没有证明一字节补丁带来实质改善，因此 Test9w1 退役，后续候选回到 Test8r2。
 - 当前 Android 12 framework 的 `services.jar` 已包含 `TvRemoteService`、`TvRemoteProviderWatcher` 和 `StartTvRemoteService`，`libandroid_servers.so` 已包含 `TvUinputBridge`，framework 也有 `ITvRemoteProvider`/`ITvRemoteServiceInput`；不需要为手机遥控修改 Kernel 或 `services.jar`。
 - 当前产品缺少 `android.software.leanback`、`com.android.media.tv.remoteprovider` shared library 和 Android TV Remote Service package；framework 的 `config_tvRemoteServicePackage` 为空，且 `ro.control_privapp_permissions=enforce`。
@@ -84,5 +84,9 @@
 - `config_tvRemoteServicePackage` 可由一个只包含该 string 的静态 framework RRO 覆盖；本地生成的 APK 为 package `com.ubox10.overlay.tvremote`、priority 999、APK v3 签名验证通过。
 - `android.permission.INJECT_EVENTS` 在本机是纯 signature 权限，Google Remote Service 与 platform key 不同，不能由 privapp allowlist 授予；正确输入路径是 `TV_VIRTUAL_REMOTE_CONTROLLER` 加 framework `TvRemoteProvider`/uinput bridge。
 - Test9r1 从 Test8r2 增加 leanback、remoteprovider jar/XML、privapp allowlist、单资源 RRO 和本地官方原签名接收端，未修改 `vendor_dlkm`。语义检查确认 10 个预期新增路径、共同普通文件仅 `build.prop` 改变；ext4、AVB、super、IMAGEWTY 和 24 项单元测试套件通过。
-- Test9r1 固件为 2,005,946,368 bytes，SHA-256 `38A0C232750ECD433B2783E0CFBFFC48C17071226EE2AEC978BE5AC6C12F6E33`。这只是离线 PASS，能否启动接收端、被 iPhone 发现/配对和输入文字仍为 UNKNOWN。
+- Test9r1 固件为 2,005,946,368 bytes，SHA-256 `38A0C232750ECD433B2783E0CFBFFC48C17071226EE2AEC978BE5AC6C12F6E33`。其离线结果是 PASS，后续真机结果已确认失败，见下两条。
+- Test9r1 真机中 feature、shared library、Remote Service APK/版本和 `TV_VIRTUAL_REMOTE_CONTROLLER` 均正确，但 `pm path com.ubox10.overlay.tvremote`、overlay list 和 framework lookup 都为空；启动日志只扫描 system_ext/product 等 overlay 目录，Test9r1 的文件却在 `/system/overlay`。provider watcher 因 package 未设置/白名单化持续拒绝服务，6466/6467 未监听，因此手机无法发现是产品集成层确定性失败，不是手机或 WLAN 随机故障。
+- Test9r1 的 Play Store 29.2.15 package 和 `AssetBrowserActivity` 入口存在，但实际启动立即转入 `AccessRestrictedActivity`。同一设备上的 Remote Service 多次记录 “requires the Google Play Store, but it is missing”，说明 corrected RRO 之后仍可能遇到 Google 依赖兼容层阻塞。
+- Android 12 AOSP `SystemServer` 以 `PackageManager.FEATURE_LEANBACK` 为启动 `TvRemoteService` 的条件；当前 Play Store 又在 Test9a/Test9b/Test9r1 的 leanback 组合下失效。要在 32 位系统同时保留现有 Play 行为与官方 remote，技术候选很可能需要移除 leanback并定点改变 framework 启动 gate，而不是继续叠加 feature。
+- Test9r2 仍从 Test8r2 构筑，唯一相对 Test9r1 的变化是把相同 SHA-256 的 RRO 移至 `/system/system_ext/overlay`。system manifest 只有修正后的路径，官方 `vendor_dlkm` 不变；ext4/e2fsck、完整 AVB、super、IMAGEWTY 和 25 项单元测试套件通过。固件为 2,005,946,368 bytes，SHA-256 `27B54FB83E96D3863FAE2EF2718E8EC9ADDD863E5ED123082D5E6C8CA6FFFD52`，真机结果仍为 UNKNOWN。
 - Google Remote Service APK 只作为用户本地 donor 存在于被忽略的 `work/`；仓库没有提交或重新分发该专有二进制。M8 将继承 product/API/验收合同，而不是从 Test9r1 镜像复制二进制。

@@ -29,24 +29,35 @@
 - 产品结论 FAIL/退役：没有证据证明补丁带来实质改善，不再重复测试或传递
   到新候选；Test8r2 继续作为稳定基线。
 
-## Test9r1 门槛
+## Test9r1 结果与 Test9r2 门槛
 
-- 离线 PASS：从 Test8r2 只新增 10 个 remote stack 路径；`vendor_dlkm`
+- Test9r1 离线 PASS：从 Test8r2 只新增 10 个 remote stack 路径；`vendor_dlkm`
   与官方输入相同。
+- Test9r1 真机 FAIL：RRO 位于该固件未扫描的 `/system/overlay`，未注册为
+  package，framework lookup 为空，provider watcher 拒绝绑定，端口未监听。
+- Test9r1 Play Store FAIL：29.2.15 入口仍存在，但启动进入
+  `AccessRestrictedActivity`；Remote Service 同时报告 Play Store “missing”。
+- Test9r2 相对 Test9r1 只能改变 RRO 目的路径为
+  `/system/system_ext/overlay/UBOX10TvRemoteConfigOverlay.apk`；不得夹带
+  driver、权限、APK 或其他 product 变化。
+- Test9r2 离线 PASS：10 个预期新增路径、官方 `vendor_dlkm`、ext4/e2fsck、
+  完整 AVB、super、IMAGEWTY 和 25 项单元测试套件全部通过。
 - AOSP remoteprovider DEX 只能定义
   `com.android.media.tv.remoteprovider.TvRemoteProvider*`，不得重复打包
   framework AIDL/boot classes。
 - Google donor 必须匹配固定 package、versionCode、APK SHA-256 和 Google
   签名证书；二进制不得提交 Git 或由项目重新分发。
 - 真机启动后必须同时出现 leanback feature、shared library、provider APK
-  和生效的 framework RRO；不得有 privapp enforcement 启动错误。
+  和生效的 framework RRO；RRO package 必须来自 system_ext overlay，lookup
+  必须精确返回 provider package，不得有 watcher 拒绝或 privapp enforcement
+  启动错误。
 - iPhone 官方 Google TV 应用必须完成同 LAN 发现、配对码认证、方向/OK/
   Back/Home、普通/Unicode/账号/密码文字输入和重启复验。
 - 不授予纯 signature 的 `INJECT_EVENTS`；输入必须通过
   `TvRemoteProvider`/uinput bridge。
 - Projectivy、实体遥控、Settings、Play Store、Wi‑Fi、蓝牙和重启必须无
-  关键回归。remote 成功但 Play Store 因 leanback 失效时，技术实验可记录
-  为部分成功，但 Test9r1 不得晋级。
+  新增关键回归。Play Store 回归已在相同 leanback 组合的 Test9r1 确认；
+  Test9r2 即使 remote 成功也只能记录技术 `PARTIAL`，不得晋级。
 - 任一关键项失败，刷回 Test8r2 并按 feature/library/RRO/package/discovery/
   input bridge 分层定位。
 
