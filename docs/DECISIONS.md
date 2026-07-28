@@ -37,20 +37,24 @@
 - **Test7 将 Projectivy 注入 `/system/app`**：沿用已验证的 system ext4 修改链，并替换厂商已有的两项默认 Launcher 属性；X12 仅在 Test7 保留作回退。
 - **Test9a/Test9b 只作为失败诊断实验保留**：加入 Leanback/Leanback-only feature 后，Play Store 仍拒绝当前设备组合；配置和通用文件注入能力用于复现证据，但镜像不作为部署基线。
 - **当前阶段不再修补 Play Store APK**：保留现有 Google 服务用于登录、搜索、安装和更新；电视版 Play Store、Play Protect/认证、设备身份一致性与 64 位 BSP 合并到未来平台阶段。
-- **Test9 先网络后手机输入**：Wi‑Fi 扫描可靠性是当前最高优先级；iPhone 官方 Google TV 遥控依赖同一 Wi‑Fi，因此只有网络稳定后才进入配对和文字输入验收。
-- **iPhone 输入采用官方方案优先、局域网最小权限**：先验证系统是否有兼容 TV Remote 接收端；缺失时不移植 Google 专有组件，优先评估可追溯、开源、无需云端的 data app，蓝牙键盘作为回退。
+- **Wi‑Fi 专项收束后进入官方手机遥控**：5 GHz 连接、互联网和 TCP ADB 已满足同 LAN 前提；2.4 GHz SSID 缺失不再阻塞产品主线，下一变量是 Test9r1。
+- **手机输入目标固定为官方 Google TV iPhone 应用**：不考虑、自研或维护 UBOX Input。蓝牙键盘只是人工回退，不计为项目目标完成。
+- **允许做本地、不可再分发的 Google Remote Service 兼容实验**：只接受版本、哈希和 Google 签名证书锁定的原始 APK；它保存在已忽略的 `work/`，不进入 Git、公共镜像或项目下载。仓库只提交 AOSP 源码构建脚本、配置、哈希和非专有 XML/RRO source。
+- **Remote 输入走 framework provider bridge**：从 Android 12 AOSP 构建 `com.android.media.tv.remoteprovider`，由 RRO 指定 provider package；纯 signature 的 `INJECT_EVENTS` 不伪授予，事件必须经过 `TvRemoteProvider`/uinput。
+- **Test9r1 必须从 Test8r2 单变量构筑**：不继承 Test9w1 的 driver patch 或无 FEC vendor_dlkm；只新增 remote stack 所需 system 路径。
 - **Wi‑Fi 先采证再改固件**：连接与传输已通过，但扫描不可靠；先比较 Settings、shell 扫描和 Wi‑Fi 栈日志，不在无根因时修改 vendor/HAL 或路由器。
 - **Test9w1 只检验 AW869A 天线分集假设**：在 Test8r2 的 system 内容不变前提下，只把已锁定来源哈希的 `aic8800_fdrv.ko` 默认 `ant_div` 字节由 `01` 改为 `00`；不替换未知版本的 AIC 驱动/固件，不修改 Wi‑Fi HAL，也不把推断写成已证实根因。
 - **不在当前 TCP ADB 会话中热卸载 Wi‑Fi 模块**：控制链本身依赖 Wi‑Fi，热卸载可能同时失去诊断与恢复通道；参数持久性改由可刷回的 Test9w1 在启动、一次 Wi‑Fi 开关和重启后三次验证。
-- **Test8r2 继续作为唯一稳定基线**：Test9w1 即使完整离线验证通过，也必须达到 5 轮扫描、Wi‑Fi HAL 重载、重启自动重连和蓝牙无回归的实机门槛后才可晋级。
+- **Test9w1 已退役**：真机 `ant_div=N` 但目标 2.4 GHz SSID 仍未出现，5 GHz 本来稳定，未证明实质改善；配置/哈希保留作证据，镜像删除，Test8r2 继续作为唯一稳定基线。
 - **Test9w1 的 vendor_dlkm 暂不生成 FEC**：本地工具链没有可信 `fec` 生成器；候选保留 AVB/dm-verity 并在结果中显式标记 `vendor_dlkm_fec=disabled`。该镜像仅用于可恢复实验；若进入长期发布，需引入可追溯、可复现的 FEC 工具链，或单独记录并接受无 FEC 策略。
 - **M8 先审计、后供体、再启动**：M8.0–M8.2 只做 inventory、source-lock、原样供体构建和 AOSP ATV 差异，不在缺少依赖图时生成 64 位 UBOX10 镜像。
 - **首选 arm64 + arm32 multilib**：目标是 64 位 Framework/ART/SurfaceFlinger，过渡期保留 arm32 secondary ABI；只有 Binder/VINTF/进程边界明确的 32 位 Vendor service 才可能暂留。
 - **64 位图形栈是第一 Go/No-Go**：没有匹配当前 H616 Kernel Mali ABI 的 64 位 EGL/Mali/Gralloc/Mapper/HWC，不进入 M8.3 64 位 UI 候选。
 - **BPI H618 只是供体候选**：先锁定 commit 和大文件并原样构建；H618 `-a arm64`、README 或其他板型能启动均不能证明 UBOX10 可用。boot0/U-Boot/DDR/PMIC/完整 DTB/TEE/密钥/分区表永不直接移植。
 - **真正 TV 化从 Android 12 ATV product 开始**：AOSP ATV 可自主完成；Google TV/GMS TV、TV Play Store 商业资格和 Play Protect 认证不能靠复制组件保证。
+- **M8.INPUT 继承官方手机遥控验收，不继承 Test9r1 二进制**：remoteprovider 从锁定 AOSP 源码构建，product 原生声明共享库/provider/权限；用户本地提供官方原签名 APK。若 GMS TV 许可、签名或认证构成外部阻塞，记为 `BLOCKED`，不把 UBOX Input 当作替代通过。
 - **Netflix 采用 N0–N3 分级且不规避安全机制**：N1 是正式目标，N2 条件性，N3 机会型；Widevine L1 不等于 Netflix HD。不得复制密钥、证书、ESN、secure storage 或伪造认证。
-- **只长期保留三份可刷写镜像**：官方恢复/来源原件、Test8r2、Test9w1；其他镜像和旧工作树删除，配置、脚本、哈希与 Git 历史承担复现。官方原件不受“只保留当前候选”清理规则影响。
+- **只长期保留三份可刷写镜像**：官方恢复/来源原件、Test8r2、当前 Test9r1；Test9w1 与其他淘汰镜像和旧工作树删除，配置、脚本、哈希与 Git 历史承担复现。官方原件不受“只保留当前候选”清理规则影响。
 
 ## 后续再决定
 

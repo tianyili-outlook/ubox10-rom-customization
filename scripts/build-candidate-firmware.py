@@ -201,7 +201,10 @@ def load_candidate_config(path: Path) -> dict:
         destination = injection["destination"]
         if (
             not isinstance(destination, str)
-            or not re.fullmatch(r"/system/app/[A-Za-z0-9._-]+/[A-Za-z0-9._-]+\.apk", destination)
+            or not re.fullmatch(
+                r"/system/(?:app|priv-app)/[A-Za-z0-9._-]+/[A-Za-z0-9._-]+\.apk",
+                destination,
+            )
             or destination in seen_destinations
         ):
             raise RuntimeError(f"unsafe or duplicate system APK destination: {destination!r}")
@@ -218,23 +221,30 @@ def load_candidate_config(path: Path) -> dict:
     for injection in file_injections:
         if not isinstance(injection, dict) or set(injection) != {"source", "destination", "sha256"}:
             raise RuntimeError("each system_file_injection needs source, destination, and sha256")
+        destination = injection["destination"]
+        if not isinstance(destination, str) or destination in seen_destinations:
+            raise RuntimeError(f"unsafe or duplicate system file destination: {destination!r}")
         source = (REPO / injection["source"]).resolve()
+        if re.fullmatch(
+            r"/system/etc/permissions/[A-Za-z0-9._-]+\.xml",
+            destination,
+        ):
+            required_source_root = (REPO / "assets" / "system_files").resolve()
+        elif destination in {
+            "/system/framework/com.android.media.tv.remoteprovider.jar",
+            "/system/overlay/UBOX10TvRemoteConfigOverlay.apk",
+        }:
+            required_source_root = (REPO / "work" / "system_injections").resolve()
+        else:
+            raise RuntimeError(
+                f"system file destination is not allowlisted: {destination!r}"
+            )
         try:
-            source.relative_to((REPO / "assets" / "system_files").resolve())
+            source.relative_to(required_source_root)
         except (TypeError, ValueError) as exc:
             raise RuntimeError(
-                "injected system file source must be under assets/system_files"
+                f"injected system file source must be under {required_source_root}"
             ) from exc
-        destination = injection["destination"]
-        if (
-            not isinstance(destination, str)
-            or not re.fullmatch(
-                r"/system/etc/permissions/[A-Za-z0-9._-]+\.xml",
-                destination,
-            )
-            or destination in seen_destinations
-        ):
-            raise RuntimeError(f"unsafe or duplicate system file destination: {destination!r}")
         expected = injection["sha256"]
         if not isinstance(expected, str) or not re.fullmatch(r"[0-9A-Fa-f]{64}", expected):
             raise RuntimeError(f"invalid injected system file SHA-256: {expected!r}")
@@ -383,6 +393,27 @@ def make_debugfs_commands(
     commands = "".join(f"rm {path}\n" for path in non_directories) + "".join(
         f"rmdir {path}\n" for path in directories
     )
+    created_directories: set[str] = set()
+
+    def ensure_parent_directories(destination: str) -> str:
+        missing: list[str] = []
+        parent = destination.rsplit("/", 1)[0]
+        while parent not in entries and parent not in created_directories:
+            missing.append(parent)
+            parent = parent.rsplit("/", 1)[0]
+        directory_commands = ""
+        for directory in reversed(missing):
+            directory_commands += (
+                f"mkdir {directory}\n"
+                f"set_inode_field {directory} mode 040755\n"
+                f"set_inode_field {directory} uid 0\n"
+                f"set_inode_field {directory} gid 0\n"
+                f"ea_set -f {wsl_path(selinux_value_file)} "
+                f"{directory} security.selinux\n"
+            )
+            created_directories.add(directory)
+        return directory_commands
+
     if build_prop_replacement is not None:
         commands += (
             "rm /system/build.prop\n"
@@ -394,13 +425,7 @@ def make_debugfs_commands(
         )
     for injection in config.get("system_app_injections", []):
         destination = injection["destination"]
-        directory = destination.rsplit("/", 1)[0]
-        commands += (
-            f"mkdir {directory}\n"
-            f"set_inode_field {directory} mode 040755\n"
-            f"set_inode_field {directory} uid 0\n"
-            f"set_inode_field {directory} gid 0\n"
-            f"ea_set -f {wsl_path(selinux_value_file)} {directory} security.selinux\n"
+        commands += ensure_parent_directories(destination) + (
             f"write {wsl_path(injection['_source'])} {destination}\n"
             f"set_inode_field {destination} mode 0100644\n"
             f"set_inode_field {destination} uid 0\n"
@@ -409,7 +434,7 @@ def make_debugfs_commands(
         )
     for injection in config.get("system_file_injections", []):
         destination = injection["destination"]
-        commands += (
+        commands += ensure_parent_directories(destination) + (
             f"write {wsl_path(injection['_source'])} {destination}\n"
             f"set_inode_field {destination} mode 0100644\n"
             f"set_inode_field {destination} uid 0\n"
@@ -729,12 +754,11 @@ def expected_added_paths(config: dict, official_paths: set[str]) -> set[str]:
             parent = parent.rsplit("/", 1)[0]
     for injection in config.get("system_file_injections", []):
         destination = injection["destination"]
-        parent = destination.rsplit("/", 1)[0]
-        if parent not in official_paths:
-            raise RuntimeError(
-                f"injected system file parent is not an official directory: {parent}"
-            )
         expected.add(destination)
+        parent = destination.rsplit("/", 1)[0]
+        while parent not in official_paths:
+            expected.add(parent)
+            parent = parent.rsplit("/", 1)[0]
     return expected
 
 
@@ -793,6 +817,20 @@ def validate_system_semantics(config: dict, system: Path) -> dict:
         raise RuntimeError(
             f"unexpected regular-file content changes: {changed_regular_files}; expected {expected_changed}"
         )
+
+    for path in sorted(expected_added):
+        entry = candidate_entries[path]
+        if entry.get("type") != "directory":
+            continue
+        xattrs = {item["name"]: item for item in entry.get("xattrs", [])}
+        if (
+            entry.get("mode_octal") != "0755"
+            or entry.get("uid") != 0
+            or entry.get("gid") != 0
+            or xattrs.get("security.selinux", {}).get("value_b64")
+            != "dTpvYmplY3RfcjpzeXN0ZW1fZmlsZTpzMAA="
+        ):
+            raise RuntimeError(f"injected directory metadata mismatch: {path}")
 
     for injection in config.get("system_app_injections", []):
         destination = injection["destination"]

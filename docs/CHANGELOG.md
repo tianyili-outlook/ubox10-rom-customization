@@ -2,6 +2,14 @@
 
 ## 2026-07-28
 
+- 完成 Test9w1 真机收束：`ant_div=N`，5 GHz 网络稳定、目标 2.4 GHz SSID 仍未出现，蓝牙 `ON` 且崩溃 0 次；没有证据证明补丁实质改善，实验退役，后续恢复从 Test8r2 构筑。
+- 审计当前 Android 12 TV remote 路径：framework 已含 `TvRemoteService`、provider watcher、Binder API 与 uinput bridge，但缺少 leanback、`com.android.media.tv.remoteprovider` shared library、provider package RRO、privapp policy 和接收端 APK。
+- 锁定 Android TV Remote Service 5.2.473254133（APK SHA-256 `9D1B...B973`、Google 证书 SHA-256 `456E...9137`）；普通 data 安装实测因 required shared library 缺失而失败，未在设备留下 package。
+- 新增 `prepare-tv-remote-experiment.py`：验证本地 donor 与两份 Android 12 AOSP source archive，从源码可复现构建只含 `TvRemoteProvider*` 的 runtime DEX，并构建/签名只覆盖 `config_tvRemoteServicePackage` 的静态 RRO；Google APK 和生成二进制均留在忽略的 `work/`。
+- 候选构建器新增严格白名单的 `/system/priv-app`、remoteprovider framework jar 与单一 RRO 注入，支持安全创建缺失父目录并验证目录/file mode、UID/GID、SELinux 和 SHA-256；单元测试套件增至 24 项。
+- 从 Test8r2 构建 Test9r1，未继承 Test9w1 vendor patch；system 只有 10 个预期新增路径，`vendor_dlkm` 与官方输入相同。ext4、完整 AVB、super、IMAGEWTY 和单元测试全部通过，固件 SHA-256 为 `38A0C232750ECD433B2783E0CFBFFC48C17071226EE2AEC978BE5AC6C12F6E33`。
+- 将官方 Google TV iPhone 发现、配对、遥控和文字输入加入 M8.INPUT 正式验收；明确不开发 UBOX Input，Google 专有 APK 不进入 Git/公开镜像/项目再分发，许可或认证不可得时标记 `BLOCKED`。
+- 镜像保留集切换为官方原件、Test8r2 和 Test9r1；删除 Test9w1、Test9r1 构建中间分区、本轮官方逻辑分区缓存和分析日志共 7,651,182,014 bytes（约 7.126 GiB），当前恰有三份 `.img`，三者 SHA-256 已复核。
 - 吸收 UBOX10 AArch64/AOSP ATV/Netflix 调研，建立 M8.0–M8.6 与 M8.DRM 分阶段计划；首选 arm64+arm32 multilib，64 位 Mali/Gralloc/Mapper/HWC 是第一 Go/No-Go。
 - 核实 BPI H618 Android 12 BSP 和 AOSP `device/google/atv` 研究入口；明确 H618 `-a arm64` 不能替代 userspace/ELF/图形产物验证，且其他板型底层与安全材料不得直接移植。
 - 将 Netflix 提升为 N0–N3 正式验收：先建立原厂/Test8r2 的 Widevine、TEE/OEMCrypto、secure codec、protected buffer、HDCP 和实际播放基线，不复制密钥或伪造认证。

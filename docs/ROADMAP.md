@@ -4,63 +4,50 @@
 
 - 当前唯一稳定基线是 Test8r2：
   `out/candidates/test8r2-restore-contacts-provider-r1/x12-test8r2-restore-contacts-provider.img`
-- 已确认 Wi‑Fi 连接成功后，互联网和 TCP ADB 可以稳定使用；但历史全频扫描存在连续零结果，同一目标的扫描 RSSI 在强、弱两档间相差约 30 dB。过去文档中的“Wi‑Fi 正常”只代表连接与传输测试通过，不代表扫描可靠性已经通过。
-- Test9w1 是待实机验证的单变量实验候选，不是新基线：
-  `out/candidates/test9w1-disable-aic-ant-div-r1/x12-test9w1-disable-aic-ant-div.img`
+- Wi‑Fi 连接、互联网与 TCP ADB 可稳定使用；用户家庭 5 GHz 网络始终可见，主要缺失的是另一个 2.4 GHz SSID。Test9w1 将 `ant_div` 改为 `N` 后仍未使该 2.4 GHz SSID 出现，因此没有证据把驱动补丁提升为产品修复。
+- Test9w1 已退役：配置和哈希用于历史复现，镜像删除；所有后续候选继续从 Test8r2 构筑。
+- 当前候选是 Test9r1：
+  `out/candidates/test9r1-android-tv-remote-service-r1/x12-test9r1-android-tv-remote-service.img`
+  离线验证通过，等待 iPhone 官方 Google TV 应用真机验收。
 - Test9a/Test9b 只是 Google Play/TV feature 的诊断实验。两者均通过离线构建验证，但实机 Play Store 都进入 `AccessRestrictedActivity` 并提示当前版本不兼容，因此不得作为日常或后续开发基线。
 - 当前 32 位系统继续保留现有 Google 服务作为登录、应用安装与更新基础设施；不再把手机式 Play Store 界面当作当前阶段的主要电视入口。
 
-## Test9.1：Wi‑Fi 扫描可靠性
+## Test9.1：Wi‑Fi 结论
 
-### 已完成的证据收敛
-
-- 五轮连接态主动扫描都能完成，但开机历史中出现过连续全频 `0 results`；问题存在于 Settings 之外的扫描结果源。
-- Settings 的特权和扫描节流不是首要问题，`wificond` 也没有崩溃；AIC vendor HAL 缺少 background scan/link-layer stats 能力，驱动不支持 scheduled scan。
-- 板上丝印 `AW869A WiFi6`；官方规格把 AW869A 定义为 AIC8800D40、1T1R、单天线型。当前驱动却报告 `ant_div=Y`，与静止环境下约 30 dB 的扫描 RSSI 双峰共同构成首个可证伪假设。
-
-### Test9w1 单变量候选
-
-- system 与 Test8r2 保持一致。
-- 只在来源 SHA-256 已锁定的 `/lib/modules/aic8800_fdrv.ko` 内，把 `ant_div` 默认值的一个字节由 `01` 改为 `00`；不替换 AIC 驱动或固件，不修改 HAL。
-- 固件 SHA-256：`2D43D4A6B64702F1D0265EDC27B33EB424B4B56A721DC8068B5CCEBB4A310CC5`。
-- ext4、完整 AVB 链、super、IMAGEWTY 和 20 项单元测试已通过；没有真机启动证据。
-- 修改后的 vendor_dlkm 保留 dm-verity，但因本地没有可信 `fec` 工具而关闭 FEC；这进一步限定它只能先作为可恢复实验候选。
-
-### 实机验证顺序
-
-1. PhoenixCard 可能清除 userdata/metadata；刷机前备份需要保留的本地数据和账户信息，并保留 Test8r2 恢复卡/镜像。
-2. 首次启动后先进入 Wi‑Fi 页面，不开关 Wi‑Fi；记录目标网络能否在 30 秒内出现，再正常连接。
-3. ADB 读取 `/sys/module/aic8800_fdrv/parameters/ant_div`，必须为 `N`。
-4. 在设备位置和路由器配置不变的情况下做五轮主动扫描；不把密码、完整 BSSID 或其他凭据提交仓库。
-5. 只做一次 Settings 中的 Wi‑Fi 关闭/开启；重连 ADB 后再次确认 `ant_div=N`，证明 HAL 卸载/重载后仍采用补丁默认值。
-6. 重启，检查无需开关 Wi‑Fi 即可发现/自动连接、互联网和 TCP ADB 正常，并第三次确认 `ant_div=N`。
-7. 检查蓝牙保持 `ON`、可扫描且 `Bluetooth crashed 0 times`；Wi‑Fi/蓝牙共用模块，不能省略这一回归。
-
-### 验收标准
-
-- 冷启动后不切换 Wi‑Fi，目标 SSID 在 30 秒内出现。
-- 目标 SSID 在 5 轮扫描中至少 4 轮能在 30 秒内出现。
-- Settings 结果与 shell 扫描结果一致，没有连续全频零结果、scan failure 或驱动重置。
-- 静止环境中目标扫描 RSSI 不再分成相差约 30 dB 的两个稳定档位。
-- 启动、一次 Wi‑Fi HAL 重载和重启后的 `ant_div` 均为 `N`。
-- 重启后无需开关 Wi‑Fi 即可自动重连。
-- 连接成功后互联网和 TCP ADB 保持稳定。
-- 蓝牙无回归。
-
-若失败，直接刷回 Test8r2，并按证据判断：`ant_div=N` 但故障不变，则否定/显著削弱天线分集假设，下一个单变量应审计 2022 年 AIC 固件/全频扫描行为；不得同时更新未知来源的驱动与固件。
+- Test9w1 真机启动，`/sys/module/aic8800_fdrv/parameters/ant_div` 为 `N`。
+- 五轮扫描中当前连接的 5 GHz 网络保持强且稳定，其他 5 GHz 网络也可出现；目标 2.4 GHz SSID 仍未出现。
+- 蓝牙保持 `ON`、`Bluetooth crashed 0 times`。
+- 用户确认可稳定使用 5 GHz，2.4 GHz 缺失不再构成当前产品阻塞；板上单天线结构也限制了进一步射频软件推断的价值。
+- 结论：Test9w1 没有证明实质改善，不晋级、不继续投入、不传递其无 FEC 的 vendor_dlkm 到后续候选。若未来 5 GHz 连接/吞吐也出现可复现故障，再从 Test8r2 重新立项采证。
 
 ## Test9.2：iPhone 遥控与文字输入
 
-此阶段依赖 Test9.1，因为官方手机遥控要求 iPhone 与电视处于同一 Wi‑Fi 网络。首选官方 Google TV iOS 应用提供的虚拟遥控和键盘输入，不把来源不明的远程键盘 APK 固化进 system。
+当前网络已满足同一局域网前提。目标固定为官方 Google TV iOS 应用，不考虑
+UBOX Input。
 
-### 验证顺序
+### 已完成的技术收敛
 
-1. 在 Test8r2 上只读盘点已安装包、服务、mDNS/局域网发现和监听端口，确认是否存在 Google TV Remote Service 或兼容接收端。
-2. 用 iPhone 的官方 Google TV 应用尝试发现、配对并输入搜索、账号和密码字段。
-3. 若接收端缺失：
-   - 不直接移植或重新分发 Google 专有接收组件。
-   - 优先评估可追溯、开源、仅局域网工作的遥控键盘接收方案，并先以 data app 试装。
-   - 已验证可用的蓝牙键盘作为硬件回退方案。
+- 当前 system 没有 `com.google.android.tv.remote.service`、leanback 或
+  `com.android.media.tv.remoteprovider` shared library，framework resource
+  `config_tvRemoteServicePackage` 为空。
+- 设备 framework 已有 `TvRemoteService`、provider watcher、Binder 接口和
+  `TvUinputBridge`，不需要修改 Kernel 或 `services.jar`。
+- 官方原签名 Remote Service 5.2.473254133 普通安装实测因 required shared
+  library 缺失而失败。
+- Test9r1 从 Test8r2 加入 AOSP runtime library、共享库 XML、leanback、
+  framework RRO、privapp allowlist 和本地 donor；完整离线验证通过。
+- Google APK 不进入 Git 或项目再分发；AOSP library 由锁定源码复现。
+
+### Test9r1 真机顺序
+
+1. 用 PhoenixCard 刷入 Test9r1，先确认 Android、Projectivy、Settings、实体
+   遥控、Wi‑Fi 和蓝牙。
+2. ADB 验证 feature、shared library、provider package、RRO lookup、privapp
+   权限、监听端口和相关日志。
+3. iPhone 与电视连接同一 5 GHz 网络，验证发现、配对码、方向/OK/Back/Home。
+4. 在搜索、账号、密码和 Unicode 文本框验证文字输入，随后重启复验。
+5. 检查 Play Store；若再次因 leanback 进入不兼容页面，即使遥控成功也不得
+   将 Test9r1 晋级为日常基线。
 
 ### 验收标准
 
@@ -69,6 +56,12 @@
 - 文本框聚焦时可输入英文、常用 Unicode、账号及密码，重启后仍可正常配对使用。
 - iPhone 断开不影响红外/蓝牙实体遥控器。
 - 核心输入不依赖云端账户或公网服务。
+- `INJECT_EVENTS` 不通过伪造签名或宽松权限授予；事件走 framework
+  `TvRemoteProvider`/uinput 桥。
+- Projectivy、Settings、Play Store、Wi‑Fi、蓝牙和重启无新增关键回归。
+
+完整设计、哈希与判错树见
+`experiments/TEST9R1_ANDROID_TV_REMOTE_SERVICE.md`。
 
 ## Test9.3：当前 32 位系统产品化收尾
 
@@ -84,16 +77,17 @@ M8 不再以“找到一套 Google TV APK”定义，而是两项相互关联但
 1. 建立真实 arm64/multilib Android userspace 和匹配 H616 的硬件栈；
 2. 从源码继承 Android 12 AOSP ATV product，替代手机产品配置加 Launcher/feature 的伪装路线。
 
-M8.0 可在 Test9w1 刷测期间并行进行，只允许本地/ADB 只读盘点，不制作新固件。
+M8.0 可与 Test9r1 真机验收并行进行，只允许本地/ADB 只读盘点，不制作
+64 位固件。
 
 ### 阶段与出口
 
 - **M8.0 当前设备审计**：递归盘点 ELF、HAL/service、VINTF、Kernel modules、图形、媒体、Wi‑Fi/BT 和 DRM；标记 must-be-64、can-remain-32、missing-source 与 security-state。图形栈必须得到 Go/Blocked/Unknown。
 - **M8.1 BPI H618 供体验证**：先锁定 commit、oversized files、Docker 环境和磁盘预算，再原样构建。`-a arm64` 只是一条线索，最终以 userspace ELF、`lib64` 和 Mali/Gralloc/Mapper/HWC 产物判定。
-- **M8.2 Android 12 AOSP ATV 参考**：固定 Android 12 tag，比较 product inheritance、package、permission、overlay、VINTF、Settings、输入、网络、电源和显示，形成 UBOX10 product/device tree 草案。
+- **M8.2 Android 12 AOSP ATV 参考**：固定 Android 12 tag，比较 product inheritance、package、permission、overlay、VINTF、Settings、输入、网络、电源和显示，形成 UBOX10 product/device tree 草案；单列 remoteprovider shared library、provider package resource、privapp policy 与发现/配对路径。
 - **M8.3 最小 64 位启动**：保持 UBOX10 boot0/U-Boot/DTB/DTBO/Kernel/DDR/PMIC/TEE/分区表不变，依次验证 linker、zygote64、system_server、SurfaceFlinger、HDMI、ADB 和最小 UI。
-- **M8.4 硬件恢复**：GPU/显示、输入、音频、Wi‑Fi、蓝牙、视频硬解、CEC、休眠、DRM 和 Netflix N1 分子系统恢复与压力回归。
-- **M8.5 原生 AOSP ATV 产品**：完成 device tree、TV overlays/Settings/Launcher、SELinux、blob 提取和适用 CTS/VTS/GSI。
+- **M8.4 硬件恢复**：GPU/显示、实体遥控与 official Google TV iPhone remote/text input、音频、Wi‑Fi、蓝牙、视频硬解、CEC、休眠、DRM 和 Netflix N1 分子系统恢复与压力回归。
+- **M8.5 原生 AOSP ATV 产品**：完成 device tree、TV overlays/Settings/Launcher/input、SELinux、blob 提取和适用 CTS/VTS/GSI；官方原签名 Remote Service 可由用户本地提供，项目不重新分发。
 - **M8.6 后续 Android/Kernel**：只有 Android 12 arm64 与 Netflix N1 稳定后才评估；Android 主版本和 Kernel major 每次只改变一个。
 
 ### Netflix/DRM 横向门禁

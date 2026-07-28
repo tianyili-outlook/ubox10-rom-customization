@@ -21,13 +21,34 @@
 - FAIL：两者均通过离线结构和完整性验证，但 Play Store 实机进入 `AccessRestrictedActivity` 并提示版本不兼容。
 - 只通过离线验证不足以提升为基线；Test9a/Test9b 仅保留作 Leanback feature 对照，不再继续配置或发布。
 
-## Test9w1 门槛
+## Test9w1 最终结果
 
-- 离线 PASS：只有锁定哈希的 `aic8800_fdrv.ko` 有效载荷一字节变化；ext4、AVB、super、IMAGEWTY 和单元测试通过。
-- 实机必须确认：冷启动 30 秒内目标可见、五轮至少 4/5、无连续全频零结果或约 30 dB RSSI 双峰。
-- 启动、一次 Wi‑Fi 关闭/开启和重启后的 `ant_div` 都必须为 `N`。
-- 互联网/TCP ADB、自动重连和蓝牙 `ON`/扫描/崩溃 0 次必须同时通过。
-- 任一关键项失败时 Test8r2 继续作为稳定基线。
+- 离线 PASS：只有锁定哈希的 `aic8800_fdrv.ko` 有效载荷一字节变化。
+- 真机 PARTIAL：`ant_div=N`，当前 5 GHz 网络稳定，蓝牙无回归；目标
+  2.4 GHz SSID 仍未出现。
+- 产品结论 FAIL/退役：没有证据证明补丁带来实质改善，不再重复测试或传递
+  到新候选；Test8r2 继续作为稳定基线。
+
+## Test9r1 门槛
+
+- 离线 PASS：从 Test8r2 只新增 10 个 remote stack 路径；`vendor_dlkm`
+  与官方输入相同。
+- AOSP remoteprovider DEX 只能定义
+  `com.android.media.tv.remoteprovider.TvRemoteProvider*`，不得重复打包
+  framework AIDL/boot classes。
+- Google donor 必须匹配固定 package、versionCode、APK SHA-256 和 Google
+  签名证书；二进制不得提交 Git 或由项目重新分发。
+- 真机启动后必须同时出现 leanback feature、shared library、provider APK
+  和生效的 framework RRO；不得有 privapp enforcement 启动错误。
+- iPhone 官方 Google TV 应用必须完成同 LAN 发现、配对码认证、方向/OK/
+  Back/Home、普通/Unicode/账号/密码文字输入和重启复验。
+- 不授予纯 signature 的 `INJECT_EVENTS`；输入必须通过
+  `TvRemoteProvider`/uinput bridge。
+- Projectivy、实体遥控、Settings、Play Store、Wi‑Fi、蓝牙和重启必须无
+  关键回归。remote 成功但 Play Store 因 leanback 失效时，技术实验可记录
+  为部分成功，但 Test9r1 不得晋级。
+- 任一关键项失败，刷回 Test8r2 并按 feature/library/RRO/package/discovery/
+  input bridge 分层定位。
 
 ## M8 门槛
 
@@ -37,6 +58,9 @@
 - 原厂/Test8r2 的 Widevine、DRM HAL、TEE/OEMCrypto、secure codec、protected buffer 和 HDCP 基线必须在相关修改前建立。
 - 其他板型 bootloader、DTB/DTBO、TEE、密钥和分区表不得进入候选。
 - M8 每个可刷写阶段仍须满足现有 ext4/AVB/super/IMAGEWTY、UART 和恢复门槛。
+- M8.INPUT 必须从源码构建 remoteprovider，并实测官方 Google TV iPhone
+  应用的发现、认证、遥控和文字输入；若受 GMS TV 许可/认证阻塞，明确记为
+  `BLOCKED`，不以 UBOX Input 替代通过。
 
 ## 结果处理
 

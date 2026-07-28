@@ -20,7 +20,9 @@
 | Android 用户空间 | `zygote32`、`armeabi-v7a`，system/vendor 无 `lib64` | CONFIRMED |
 | 当前产品形态 | 手机产品配置叠加厂商电视界面，不是源码级 AOSP ATV product | CONFIRMED |
 | 稳定基线 | Test8r2 | CONFIRMED |
-| Wi‑Fi 实验 | Test9w1 已离线通过，真机结果待定 | UNKNOWN |
+| Wi‑Fi 实验 | Test9w1 真机未证明改善，已退役；后续从 Test8r2 继续 | CONFIRMED |
+| 手机遥控 framework | 已有 TvRemoteService/provider watcher/uinput bridge，缺 product 集成 | CONFIRMED |
+| 手机遥控候选 | Test9r1 从 Test8r2 构建并通过离线验证，真机待测 | UNKNOWN |
 | Play Protect | Play Store 无可见认证项；实际认证结论未取得 | UNKNOWN |
 | Widevine/TEE/HDCP/secure decoder | 尚无完整基线 | UNKNOWN |
 | Netflix | 安装、登录、播放和最大分辨率尚未建立基线 | UNKNOWN |
@@ -29,11 +31,12 @@
 
 | 产品体验线 | 架构研究线 |
 |---|---|
-| Test9.1 完成 AW869A Wi‑Fi 验证 | M8.0 只读盘点当前 ELF/HAL/VINTF/DRM |
-| Test9.2 验证 iPhone 遥控与文字输入 | M8.1 锁定并审计 H618 BSP 供体 |
-| Test9.3 完成应用、AirPlay、文件管理和整体验收 | M8.2 建立 Android 12 AOSP ATV 差异基线 |
+| Test9r1 验证官方 Google TV iPhone 遥控与文字输入 | M8.0 只读盘点当前 ELF/HAL/VINTF/DRM |
+| Test9.3 完成应用、AirPlay、文件管理和整体验收 | M8.1 锁定并审计 H618 BSP 供体 |
+| 当前 32 位产品完成最终交叉回归 | M8.2 建立 Android 12 AOSP ATV 差异基线 |
 
-M8.0 可以在 Test9w1 刷测期间推进；M8.3 之后的可刷写迁移必须等待 M8.0–M8.2 的 Go/No-Go 结论。
+M8.0 可以在 Test9r1 刷测期间推进；M8.3 之后的可刷写迁移必须等待
+M8.0–M8.2 的 Go/No-Go 结论。
 
 ## 4. 目标与非目标
 
@@ -47,7 +50,9 @@ M8.0 可以在 Test9w1 刷测期间推进；M8.3 之后的可刷写迁移必须�
   └─ 经 Binder/VINTF 验证后可暂留的独立 32-bit vendor service
 ```
 
-产品目标是从源码继承 Android 12 AOSP ATV product，使 Settings、输入、电源、网络、显示和遥控器行为真正面向电视。
+产品目标是从源码继承 Android 12 AOSP ATV product，使 Settings、输入、电源、
+网络、显示和遥控器行为真正面向电视。输入验收同时包含实体遥控和 iPhone
+官方 Google TV 应用的发现、认证、遥控及文字输入。
 
 以下不是迁移：
 
@@ -56,6 +61,7 @@ M8.0 可以在 Test9w1 刷测期间推进；M8.3 之后的可刷写迁移必须�
 - 只更换 64 位 Kernel；
 - 只加入 Leanback XML 或更换 Launcher；
 - 直接刷其他 H616/H618 板型完整镜像。
+- 用自研 UBOX Input 协议/应用替代官方 Google TV 手机遥控目标。
 
 当前也不同时升级 Android 主版本、Kernel、ABI、Vendor、HAL 和设备树。
 
@@ -95,7 +101,12 @@ H618 只作为 SoC/BSP/组件参考。不得复制其 boot0、U-Boot、DDR/PMIC�
 
 ### AOSP Android TV
 
-使用与 Android 12 匹配的 `device/google/atv` tag 建立 `aosp_tv_arm64`、`gsi_tv_arm64` 和必要的 arm32 对照，提取 product inheritance、packages、permissions、overlays、VINTF、Settings、输入、网络和电源差异。不得把当前 `main` 直接当作 Android 12 配置。
+使用与 Android 12 匹配的 `device/google/atv` tag 建立 `aosp_tv_arm64`、
+`gsi_tv_arm64` 和必要的 arm32 对照，提取 product inheritance、packages、
+permissions、overlays、VINTF、Settings、输入、网络和电源差异。remote
+专项必须追踪 `com.android.media.tv.remoteprovider`、framework provider
+package resource、privapp policy、mDNS/配对与 uinput bridge。不得把当前
+`main` 直接当作 Android 12 配置。
 
 ### LineageOS
 
@@ -108,6 +119,7 @@ H618 只作为 SoC/BSP/组件参考。不得复制其 boot0、U-Boot、DDR/PMIC�
 只读输入：
 
 - 官方恢复镜像、Test8r2 配置/镜像、当前设备 ADB；
+- Test9r1 的 donor 审计、普通安装失败、system 集成和真机结果；
 - boot/vendor_boot/system/product/vendor/vendor_dlkm；
 - init rc、VINTF、service/lshal、Kernel modules；
 - 图形、媒体、Wi‑Fi/BT 与 DRM 相关文件。
@@ -133,7 +145,10 @@ H618 只作为 SoC/BSP/组件参考。不得复制其 boot0、U-Boot、DDR/PMIC�
 
 ### M8.2：Android 12 AOSP ATV 参考构建
 
-锁定 Android 12 tag，构建 arm64 ATV/GSI 参考并与 Test8r2 比较。输出 UBOX10 自有 ATV product/device tree 草案；TV 化不再以 Play Store 页面为判据。
+锁定 Android 12 tag，构建 arm64 ATV/GSI 参考并与 Test8r2 比较。输出 UBOX10
+自有 ATV product/device tree 草案；TV 化不再以 Play Store 页面为判据。
+remoteprovider 必须由源码构建并通过 shared-library/API 边界检查，不从旧
+Test9r1 镜像反向复制生成物。
 
 ### M8.3：最小 64 位启动
 
@@ -151,17 +166,47 @@ H618 只作为 SoC/BSP/组件参考。不得复制其 boot0、U-Boot、DDR/PMIC�
 
 ### M8.4：逐项恢复硬件
 
-顺序：GPU/显示 → 遥控输入 → 音频 → Wi‑Fi → 蓝牙 → 视频硬解 → CEC → suspend/resume → DRM/secure playback → Netflix N1。每个子系统执行基线、依赖、最小移植、离线检查、单变量候选、压力与交叉回归。
+顺序：GPU/显示 → 实体遥控 → Google TV iPhone remote/text input → 音频 →
+Wi‑Fi → 蓝牙 → 视频硬解 → CEC → suspend/resume → DRM/secure playback →
+Netflix N1。每个子系统执行基线、依赖、最小移植、离线检查、单变量候选、
+压力与交叉回归。
 
 ### M8.5：UBOX10 原生 AOSP ATV 产品
 
-建立 device tree、ATV product inheritance、TV overlays/Settings/Launcher/input/power/network/display、SELinux、`proprietary-files.txt` 和 Vendor 提取流程；执行适用 CTS/VTS/GSI。即使没有 GMS TV 商业认证，也应能作为开放 AOSP ATV 使用。
+建立 device tree、ATV product inheritance、TV
+overlays/Settings/Launcher/input/power/network/display、SELinux、
+`proprietary-files.txt` 和 Vendor 提取流程；执行适用 CTS/VTS/GSI。即使
+没有 GMS TV 商业认证，也应能作为开放 AOSP ATV 使用；但官方 Google TV
+手机遥控目标若受 GMS TV 许可/签名阻塞，必须单独标记 `BLOCKED`，不能用
+“AOSP ATV 已启动”代替通过。
 
 ### M8.6：Android/Kernel 后续升级
 
 仅在 Android 12 arm64/multilib、硬件、SELinux/VINTF、Netflix N1 和恢复链稳定后评估。Android Framework 与 Kernel major version 每次只改变一个维度；Panfrost、Cedrus、GKI 和主线 Kernel 属于长期研究。
 
-## 8. M8.DRM：Netflix 与安全播放
+## 8. M8.INPUT：官方 Google TV 手机遥控与文字输入
+
+Test9r1 已证明当前 Android 12 framework 包含 TV remote 服务端骨架，也证明
+普通 data-app 安装会被缺失的 required shared library 拒绝。M8 不继承
+Test9r1 二进制，而是继承以下产品合同：
+
+1. 从锁定 Android 12 AOSP 源码构建
+   `com.android.media.tv.remoteprovider`；
+2. product 原生声明 television/leanback、共享库、provider package resource
+   和最小 privapp 权限；
+3. provider watcher 只绑定显式允许且要求
+   `BIND_TV_REMOTE_SERVICE` 的 package；
+4. 输入事件走 `TvRemoteProvider`/uinput bridge，不伪授予纯 signature 的
+   `INJECT_EVENTS`；
+5. 用户本地提供的官方原签名 Google Remote Service 能安装/预置并正常启动；
+6. iPhone 官方 Google TV 应用能在同一 LAN 发现、配对、遥控和向账号/密码/
+   Unicode 文本框输入；
+7. Google 专有 APK 不进入 Git、公共下载或项目重新分发。
+
+若第 5–6 项因 Google TV/GMS TV 商业许可、认证或服务端资格不可获得，状态
+记为 `BLOCKED` 并保留证据。项目明确不开发 UBOX Input 作为替代验收。
+
+## 9. M8.DRM：Netflix 与安全播放
 
 Netflix 分级：
 
@@ -176,20 +221,24 @@ Widevine L1、Play Protect、TV Play Store 分发和 Netflix HD/4K 资格互不�
 
 绝不复制、生成或伪造其他设备的 Widevine/TEE/HDCP 密钥、证书、ESN、secure storage 或认证状态。任何可能影响安全播放的修改前，必须先完成原厂与 Test8r2 的 M8.DRM-0。
 
-## 9. 当前下一步
+## 10. 当前下一步
 
-Test9w1 刷测期间只推进无写设备风险的 M8.0：
+Test9r1 刷测期间只推进无写设备风险的 M8.0：
 
 1. 建立 M8 研究索引和数据脱敏规则；
 2. 编写 ELF inventory 工具；
 3. 生成当前图形、媒体、Wi‑Fi/BT 组件清单；
 4. 形成 BPI H618 source-lock 方案，不下载大型源码；
-5. 设计原厂/Test8r2 DRM 只读采集；若原厂基线需要重新刷机，必须另行排期，不与 Test9w1 回归混做。
+5. 将 Test9r1 的 remoteprovider/RRO/权限和真机日志结论写入 M8.INPUT
+   component map；
+6. 设计原厂/Test8r2 DRM 只读采集；若原厂基线需要重新刷机，必须另行排期，
+   不与 Test9r1 回归混做。
 
-## 10. 主要资料
+## 11. 主要资料
 
 - BPI H618 Android 12 BSP：<https://github.com/BPI-SINOVOIP/BPI-H618-Android12>
 - AOSP ATV device：<https://android.googlesource.com/device/google/atv/>
+- AOSP Android 12 TV remoteprovider：<https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-12.0.0_r1/media/lib/tvremote/>
 - GSI/VNDK/VINTF：<https://source.android.com/docs/core/tests/vts/gsi>、<https://source.android.com/docs/core/architecture/vndk>、<https://source.android.com/docs/core/architecture/vintf>
 - Android DRM：<https://source.android.com/docs/core/media/drm>
 - Android Trusty：<https://source.android.com/docs/security/features/trusty>

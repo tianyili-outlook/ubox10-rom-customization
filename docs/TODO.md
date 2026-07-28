@@ -1,6 +1,6 @@
 # 待办事项
 
-## 当前：Test8r2 上完成 Test9 可靠性与体验收尾
+## 当前：从 Test8r2 验证 Test9r1 手机遥控移植
 
 - [x] 提取官方 `system_a/product_a/vendor_a/vendor_dlkm_a`。
 - [x] 建立官方 `system_a` 的 3857 条 ext4 语义清单。
@@ -52,19 +52,24 @@
 - [x] Test9.1：在 Test8r2 上完成 5 轮主动扫描、历史 `WifiScanner`、framework/HAL/驱动和模块加载路径采证；确认存在历史连续零结果扫描、约 30 dB RSSI 双峰与 AIC vendor 能力缺口。
 - [x] Test9.1：确认板上丝印 AW869A，结合官方 1T1R/单天线规格与运行时 `ant_div=Y`，建立可证伪的天线分集假设；未把相关性当作根因结论。
 - [x] Test9.1：构建并离线验证 Test9w1；只对锁定 SHA-256 的 `aic8800_fdrv.ko` 在偏移 `0x2949` 执行 `01→00`，完整 AVB、ext4、super、IMAGEWTY 和 20 项单元测试通过。
-- [ ] Test9.1：刷入 Test9w1，确认启动后、开关 Wi‑Fi 后、重启后 `ant_div` 均为 `N`；目标 SSID 至少 4/5 轮在 30 秒内出现，没有连续零结果或约 30 dB RSSI 双峰。
-- [ ] Test9.1：确认重启自动重连、互联网/TCP ADB稳定，且蓝牙保持 `ON`、可扫描、`Bluetooth crashed 0 times`；任一关键项失败即刷回 Test8r2。
-- [ ] Test9.2：只读审计 TV remote 接收服务、mDNS/局域网发现与监听端口，验证 iPhone 官方 Google TV 应用的发现、配对和文字输入。
-- [ ] Test9.2：若官方接收端缺失，评估可追溯的开源局域网输入方案；先作为 data app 测试，蓝牙键盘作为已验证硬件回退。
+- [x] Test9.1：Test9w1 真机确认 `ant_div=N`，5 GHz 网络稳定，但目标 2.4 GHz SSID 仍未出现；蓝牙保持 `ON`、`Bluetooth crashed 0 times`。
+- [x] Test9.1：判定 Test9w1 未证明实质改善并退役；后续从 Test8r2 构筑，保留历史配置/方法但删除镜像。
+- [x] Test9.2：确认当前 system 缺少 Android TV Remote Service、leanback、required shared library 和 provider package 配置；framework 已有 TvRemoteService/provider watcher/uinput bridge。
+- [x] Test9.2：锁定并审计官方原签名 Android TV Remote Service 5.2.473254133；普通安装实测因 `com.android.media.tv.remoteprovider` 缺失而失败。
+- [x] Test9.2：从 Android 12 AOSP 锁定源码可复现构建 remoteprovider jar 和单资源 RRO；Google APK 只在忽略的本地 `work/` 使用。
+- [x] Test9.2：从 Test8r2 构建 Test9r1；24 项单元测试套件、ext4、完整 AVB、super、IMAGEWTY 全部通过，固件 SHA-256 为 `38A0C232750ECD433B2783E0CFBFFC48C17071226EE2AEC978BE5AC6C12F6E33`。
+- [ ] Test9.2：刷入 Test9r1，验证 feature/library/RRO/provider/权限/端口/日志，再用 iPhone 官方 Google TV 应用完成发现、配对、遥控、文字输入和重启复验。
+- [ ] Test9.2：检查 Projectivy、实体遥控、Play Store、Wi‑Fi 和蓝牙交叉回归；任一产品关键项失败即刷回 Test8r2。
 - [ ] Test9.3：提供 SmartTube、Kodi、Jellyfin、Moonlight 的用户态配置安装脚本，选择 AirPlay 接收器和现代文件管理器，完成最终验证。
 - [x] M8：吸收 2026-07-28 架构调研，建立 arm64/multilib、AOSP ATV、供体和 Netflix/DRM 分阶段计划及研究索引。
 - [x] 存储：新增官方原件恢复候选构建输入的脚本并锁定四个逻辑分区 SHA-256。
-- [x] 存储：只保留官方恢复源、Test8r2 和 Test9w1 三份可刷写镜像；删除其余可复现镜像和旧工作树约 81.604 GiB，并通过删除后重建演练验证官方输入恢复路径。
+- [x] 存储：保留集切换为官方恢复源、Test8r2 和当前 Test9r1；Test9w1 与构建中间分区删除，配置、脚本和哈希承担复现。
 - [ ] M8.0：编写 ELF inventory 工具及小型测试，输出 partition/path/class/machine/interpreter/SONAME/NEEDED/SHA-256。
 - [ ] M8.0：生成当前图形、媒体、Wi‑Fi/BT、HAL/VINTF 和 Kernel module 只读报告，形成 arm64 blockers。
 - [ ] M8.DRM-0：先设计脱敏采集，再分别建立原厂 ROM 与 Test8r2 的 Widevine/TEE/OEMCrypto/secure codec/HDCP/Netflix 基线。
 - [ ] M8.1：建立 BPI H618 的 source-lock、oversized files、Docker 环境和磁盘预算；用户确认前不下载或构建。
 - [ ] M8.2：锁定 Android 12 `device/google/atv` tag 和参考构建/差异输出合同。
+- [ ] M8.INPUT：把 AOSP remoteprovider、product provider 配置、最小权限和官方 Google TV iPhone 发现/配对/遥控/文字输入纳入正式门槛；不开发 UBOX Input。
 - [ ] 分析 AwTvProvision、SettingsSetup、AwManager、PackageOverride；只保留确有硬件/平台职责者。
 - [ ] 保留 AOSP `ProxyHandler`、`VpnDialogs`，除非实机证据证明它们参与厂商网络干预。
 

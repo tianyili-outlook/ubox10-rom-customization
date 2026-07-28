@@ -8,6 +8,7 @@
 |---|---|---|
 | 官方 `x12-1024.img` | 唯一恢复源、分区和安全状态基线 | 不提交 |
 | Test8r2 最终镜像与配置 | 当前稳定行为和文件系统基线 | 镜像不提交，配置提交 |
+| Test9r1 donor/构建/真机证据 | M8.INPUT remoteprovider、RRO、权限、发现/配对合同 | Google APK 不提交，只提交哈希、脚本和脱敏结论 |
 | ADB/UART 只读输出 | service/HAL/module/DRM 运行时状态 | 只提交脱敏报告 |
 | BPI H618 BSP | 供体能力审计 | 大型源码放 WSL/独立盘，只提交 source-lock 和报告 |
 | Android 12 AOSP ATV | 产品定义参考 | 构建树不提交，只提交差异报告 |
@@ -35,7 +36,12 @@ docs/research/m8/
 │   ├── source-lock.md
 │   ├── product-package-diff.md
 │   ├── overlay-diff.md
+│   ├── remote-input-component-map.md
 │   └── ubox10-atv-product-plan.md
+├── remote-input/
+│   ├── test9r1-verdict.md
+│   ├── framework-provider-contract.md
+│   └── iphone-google-tv-acceptance.md
 └── drm-netflix/
     ├── collection-plan.md
     ├── widevine-report.md
@@ -59,6 +65,8 @@ docs/research/m8/
 1. ELF inventory 工具及小型 fixture。
 2. Test8r2 当前设备图形/媒体/Wi‑Fi-BT 只读报告。
 3. BPI H618 commit/oversized files/构建环境 source-lock；用户确认前不下载。
-4. M8.DRM-0 采集设计；原厂 ROM 与 Test8r2 必须分别记录，不能用一方推断另一方。
+4. 将 Test9r1 的 AOSP remoteprovider、provider package RRO、权限和真机结论
+   写入 M8.INPUT component map；不开发 UBOX Input。
+5. M8.DRM-0 采集设计；原厂 ROM 与 Test8r2 必须分别记录，不能用一方推断另一方。
 
 架构、阶段和退出条件见 `docs/architecture/M8_ARM64_AOSP_TV_MIGRATION.md`。

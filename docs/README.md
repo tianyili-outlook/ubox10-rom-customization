@@ -3,8 +3,11 @@
 ## 当前阶段
 
 - 稳定基线：Test8r2。
-- 当前实验：Test9w1，正在进行 AW869A/AIC8800D `ant_div=N` 真机验证。
-- 产品体验主线：Test9.1 Wi‑Fi → Test9.2 iPhone 遥控文字输入 → Test9.3 应用与整体验收。
+- 当前实验：Test9r1，从 Test8r2 集成官方 Android TV Remote Service 所需
+  system stack，离线验证通过、等待真机。
+- Test9w1 已退役；后续不继承其 driver patch。
+- 产品体验主线：Test9r1 iPhone 官方 Google TV 遥控/文字输入 → Test9.3
+  应用与整体验收。
 - 架构研究主线：M8.0 只读盘点，与 Test9 实机测试并行；在图形栈和 DRM 基线明确前不制作 64 位候选。
 
 ## 核心文档
@@ -12,6 +15,7 @@
 | 主题 | 文档 |
 |---|---|
 | 当前操作 | [RUNBOOK.md](RUNBOOK.md) |
+| Test9r1 移植实验 | [experiments/TEST9R1_ANDROID_TV_REMOTE_SERVICE.md](experiments/TEST9R1_ANDROID_TV_REMOTE_SERVICE.md) |
 | 产品与 M8 路线 | [ROADMAP.md](ROADMAP.md) |
 | M8 架构计划 | [architecture/M8_ARM64_AOSP_TV_MIGRATION.md](architecture/M8_ARM64_AOSP_TV_MIGRATION.md) |
 | 当前待办与里程碑 | [TODO.md](TODO.md)、[MILESTONES.md](MILESTONES.md) |

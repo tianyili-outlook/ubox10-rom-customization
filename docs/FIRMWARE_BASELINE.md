@@ -15,8 +15,8 @@
 当前另保留：
 
 - Test8r2 稳定基线：`6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8`
-- Test9w1 实验候选：`2D43D4A6B64702F1D0265EDC27B33EB424B4B56A721DC8068B5CCEBB4A310CC5`
+- Test9r1 实验候选：`38A0C232750ECD433B2783E0CFBFFC48C17071226EE2AEC978BE5AC6C12F6E33`
 
-其他逻辑分区和候选镜像属于可再生成缓存。执行 `python scripts/prepare-candidate-inputs.py` 可从官方原件恢复四个构建分区及语义清单；候选再由配置驱动构建器复现。完整保留集见 `STORAGE_AND_REPRODUCTION.md`。
+Test9w1 已退役并删除镜像；其配置、哈希与历史结论仍可复现。其他逻辑分区和候选镜像属于可再生成缓存。执行 `python scripts/prepare-candidate-inputs.py` 可从官方原件恢复四个构建分区及语义清单；Test9r1 的本地 donor/AOSP 输入由 `prepare-tv-remote-experiment.py` 验证和生成，候选再由配置驱动构建器复现。完整保留集见 `STORAGE_AND_REPRODUCTION.md`。
 
 设备侧 USB、启动与候选结果记录于 `DISCOVERIES.md`；早期 M6 调试记录已归档到 `archive/m6/M6_DEBUG_LOG.md`。

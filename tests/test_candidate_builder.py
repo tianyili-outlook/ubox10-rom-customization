@@ -132,6 +132,88 @@ class CandidateBuilderTests(unittest.TestCase):
             test9w1["vendor_dlkm_binary_patches"],
         )
 
+    def test_test9r1_is_test8r2_plus_only_the_remote_service_stack(self) -> None:
+        test8r2 = builder.load_candidate_config(
+            REPO / "configs" / "candidates" / "test8r2-restore-contacts-provider.json"
+        )
+        test9r1 = builder.load_candidate_config(
+            REPO
+            / "configs"
+            / "candidates"
+            / "test9r1-android-tv-remote-service.json"
+        )
+        self.assertEqual(test8r2["remove_roots"], test9r1["remove_roots"])
+        self.assertEqual(test8r2["system_properties"], test9r1["system_properties"])
+        self.assertNotIn("vendor_dlkm_binary_patches", test9r1)
+
+        base_apks = {
+            injection["destination"] for injection in test8r2["system_app_injections"]
+        }
+        remote_apks = {
+            injection["destination"] for injection in test9r1["system_app_injections"]
+        }
+        self.assertEqual(
+            {
+                "/system/priv-app/AndroidTvRemoteService/AndroidTvRemoteService.apk"
+            },
+            remote_apks - base_apks,
+        )
+
+        file_destinations = {
+            injection["destination"] for injection in test9r1["system_file_injections"]
+        }
+        self.assertEqual(
+            {
+                "/system/etc/permissions/android.software.leanback.xml",
+                "/system/etc/permissions/com.android.media.tv.remoteprovider.xml",
+                (
+                    "/system/etc/permissions/"
+                    "privapp-permissions-com.google.android.tv.remote.service.xml"
+                ),
+                "/system/framework/com.android.media.tv.remoteprovider.jar",
+                "/system/overlay/UBOX10TvRemoteConfigOverlay.apk",
+            },
+            file_destinations,
+        )
+        self.assertNotIn(
+            "/system/etc/permissions/android.software.leanback_only.xml",
+            file_destinations,
+        )
+
+        added = builder.expected_added_paths(
+            test9r1,
+            {
+                "/",
+                "/system",
+                "/system/app",
+                "/system/priv-app",
+                "/system/etc",
+                "/system/etc/permissions",
+                "/system/framework",
+            },
+        )
+        self.assertEqual(
+            {
+                "/system/app/ProjectivyLauncher",
+                "/system/app/ProjectivyLauncher/ProjectivyLauncher.apk",
+                "/system/priv-app/AndroidTvRemoteService",
+                (
+                    "/system/priv-app/AndroidTvRemoteService/"
+                    "AndroidTvRemoteService.apk"
+                ),
+                "/system/etc/permissions/android.software.leanback.xml",
+                "/system/etc/permissions/com.android.media.tv.remoteprovider.xml",
+                (
+                    "/system/etc/permissions/"
+                    "privapp-permissions-com.google.android.tv.remote.service.xml"
+                ),
+                "/system/framework/com.android.media.tv.remoteprovider.jar",
+                "/system/overlay",
+                "/system/overlay/UBOX10TvRemoteConfigOverlay.apk",
+            },
+            added,
+        )
+
     def test_binary_patch_requires_exact_original_bytes(self) -> None:
         patch = {
             "path": "/lib/modules/example.ko",
