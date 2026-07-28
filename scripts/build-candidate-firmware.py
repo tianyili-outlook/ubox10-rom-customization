@@ -246,6 +246,11 @@ def load_candidate_config(path: Path) -> dict:
     binary_patches = config.get("vendor_dlkm_binary_patches", [])
     if not isinstance(binary_patches, list):
         raise RuntimeError("vendor_dlkm_binary_patches must be a list")
+    if not VENDOR_DLKM_MANIFEST.is_file():
+        raise RuntimeError(
+            "official vendor_dlkm manifest is missing; run "
+            "`python scripts/prepare-candidate-inputs.py` first"
+        )
     official_vendor_dlkm = json.loads(
         VENDOR_DLKM_MANIFEST.read_text(encoding="utf-8")
     )
@@ -1198,7 +1203,10 @@ def main() -> int:
     if final_out.exists():
         raise RuntimeError(f"refusing to overwrite existing output: {final_out}")
     if not (REPO / "x12-1024.img").is_file() or not (REPO / "work/manifest.json").is_file():
-        raise RuntimeError("official container or IMAGEWTY manifest is missing")
+        raise RuntimeError(
+            "official container or IMAGEWTY manifest is missing; run "
+            "`python scripts/prepare-candidate-inputs.py` first"
+        )
     required_tools = [
         TOOLS / "avbtool.py",
         TOOLS / "lpmake.exe",
@@ -1215,7 +1223,10 @@ def main() -> int:
     preflight_wsl(e2fs)
     for name, (path, expected) in INPUTS.items():
         if not path.is_file() or sha256(path) != expected:
-            raise RuntimeError(f"{name} input missing or SHA-256 mismatch: {path}")
+            raise RuntimeError(
+                f"{name} input missing or SHA-256 mismatch: {path}; run "
+                "`python scripts/prepare-candidate-inputs.py` first"
+            )
 
     candidates = final_out.parent
     candidates.mkdir(parents=True, exist_ok=True)

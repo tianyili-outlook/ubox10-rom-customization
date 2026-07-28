@@ -21,9 +21,26 @@
 - FAIL：两者均通过离线结构和完整性验证，但 Play Store 实机进入 `AccessRestrictedActivity` 并提示版本不兼容。
 - 只通过离线验证不足以提升为基线；Test9a/Test9b 仅保留作 Leanback feature 对照，不再继续配置或发布。
 
+## Test9w1 门槛
+
+- 离线 PASS：只有锁定哈希的 `aic8800_fdrv.ko` 有效载荷一字节变化；ext4、AVB、super、IMAGEWTY 和单元测试通过。
+- 实机必须确认：冷启动 30 秒内目标可见、五轮至少 4/5、无连续全频零结果或约 30 dB RSSI 双峰。
+- 启动、一次 Wi‑Fi 关闭/开启和重启后的 `ant_div` 都必须为 `N`。
+- 互联网/TCP ADB、自动重连和蓝牙 `ON`/扫描/崩溃 0 次必须同时通过。
+- 任一关键项失败时 Test8r2 继续作为稳定基线。
+
+## M8 门槛
+
+- M8.0–M8.2 只产生 inventory、source-lock、差异和 Go/No-Go 报告，不产生刷机镜像。
+- M8.3 前必须明确 64 位 Mali/EGL/Gralloc/Mapper/HWC 与当前 Kernel ABI 的兼容结论。
+- `ro.zygote`、ABI 属性或目录名不能替代 ELF 和运行进程位数证据。
+- 原厂/Test8r2 的 Widevine、DRM HAL、TEE/OEMCrypto、secure codec、protected buffer 和 HDCP 基线必须在相关修改前建立。
+- 其他板型 bootloader、DTB/DTBO、TEE、密钥和分区表不得进入候选。
+- M8 每个可刷写阶段仍须满足现有 ext4/AVB/super/IMAGEWTY、UART 和恢复门槛。
+
 ## 结果处理
 
 - 能启动且没有新回归：保留该候选作为下一批修改的基线。
 - 不能启动：保存 UART 日志，刷回官方镜像，再根据第一个明确错误修改。
 - 能启动但硬件异常：刷回官方镜像确认硬件正常，再缩小删除范围。
-- Launcher 异常但 Android/ADB 正常：从 `Settings > Apps` 启动 Projectivy并记录现象；必要时刷回 Test7。
+- Launcher 异常但 Android/ADB 正常：从 `Settings > Apps` 启动 Projectivy 并记录现象；必要时刷回 Test8r2。

@@ -70,3 +70,9 @@
 - 官方 `aic8800_fdrv.ko` SHA-256 为 `0D713BDAD88323EF4230248DE56416269035561A3254E155C80F601C5FA5FD44`；ELF 重定位把 `ant_div` 参数指向 `.data` 中 `rwnx_mod_params+0x61`，对应文件偏移 `0x2949`，原始默认字节为 `01`。只改为 `00` 后模块 SHA-256 为 `DB43E76827FC2463A0AB54432B22A83D5045722E9C6C84BBEF96A4E1AFE8505B`；逐字节比较确认仅一字节不同，官方模块也没有 Linux 模块签名尾标记，不存在因补丁而破坏既有模块签名的问题。
 - Test9w1 在 Test8r2 基础上只改变上述模块有效载荷的一个预条件字节；构建器验证 vendor_dlkm 路径集与元数据不变、仅该普通文件内容变化，并通过只读 e2fsck、完整 AVB 链、super、IMAGEWTY 和 20 项单元测试。固件 SHA-256 为 `2D43D4A6B64702F1D0265EDC27B33EB424B4B56A721DC8068B5CCEBB4A310CC5`，尚无启动或 Wi‑Fi 修复实证。
 - 官方 `vendor_dlkm` 带 2-root FEC；本地主机没有可信可复现的 `fec` 可执行文件，因此 Test9w1 重建该分区时保留 dm-verity 哈希树但明确关闭 FEC。这不改变正常读取路径，却降低介质位错误时的纠错能力，是实验候选与官方分区之间除目标内容/AVB 元数据外的已知差异。
+- BPI-SINOVOIP 的公开 H618 Android 12 仓库当前可访问，确实包含 Android、device、hardware、vendor、kernel、longan 等源码目录，并给出 H618/Linux 5.4/`-a arm64` 的 Longan 命令；但仓库说明还要求外部 oversized files，且该参数不能证明 Android userspace、`lib64` 或 64 位 Mali/Gralloc/HWC 已成立。
+- AOSP `device/google/atv` 提供独立分支和版本 tag；M8 的 Android 12 ATV 参考必须锁定对应 tag，不能直接依据当前 `main`。
+- 当前没有原厂 ROM 与 Test8r2 的 Widevine、DRM HAL、OEMCrypto/TEE、secure decoder、protected buffer、HDCP 或 Netflix 实际最大分辨率对照报告。Play Store 无可见 Play Protect certification 项只证明 UI 观察，认证结论仍为未知。
+- Android DRM Framework 只提供统一接口，具体 DRM scheme 与安全强度由设备实现决定；因此 SoC 解码规格、Widevine level、Play Protect、TV Play Store 分发和 Netflix HD/4K 资格必须分开验证。
+- 清理前工作区共有 149 个 `.img`、约 85.677 GiB；清理后仅保留官方恢复原件、Test8r2 稳定基线和 Test9w1 当前候选，共 3 个 `.img`、约 5.617 GiB。连同旧工作树共释放约 81.604 GiB。
+- 四个官方逻辑分区缓存全部删除后，`prepare-candidate-inputs.py` 已从保留的 `x12-1024.img`/`super.fex` 成功重建 `system_a`、`product_a`、`vendor_a` 和 `vendor_dlkm_a`，且全部命中锁定 SHA-256；因此这些缓存可安全按需生成，不需要长期保留。

@@ -1,11 +1,11 @@
-# M6b.2：ext4 fixture oracle 设计与工具角色隔离
+# [归档] M6b.2：ext4 fixture oracle 设计与工具角色隔离
 
 > 历史设计资料：fixture 和独立解析器已经通过，当前状态见 `README.md`。
 
 - 状态：**路线和工具链已通过；M6b.3a positive fixture 批量手册已准备，fixture 尚未执行**
 - 日期：2026-07-25
 - 风险等级：本设计与源码核验为低风险；配置 WSL/Linux 构建环境为中等主机变更；生成隔离 fixture 为低风险离线操作；设备写入仍为严重风险且不属于本阶段。
-- 前置：[D-0038](DISCOVERIES.md#d-0038--当前-ext4-提取重建工具链无法证明保留完整文件系统语义)、[D-0040](DISCOVERIES.md#d-0040--当前-windows-环境没有可独立生成并校验完整-ext4-语义的已锁定工具链)、[ADR-0009](DECISIONS.md#adr-0009先设计-m6b0-root-hierarchy-control不直接修补历史重建脚本)。
+- 前置：D-0038、D-0040 与 ADR-0009（原历史编号；现行结论见 [发现汇总](../../DISCOVERIES.md) 和 [决策记录](../../DECISIONS.md)）。
 
 ## 1. 本阶段要解决的问题
 
@@ -72,7 +72,7 @@ AOSP 的 `mkuserimg_mke2fs.py` 明确把制作分成两步：
 
 ## 4. 已接受的架构决策
 
-本项目选择路线 A，并由 [ADR-0010](DECISIONS.md#adr-0010m6b-fixture-使用锁定-linux-e2fsprogs且与-android-生产构建器分离) 固化：
+本项目选择路线 A，并由 ADR-0010（原历史编号；现行原则见 [决策记录](../../DECISIONS.md)）固化：
 
 1. Gate 1 fixture 作者使用**从官方签名源码构建并锁定哈希**的 Linux e2fsprogs。
 2. 初始版本对齐为上游 e2fsprogs `1.47.2`。官方 `tar.xz` 的签名校验清单记录 SHA-256：

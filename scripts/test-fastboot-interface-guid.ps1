@@ -78,7 +78,7 @@ function Write-DirectoryHashes {
 
 if ($Action -in @('Apply', 'Rollback')) {
     if (-not $IUnderstandThisChangesWindowsHostBinding) {
-        throw 'Refusing host change: add -IUnderstandThisChangesWindowsHostBinding after reviewing docs/U1_FASTBOOT_HOST_BINDING_TRIAL.md.'
+        throw 'Refusing host change: add -IUnderstandThisChangesWindowsHostBinding after reviewing docs/archive/host/U1_FASTBOOT_HOST_BINDING_TRIAL.md.'
     }
     if (-not (Test-Administrator)) {
         throw 'Apply/Rollback requires an elevated Administrator PowerShell session.'

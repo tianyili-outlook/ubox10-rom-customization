@@ -1,4 +1,6 @@
-# U1：Fastboot 主机 interface GUID 单变量试验
+# [归档] U1：Fastboot 主机 interface GUID 单变量试验
+
+> 历史资料：Fastboot 主机绑定已经完成；本文仅保留诊断和回滚依据。
 
 ## 结论与目的
 

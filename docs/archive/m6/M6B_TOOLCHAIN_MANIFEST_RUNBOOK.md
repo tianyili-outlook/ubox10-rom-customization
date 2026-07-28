@@ -1,4 +1,4 @@
-# R2：e2fsprogs 1.47.2 toolchain manifest 批量执行
+# [归档] R2：e2fsprogs 1.47.2 toolchain manifest 批量执行
 
 > 历史运行手册：e2fsprogs 1.47.2 工具链已完成，不需要重复配置。
 

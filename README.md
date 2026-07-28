@@ -1,164 +1,67 @@
 # UBOX10 ROM Customization
 
-面向 UnblockTech UBOX10（I12 Pro Max / Allwinner H616 / Android TV 12）的个人固件改造项目。目标是在保留 Wi‑Fi、蓝牙、以太网、HDMI/CEC、遥控器、音频和视频解码支持的前提下，逐步移除厂商软件与网络干预，最终制作干净的 Android TV 固件。
+面向 UnblockTech UBOX10 / I12 Pro Max（Allwinner H616、Android 12）的可恢复固件改造项目。当前目标是先完成稳定、简洁、遥控器友好的 32 位电视体验，同时用只读审计为 AArch64 与真正 AOSP Android TV 迁移建立证据。
 
 ## 当前状态
 
-- 官方 PhoenixCard 镜像 `x12-1024.img`、提取分区和 SHA-256 基线已保留，可随时刷回。
-- Fastboot 只读通信可用：序列号 `992304568773`，协议版本 `0.5`。
-- UART 只接收链路可用：COM3、115200 8N1；首份冷启动日志在 `logs/device/20260725-004019/`。
-- WSL2 Ubuntu 24.04 与 e2fsprogs 1.47.2 已配置；两次 synthetic ext4 样本完全可复现。
-- 独立 ext4 解析器可检查目录、文件、链接、UID/GID/mode、SELinux、capability 和 ACL。
-- 官方 `system_a` 已提取并建立 3857 条语义清单。
-- **测试版 1 已实机启动成功。** 主界面、设置、红外遥控、HDMI 音视频、Wi‑Fi、以太网、蓝牙扫描和高码率视频播放正常；Google、YouTube、`bilibili.com`、`api.bilibili.com` 均可访问。量产同时清除了 userdata/metadata，因此尚不能把网络改善完全归因于 UBTunnel。
-- 测试版 1 的局域网 ADB 基线已取得：123 个包、UBTunnel 缺失、SELinux Permissive、厂商 Launcher 仍为 `com.moons.mylauncher10`。
-- **测试版 2 已实机通过。** 它在测试版 1 基础上继续移除五个工厂测试/日志工具；Android、Settings、红外遥控、HDMI 音视频、Wi‑Fi 和 bilibili API 正常。
-- 局域网 ADB 默认使用 Wi‑Fi 地址 `192.168.1.5:7896`；此前 `192.168.1.8:7896` 失联是拔除 Ethernet 网线造成，不是 adbd 故障。
-- **测试版 3 已实机通过。** 它继续移除高权限厂商浏览器、H618 Upgrade 和 Softwinner Update；Android、Settings、遥控、HDMI 和 Wi‑Fi 正常，Chrome 保留。
-- **测试版 4 已启动并通过包/输入法验证。** 八个目标包均已消失，默认输入法仍为 LatinIME；查询中的 `com.android.musicfx` 是独立的 AOSP 音效服务，不是 Music 播放器残留。
-- **测试版 5 已实机通过。** 17 个目标包全部消失；Google Play、TV Settings、蓝牙、MusicFX 和 Google Play services 均保留。
-- **测试版 6 已实机通过。** 16 个新增目标包全部消失，X12、SystemUI、TV Settings、LatinIME、蓝牙和 Google Play 均保留；纯删除阶段结束。
-- **Projectivy 4.71 用户态预检通过。** 已设为默认 Launcher，方向键、OK、Back、应用列表、Settings、应用启动和 Home 接管正常；仅观察到轻微卡顿。
-- 设备采用 64 位 ARM 内核，但 Android 用户空间为纯 32 位：`zygote32`、`armeabi-v7a`，且 system/vendor 没有 `lib64`。当前主线继续保留 32 位厂商栈。
-- **Test7 已实机通过。** Projectivy 已作为 system app 和默认 HOME 正常工作；首次启动的 Launcher 选择框来自仍保留的 X12。
-- **Test8 蓝牙回归已定位并修复。** 原因是 Test6 误删 AOSP ContactsProvider，导致 Bluetooth PBAP 崩溃；Test8r2 已恢复其完整目录并通过端到端自动验证和真机刷测。Projectivy、英语界面、遥控、Settings 和蓝牙正常，蓝牙为 `state: ON` 且 `Bluetooth crashed 0 times`。Test8r2 是当前稳定基线。
-- **Wi‑Fi 扫描采证已完成，Test9w1 待实机验证。** Test8r2 连接后的五轮主动扫描都能完成，但历史全频扫描记录存在连续 `0 results`，同一目标的扫描 RSSI 又在约 `-46/-47 dBm` 与 `-75 dBm` 两档间跳变。板上丝印 `AW869A WiFi6`，官方规格为 AIC8800D40、1T1R、单天线型，而当前 AIC 驱动默认 `ant_div=Y`；Test9w1 因此只把该模块默认值改为关闭，作为可回滚的单变量实验。Test8r2 仍是唯一稳定基线。
-- **Test9a/Test9b 的 TV feature 实验均失败。** 单独加入 `android.software.leanback`，以及继续加入 `android.software.leanback_only` 后，Play Store 29.2.15 都提示版本不兼容并进入访问限制页。两者仅保留为可复现实验，不是稳定基线。
-- 当前 Play Store 能登录、搜索并安装 Jellyfin TV，但界面是手机式、首页加载失败且没有可见的 Play Protect certification 项。真正的 TV Play Store 体验与 64 位平台迁移合并为未来阶段。
-- **Test9w1 已通过离线验证，但尚未成为稳定版。** 镜像为 `out/candidates/test9w1-disable-aic-ant-div-r1/x12-test9w1-disable-aic-ant-div.img`，SHA-256 为 `2D43D4A6B64702F1D0265EDC27B33EB424B4B56A721DC8068B5CCEBB4A310CC5`；其 `vendor_dlkm` 因本地缺少可信 `fec` 生成器而保留 dm-verity、关闭 FEC，必须通过真机扫描、重载、重启和蓝牙回归后才能考虑晋级。
+- **稳定基线：Test8r2。** Projectivy、英语界面、遥控、Settings、Wi‑Fi 连接、蓝牙和 ContactsProvider/PBAP 回归已通过；蓝牙为 `state: ON`、`Bluetooth crashed 0 times`。
+- **当前实验：Test9w1。** 板上 AW869A/AIC8800D 单天线模组的驱动默认 `ant_div=Y`，而历史扫描存在连续零结果和约 30 dB RSSI 双峰。Test9w1 只把该默认值改为 `N`，离线验证通过，正在进行实机扫描、Wi‑Fi 重载、重启和蓝牙共存回归；它尚未晋级。
+- **Play Store 当前只作为安装基础设施。** 可登录、搜索和安装 Jellyfin TV，但界面手机化、首页失败且没有可见的 Play Protect certification 项。Test9a/Test9b 证明单独加入 Leanback feature 不能完成 TV 化。
+- **M8 已进入规划。** 当前是 64 位 Kernel 加纯 32 位 Android 用户空间。M8 首先做 ELF/HAL/VINTF/图形/媒体/DRM 只读盘点；首个 Go/No-Go 是兼容 H616/Mali-G31 的 64 位 EGL/Gralloc/Mapper/HWC，而不是修改 ABI 属性。
+- **Netflix 纳入长期正式验收。** 先建立原厂/Test8r2 的 Widevine、TEE/OEMCrypto、secure codec、HDCP 和实际播放基线；不复制密钥、不伪造认证或 ESN。
 
-## 测试版 1：实机通过
+## 本地镜像保留集
 
-目的：只删除 `/system/app/UBTunnel.6`，验证 ext4 直接修改、AVB、dynamic super 和 PhoenixCard 封装整条链路。保留官方启动器以及 `boot`、`vendor_boot`、`dtbo`、`product`、`vendor`、`vendor_dlkm`。
+| 角色 | 文件 | SHA-256 |
+|---|---|---|
+| 官方恢复与唯一源原件 | `x12-1024.img` | `371A653604618E8B78786F279EA6F64E5D1028B430C9B41F330B08456A264065` |
+| 稳定基线 | `out/candidates/test8r2-restore-contacts-provider-r1/x12-test8r2-restore-contacts-provider.img` | `6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8` |
+| 当前实验 | `out/candidates/test9w1-disable-aic-ant-div-r1/x12-test9w1-disable-aic-ant-div.img` | `2D43D4A6B64702F1D0265EDC27B33EB424B4B56A721DC8068B5CCEBB4A310CC5` |
 
-- 镜像：`out/candidates/test1-no-ubtunnel-r3/x12-test1-no-ubtunnel.img`
-- 大小：2,005,954,560 字节
-- SHA-256：`3B8F8981E94B9BF209763FE3B67EC7102616B6D42631AA7F93264885C852C776`
-- 离线验证：PASS
-  - 只删除 UBTunnel 目录和 APK；共同文件语义无意外变化。
-  - AVB 签名、system/vendor/product/vendor_dlkm hashtree 全部通过。
-  - super 的 LP/ext4 结构通过。
-  - IMAGEWTY 载荷来源与伴生校验通过。
-- 实机验证：PASS
-  - PhoenixCard 量产约 305 秒，最终输出 `CARD OK` 和 `sprite success`。
-  - Android、主界面、设置、UBTunnel 删除、红外遥控、HDMI 音视频、Wi‑Fi、以太网、蓝牙扫描和高码率视频均通过。
-  - Google、YouTube、bilibili 主站和 API 均通过。
-  - CEC 按用户需求跳过；BBLL 以 API 恢复作为当前阶段通过，不单独安装验证。
+其他候选和逻辑分区镜像不长期保留；配置、脚本、哈希、生成方法和 Git 历史足以复现。详见 `docs/STORAGE_AND_REPRODUCTION.md`。
 
-## 测试版 2：实机通过
+## 当前工作顺序
 
-累计删除 `/system/app/UBTunnel.6`、`DragonAtt`、`DragonBox`、`DragonAgingTV`、`Factory_detection` 和 `AwlogSettings`。
+1. 完成 Test9w1 真机验收；失败立即刷回 Test8r2。
+2. Wi‑Fi 稳定后验证 iPhone 官方 Google TV 遥控与文字输入。
+3. 完成 SmartTube、Kodi、Jellyfin、Moonlight、AirPlay 和现代文件管理器的用户态配置。
+4. 并行推进 M8.0 只读 inventory；不在图形和 DRM 基线明确前制作 64 位候选。
+5. 锁定并原样验证 BPI H618 Android 12 BSP，再决定它是 `GO`、`PARTIAL GO` 或 `NO-GO` 供体。
+6. 建立 Android 12 AOSP ATV 参考构建，之后才进入分层的最小 64 位启动实验。
 
-- 镜像：`out/candidates/test2-remove-factory-tools-r1/x12-test2-remove-factory-tools.img`
-- 大小：2,005,962,752 字节
-- SHA-256：`4789EB9F76FD98E09D4155E95235CD06E38A9AE15E5A7BC7BF5B9F7D2224C964`
-- 离线验证：PASS
-  - ext4 语义差异只有 27 个预期删除路径；无新增内容或解析错误。
-  - 完整 AVB 启动链和各分区哈希树通过。
-  - PhoenixCard IMAGEWTY 中的关键分区载荷及伴生校验通过。
-- 实机验证：PASS
-  - Android 主界面、Settings、红外遥控、HDMI 图像和声音、Wi‑Fi 正常。
-  - `api.bilibili.com` 可访问。
-  - ADB 确认五个目标包均已消失。
+## 构建复现
 
-## 测试版 3：实机通过
+清理后先从官方原件恢复并验证构建输入：
 
-在 Test2 基础上继续删除 `/system/app/browser-v1.1`、`H618_UpgradeV3` 和 `Update`。Chrome、Launcher、遥控配对、LED、投屏、Google 服务和所有硬件分区保持不变。
+```powershell
+python .\scripts\prepare-candidate-inputs.py
+```
 
-- 镜像：`out/candidates/test3-remove-browser-updaters-r1/x12-test3-remove-browser-updaters.img`
-- 大小：2,005,966,848 字节
-- SHA-256：`8E42CB38426E3E80359BA5F2A9A0A21368789B43BF6B8DD86DF2D67630E44B77`
-- 离线验证：PASS
-  - 只少 40 个配置内的预期路径，没有新增内容、解析错误或意外共同条目变化。
-  - 完整 AVB 启动链和各分区哈希树通过。
-  - PhoenixCard IMAGEWTY 关键载荷及伴生校验通过。
-- 实机验证：PASS
-  - Android、Settings、红外遥控、HDMI 音视频和 Wi‑Fi 正常。
-  - ADB 只匹配到 `com.android.chrome`，三个删除目标均已消失。
+再按受版本控制的候选配置构建：
 
-## 测试版 4：实机通过
+```powershell
+python .\scripts\build-candidate-firmware.py `
+  --config .\configs\candidates\test9w1-disable-aic-ant-div.json
+```
 
-在 Test3 基础上继续删除 CZFileManager、Zhuyin、GalleryTV、Music、VideoPlayer、TvdVideo、TvdFileManager 和 ImageParser。保留 Chrome、默认 LatinIME 和全部硬件媒体栈。
+构建器只在 ext4 语义、e2fsck、完整 AVB、super、IMAGEWTY 和单元测试全部通过后发布候选。第三方 APK 不提交 Git，必须按配置中的来源与 SHA-256 放入 `work/preinstall_apks/`。
 
-- 镜像：`out/candidates/test4-remove-legacy-user-apps-r1/x12-test4-remove-legacy-user-apps.img`
-- 大小：2,005,966,848 字节
-- SHA-256：`639403FDDB95439401FFC929764E549CA49A7AD4F5BF92DD232FF6955A50CE73`
-- 离线验证：PASS
-  - 只少 95 个配置内预期路径，没有新增内容、解析错误或意外共同条目变化。
-  - 完整 AVB 启动链和各分区哈希树通过。
-  - PhoenixCard IMAGEWTY 关键载荷及伴生校验通过。
-- 实机验证：PASS
-  - Android 和网络 ADB 正常，八个删除目标均不存在。
-  - 默认输入法为 `com.android.inputmethod.latin/.LatinIME`。
+## 文档入口
 
-## 测试版 5：实机通过
+- 总索引：`docs/README.md`
+- 当前刷测：`docs/RUNBOOK.md`
+- 路线与里程碑：`docs/ROADMAP.md`、`docs/MILESTONES.md`
+- M8 架构计划：`docs/architecture/M8_ARM64_AOSP_TV_MIGRATION.md`
+- M8 研究区：`docs/research/m8/README.md`
+- 构建环境：`docs/BUILD_ENVIRONMENT.md`
+- 存储与复现：`docs/STORAGE_AND_REPRODUCTION.md`
+- 事实、决策、风险：`docs/DISCOVERIES.md`、`docs/DECISIONS.md`、`docs/RISK_REGISTER.md`
+- 历史归档：`docs/archive/README.md`
 
-在 Test4 基础上新增删除 17 个非电视平台应用。Google Play、MusicFX、蓝牙、相机扩展、Launcher、配对组件和全部硬件分区保持不变。
+## 安全边界
 
-- 镜像：`out/candidates/test5-remove-nontv-platform-apps-r1/x12-test5-remove-nontv-platform-apps.img`
-- 大小：2,005,979,136 字节
-- SHA-256：`16332D8E6BC14FA8D5855383BD3C9248D7A374E81A4967DC471B3C6E610F472F`
-- 离线验证：PASS
-  - 累计只少 199 个配置内预期路径，没有新增内容、解析错误或意外共同条目变化。
-  - 完整 AVB 启动链和各分区哈希树通过。
-  - PhoenixCard IMAGEWTY 关键载荷及伴生校验通过。
-- 实机验证：PASS
-  - 17 个目标包查询无输出。
-  - `com.google.android.gms`、`com.android.vending`、`com.android.bluetooth`、`com.android.tv.settings`、`com.android.musicfx` 均存在。
-
-## 测试版 6：实机通过
-
-在 Test5 基础上新增删除 16 个旧个人设备 UI 和非目标功能组件。当前 Launcher、SystemUI 壁纸、PhotoTable 屏保、Google Play、蓝牙和硬件分区保持不变。
-
-- 镜像：`out/candidates/test6-remove-legacy-personal-ui-r1/x12-test6-remove-legacy-personal-ui.img`
-- 大小：2,005,979,136 字节
-- SHA-256：`D8AA71730952F4388D82E6B919E05B757C50CD3D74805351546566D62125A576`
-- 离线验证：PASS
-  - 累计只少 295 个配置内预期路径，没有新增内容、解析错误或意外共同条目变化。
-  - 完整 AVB 启动链和各分区哈希树通过。
-  - PhoenixCard IMAGEWTY 关键载荷及伴生校验通过。
-- 实机验证：PASS
-  - 16 个目标包查询无输出。
-  - X12、SystemUI、TV Settings、LatinIME、蓝牙和 Google Play 六个关键包均存在。
-
-## 后续路线
-
-- Test9.1：刷测 Test9w1，验证关闭 AW869A/AIC8800D 驱动的默认天线分集能否消除零结果扫描和约 30 dB 的 RSSI 双峰；失败立即回到 Test8r2。
-- Test9.2：Wi‑Fi 稳定后验证 iPhone 官方 Google TV 遥控/键盘；若系统缺少接收端，再评估可追溯的局域网方案。
-- Test9.3：提供 SmartTube、Kodi、Jellyfin、Moonlight 的配置安装脚本，选择 AirPlay 接收器和现代文件管理器，并完成最终验证。
-- M8：将 arm64/multilib、匹配的 Google TV 组件栈、电视版 Play Store 和一致设备身份作为独立未来平台升级。
-
-## 重要路径
-
-- 官方固件：`x12-1024.img`
-- 官方提取物：`firmware/extracted/`
-- 官方 system：`out/official-system-a/20260726-r1/system_a.img`
-- 官方 system 清单：`out/official-system-a/20260726-r1/official-system-a-manifest.json`
-- 测试版 1：`out/candidates/test1-no-ubtunnel-r3/`
-- 测试版 1 system 清单：`out/candidates/test1-no-ubtunnel-r3/candidate-system-manifest.json`
-- 测试版 1 logical-system 报告：`logs/analysis/20260726-test1-logical-system/`
-- 测试版 1 实机结果：`logs/device/20260726-test1-product-flash-console-paste/`
-- 测试版 1 ADB 基线：`logs/device/20260726-135417-test1-adb/`
-- 测试版 2：`out/candidates/test2-remove-factory-tools-r1/`
-- 测试版 3：`out/candidates/test3-remove-browser-updaters-r1/`
-- 测试版 4：`out/candidates/test4-remove-legacy-user-apps-r1/`
-- 测试版 5：`out/candidates/test5-remove-nontv-platform-apps-r1/`
-- 测试版 6：`out/candidates/test6-remove-legacy-personal-ui-r1/`
-- 测试版 7：`out/candidates/test7-projectivy-default-home-r1/`
-- 测试版 8：`out/candidates/test8-remove-vendor-home-wizard-cast-r1/`
-- 测试版 8 修订版：`out/candidates/test8r2-restore-contacts-provider-r1/`
-- Test9w1 实验候选：`out/candidates/test9w1-disable-aic-ant-div-r1/`
-- 候选配置：`configs/candidates/`
-- 测试版构建脚本：`scripts/build-candidate-firmware.py`
-- ext4 解析器：`src/ubox10_rom/ext4_image.py`
-- UART 手册：`docs/UART_RUNBOOK.md`
-- 当前待办：`docs/TODO.md`
-- 当前里程碑：`docs/MILESTONES.md`
-- 产品化路线图：`docs/ROADMAP.md`
-
-## 工作方式
-
-- 可恢复修改完成最低限度检查后直接构建、刷机和测试；失败就刷回官方固件。
-- 只有 eFuse/OTP/BootROM、唯一密钥、无备份分区表或 bootloader、宿主物理磁盘等不可恢复操作才暂停。
-- 文档只维护后续继续工作需要的当前事实；旧的 M6 详细文档作为历史分析资料，不代表当前门禁。
-- 普通文档、日志、脚本和中间产物不默认生成 SHA-256；只在下载/传输、长期保存的原件或刷机镜像存在明确完整性风险时使用。
+- 官方 `x12-1024.img` 永不覆盖或删除，候选使用新文件名。
+- 不修改 eFuse、OTP、BootROM、唯一密钥或未知安全分区。
+- 不直接刷其他 H616/H618 板型的完整镜像、bootloader、DTB/DTBO、TEE 或分区表。
+- PhoenixCard 可能清除 userdata/metadata；刷写前备份用户数据并确认目标 TF 卡。
+- 大型 BSP/AOSP 下载与构建必须先锁定来源、commit、空间和退出条件，并放在 WSL/Linux 文件系统或独立构建盘。

@@ -2,6 +2,14 @@
 
 ## 2026-07-28
 
+- 吸收 UBOX10 AArch64/AOSP ATV/Netflix 调研，建立 M8.0–M8.6 与 M8.DRM 分阶段计划；首选 arm64+arm32 multilib，64 位 Mali/Gralloc/Mapper/HWC 是第一 Go/No-Go。
+- 核实 BPI H618 Android 12 BSP 和 AOSP `device/google/atv` 研究入口；明确 H618 `-a arm64` 不能替代 userspace/ELF/图形产物验证，且其他板型底层与安全材料不得直接移植。
+- 将 Netflix 提升为 N0–N3 正式验收：先建立原厂/Test8r2 的 Widevine、TEE/OEMCrypto、secure codec、protected buffer、HDCP 和实际播放基线，不复制密钥或伪造认证。
+- 新增 M8 架构计划、研究索引、当前构建环境、存储/复现策略和核心文档索引；M8.0 可与 Test9w1 刷测只读并行，大型源码下载与 64 位候选尚未启动。
+- 新增 `prepare-candidate-inputs.py`：从 SHA-256 锁定的官方 IMAGEWTY 原件恢复并验证容器提取物、四个逻辑分区和语义清单，为删除可再生成镜像提供复现门。
+- 将完成使命的 M6 与主机配置文档移入 `docs/archive/`；根 README 改为当前状态、三镜像保留集和复现入口。
+- 完成历史产物清理：`.img` 从 149 份降到官方原件、Test8r2 和 Test9w1 共 3 份；连同旧候选、中间分区和解包树释放约 81.604 GiB，当前工作区约 8.185 GiB。
+- 在删除官方逻辑分区缓存后实际运行恢复脚本，四个分区均重建成功并命中锁定 SHA-256；随后再次删除缓存，只保留可复现方法和三份可刷写镜像。
 - 完成 Test8r2 Wi‑Fi 扫描专项采证：连接链路强且稳定，五轮主动扫描都能完成；历史全频扫描记录却存在连续 `0 results`，目标扫描 RSSI 在约 `-46/-47 dBm` 与 `-75 dBm` 间双峰跳变。
 - 排除 TV Settings 应用扫描节流与 `wificond` 崩溃作为首要原因；记录 AIC vendor HAL background scan/link-layer stats `ERROR_UNKNOWN`、无 scheduled scan，以及 2022 年 AIC8800D 驱动/固件栈。
 - 用户确认无线模块丝印为 `AW869A WiFi6`；官方规格为 AIC8800D40、1T1R、单天线型，而设备运行时 `aic8800_fdrv` 默认 `ant_div=Y`，据此建立可证伪的天线分集假设。

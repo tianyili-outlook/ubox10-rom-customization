@@ -57,7 +57,14 @@
 - [ ] Test9.2：只读审计 TV remote 接收服务、mDNS/局域网发现与监听端口，验证 iPhone 官方 Google TV 应用的发现、配对和文字输入。
 - [ ] Test9.2：若官方接收端缺失，评估可追溯的开源局域网输入方案；先作为 data app 测试，蓝牙键盘作为已验证硬件回退。
 - [ ] Test9.3：提供 SmartTube、Kodi、Jellyfin、Moonlight 的用户态配置安装脚本，选择 AirPlay 接收器和现代文件管理器，完成最终验证。
-- [ ] M8：取得匹配的 64 位 BSP 和合法、成套的 Google TV 组件后，再处理 arm64/multilib、TV Play Store、认证与设备身份；当前不修改 fingerprint。
+- [x] M8：吸收 2026-07-28 架构调研，建立 arm64/multilib、AOSP ATV、供体和 Netflix/DRM 分阶段计划及研究索引。
+- [x] 存储：新增官方原件恢复候选构建输入的脚本并锁定四个逻辑分区 SHA-256。
+- [x] 存储：只保留官方恢复源、Test8r2 和 Test9w1 三份可刷写镜像；删除其余可复现镜像和旧工作树约 81.604 GiB，并通过删除后重建演练验证官方输入恢复路径。
+- [ ] M8.0：编写 ELF inventory 工具及小型测试，输出 partition/path/class/machine/interpreter/SONAME/NEEDED/SHA-256。
+- [ ] M8.0：生成当前图形、媒体、Wi‑Fi/BT、HAL/VINTF 和 Kernel module 只读报告，形成 arm64 blockers。
+- [ ] M8.DRM-0：先设计脱敏采集，再分别建立原厂 ROM 与 Test8r2 的 Widevine/TEE/OEMCrypto/secure codec/HDCP/Netflix 基线。
+- [ ] M8.1：建立 BPI H618 的 source-lock、oversized files、Docker 环境和磁盘预算；用户确认前不下载或构建。
+- [ ] M8.2：锁定 Android 12 `device/google/atv` tag 和参考构建/差异输出合同。
 - [ ] 分析 AwTvProvision、SettingsSetup、AwManager、PackageOverride；只保留确有硬件/平台职责者。
 - [ ] 保留 AOSP `ProxyHandler`、`VpnDialogs`，除非实机证据证明它们参与厂商网络干预。
 
@@ -68,3 +75,4 @@
 - 待下载的原始 APK 统一放入 `work/preinstall_apks/incoming/`，保留原文件名和来源 URL。
 - Kodi 21.3、Jellyfin TV 0.19.9、Moonlight 12.1 和 SmartTube 32.03 Beta 均已匹配官方发布；最终通过配置脚本安装，不固化进 system/product。
 - USB ADB 无枚举，但 TCP ADB 已验证可用；默认连接 `192.168.1.5:7896`。
+- M8 大型源码和产物放 WSL/Linux 文件系统或独立构建盘，不放本仓库或 `C:\` NTFS 工作树。

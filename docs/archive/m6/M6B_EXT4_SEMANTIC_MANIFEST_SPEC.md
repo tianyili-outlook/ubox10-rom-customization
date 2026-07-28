@@ -1,4 +1,4 @@
-# M6b.0 ext4 语义 manifest 规范 v1
+# [归档] M6b.0 ext4 语义 manifest 规范 v1
 
 > 参考规范：当前解析器已经用于官方 `system_a`；下一步不需要重新执行本文门禁。
 

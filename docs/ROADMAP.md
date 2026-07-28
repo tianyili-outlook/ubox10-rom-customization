@@ -77,22 +77,35 @@
 - 将应用来源、版本、签名和校验写入配置；第三方 APK 不提交公共仓库。
 - 完成 Projectivy 流畅度、启动、遥控、影音、蓝牙、Wi‑Fi、应用安装和重启回归。
 
-## M8：未来平台升级
+## M8：AArch64 与真正 AOSP Android TV
 
-“真正适合电视的 Google Play 体验”与 64 位 Android 用户空间合并为一个未来平台阶段，不再尝试在当前 32 位系统上靠单个 feature XML 或随机替换 Play Store APK 解决。
+M8 不再以“找到一套 Google TV APK”定义，而是两项相互关联但可分别验收的工程：
 
-进入实作的前提：
+1. 建立真实 arm64/multilib Android userspace 和匹配 H616 的硬件栈；
+2. 从源码继承 Android 12 AOSP ATV product，替代手机产品配置加 Launcher/feature 的伪装路线。
 
-- 取得同板型、匹配 H616 硬件库的完整 arm64/multilib BSP 或可验证固件。
-- 取得与目标设备身份、Google TV/Android TV feature 集和认证状态相匹配、且可合法使用的 Google TV 组件栈。
-- 先在独立分支和候选镜像验证启动、硬解、Wi‑Fi、蓝牙、HDMI/CEC、遥控与 DRM，再考虑替换当前 Test8r2 主线。
+M8.0 可在 Test9w1 刷测期间并行进行，只允许本地/ADB 只读盘点，不制作新固件。
 
-目标包括：
+### 阶段与出口
 
-- arm64/multilib 用户空间和完整匹配的 vendor 硬件栈。
-- 遥控器友好的 TV Play Store 首页、搜索、安装和更新流程。
-- 合理的设备名称与身份呈现，不再同时出现 Pixel 3、X12 和 A1 ADT-3 等互相矛盾的标签。
-- 可核验的 Play Protect/设备认证状态；内部 GMS 日志不能替代 Play Store 设置页的认证结果。
+- **M8.0 当前设备审计**：递归盘点 ELF、HAL/service、VINTF、Kernel modules、图形、媒体、Wi‑Fi/BT 和 DRM；标记 must-be-64、can-remain-32、missing-source 与 security-state。图形栈必须得到 Go/Blocked/Unknown。
+- **M8.1 BPI H618 供体验证**：先锁定 commit、oversized files、Docker 环境和磁盘预算，再原样构建。`-a arm64` 只是一条线索，最终以 userspace ELF、`lib64` 和 Mali/Gralloc/Mapper/HWC 产物判定。
+- **M8.2 Android 12 AOSP ATV 参考**：固定 Android 12 tag，比较 product inheritance、package、permission、overlay、VINTF、Settings、输入、网络、电源和显示，形成 UBOX10 product/device tree 草案。
+- **M8.3 最小 64 位启动**：保持 UBOX10 boot0/U-Boot/DTB/DTBO/Kernel/DDR/PMIC/TEE/分区表不变，依次验证 linker、zygote64、system_server、SurfaceFlinger、HDMI、ADB 和最小 UI。
+- **M8.4 硬件恢复**：GPU/显示、输入、音频、Wi‑Fi、蓝牙、视频硬解、CEC、休眠、DRM 和 Netflix N1 分子系统恢复与压力回归。
+- **M8.5 原生 AOSP ATV 产品**：完成 device tree、TV overlays/Settings/Launcher、SELinux、blob 提取和适用 CTS/VTS/GSI。
+- **M8.6 后续 Android/Kernel**：只有 Android 12 arm64 与 Netflix N1 稳定后才评估；Android 主版本和 Kernel major 每次只改变一个。
+
+### Netflix/DRM 横向门禁
+
+- N0：原厂/Test8r2 的 Play Protect、Widevine、DRM HAL、TEE/OEMCrypto、secure codec、protected buffer、HDCP 与 Netflix 实际播放基线。
+- N1：本人合法账号可稳定安装、登录、遥控和播放，实际最大分辨率可复查。
+- N2：只有 L1、secure decoder、protected path、HDCP 和服务端资格共同满足时验证 HD。
+- N3：只有 N2 稳定且 secure 4K/HDR、HDCP 2.2+、电视/线材/套餐满足时推进。
+
+不得复制或伪造 Widevine/TEE/HDCP 密钥、设备证书、ESN 或认证状态。Google TV/GMS TV 商业认证不是个人 AOSP ATV 工程可保证的结果。
+
+完整架构、供体政策和退出条件见 `architecture/M8_ARM64_AOSP_TV_MIGRATION.md`。
 
 ## 参考依据
 
@@ -110,3 +123,7 @@
   <https://fccid.io/m/b16603993f07640385676f2c4549dceaa073d19eb44d8bac682af82886b9b189.pdf>
 - Android DLKM 模块与加载配置：
   <https://source.android.com/docs/core/architecture/kernel/kernel-module-support>
+- BPI H618 Android 12 BSP：
+  <https://github.com/BPI-SINOVOIP/BPI-H618-Android12>
+- Android DRM 架构：
+  <https://source.android.com/docs/core/media/drm>

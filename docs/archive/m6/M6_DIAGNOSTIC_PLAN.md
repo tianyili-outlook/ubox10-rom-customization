@@ -1,4 +1,4 @@
-# M6a 无修改启动链诊断计划
+# [归档] M6a 无修改启动链诊断计划
 
 > 历史资料：M6a 已完成，本文件不再定义当前操作范围。当前任务见 `RUNBOOK.md`。
 
@@ -41,7 +41,7 @@ U0 已完成，当前结果为：`oem79.inf` / libwdi 使用 `WinUSB`，但只�
 
 **U1 实际结果（2026-07-22）**：已在唯一实例 `USB\VID_1F3A&PID_1010\992304568773` 上完成追加；备份与写后验证在 `logs/device/20260722-004314/`。物理拔插后 `fastboot devices` 显示 `992304568773    fastboot`。因此 U1 的主机枚举目标通过；进入 U2，但仍必须先完成 `getvar version`。
 
-1. 先运行 [U1 Fastboot 主机 GUID 单变量试验](U1_FASTBOOT_HOST_BINDING_TRIAL.md) 的 `Inspect` 模式；必须只发现一个目标实例。
+1. 先运行 [U1 Fastboot 主机 GUID 单变量试验](../host/U1_FASTBOOT_HOST_BINDING_TRIAL.md) 的 `Inspect` 模式；必须只发现一个目标实例。
 2. 只有用户明确确认后，才可使用 `Apply` 追加目标 GUID。脚本在写前备份全部原值，写后验证原 GUID 未丢失；不会执行 Fastboot、安装/卸载驱动、重绑设备或修改设备存储。
 3. 物理拔插后进入 U2。若阴性或异常，按备份 `Rollback`，转 U3 UART；不要继续寻找或安装未知驱动包。
 
@@ -75,7 +75,7 @@ U0 已完成，当前结果为：`oem79.inf` / libwdi 使用 `WinUSB`，但只�
 - Fastboot 可读变量不足以解释 Recovery 的原因；
 - 需要 BootROM → U-Boot → AVB → Kernel → init 的完整时间线。
 
-执行前必须阅读 [UART 被动监听手册](UART_RUNBOOK.md)。第一次只连接 GND 与板端 TX→适配器 RX，不连接 VCC 或主机 TX；这不会向目标板发送数据。
+执行前必须阅读 [UART 被动监听手册](../../UART_RUNBOOK.md)。第一次只连接 GND 与板端 TX→适配器 RX，不连接 VCC 或主机 TX；这不会向目标板发送数据。
 
 **U3 实际结果（2026-07-25）**：`logs/device/20260725-004019/` 已归档首次 90 秒冷启动捕获。`uart-capture.json` 记录 `COM3`、115200、8N1、无流控、`DTR/RTS=false`、15,173 字节以及仅 `J21 GND → FT232RL GND`、`J21 TX → FT232RL RXD` 的接线。JSON、raw 与 text 的 SHA-256 均已复算一致。日志显示 eMMC、U-Boot 和 Linux 内核均开始运行；`Kernel init done` 后第一个存储失败信号为 `mmcblk0p20`“找不到 ext4 文件系统”，177 ms 后出现 `bootloader` 重启。第二次 U-Boot 出现 `bootmode[2]:0x5f` 并初始化 Sunxi Fastboot。此结果足以把 p20 与本次早期失败窗口关联起来，但尚不足以证明 p20 错误由哪段 init/vendor 代码处理或单独导致重启；AOSP init 的默认致命重启目标本来就是 bootloader。它不解释 p20 为什么无有效 ext4，也不替代跳帽/VCCIO 的电气测量。
 

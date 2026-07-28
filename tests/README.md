@@ -8,7 +8,7 @@
 python -m unittest discover -s tests -p "test_*.py" -v
 ```
 
-该命令当前覆盖 IMAGEWTY/LP/ext4 解析与语义门禁、候选配置约束、Test8r2/Test9 系列差异合同，以及 vendor_dlkm 二进制补丁的严格原字节前置条件。单元测试不会修改官方镜像、调用 PhoenixCard 或访问设备；完整候选构建会另外执行 ext4、AVB、super 和 IMAGEWTY 集成验证。
+该命令当前覆盖 IMAGEWTY/LP/ext4 解析与语义门禁、候选配置约束、Test8r2/Test9 系列差异合同、vendor_dlkm 二进制补丁的严格原字节前置条件，以及官方原件/四个逻辑分区的恢复合同。恢复测试还会拒绝与容器 payload 等长但内容不同的缓存。单元测试不会修改官方镜像、调用 PhoenixCard 或访问设备；完整候选构建会另外执行 ext4、AVB、super 和 IMAGEWTY 集成验证。
 
 ## 测试层次
 
@@ -34,8 +34,8 @@ python -m unittest discover -s tests -p "test_*.py" -v
 - 主机证据清单必须使用相对 basename；验证器以 `SHA256SUMS.txt` 所在目录解析文件。旧的绝对路径证据包不得为消除路径差异而改写。
 - `apply-wsl-h2c-features.ps1` 默认必须处于 Inspect 模式；Apply 必须同时要求管理员、明确确认开关、通过 SHA 校验的 H2c 预检目录、实时 Present/Disabled 的 WSL/VMP 和无 pending reboot。静态命令范围除固定的 `Enable-WindowsOptionalFeature -Online -NoRestart` 外，不得包含 WSL/DISM、网络、重启、服务/注册表控制或软件安装/卸载。Inspect 回归必须证明所有 feature-change 标志为 false。
 - M6b.0 的后续实现必须先在公开小型 ext4 fixture 上覆盖“根含 `system` 子目录”与“错误传入该子目录”两种测试；任何 root-hierarchy guard 需拒绝后者。只有语义 manifest 能同时比较路径、类型、内容/符号链接、UID/GID、mode、SELinux xattr、capability、硬链接与 ext4 feature 后，才可尝试隔离的零内容重建。
-- M6b.0 manifest 实现必须符合 [规范 v1](../docs/M6B_EXT4_SEMANTIC_MANIFEST_SPEC.md)：未知 feature/xattr/inode 类型、读取错误或未审阅差异均须失败或 `REVIEW_REQUIRED`，不得静默忽略。首次 fixture 与官方 direct-image/materialized-tree 比较不允许任何 allowlist。
-- 真实 fixture 必须符合 [M6b.2 oracle 设计](../docs/M6B_EXT4_FIXTURE_ORACLE_DESIGN.md)：expected manifest 来自版本控制的 fixture spec；锁定 Linux e2fsprogs 只负责 synthetic 作者/作者侧检查，仓库解析器不得消费 `debugfs/dumpe2fs` 输出作为解析结果。positive 和每个 negative fixture 必须分别断言通过/失败。
+- manifest 实现依据归档的 [规范 v1](../docs/archive/m6/M6B_EXT4_SEMANTIC_MANIFEST_SPEC.md)：未知 feature/xattr/inode 类型、读取错误或未审阅差异均须失败或 `REVIEW_REQUIRED`，不得静默忽略。
+- fixture 依据归档的 [M6b.2 oracle 设计](../docs/archive/m6/M6B_EXT4_FIXTURE_ORACLE_DESIGN.md)：expected manifest 来自版本控制的 fixture spec；仓库解析器不得消费 `debugfs/dumpe2fs` 输出作为自身解析结果。
 - Gate 1 fixture 通过不放行 Android 生产构建。Gate 3 必须另行验证 AOSP `mke2fs + e2fsdroid + fs_config + file_contexts`；不得用通用 `mke2fs -d` 或 fixture `debugfs` 命令替代。
 
 新工具或重建路径必须先有失败测试，再修实现；不得用“能启动工具”或“能生成镜像”代替测试通过。

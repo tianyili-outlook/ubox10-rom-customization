@@ -1,4 +1,4 @@
-# Milestone M6 物理烧录与实机验证调试记录
+# [归档] Milestone M6 物理烧录与实机验证调试记录
 
 > 历史资料：本文件保留早期实验现象，不再定义当前门禁或下一步。当前状态以仓库 `README.md`、`TODO.md` 和 `RUNBOOK.md` 为准。
 
@@ -146,7 +146,7 @@
 
 **分析与变更**：
 1. **属性跃变逻辑注入**：即使在 `prop.default` 中注入了 `sys.usb.config=adb`，但由于该属性在开机时便处于 `adb` 状态且从未发生值改变，Android `init` 进程在解析 `init.rc` 时不会触发 `on property:sys.usb.config=adb` 动作块。这导致 ADB 守护进程和 USB 控制器绑定逻辑被静默跳过，物理 USB 接口保持在未绑定的 `sunxi (1F3A:1010)` 状态。
-2. **硬件脚本修改**：修改 [enable-recovery-adb.py](../scripts/enable-recovery-adb.py)，在 `init.recovery.sun50iw9p1.rc` 尾部追加自定义 `on boot` 触发器：
+2. **硬件脚本修改**：修改 [enable-recovery-adb.py](../../../scripts/enable-recovery-adb.py)，在 `init.recovery.sun50iw9p1.rc` 尾部追加自定义 `on boot` 触发器：
    ```rc
    on boot
        setprop sys.usb.config none
@@ -169,7 +169,7 @@
 **目标**：强制绕过所有的属性触发器和 SELinux 权限，直接以 root 身份调通 USB 控制器并启动 ADB。
 
 **变更与原理**：
-1. **SELinux 宽容模式注入**：在 [enable-recovery-adb.py](../scripts/enable-recovery-adb.py) 中，向 `mkbootimg.py` 指令添加 `--cmdline "androidboot.selinux=permissive"`，强行让 Recovery 内核以 SELinux Permissive 模式启动，彻底废除权限拦截。
+1. **SELinux 宽容模式注入**：在 [enable-recovery-adb.py](../../../scripts/enable-recovery-adb.py) 中，向 `mkbootimg.py` 指令添加 `--cmdline "androidboot.selinux=permissive"`，强行让 Recovery 内核以 SELinux Permissive 模式启动，彻底废除权限拦截。
 2. **Userdebug 属性改造**：在 `prop.default` 修改逻辑中，追加 `'ro.build.type': 'userdebug'` 属性，解除 `user` 构建的系统调试限制。
 3. **USB 物理角色强制切换**：通过分析 vendor `/vendor/etc/init/hw/init.sun50iw9p1.usb.rc`，定位了全志专属的 USB 设备模式转换节点。我们在 `on boot` 的第一行添加了 `copy /sys/devices/platform/soc/usbc0/usb_device /dev/null`，强制内核 OTG 芯片从 Host 状态切为 Device 状态。
 4. **主 init.rc 强制硬编码 import**：因为 `${ro.hardware}` 属性在 init 早期可能为空，导致 `import /init.recovery.${ro.hardware}.rc` 丢失。我们修改了主 `system/etc/init/hw/init.rc`，直接在头部显式添加 `import /init.recovery.sun50iw9p1.rc` 语句，确保加载设备级配置。
@@ -213,7 +213,7 @@
 **目标**：同步解包、修改并重构 `boot.img` 与 `vendor_boot.img` 中的 ramdisk 配置文件，彻底消除覆写阴影。
 
 **变更**：
-1. **联动修改脚本**：重构 [enable-recovery-adb.py](../scripts/enable-recovery-adb.py)，在重构 `boot.img` 的同时，自动解包 `vendor_boot.fex` 并对其 ramdisk 根目录下的 `init.recovery.sun50iw9p1.rc` 写入相同的强制 ConfigFS 绑定和物理 USB OTG 切换指令：
+1. **联动修改脚本**：重构 [enable-recovery-adb.py](../../../scripts/enable-recovery-adb.py)，在重构 `boot.img` 的同时，自动解包 `vendor_boot.fex` 并对其 ramdisk 根目录下的 `init.recovery.sun50iw9p1.rc` 写入相同的强制 ConfigFS 绑定和物理 USB OTG 切换指令：
    ```rc
    on boot
        copy /sys/devices/platform/soc/usbc0/usb_device /dev/null
@@ -236,7 +236,7 @@
 **目标**：等待 `adbd` 就绪后异步写入 UDC，并兼容全志平台所有可能的 UDC 控制器名称。
 
 **变更**：
-1. **异步写入 UDC 触发器**：在 [enable-recovery-adb.py](../scripts/enable-recovery-adb.py) 中，将对 UDC 的写入移出 `on boot` 同步阶段，单独挂载到 `on property:sys.usb.ffs.ready=1` 触发器中。当 `adbd` 正式打开 FunctionFS 端点并就绪后，系统会自动更新该属性，触发 UDC 写入。
+1. **异步写入 UDC 触发器**：在 [enable-recovery-adb.py](../../../scripts/enable-recovery-adb.py) 中，将对 UDC 的写入移出 `on boot` 同步阶段，单独挂载到 `on property:sys.usb.ffs.ready=1` 触发器中。当 `adbd` 正式打开 FunctionFS 端点并就绪后，系统会自动更新该属性，触发 UDC 写入。
 2. **多 UDC 名称顺次尝试**：在触发器中顺次写入所有可能的全志/Inventra/标准 UDC 控制器名字，确保兼容性：
    ```rc
    on property:sys.usb.ffs.ready=1

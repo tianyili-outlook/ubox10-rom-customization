@@ -9,7 +9,7 @@ Test8r2 已恢复 AOSP ContactsProvider 完整目录，并通过端到端自动�
 - 仅在复制或移动镜像后核对 SHA-256：`6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8`
 - PhoenixCard：使用已验证的 Product 模式，并确认目标是 TF 卡。
 
-Test9w1 已完成离线构建与验证，但尚未启动过，只能作为 Wi‑Fi 单变量实验：
+Test9w1 已完成离线构建与验证，当前正在刷测但尚无实机结果，只能作为 Wi‑Fi 单变量实验：
 
 - 镜像：`out/candidates/test9w1-disable-aic-ant-div-r1/x12-test9w1-disable-aic-ant-div.img`
 - 大小：2,005,897,216 字节
@@ -85,5 +85,7 @@ PhoenixCard 在本项目的既往量产中会清除 userdata/metadata。先备�
 通过门槛是：冷启动 30 秒内出现目标、五轮至少 4/5 成功、无连续全频零结果或约 30 dB RSSI 双峰、Wi‑Fi 重载和重启后 `ant_div=N`、自动重连与蓝牙均正常。任何启动、Wi‑Fi 或蓝牙关键项失败，都停止扩大改动并用 PhoenixCard 刷回 Test8r2。
 
 Test9w1 通过后再进行 Test9.2 iPhone 官方 Google TV 遥控/文字输入验证；最后进入应用、AirPlay 和文件管理收尾。
+
+刷测期间可并行进行 M8.0 的本地/ADB 只读 inventory 设计和报告，不下载大型 BSP、不修改设备、不制作 64 位候选，也不把 Test9w1 与 DRM/原厂 ROM 对照混成同一次刷机。M8 当前边界见 `architecture/M8_ARM64_AOSP_TV_MIGRATION.md`。
 
 详细步骤和验收标准见 `docs/ROADMAP.md`。

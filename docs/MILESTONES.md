@@ -8,6 +8,10 @@
 - [x] **M5 实机启动验证**：Android、遥控、HDMI 音视频、Wi‑Fi、以太网、蓝牙扫描、高码率视频和目标网站通过；非必要项目按用户需求跳过。
 - [x] **M6 分批净化**：测试版 2/3/4/5/6 已实机通过，纯删除阶段完成。
 - [ ] **M7 Android TV 产品化**：Test8r2 已完成 Launcher 和蓝牙稳定基线；Test9.1 先解决 Wi‑Fi 扫描可靠性，Test9.2 验证 iPhone 遥控文字输入，Test9.3 完成目标应用、AirPlay、文件管理和整体验收。
-- [ ] **M8 未来平台升级**：取得同板型完整 64 位 BSP 与合法匹配的 Google TV 组件栈后，统一处理 arm64/multilib、电视版 Play Store、设备认证和身份一致性。
+- [ ] **M8.0 当前架构审计**：盘点 ELF/HAL/VINTF/图形/媒体/Wi‑Fi-BT/DRM，明确 64 位 blocker；与 Test9 只读并行。
+- [ ] **M8.1–M8.2 供体与参考构建**：原样验证 BPI H618 BSP 的真实 arm64/图形能力，并建立 Android 12 AOSP ATV 产品差异基线。
+- [ ] **M8.3 最小 64 位启动**：保持 UBOX10 底层启动链、Kernel、板级配置和安全材料，分层验证 linker→zygote64→SurfaceFlinger→HDMI/ADB。
+- [ ] **M8.4–M8.5 硬件与 AOSP ATV 产品化**：逐项恢复硬件与 Netflix N1，建立 UBOX10 原生 ATV device/product tree。
+- [ ] **M8.6 后续平台**：Android 12 arm64 稳定后，再单变量评估 Android 主版本、LineageOS 工程和 Kernel 更新。
 
-当前关键节点：**Test8r2 仍是当前稳定基线。Wi‑Fi 采证已把首个可证伪假设收敛到 AW869A 单天线模块与驱动默认 `ant_div=Y` 的不匹配；Test9w1 单字节实验候选已通过离线验证，下一步是真机验证而不是继续扩大改动。通过后才进入 iPhone 文字输入。**
+当前关键节点：**Test8r2 仍是唯一稳定基线；Test9w1 正在真机验证。与此同时只推进 M8.0 只读 inventory，不制作 64 位候选。64 位迁移第一硬门槛是 H616/Mali-G31 的 64 位图形 same-process HAL，Netflix/DRM 原厂与 Test8r2 基线必须在相关修改前建立。**

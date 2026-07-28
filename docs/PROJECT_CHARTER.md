@@ -2,7 +2,7 @@
 
 ## 目标
 
-在现有硬件和 Android TV 12 能力范围内，把 UBOX10 改造成尽可能接近现代 Android TV 的电视影音设备。保留 Wi‑Fi、蓝牙、以太网、HDMI/CEC、遥控器、音视频解码、Google 服务和开放安装能力，移除 UnblockTech 的非硬件定制、网络干预、广告与无实际用途的后台组件。
+在现有硬件能力范围内，把 UBOX10 改造成可恢复、现代、开放、遥控器优先的电视影音设备。近期在厂商 Android 12/32 位栈上完成可靠性与体验收尾；M8 再以证据驱动的方式评估 AArch64/multilib 和源码级 AOSP Android TV 产品迁移。
 
 产品体验重点：
 
@@ -12,7 +12,8 @@
 - 当前系统保留 Google 服务、ADB、APK 安装、USB/文件管理等扩展方式；真正适合遥控器的 TV Play Store 体验属于未来平台升级，不用随机替换 APK 冒充完成。
 - 提供便捷、安全的 iPhone 局域网遥控与文字输入，减少账号、密码和搜索词的遥控器逐字输入；蓝牙键盘保留为硬件回退。
 - 目标应用包括 Projectivy、SmartTube、Kodi、Jellyfin、Moonlight 和 AirPlay 接收器；第三方 APK 必须记录来源、版本、签名和许可证。
-- 在稳定性、驱动和应用兼容允许时充分利用 CPU、GPU、视频硬解、内存和存储；将完整 arm64/multilib、匹配的 Google TV 服务栈、TV Play Store 与设备身份一致性作为同一个未来平台阶段评估。
+- 在稳定性、驱动和应用兼容允许时充分利用 CPU、GPU、视频硬解、内存和存储；M8 首选 arm64 Framework + arm32 secondary ABI，并以 64 位 Mali/Gralloc/Mapper/HWC 为首个硬门槛。
+- 使用用户本人合法 Netflix 账号实现稳定播放是正式目标；N1 基础播放必做，N2 HD 条件性推进，N3 4K/HDR 仅在硬件、安全链路和服务端资格全部满足时推进。
 
 ## 明确不做
 
@@ -20,6 +21,8 @@
 - 不把“仅安装第三方桌面”视为完成。
 - 不以恢复官方原样固件为成果。
 - 不在未建立可恢复路径前刷写候选镜像。
+- 不通过复制其他设备 Widevine/TEE/HDCP 密钥、伪造认证或修改 Netflix ESN 获得受保护内容能力。
+- 不把修改 ABI 属性、增加 `lib64`、更换 Kernel 或添加 Leanback XML 当作 64 位/AOSP ATV 迁移。
 
 ## 工作原则
 
@@ -30,7 +33,9 @@
 5. 不复制、重签或重新分发受许可限制的 Google 组件。
 6. 测试只覆盖本次修改最可能影响的功能；普通日志、文档、脚本和中间产物不默认生成哈希。
 7. 不为了减少进程数量机械删除仍有电视价值、兼容价值或扩展价值的组件；每项保留/删除以实际使用场景决定。
+8. 未验证架构判断使用 `CONFIRMED`、`LIKELY`、`UNKNOWN`、`BLOCKED`，不把供体仓库声明写成 UBOX10 真机能力。
+9. 任何可能影响 DRM、TEE、secure codec、protected buffer 或 HDCP 的修改前，先建立原厂/Test8r2 只读基线。
 
 ## 当前状态
 
-UART、Fastboot、WSL2、ext4/AVB/super/IMAGEWTY 构建链均已完成。Test8 蓝牙回归已定位为误删 ContactsProvider；Test8r2 已恢复完整目录并通过事务式构建、自动离线验证和真机验收。Projectivy、英语界面、遥控、Settings 和蓝牙正常。Wi‑Fi 连接后可用，但扫描目标 SSID 的可靠性仍待解决；Test8r2 仍是当前稳定基线。
+UART、Fastboot、WSL2、ext4/AVB/super/IMAGEWTY 构建链均已完成。Test8r2 是唯一稳定基线；Test9w1 正在验证 AW869A/AIC8800D `ant_div=N` 的 Wi‑Fi 扫描假设。M8.0 可与真机刷测并行进行只读 ELF/HAL/VINTF/图形/媒体/DRM 盘点，但在图形栈与 DRM 基线明确前不制作 64 位候选。

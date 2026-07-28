@@ -44,10 +44,17 @@
 - **不在当前 TCP ADB 会话中热卸载 Wi‑Fi 模块**：控制链本身依赖 Wi‑Fi，热卸载可能同时失去诊断与恢复通道；参数持久性改由可刷回的 Test9w1 在启动、一次 Wi‑Fi 开关和重启后三次验证。
 - **Test8r2 继续作为唯一稳定基线**：Test9w1 即使完整离线验证通过，也必须达到 5 轮扫描、Wi‑Fi HAL 重载、重启自动重连和蓝牙无回归的实机门槛后才可晋级。
 - **Test9w1 的 vendor_dlkm 暂不生成 FEC**：本地工具链没有可信 `fec` 生成器；候选保留 AVB/dm-verity 并在结果中显式标记 `vendor_dlkm_fec=disabled`。该镜像仅用于可恢复实验；若进入长期发布，需引入可追溯、可复现的 FEC 工具链，或单独记录并接受无 FEC 策略。
+- **M8 先审计、后供体、再启动**：M8.0–M8.2 只做 inventory、source-lock、原样供体构建和 AOSP ATV 差异，不在缺少依赖图时生成 64 位 UBOX10 镜像。
+- **首选 arm64 + arm32 multilib**：目标是 64 位 Framework/ART/SurfaceFlinger，过渡期保留 arm32 secondary ABI；只有 Binder/VINTF/进程边界明确的 32 位 Vendor service 才可能暂留。
+- **64 位图形栈是第一 Go/No-Go**：没有匹配当前 H616 Kernel Mali ABI 的 64 位 EGL/Mali/Gralloc/Mapper/HWC，不进入 M8.3 64 位 UI 候选。
+- **BPI H618 只是供体候选**：先锁定 commit 和大文件并原样构建；H618 `-a arm64`、README 或其他板型能启动均不能证明 UBOX10 可用。boot0/U-Boot/DDR/PMIC/完整 DTB/TEE/密钥/分区表永不直接移植。
+- **真正 TV 化从 Android 12 ATV product 开始**：AOSP ATV 可自主完成；Google TV/GMS TV、TV Play Store 商业资格和 Play Protect 认证不能靠复制组件保证。
+- **Netflix 采用 N0–N3 分级且不规避安全机制**：N1 是正式目标，N2 条件性，N3 机会型；Widevine L1 不等于 Netflix HD。不得复制密钥、证书、ESN、secure storage 或伪造认证。
+- **只长期保留三份可刷写镜像**：官方恢复/来源原件、Test8r2、Test9w1；其他镜像和旧工作树删除，配置、脚本、哈希与 Git 历史承担复现。官方原件不受“只保留当前候选”清理规则影响。
 
 ## 后续再决定
 
-- 若未来取得同板型完整 64 位 BSP/固件，再单独评估 arm64/multilib 分支；不与当前净化主线混做。
-- 未来 64 位平台所使用的合法、成套 Google TV 服务和 TV Play Store 方案。
+- M8.0/M8.1 证据能否放行 M8.3，特别是 64 位 Mali/Gralloc/Mapper/HWC 兼容性。
+- 原厂/Test8r2 的 Widevine、secure decoder、HDCP 和 Netflix 实际能力是否允许 N2/N3。
 - AirPlay 接收器和现代文件管理器的最终选择。
 - AwTvProvision、SettingsSetup、AwManager、PackageOverride 是否有继续清理价值。
