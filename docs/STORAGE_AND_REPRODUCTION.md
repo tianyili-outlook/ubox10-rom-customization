@@ -8,7 +8,7 @@
 |---|---|---|
 | 官方恢复与唯一源原件 | `x12-1024.img` | `371A653604618E8B78786F279EA6F64E5D1028B430C9B41F330B08456A264065` |
 | 当前稳定基线 | `out/candidates/test8r2-restore-contacts-provider-r1/x12-test8r2-restore-contacts-provider.img` | `6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8` |
-| 当前实验候选 | `out/candidates/test9r2-android-tv-remote-service-rro-path-r1/x12-test9r2-android-tv-remote-service-rro-path.img` | `27B54FB83E96D3863FAE2EF2718E8EC9ADDD863E5ED123082D5E6C8CA6FFFD52` |
+| 最新已完成技术探针（不晋级） | `out/candidates/test9r2-android-tv-remote-service-rro-path-r1/x12-test9r2-android-tv-remote-service-rro-path.img` | `27B54FB83E96D3863FAE2EF2718E8EC9ADDD863E5ED123082D5E6C8CA6FFFD52` |
 
 官方原件即使不是当前测试镜像也绝不删除：它同时承担恢复入口、IMAGEWTY 模板和所有候选的唯一来源。
 
@@ -22,7 +22,7 @@
   - `out/official-product-a/20260726-r1/product_a.img`
   - `out/official-vendor-a/20260726-r1/vendor_a.img`
   - `out/official-vendor-dlkm-a/20260726-r1/vendor_dlkm_a.img`
-- `work/preinstall_apks/`：当前候选和后续用户态安装所需、未提交 Git 的第三方/Google 原签名 APK；不得重新分发。
+- `work/preinstall_apks/`：当前阶段和后续用户态安装所需、未提交 Git 的第三方/Google 原签名 APK；不得重新分发。
 - `work/system_injections/`：由锁定 AOSP 源码/RRO source 可再生成的 Test9r1/Test9r2 本地二进制输入。
 - `configs/candidates/*.json`、构建脚本、测试、语义清单和小型验证日志。
 - `logs/`：已分区存放的设备/主机/分析证据；不因清理镜像而删除。
@@ -30,7 +30,7 @@
 ## 主动删除
 
 - 所有淘汰候选目录及其固件和中间分区。
-- Test8r2/当前候选目录内除最终 PhoenixCard 固件外的 `system_a/super/vendor/product/vbmeta` 等中间 `.img`。
+- Test8r2/最新技术探针目录内除最终 PhoenixCard 固件外的 `system_a/super/vendor/product/vbmeta` 等中间 `.img`。
 - 已退役的 Test9w1 整个候选目录；其配置、哈希、生成方法和 Git 历史保留。
 - 已失败 Test9r1 的最终固件；其配置、构建日志、清单、哈希和实验文档保留。
 - `work/` 中旧 boot/system/vendor/product 解包树和重建产物。
@@ -59,4 +59,4 @@ python .\scripts\build-candidate-firmware.py --config <候选配置.json>
 - Test9r1 构建后，保留集由 Test9w1 切换为 Test9r1；当前三份 `.img` 合计 6,030,791,680 bytes。已删除 Test9w1 候选目录、Test9r1 的逻辑分区/AVB/super 中间镜像、本轮重建的官方逻辑分区缓存和分析日志，共释放 7,651,182,014 bytes（约 7.126 GiB）。
 - Test9r1 真机失败后，保留集切换为官方原件、Test8r2 和 Test9r2，三份可刷写 IMAGEWTY 仍合计 6,030,791,680 bytes。删除 Test9r1 最终镜像、Test9r2 中间镜像和一次超时留下的重复临时分区，共释放 7,404,837,598 bytes。
 - 用户于 2026-07-29 明确要求不再重复删除官方逻辑分区缓存；四份缓存合计 1,888,006,144 bytes，后续清理脚本和人工清理都必须排除 `out/official-*-a/20260726-r1/*.img`。
-- 已删除产物无法从当前工作区直接恢复；候选配置、构建脚本、方法文档与 Git 历史仍在，可按需重新生成。官方原件、稳定回退点和当前候选均已再次核对 SHA-256。
+- 已删除产物无法从当前工作区直接恢复；候选配置、构建脚本、方法文档与 Git 历史仍在，可按需重新生成。官方原件、稳定回退点和最新技术探针均已再次核对 SHA-256。Test9r2 的本地保留不代表产品晋级。

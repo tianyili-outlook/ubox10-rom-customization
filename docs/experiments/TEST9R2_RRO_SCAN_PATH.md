@@ -6,7 +6,9 @@
 - Test9w1 driver patch：不包含。
 - Test9r1 结论：真机 FAIL。
 - Test9r2 离线结论：PASS。
-- Test9r2 真机结论：等待刷写。
+- Test9r2 remote 真机结论：`R2-REMOTE-PASS`。
+- Test9r2 整机结论：`PARTIAL`；Play Store 不兼容。
+- 路线结论：选择 S3，结束当前 32 位 remote 候选，转入 M8.INPUT。
 - 产品晋级资格：无；Test9r1 已确认 Play Store 关键回归，而 Test9r2 不改变
   leanback/Google stack。
 
@@ -86,7 +88,28 @@ python .\scripts\build-candidate-firmware.py `
 `/system/system_ext/overlay/UBOX10TvRemoteConfigOverlay.apk`，不包含旧
 `/system/overlay` 路径。
 
-## 4. 真机第一阶段：先验证 RRO
+## 4. 真机最终结果
+
+Test9r2 已证明 RRO 路径修正有效：
+
+- RRO package 位于 `/system/system_ext/overlay`；
+- framework lookup 精确返回
+  `com.google.android.tv.remote.service`；
+- provider 成功绑定；
+- 原始启动因缺少运行时 `BLUETOOTH_CONNECT` 崩溃，
+  `crashCount=2`，6466/6467 不监听；
+- 仅在 userdata 临时授予 CONNECT 并重新触发服务后，主进程稳定，
+  6466/6467 监听，`_androidtvremote2._tcp` 以 `Pixel 3` 名称发布；
+- SCAN/ADVERTISE 保持未授予；
+- 官方 Google TV iPhone 应用完成 TLS 配对、电视操控和文字输入；
+- framework 建立 virtual-remote/uinput 设备；
+- Play Store 仍进入 `AccessRestrictedActivity` 并显示不兼容。
+
+因此 remote stack 分类为 `R2-REMOTE-PASS`，候选总体仍为 `PARTIAL`。
+重启持久性未复验。完整脱敏证据见
+`../research/tv-gms-remote/test9r2-runtime-report.md`。
+
+## 5. 已执行的真机 RRO 判错步骤
 
 先不要直接用手机反复搜索。启动后执行：
 
@@ -115,7 +138,7 @@ $adb = ".\tools\platform-tools\adb.exe"
 
 任一项失败都先停止手机发现测试。
 
-## 5. 第二阶段：服务和发现
+## 6. 已执行的服务和发现步骤
 
 RRO 通过后执行：
 
@@ -140,29 +163,30 @@ RRO 通过后执行：
 - 能配对但不能输入：检查 `TV_VIRTUAL_REMOTE_CONTROLLER`、provider Binder
   和 uinput bridge；不得伪授予 `INJECT_EVENTS`。
 
-## 6. 交叉回归与退出
+## 7. 最终结果与退出
 
-还必须检查 Projectivy、实体遥控、Settings、Wi‑Fi、蓝牙和重启。Play Store
-失效已是 Test9r1 的确认回归，Test9r2 预期相同；即使 remote 完全成功，候选
-总体也只能记录 `PARTIAL`，完成最小采证后刷回 Test8r2。出现启动、输入、
-网络或蓝牙关键回归时立即回退。
+Remote 技术链已经通过，但 Play Store 回归也再次确认，因此 Test9r2 总体
+记录为 `PARTIAL`，不晋级。用户选择 S3 收束当前 32 位 remote：
 
-若 Test9r2 证明 corrected RRO/provider/input 路径可用，当前 32 位分支的下一
-个独立课题应从 Test8r2 研究：
+- 不制作需要移除 leanback、修改 `SystemServer` startup gate 的 Test9r3；
+- 不制作需要混装 TV Google 组件的 Test10p1；
+- 后续固件继续从 Test8r2 构筑；
+- 当前 M7 进入 Test9.3 应用、AirPlay、文件管理和整体回归；
+- 官方 Google TV 手机遥控产品化转入 M8.INPUT。
 
-1. 移除 `android.software.leanback`，恢复现有 Play Store 行为；
-2. 审计并定点修改 Android 12 `SystemServer` 中只在 `FEATURE_LEANBACK`
-   存在时启动 `TvRemoteService` 的条件，使其改用设备已有的 television
-   能力或显式产品配置；
-3. 不把 framework gate 修改与 Google package、身份或网络变量混在一起。
+Test9r2 完成采证后应刷回 Test8r2。路线依据见
+`../research/tv-gms-remote/route-decision.md`。
 
-这条路径需要修改/重建 framework，而不是再添加 feature 文件；必须另立候选
-和恢复门槛。
-
-## 7. M8 继承
+## 8. M8 继承
 
 M8 应从 ATV product/device tree 原生声明 provider package、shared library、
 permissions 和 overlay，而不是复制 Test9r1/Test9r2 二进制布局。必须把
 “预置文件存在”与“Package Manager 实际扫描、注册并生效”分别验收。官方
 Google TV iPhone 发现、认证、遥控与文字输入仍是 M8.INPUT 门槛；不开发
 UBOX Input。
+
+Test9r2 还为 M8 增加了最小权限合同：通过 default-permissions 原生授予
+已证实必需的 `BLUETOOTH_CONNECT`；SCAN/ADVERTISE 只有在新的代码路径和
+真机证据要求时才扩大。M8.INPUT 还需补做重启后的自动启动、发现、配对
+持久性和文字输入复验。Play Store/package visibility/Google API 问题由
+M8.GMS 独立处理。

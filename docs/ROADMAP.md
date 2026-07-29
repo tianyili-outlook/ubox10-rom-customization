@@ -8,10 +8,11 @@
 - Test9w1 已退役：配置和哈希用于历史复现，镜像删除；所有后续候选继续从 Test8r2 构筑。
 - Test9r1 真机已确认因 RRO 放在该固件不扫描的 `/system/overlay` 而失败；
   feature、shared library、APK 和权限本身均加载成功。
-- 当前候选是 Test9r2：
+- 已完成的技术探针是 Test9r2：
   `out/candidates/test9r2-android-tv-remote-service-rro-path-r1/x12-test9r2-android-tv-remote-service-rro-path.img`
   它仍从 Test8r2 构筑，只把同一 RRO 移到启动日志明确扫描的
-  `/system/system_ext/overlay`；离线验证通过，等待 iPhone 真机复测。
+  `/system/system_ext/overlay`；离线和真机 remote 技术链均通过，但因
+  Play Store 回归总体为 `PARTIAL`、不晋级。
 - Test9a/Test9b 只是 Google Play/TV feature 的诊断实验。两者均通过离线构建验证，但实机 Play Store 都进入 `AccessRestrictedActivity` 并提示当前版本不兼容，因此不得作为日常或后续开发基线。
 - 当前 32 位系统继续保留现有 Google 服务作为登录、应用安装与更新基础设施；不再把手机式 Play Store 界面当作当前阶段的主要电视入口。
 
@@ -27,6 +28,12 @@
 
 当前网络已满足同一局域网前提。目标固定为官方 Google TV iOS 应用，不考虑
 UBOX Input。
+
+最终结果为 `R2-REMOTE-PASS`：修正后的 RRO、provider、6466/6467、mDNS、
+官方 iPhone 配对、遥控和文字输入均通过。初始失败根因是预置产品没有默认
+授予 `BLUETOOTH_CONNECT`；仅临时授予这一项后链路工作，SCAN/ADVERTISE
+保持未授予。Play Store 仍为 not compatible，因此路线选择 S3，结束当前
+32 位 remote 候选并把产品化集成转入 M8.INPUT。
 
 ### 已完成的技术收敛
 
@@ -49,18 +56,18 @@ UBOX Input。
   不变；完整离线验证通过。
 - Google APK 不进入 Git 或项目再分发；AOSP library 由锁定源码复现。
 
-### Test9r2 真机顺序
+### Test9r2 真机结果
 
-1. 用 PhoenixCard 刷入 Test9r2，先确认 Android、Projectivy、Settings、实体
-   遥控、Wi‑Fi 和蓝牙。
-2. ADB 先验证 overlay package 来自 `/system/system_ext/overlay`、已注册并
-   启用，framework lookup 精确返回 provider package，watcher 不再拒绝。
-3. 再验证 feature、shared library、provider package、privapp 权限、监听
-   端口和相关日志。
-4. iPhone 与电视连接同一 5 GHz 网络，验证发现、配对码、方向/OK/Back/Home。
-5. 在搜索、账号、密码和 Unicode 文本框验证文字输入，随后重启复验。
-6. 记录已知的 Play Store `AccessRestrictedActivity` 回归；即使遥控成功也
-   不得将 Test9r2 晋级，采证后刷回 Test8r2。
+1. RRO 位于 `/system/system_ext/overlay`，framework lookup 精确返回
+   `com.google.android.tv.remote.service`，provider 已绑定。
+2. 未干预时 Remote Service 因缺少 `BLUETOOTH_CONNECT` 崩溃，
+   `crashCount=2`，6466/6467 均未监听。
+3. 仅临时授予 CONNECT 并重新触发服务后，主进程稳定、两端口监听，
+   `_androidtvremote2._tcp` 以 `Pixel 3` 名称注册。
+4. 官方 Google TV iPhone 应用完成 TLS 配对、方向/OK/Back/Home 等操控和
+   文字输入；virtual-remote/uinput 路径正常。
+5. Play Store 继续进入 `AccessRestrictedActivity`。重启后的 remote
+   持久性未复验，留作 M8.INPUT 正式验收。
 
 ### 验收标准
 
@@ -73,42 +80,40 @@ UBOX Input。
   `TvRemoteProvider`/uinput 桥。
 - Projectivy、Settings、Play Store、Wi‑Fi、蓝牙和重启无新增关键回归。
 
-### Test9r2 后的证据门与单一路线决策
+### Test9r2 后的证据与路线决策
 
 Android 12 `SystemServer` 只在 `FEATURE_LEANBACK` 存在时启动
 `TvRemoteService`，而本项目 Test9a/Test9b/Test9r1 已连续证明 leanback 会让
 当前手机式 Play Store 进入受限页；Test9r1 的 Remote Service 还把已安装的
-Play Store 判定为 “missing”。因此 Test9r2 必须先把 RRO、framework、
-receiver、发现/配对和 Play/GMS 依赖分层记录，再决定下一步：
+Play Store 判定为 “missing”。Test9r2 已把 RRO、framework、receiver、
+发现/配对和 Play/GMS 依赖分层记录：
 
-- `R2-REMOTE-PASS`：接收端和官方 iPhone 输入完整通过，才评估 Test9r3。
-  Test9r3 从 Test8r2 构筑、移除 leanback，只定点改变 framework 的
-  `TvRemoteService` 启动 gate。
-- `R2-CLIENT-FAIL`：6466/6467 与接收端正常但官方客户端失败，先用独立
-  Python/Swift Remote v2 客户端区分 mDNS、协议和官方 App 问题。
-- `R2-GOOGLE-FAIL`：RRO/provider 正常但接收端被 Play/GMS 依赖阻塞，停止
-  Test9r3，先完成 Android 12 ARM32 TV GMS 组件差距报告。
-- `R2-PLATFORM-FAIL`：只修正失败的平台层，不混入 GMS、身份或网络变化。
+- `R2-REMOTE-PASS`：已确认；Play/GMS 警告没有阻止本地 Remote v2。
+- receiver 最小产品缺口：`BLUETOOTH_CONNECT` 默认运行时授权。
+- Google 产品缺口：Play Store 不兼容；Store “missing” 与 package visibility/
+  Google API 配置不一致仍存在，但不在 M7 继续修补。
 
-证据报告之后只选择一条近期路线：
+已在三条近期路线中选择 S3：
 
-1. **S1 / Test9r3**：仅在 `R2-REMOTE-PASS` 且 framework patch 可由锁定源码
-   最小化复现时执行。
-2. **S2 / Test10p1**：仅在能锁定合法、精确 Android 12、ARM32、依赖闭合的
-   TV 组件集合时，构建一致的 ATV product/GMS 技术实验；MindTheGapps TV
-   只作组件和集成结构参考，不直接提供已验证 donor。
-3. **S3 / 收束 32 位 remote**：若 S1 风险不可接受且 S2 缺少合法兼容输入，
-   保留 Test8r2，完成 Test9.3，把官方手机遥控目标转入 M8A。
+1. **S1 / Test9r3：不执行。** 不在 M7 修改 framework startup gate。
+2. **S2 / Test10p1：不执行。** 不混装缺少闭合 donor 的 TV Google 组件。
+3. **S3 / 收束 32 位 remote：已选择。** 保留 Test8r2，完成 Test9.3，
+   把官方手机遥控和默认权限产品化转入 M8.INPUT。
 
 不得在同一候选中同时改变 framework gate、整套 GMS、设备身份和网络。
-路线决策完成前不制作 Test9r3 或 Test10p1。
+不制作 Test9r3 或 Test10p1。
 
 完整设计、哈希与判错树见
 `experiments/TEST9R1_ANDROID_TV_REMOTE_SERVICE.md` 和
 `experiments/TEST9R2_RRO_SCAN_PATH.md`；参考项目、结果分类和研究交付物见
-`research/tv-gms-remote/README.md`。
+`research/tv-gms-remote/README.md`。最终真机证据和路线选择分别见
+`research/tv-gms-remote/test9r2-runtime-report.md` 与
+`research/tv-gms-remote/route-decision.md`。
 
 ## Test9.3：当前 32 位系统产品化收尾
+
+这是当前 M7 活跃阶段，从 Test8r2 继续，不继承 Test9r2 的 leanback/remote
+system stack。
 
 - 提供 SmartTube、Kodi、Jellyfin 和 Moonlight 的可重复 data 分区安装脚本。
 - 选择有明确来源、许可证和遥控器体验的 AirPlay 接收器及现代文件管理器。

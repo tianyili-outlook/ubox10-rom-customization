@@ -45,8 +45,8 @@
 - **Test9r1 因 RRO 预置路径错误退役**：真机已证明 APK、shared library 和权限加载，但 `/system/overlay` 不进入该固件的 Package Manager overlay 扫描，provider 未获 framework package allowlist。保留配置/日志，删除镜像。
 - **Test9r2 只修正 RRO 扫描路径**：仍从 Test8r2 构筑，同一 RRO 移到启动日志明确扫描的 `/system/system_ext/overlay`；在 RRO package、lookup 和 watcher 通过前，不混入蓝牙运行时授权或 mDNS 改动。
 - **Test9r2 只作一次性 remote 技术探针**：Test9r1 已确认 Play Store 进入 `AccessRestrictedActivity`，且 Remote Service 报告 Store “missing”；Test9r2 保留相同 leanback/Google stack，故无论 remote 结果如何都不晋级，完成采证后回到 Test8r2。
-- **保住当前 Play Store 的后续 32 位路径必须单独立项**：AOSP `SystemServer` 以 `FEATURE_LEANBACK` 作为 `TvRemoteService` 启动 gate；若 Test9r2 证明 remote 链有效，下一候选才考虑移除 leanback并定点修改 framework gate，不同时修改 GMS/Play、身份、donor 或网络。
-- **Test9r2 之后先出报告、再选唯一候选路线**：必须把 RRO、framework、receiver、mDNS/iPhone 和 Play/GMS 分层归类；在 S1/Test9r3、S2/Test10p1、S3/结束 32 位 remote 中只选一条。路线决策前不制作下一镜像。
+- **Test9r2 remote 技术链判定为 PASS**：初始 receiver 因缺少 `BLUETOOTH_CONNECT` 崩溃；只在 userdata 临时授予该权限后，6466/6467、mDNS、官方 iPhone TLS 配对、遥控、文字输入和 framework uinput 全部工作。SCAN/ADVERTISE 未授予，不扩大权限。
+- **选择 S3 收束当前 32 位 remote**：Test9r2 因 Play Store `AccessRestrictedActivity` 总体仍为 `PARTIAL`；不制作需要 framework startup gate 的 Test9r3，也不制作混装 TV Google 组件的 Test10p1。后续从 Test8r2 完成 Test9.3，remote 产品化转入 M8.INPUT。
 - **Remote v2 开源客户端只作诊断**：`androidtvremote2` 和 `AndroidTVRemoteControl` 用于区分 receiver、协议、mDNS 与官方 iOS 客户端问题；它们不提供电视端 receiver，也不替代官方 Google TV 应用最终验收。
 - **ADB/Web remote 不进入当前产品路线**：`Legvan/tv-remote` 只作为末级技术参考；默认 LAN 可达服务、raw shell、ADB key 和 ASCII 输入模型不符合当前配对认证、Unicode、最小权限与攻击面门槛。
 - **Wi‑Fi 先采证再改固件**：连接与传输已通过，但扫描不可靠；先比较 Settings、shell 扫描和 Wi‑Fi 栈日志，不在无根因时修改 vendor/HAL 或路由器。
@@ -61,9 +61,9 @@
 - **BPI H618 只是供体候选**：先锁定 commit 和大文件并原样构建；H618 `-a arm64`、README 或其他板型能启动均不能证明 UBOX10 可用。boot0/U-Boot/DDR/PMIC/完整 DTB/TEE/密钥/分区表永不直接移植。
 - **真正 TV 化从 Android 12 ATV product 开始**：AOSP ATV 可自主完成；Google TV/GMS TV、TV Play Store 商业资格和 Play Protect 认证不能靠复制组件保证。
 - **MindTheGapps TV 只作组件与集成结构参考**：当前可见分支比 Android 12 更新；在精确 Android 12 ARM32 版本、签名和依赖未锁定前，不把其中专有二进制当作 donor，也不因 proprietary file list 推定使用或再分发权。
-- **M8.INPUT 继承官方手机遥控验收，不继承 Test9r1 二进制**：remoteprovider 从锁定 AOSP 源码构建，product 原生声明共享库/provider/权限；用户本地提供官方原签名 APK。若 GMS TV 许可、签名或认证构成外部阻塞，记为 `BLOCKED`，不把 UBOX Input 当作替代通过。
+- **M8.INPUT 继承 Test9r2 已验证合同，不继承实验二进制布局**：remoteprovider 从锁定 AOSP 源码构建，product 原生声明共享库/provider/实际生效的 overlay、最小 privapp policy 和默认 `BLUETOOTH_CONNECT`；用户本地提供官方原签名 APK。M8 补做开机自动启动、重启持久性和完整输入复验；若 GMS TV 许可、签名或认证构成外部阻塞，记为 `BLOCKED`，不把 UBOX Input 当作替代通过。
 - **Netflix 采用 N0–N3 分级且不规避安全机制**：N1 是正式目标，N2 条件性，N3 机会型；Widevine L1 不等于 Netflix HD。不得复制密钥、证书、ESN、secure storage 或伪造认证。
-- **只长期保留三份可刷写镜像**：官方恢复/来源原件、Test8r2、当前 Test9r2；Test9r1/Test9w1 与其他淘汰镜像和旧工作树删除，配置、脚本、哈希与 Git 历史承担复现。官方原件不受“只保留当前候选”清理规则影响。
+- **只长期保留三份可刷写镜像**：官方恢复/来源原件、Test8r2、最新技术探针 Test9r2；Test9r1/Test9w1 与其他淘汰镜像和旧工作树删除，配置、脚本、哈希与 Git 历史承担复现。Test9r2 不因保留而获得基线资格；官方原件不受“只保留当前候选”清理规则影响。
 - **长期保留四个官方逻辑分区缓存**：`system_a/product_a/vendor_a/vendor_dlkm_a` 已由官方原件重建并命中固定哈希；不再在候选构建后删除，避免后续每次重复提取。它们不是可刷写候选，不改变三份 IMAGEWTY 保留集。
 
 ## 后续再决定

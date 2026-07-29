@@ -22,8 +22,8 @@
 | 当前产品形态 | 手机产品配置叠加厂商电视界面，不是源码级 AOSP ATV product | CONFIRMED |
 | 稳定基线 | Test8r2 | CONFIRMED |
 | Wi‑Fi 实验 | Test9w1 真机未证明改善，已退役；后续从 Test8r2 继续 | CONFIRMED |
-| 手机遥控 framework | 已有 TvRemoteService/provider watcher/uinput bridge，缺 product 集成 | CONFIRMED |
-| 手机遥控候选 | Test9r1 因 RRO 未进入实际扫描路径而失败；Test9r2 单变量修正并通过离线验证，真机待测 | UNKNOWN |
+| 手机遥控 framework | TvRemoteService/provider watcher/uinput bridge 已由 Test9r2 真机输入证明可用 | CONFIRMED |
+| 手机遥控候选 | Test9r2 在临时授予 `BLUETOOTH_CONNECT` 后通过官方 iPhone 发现、配对、遥控和文字输入；因 Play 回归总体为 PARTIAL | CONFIRMED |
 | Play Protect | Play Store 无可见认证项；实际认证结论未取得 | UNKNOWN |
 | Widevine/TEE/HDCP/secure decoder | 尚无完整基线 | UNKNOWN |
 | Netflix | 安装、登录、播放和最大分辨率尚未建立基线 | UNKNOWN |
@@ -35,14 +35,15 @@
 
 | 工作流 | 目标 | 前置条件 |
 |---|---|---|
-| M8.0 共享证据门 | 当前 ELF/HAL/VINTF/图形/媒体/DRM 与 Test9 remote 证据闭合 | 只读，可与 Test9r2 刷测并行 |
+| M8.0 共享证据门 | 当前 ELF/HAL/VINTF/图形/媒体/DRM 与已闭合的 Test9 remote 证据 | 只读，当前已具备开始条件 |
 | M8A ARM32 真 ATV | 保留当前 Kernel/vendor/ABI，先建立 Android 12 AOSP ATV product | M8.0 与 AOSP Android 12 source-lock |
 | M8.GMS / M8.INPUT | 分别验证 TV GMS 组件一致性与官方手机遥控 | 不阻塞纯 AOSP ATV 定义，但必须独立标状态 |
 | M8B AArch64/multilib | 在稳定 TV product 上迁移 64 位 framework 与硬件栈 | M8A 产品合同稳定、64 位图形栈为 `GO` |
 | M8.DRM | 保护并分级验证安全播放与 Netflix | 任何图形/媒体/TEE 相关修改前先完成 N0 |
 
-Test9r2 结束前不制作新的 Test9 或 M8 候选；先完成其 runtime report，再在
-Test9r3、Test10p1 或结束 32 位 remote 三条路线中只选择一条。
+Test9r2 runtime report 已完成，近期路线已选择 S3：结束 32 位 remote 候选，
+不制作 Test9r3/Test10p1；当前 M7 回到 Test8r2 完成 Test9.3，remote 产品化
+转入 M8.INPUT。
 
 ## 4. 目标与非目标
 
@@ -182,7 +183,9 @@ must-be-64、can-remain-32、preserve-security-state、missing-source；
 - TV Settings、Launcher、input、power、network、display 与 media packages；
 - framework/product/system_ext overlay；
 - permission、shared library、SELinux、VINTF 与 init；
-- remoteprovider、provider package resource、discovery/pairing 和 uinput。
+- remoteprovider、provider package resource、default-permissions、
+  discovery/pairing 和 uinput；Test9r2 已证明最小必需运行时权限为
+  `BLUETOOTH_CONNECT`。
 
 输出 UBOX10 ARM32 ATV product/device tree 草案和分区容量预算，不下载或纳入
 Google 专有二进制。
@@ -292,22 +295,29 @@ MindTheGapps TV 仅作为清单与打包结构参考。Google 专有文件由用
 
 Test9r1 已证明当前 Android 12 framework 包含 TV remote 服务端骨架，也证明
 普通 data-app 安装会被缺失的 required shared library 拒绝；真机还证明
-“RRO 文件存在”不等于 Package Manager 实际扫描、注册并应用。Test9r2 用于
-验证修正后的扫描路径。M8 不继承 Test9r1/Test9r2 二进制，而是继承以下产品
-合同：
+“RRO 文件存在”不等于 Package Manager 实际扫描、注册并应用。Test9r2 随后
+证明修正后的 system_ext RRO、provider、Remote v2、官方 iPhone 配对、遥控
+和文字输入都可工作；原始 receiver 崩溃只需最小
+`BLUETOOTH_CONNECT` 运行时授权即可解除。M8 不继承 Test9r1/Test9r2
+二进制，而是继承以下产品合同：
 
 1. 从锁定 Android 12 AOSP 源码构建
    `com.android.media.tv.remoteprovider`；
-2. product 原生声明 television/leanback、共享库、provider package resource
-   和最小 privapp 权限；
+2. product 原生声明 television/leanback、共享库、provider package resource、
+   最小 privapp 权限和 default-permissions；
 3. provider watcher 只绑定显式允许且要求
    `BIND_TV_REMOTE_SERVICE` 的 package；
 4. 输入事件走 `TvRemoteProvider`/uinput bridge，不伪授予纯 signature 的
    `INJECT_EVENTS`；
-5. 用户本地提供的官方原签名 Google Remote Service 能安装/预置并正常启动；
-6. iPhone 官方 Google TV 应用能在同一 LAN 发现、配对、遥控和向账号/密码/
+5. 默认授予已证实必需的 `BLUETOOTH_CONNECT`；SCAN/ADVERTISE 只有出现
+   对应代码路径和真机失败证据时才扩大；
+6. 用户本地提供的官方原签名 Google Remote Service 能安装/预置、开机自动
+   启动并在重启后保持可发现；
+7. iPhone 官方 Google TV 应用能在同一 LAN 发现、配对、遥控和向账号/密码/
    Unicode 文本框输入；
-7. Google 专有 APK 不进入 Git、公共下载或项目重新分发。
+8. Remote Service 对 Play Store/GMS 的 package visibility 与 API 依赖由
+   M8.GMS 单独闭合，不能因本地 Remote v2 已工作而跳过；
+9. Google 专有 APK 不进入 Git、公共下载或项目重新分发。
 
 若第 5–6 项因 Google TV/GMS TV 商业许可、认证或服务端资格不可获得，状态
 记为 `BLOCKED` 并保留证据。项目明确不开发 UBOX Input 作为替代验收。
@@ -340,22 +350,22 @@ Widevine L1、Play Protect、TV Play Store 分发和 Netflix HD/4K 资格互不�
 
 ## 10. 当前下一步
 
-Test9r2 刷测期间只推进文档和只读 M8.0，不制作新镜像：
+Test9r2 分层报告和 S3 路线决策已完成；不制作 Test9r3/Test10p1：
 
-1. 完成 Test9r2 分层 runtime report；
-2. 形成精确的 framework startup gate 最小修改报告，不先构建 Test9r3；
-3. 以 AOSP ATV 与 MindTheGapps TV 结构形成 Android 12 ARM32
-   `tv-gms-component-gap`，不下载或混装专有二进制；
-4. 仅在官方 iOS 客户端与正常接收端结果矛盾时，用 Python/Swift v2 客户端
-   建立 receiver-client matrix；
-5. 在 S1/Test9r3、S2/Test10p1、S3/结束 32 位 remote 中作唯一选择；
-6. 编写 ELF inventory 工具，生成当前图形、媒体、Wi‑Fi/BT、HAL/VINTF 与
+1. 用户方便时刷回 Test8r2，当前 M7 进入 Test9.3 应用、AirPlay、现代文件
+   管理器和整体回归；
+2. 编写 ELF inventory 工具，生成当前图形、媒体、Wi‑Fi/BT、HAL/VINTF 与
    Kernel module 报告；
-7. 锁定 `device/google/atv` Android 12 commit，形成 M8A.1 source-lock 与
-   product/package/overlay 差异合同；
-8. 形成 BPI H618 M8B.1 source-lock 方案，不下载大型源码；
-9. 设计原厂/Test8r2 DRM 只读采集；若原厂基线需要重新刷机，另行排期，不与
-   Test9r2 回归混做。
+3. 锁定 `device/google/atv` Android 12 commit，形成 M8A.1 source-lock 与
+   product/package/overlay/default-permission 差异合同；
+4. 将 Test9r2 的 system_ext RRO、最小 `BLUETOOTH_CONNECT`、6466/6467、
+   mDNS、TLS、uinput 和官方 iPhone 证据写入 M8.INPUT provider contract；
+5. 以 AOSP ATV 与 MindTheGapps TV 结构形成 Android 12 ARM32
+   `tv-gms-component-gap`，包括 Play package visibility，不下载或混装
+   专有二进制；
+6. 形成 BPI H618 M8B.1 source-lock 方案，不下载大型源码；
+7. 设计原厂/Test8r2 DRM 只读采集；若原厂基线需要重新刷机，另行排期，
+   不与 Test9.3 回归混做。
 
 ## 11. 主要资料
 

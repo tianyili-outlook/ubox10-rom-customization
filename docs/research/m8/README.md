@@ -1,7 +1,8 @@
 # M8 研究索引
 
-状态：`M8.0 PLANNED`。当前只建立研究合同并等待 Test9r2 runtime 证据；不下载
-大型 BSP/AOSP、不混装 Google 专有组件、不制作 M8 候选。
+状态：`M8.0 READY`。Test9r2 runtime 证据和近期路线决策已经闭合；当前可开始
+只读 inventory 与 source-lock，但不下载大型 BSP/AOSP、不混装 Google 专有
+组件、不制作 M8 候选。
 
 M8 执行顺序为：
 
@@ -66,8 +67,10 @@ docs/research/m8/
    └─ netflix-feasibility-verdict.md
 ```
 
-Test9r2 runtime、TV GMS gap、receiver-client matrix 和近期路线决策放在
-`docs/research/tv-gms-remote/`，避免把短期 Test9 证据混入 M8 供体报告。
+Test9r2 runtime 与近期路线决策已放在
+`docs/research/tv-gms-remote/`。官方客户端已经通过，不创建无必要的
+receiver-client matrix；TV GMS gap 与原生 remote product contract 转入
+M8.GMS/M8.INPUT 交付物。
 
 ## 数据边界
 
@@ -83,10 +86,12 @@ Test9r2 runtime、TV GMS gap、receiver-client matrix 和近期路线决策放�
 
 ## 第一批工作
 
-1. 完成 Test9r2 分层 runtime report，并作唯一近期路线决策；
-2. 编写 ELF inventory 工具与小型 fixture；
-3. 生成 Test8r2 图形、媒体、Wi‑Fi/BT、HAL/VINTF 和 Kernel module 只读报告；
-4. 锁定 Android 12 `device/google/atv` commit，形成 M8A.1 差异合同；
-5. 形成 BPI H618 M8B.1 source-lock；用户确认前不下载；
-6. 设计原厂/Test8r2 M8.DRM-0 采集；
-7. 不开发 UBOX Input，不以 ADB/Web remote 代替官方 M8.INPUT 验收。
+1. 编写 ELF inventory 工具与小型 fixture；
+2. 生成 Test8r2 图形、媒体、Wi‑Fi/BT、HAL/VINTF 和 Kernel module 只读报告；
+3. 锁定 Android 12 `device/google/atv` commit，形成 M8A.1 差异合同；
+4. 形成 M8.INPUT provider contract，继承 Test9r2 已证实的 system_ext RRO、
+   最小 `BLUETOOTH_CONNECT`、Remote v2、uinput 与官方 iPhone 验收；
+5. 形成 TV GMS component gap，单列 Play package visibility 与 Google API；
+6. 形成 BPI H618 M8B.1 source-lock；用户确认前不下载；
+7. 设计原厂/Test8r2 M8.DRM-0 采集；
+8. 不开发 UBOX Input，不以 ADB/Web remote 代替官方 M8.INPUT 验收。

@@ -17,16 +17,19 @@ Android 12 专有二进制。
   `AccessRestrictedActivity`。
 - Test9r1 证明 remoteprovider、Remote Service APK 和权限可以被加载，但
   RRO 不在实际扫描路径，provider 未获白名单，端口未监听。
-- Test9r2 只修正 RRO 路径。Test9r1 中 Remote Service 还反复把已安装的
-  Play Store 判定为 “missing”，所以“RRO 修正后完整 remote 一定工作”仍是
-  待证假设。
+- Test9r2 已证明 RRO 修正后完整 Remote v2 技术链可工作：初始服务只因缺少
+  `BLUETOOTH_CONNECT` 运行时授权崩溃；临时授予这一项后，6466/6467、
+  mDNS、官方 iPhone TLS 配对、遥控和文字输入全部通过。Play Store 仍进入
+  `AccessRestrictedActivity`，Store “missing”/Google API 警告继续存在但
+  没有阻止本地遥控。
 
-结论：不能再把 TV feature、手机 GMS、TV 专有 APK 和身份属性随机叠加。下一
-候选必须由 Test9r2 证据和组件依赖图共同决定。
+结论：receiver/protocol 可行性已证实，但当前手机 GMS、TV feature 与 TV
+专有 APK 仍不是一致产品。已选择 S3 收束 32 位 remote，不再制作下一个
+Test9/Test10 remote 候选；产品化转入 M8.INPUT/M8.GMS。
 
-## 2. Test9r2 证据门
+## 2. Test9r2 证据结果
 
-Test9r2 刷入后，按以下层级形成一份报告，不在采证中制作新镜像：
+Test9r2 已按以下层级完成报告，采证中没有制作新镜像：
 
 1. `RRO`：package path、`overlay list`、enabled state、framework resource
    lookup。
@@ -38,21 +41,37 @@ Test9r2 刷入后，按以下层级形成一份报告，不在采证中制作新
 5. `CLIENT`：官方 Google TV iOS 应用发现、配对、按键、文字输入和重启复验。
 6. `REGRESSION`：Play Store、Projectivy、Settings、实体遥控、Wi‑Fi、蓝牙。
 
+实际结果：
+
+| 层级 | 结果 | 关键证据 |
+|---|---|---|
+| RRO | PASS | system_ext RRO 生效，lookup 返回 Remote Service package |
+| FRAMEWORK | PASS | provider 绑定，shared library 与 uinput bridge 正常 |
+| RECEIVER 初始状态 | FAIL | 缺 `BLUETOOTH_CONNECT`，主进程崩溃 |
+| RECEIVER 最小权限后 | PASS | 只授予 CONNECT；SCAN/ADVERTISE 仍为 false |
+| DISCOVERY | PASS | 6466/6467 与 `_androidtvremote2._tcp` |
+| CLIENT | PASS | 官方 Google TV iPhone 配对、遥控、文字输入 |
+| REGRESSION | PARTIAL | Play Store not compatible；重启 remote 未复验 |
+
 按证据分类：
 
 | 结果 | 含义 | 下一动作 |
 |---|---|---|
-| `R2-REMOTE-PASS` | provider、接收端、发现、配对和输入均通过 | 才允许评估 Test9r3 的 framework gate 单变量方案 |
+| `R2-REMOTE-PASS` | provider、接收端、发现、配对和输入均通过 | **本次实际分类**；技术证据转入 M8.INPUT |
 | `R2-CLIENT-FAIL` | 6466/6467 与接收端正常，但官方 iOS 客户端失败 | 用 Python/Swift v2 客户端区分 mDNS、协议和官方客户端问题 |
 | `R2-GOOGLE-FAIL` | RRO/provider 正常，但接收端因 Play/GMS 依赖失败 | 停止 Test9r3，先完成 TV GMS 组件差距报告 |
 | `R2-PLATFORM-FAIL` | RRO、lookup、watcher 或 shared library 仍失败 | 只修正对应平台层，不同时改变 GMS、身份或网络 |
 
 无论分类为何，Test9r2 因已知 Play Store 回归都不能晋级为日常基线；采证后
-回到 Test8r2。
+回到 Test8r2。完整证据见
+[test9r2-runtime-report.md](test9r2-runtime-report.md)。
 
-## 3. Test9r2 后只选择一条近期路线
+## 3. Test9r2 后路线选择
 
-### 路线 S1：Test9r3，保留 Test8r2 Google stack
+已选择 `S3 / 结束 32 位 remote 实验`。S1/S2 保留为历史评估，不再在 M7
+执行。完整依据见 [route-decision.md](route-decision.md)。
+
+### 路线 S1：Test9r3，保留 Test8r2 Google stack（未选择）
 
 仅当 `R2-REMOTE-PASS` 且 framework 修改能从锁定 Android 12 源码精确复现时
 进入：
@@ -63,10 +82,10 @@ Test9r2 刷入后，按以下层级形成一份报告，不在采证中制作新
 - 复用已验证的 remoteprovider、RRO、最小权限和本地原签名 donor；
 - 不同时改变 Play Store/GMS、设备身份、Wi‑Fi、蓝牙或 vendor 分区。
 
-该路线仍有可能被 Remote Service 的 Google API/Play Store 依赖阻塞。
-Test9r2 不能证明接收端完整工作时，不制作 Test9r3。
+Test9r2 已证明接收端即使出现 Google API/Play Store 警告仍可完成本地
+Remote v2；但 S3 已选择，因此不再制作 Test9r3。
 
-### 路线 S2：Android 12 ARM32 一致的 TV product/GMS 实验
+### 路线 S2：Android 12 ARM32 一致的 TV product/GMS 实验（未选择）
 
 仅当能锁定合法来源、精确 Android 12、ARM32、签名与依赖闭合的 TV 组件集合
 时进入，候选暂定为 Test10p1：
@@ -80,17 +99,17 @@ Test9r2 不能证明接收端完整工作时，不制作 Test9r3。
 若不存在可审计的 Android 12 ARM32 TV 专有组件集合，这条路线记为
 `BLOCKED`，不从较新 MindTheGapps 分支复制二进制。
 
-### 路线 S3：结束 32 位 remote 实验
+### 路线 S3：结束 32 位 remote 实验（已选择）
 
-若 S1 风险不可接受且 S2 缺少合法兼容输入：
+当前执行：
 
 - Test8r2 继续作为稳定基线；
 - Test9.3 只完成应用、AirPlay、文件管理和整体回归；
-- 官方 Google TV 手机遥控目标转入 M8A；
+- 官方 Google TV 手机遥控目标转入 M8.INPUT；
 - 蓝牙键盘可以作为用户回退，但不算项目目标通过。
 
-近期只能选择 S1、S2 或 S3 中的一条，不能把 framework gate、全套 GMS、
-身份和网络修改混入同一候选。
+该选择已经关闭近期 S1/S2；不能再把 framework gate、全套 GMS、身份和网络
+修改混入同一 M7 候选。
 
 ## 4. M8 路线收敛
 
@@ -129,7 +148,7 @@ M8.0 共享证据门
   <https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-12.0.0_r1/services/java/com/android/server/SystemServer.java>
 - 价值：shared library、provider watcher、Binder/uinput 合同和 leanback
   启动 gate 的权威来源。
-- 用法：Test9r3 可行性分析与 M8A 原生源码集成；任何 patch 必须保存源码
+- 用法：M8A 原生源码集成；任何 patch 必须保存源码
   tag、最小 diff、构建方式和产物哈希。
 
 ### 5.3 MindTheGapps TV
@@ -194,19 +213,18 @@ Google 专有二进制、账号/token、设备证书、密钥和大型源码/构
 Git。MindTheGapps 或其他项目的 proprietary file list 只能帮助盘点，不能
 自动赋予专有文件的下载、使用或再分发权利。
 
-## 7. 下一批文档交付物
+## 7. 已完成交付物与 M8 移交
 
-有真实证据时再创建文件，不使用空占位：
+当前目录已有真实证据：
 
 ```text
 docs/research/tv-gms-remote/
+├─ README.md
 ├─ test9r2-runtime-report.md
-├─ framework-startup-gate.md
-├─ tv-gms-component-gap.md
-├─ receiver-client-matrix.md
 └─ route-decision.md
 ```
 
-顺序固定为 Test9r2 runtime report → framework gate/TV GMS gap →
-receiver-client matrix（仅在需要时）→ 路线决策。路线决策完成前不制作
-Test9r3 或 Test10p1。
+官方 iOS 客户端已经通过，因此不创建无必要的 receiver-client matrix。
+S3 已选择，因此 M7 不再创建 framework startup gate 报告，也不制作
+Test9r3/Test10p1。TV GMS component gap、原生 default-permissions 和
+framework/provider product 合同转入 M8.GMS/M8.INPUT 交付物。

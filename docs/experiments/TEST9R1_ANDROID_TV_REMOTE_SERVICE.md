@@ -5,9 +5,10 @@
 > 此设备不会扫描的 `/system/overlay`，所以
 > `config_tvRemoteServicePackage` 仍为空，framework 拒绝 provider。后继
 > Test9r2 只把同一 RRO 移到 `/system/system_ext/overlay`；见
-> [TEST9R2_RRO_SCAN_PATH.md](TEST9R2_RRO_SCAN_PATH.md)。
+> [TEST9R2_RRO_SCAN_PATH.md](TEST9R2_RRO_SCAN_PATH.md)。Test9r2 后续已在
+> 最小 `BLUETOOTH_CONNECT` 授权下通过官方 iPhone 配对、遥控和文字输入。
 
-状态：**离线构建与完整性验证通过，等待真机刷测。**
+状态：**离线构建与完整性验证通过；真机因 RRO 扫描路径错误 FAIL，已退役。**
 
 目标是在不开发 UBOX Input、不开放通用网络输入端口的前提下，让 iPhone
 官方 Google TV 应用能够发现、配对和控制 UBOX10，并在电视文本框中输入

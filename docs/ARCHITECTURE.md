@@ -48,7 +48,7 @@ docs/                 核心文档、M8 研究区与 archive 历史资料
   保留以缩短连续构建，不再纳入常规清理。
 - `work/` 的旧解包树与 `x12-purified.img` 含历史调试修改，已停止使用并按存储策略清理。
 - 硬件相关的 `vendor`、`vendor_dlkm`、`boot`、`vendor_boot` 和 `dtbo` 在测试版 1 中保持官方内容。
-- 长期可刷写镜像只保留官方原件、Test8r2 和当前 Test9r2；Test9r1/Test9w1 已退役并仅保留配置/日志/历史。完整政策见 `STORAGE_AND_REPRODUCTION.md`。
+- 长期可刷写镜像只保留官方原件、Test8r2 和最新技术探针 Test9r2；Test9r2 remote 技术链通过但因 Play 回归无基线资格，Test9r1/Test9w1 已退役并仅保留配置/日志/历史。完整政策见 `STORAGE_AND_REPRODUCTION.md`。
 
 ## M8 目标架构
 

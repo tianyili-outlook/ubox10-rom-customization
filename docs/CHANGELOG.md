@@ -2,6 +2,19 @@
 
 ## 2026-07-29
 
+- 完成 Test9r2 真机分层采证：system_ext RRO lookup、framework provider 和
+  shared library 均正常；初始 Remote Service 因缺少运行时
+  `BLUETOOTH_CONNECT` 在 `getBondedDevices/getAddress` 处崩溃，主进程退出且
+  6466/6467 不监听。
+- 仅在 userdata 临时授予 `BLUETOOTH_CONNECT` 后，Remote Service 稳定运行、
+  6466/6467 监听、`_androidtvremote2._tcp` 以 `Pixel 3` 名称发布；SCAN 和
+  ADVERTISE 保持未授予。官方 Google TV iPhone 客户端完成 TLS 配对、遥控和
+  文字输入，framework 建立 virtual-remote/uinput 设备。
+- 将 Test9r2 分类为 `R2-REMOTE-PASS`、整机总体 `PARTIAL`：Play Store 仍进入
+  `AccessRestrictedActivity`，Remote Service 的 Store “missing”/Google API
+  警告虽不阻塞本地遥控，却证明产品组件不一致。选择 S3，结束当前 32 位
+  remote 候选，不制作 Test9r3/Test10p1；Test8r2 保持唯一稳定基线，官方
+  手机遥控和 TV GMS 分别转入 M8.INPUT/M8.GMS。
 - 吸收 `UBOX10_TV_GMS_REMOTE_CODEX_HANDOFF.md` 中的后续调研并逐项核验参考项目；新增 TV GMS/Remote 研究索引，记录 AOSP ATV、MindTheGapps TV、Python/Swift Remote v2 客户端与 ADB/Web remote 的用途、许可证、限制和安全边界。
 - Test9r2 后新增强制证据门：先分层记录 RRO、framework、receiver、mDNS/iPhone 与 Play/GMS，再在 S1/Test9r3、S2/Test10p1、S3/结束 32 位 remote 中只选一条；路线决策前不制作下一镜像。
 - 明确 MindTheGapps TV 当前可见分支比 Android 12 更新，只用于组件、权限、overlay 和打包结构参考，不作为已验证 Android 12 ARM32 donor；独立 Remote v2 客户端只作诊断，不替代电视 receiver 或官方 Google TV iOS 验收。

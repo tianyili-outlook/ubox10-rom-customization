@@ -1,6 +1,6 @@
 # 待办事项
 
-## 当前：从 Test8r2 验证 Test9r2 手机遥控移植
+## 当前：从 Test8r2 完成 Test9.3，并启动 M8.0 只读研究
 
 - [x] 提取官方 `system_a/product_a/vendor_a/vendor_dlkm_a`。
 - [x] 建立官方 `system_a` 的 3857 条 ext4 语义清单。
@@ -62,13 +62,14 @@
 - [x] Test9.2：确认 Test9r1 Play Store 29.2.15 启动后进入 `AccessRestrictedActivity`，Remote Service 同时把 Play Store 判定为 “missing”；Test9r2 因保留 leanback 只作一次性技术探针，不具备晋级资格。
 - [x] Test9.2：从 Test8r2 构建单变量修正版 Test9r2，仅把同一 RRO 移至真机启动日志明确扫描的 `/system/system_ext/overlay`；25 项单元测试套件、ext4、完整 AVB、super、IMAGEWTY 全部通过，固件 SHA-256 为 `27B54FB83E96D3863FAE2EF2718E8EC9ADDD863E5ED123082D5E6C8CA6FFFD52`。
 - [x] 路线规划：吸收 2026-07-29 TV GMS/remote 调研，核验 AOSP ATV、MindTheGapps TV、Python/Swift Remote v2 与 ADB/Web remote 参考，建立采用边界和安全门。
-- [ ] Test9.2：刷入 Test9r2，先验证 overlay package/path/list/lookup 和 provider watcher，再用 iPhone 官方 Google TV 应用完成发现、配对、遥控、文字输入和重启复验。
-- [ ] Test9.2：把 RRO、framework、receiver、6466/6467、mDNS、iPhone 与 Play/GMS 日志写成 `test9r2-runtime-report.md`，分类为 `R2-REMOTE-PASS`、`R2-CLIENT-FAIL`、`R2-GOOGLE-FAIL` 或 `R2-PLATFORM-FAIL`。
-- [ ] Test9.2：若为 `R2-REMOTE-PASS`，先形成从 Test8r2 移除 leanback并定点改变 `SystemServer` TvRemoteService 启动 gate 的源码 tag/最小 diff/构建/回退报告；报告通过前不制作 Test9r3。
-- [ ] Test9.2：若接收端正常但官方 iPhone 客户端失败，使用锁定版本的 Python/Swift Remote v2 客户端区分 mDNS、协议和官方 App；客户端不能替代最终验收。
-- [ ] TV GMS：以 AOSP ATV 与 MindTheGapps TV 的结构形成 Android 12 ARM32 package/shared-library/permission/overlay/property/SELinux/Setup/Play/Remote 组件差距报告；不下载或混装未验证专有二进制。
-- [ ] 路线决策：在 S1/Test9r3、S2/Test10p1、S3/结束 32 位 remote 中只选择一条；决定前不制作下一候选。
-- [ ] Test9.2：检查 Projectivy、实体遥控、Play Store、Wi‑Fi 和蓝牙交叉回归；任一产品关键项失败即刷回 Test8r2。
+- [x] Test9.2：刷入 Test9r2；system_ext RRO、lookup、provider、shared library 和 uinput 路径通过。
+- [x] Test9.2：定位首次 receiver 崩溃为缺少运行时 `BLUETOOTH_CONNECT`；仅临时授予该权限后 6466/6467、mDNS 与主进程稳定，SCAN/ADVERTISE 保持未授予。
+- [x] Test9.2：官方 Google TV iPhone 应用完成发现、TLS 配对、遥控和文字输入；重启持久性未复验，转入 M8.INPUT。
+- [x] Test9.2：完成 `test9r2-runtime-report.md`，分类为 `R2-REMOTE-PASS`；Play Store 不兼容使整机总体为 `PARTIAL`。
+- [x] Test9.2：官方客户端已通过，不触发 Python/Swift receiver-client matrix。
+- [x] 路线决策：选择 S3，结束当前 32 位 remote；不制作 Test9r3/Test10p1，后续候选从 Test8r2 构筑。
+- [ ] M8.GMS：以 AOSP ATV 与 MindTheGapps TV 的结构形成 Android 12 ARM32 package/shared-library/permission/overlay/property/SELinux/Setup/Play/Remote 组件差距报告；单列 Play package visibility，不下载或混装未验证专有二进制。
+- [ ] 当前设备：用户方便时刷回 Test8r2，确认 Play Store 回到可搜索/安装的已知基线行为。
 - [ ] Test9.3：提供 SmartTube、Kodi、Jellyfin、Moonlight 的用户态配置安装脚本，选择 AirPlay 接收器和现代文件管理器，完成最终验证。
 - [x] M8：吸收 2026-07-28 架构调研，建立 arm64/multilib、AOSP ATV、供体和 Netflix/DRM 分阶段计划及研究索引。
 - [x] M8：按 2026-07-29 调研重排为 M8.0 共享证据门、M8A ARM32 真 ATV、M8B AArch64/multilib，并将 M8.GMS/M8.INPUT/M8.DRM 作为横向门禁。
@@ -81,7 +82,7 @@
 - [ ] M8A.1：锁定 Android 12 `device/google/atv` 的 `android12-release` commit，以 `aosp_tv_arm` 建立 product/package/overlay/permission/VINTF 差异合同。
 - [ ] M8A.2：M8.0/M8A.1 通过后，设计保持 UBOX10 boot/kernel/vendor/vendor_dlkm/TEE/32 位 ABI 不变的最小 ARM32 ATV 分层候选；未过离线门禁前不构建。
 - [ ] M8B.1：建立 BPI H618 的 source-lock、oversized files、Docker 环境和磁盘预算；用户确认前不下载或构建。
-- [ ] M8.INPUT：把 AOSP remoteprovider、product provider 配置、最小权限和官方 Google TV iPhone 发现/配对/遥控/文字输入纳入正式门槛；不开发 UBOX Input。
+- [ ] M8.INPUT：把 AOSP remoteprovider、product provider 配置、默认 `BLUETOOTH_CONNECT`、官方 Google TV iPhone 发现/配对/遥控/文字输入和重启复验纳入正式门槛；不开发 UBOX Input。
 - [ ] 分析 AwTvProvision、SettingsSetup、AwManager、PackageOverride；只保留确有硬件/平台职责者。
 - [ ] 保留 AOSP `ProxyHandler`、`VpnDialogs`，除非实机证据证明它们参与厂商网络干预。
 
