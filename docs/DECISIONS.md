@@ -85,8 +85,12 @@
 - **MindTheGapps TV 只作组件与集成结构参考**：当前可见分支比 Android 12 更新；在精确 Android 12 ARM32 版本、签名和依赖未锁定前，不把其中专有二进制当作 donor，也不因 proprietary file list 推定使用或再分发权。
 - **M8.INPUT 继承 Test9r2 已验证合同，不继承实验二进制布局**：remoteprovider 从锁定 AOSP 源码构建，product 原生声明共享库/provider/实际生效的 overlay、最小 privapp policy 和默认 `BLUETOOTH_CONNECT`；用户本地提供官方原签名 APK。M8 补做开机自动启动、重启持久性和完整输入复验；若 GMS TV 许可、签名或认证构成外部阻塞，记为 `BLOCKED`，不把 UBOX Input 当作替代通过。
 - **Netflix 采用 N0–N3 分级且不规避安全机制**：N1 是正式目标，N2 条件性，N3 机会型；Widevine L1 不等于 Netflix HD。不得复制密钥、证书、ESN、secure storage 或伪造认证。
-- **只长期保留三份可刷写镜像**：官方恢复/来源原件、Test8r2、最新技术探针 Test9r2；Test9r1/Test9w1 与其他淘汰镜像和旧工作树删除，配置、脚本、哈希与 Git 历史承担复现。Test9r2 不因保留而获得基线资格；官方原件不受“只保留当前候选”清理规则影响。
-- **长期保留四个官方逻辑分区缓存**：`system_a/product_a/vendor_a/vendor_dlkm_a` 已由官方原件重建并命中固定哈希；不再在候选构建后删除，避免后续每次重复提取。它们不是可刷写候选，不改变三份 IMAGEWTY 保留集。
+- **M7 发布后只长期保留两份可刷写镜像**：官方恢复/来源原件与
+  Test8r2；Test9r1/Test9r2 等历史探针只保留配置、生成脚本、固定哈希、
+  实验文档与 Git 历史。官方原件不受“只保留当前候选”清理规则影响。
+- **长期保留四个官方逻辑分区缓存**：`system_a/product_a/vendor_a/vendor_dlkm_a`
+  已由官方原件重建并命中固定哈希；不再在候选构建后删除，避免后续每次重复
+  提取。它们不是可刷写候选，不改变两份 IMAGEWTY 保留集。
 
 ## 后续再决定
 

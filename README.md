@@ -1,37 +1,35 @@
-# UBOX10 ROM Customization
+# UBOX10 M7 稳定版
 
-面向 UnblockTech UBOX10 / I12 Pro Max（Allwinner H616、Android 12）的可恢复固件改造项目。当前目标是先完成稳定、简洁、遥控器友好的 32 位电视体验，同时用只读审计为 AArch64 与真正 AOSP Android TV 迁移建立证据。
+状态：`STABLE / COMPLETE`
 
-## 当前状态
+发布日期：2026-07-29
 
-- **稳定基线：Test8r2。** Projectivy、英语界面、遥控、Settings、Wi‑Fi 连接、蓝牙和 ContactsProvider/PBAP 回归已通过；蓝牙为 `state: ON`、`Bluetooth crashed 0 times`。
-- **Test9r2 技术探针已完成。** 修正后的 system_ext RRO、provider、6466/6467、mDNS、官方 Google TV iPhone 配对、遥控和文字输入均已通过；首次启动失败的确定性根因是缺少 `BLUETOOTH_CONNECT` 默认运行时授权，仅临时授予该权限后完整链路工作。Play Store 仍进入 `AccessRestrictedActivity`，所以候选总体为 `PARTIAL`、不晋级。
-- **Test9w1 已退役。** 真机确认 `ant_div=N`，但 5 GHz 本来稳定、目标 2.4 GHz 仍未出现，未证明一字节驱动改动带来实质改善；配置保留用于追溯，镜像不再长期保存或作为后续基线。
-- **Play Store 当前只作为 Test8r2 的安装基础设施。** 可登录、搜索和安装 Jellyfin TV，但界面手机化、首页失败且没有可见的 Play Protect certification 项；加入 Leanback 的 Test9a/Test9b/Test9r1/Test9r2 均进入不兼容受限页。
-- **M7 已完成并具备可复现发布入口。** Test8r2 是固件基线；SmartTube
-  32.03、Kodi 21.3、Jellyfin TV 0.19.9、Moonlight 12.1 和 AnExplorer TV
-  6.0.5 已完成来源锁、统一安装、重启与实体遥控验收。SmartTube 1080p、
-  AnExplorer USB/APK 和 AirReceiverLite iPhone 音视频通过；Kodi、
-  Jellyfin、Moonlight 的外部资源缺口以有限豁免记录。用户接受 Lite
-  必须前台、部分功能每次限 5 分钟的范围，不购买完整版。
-- **M8 已重排为先产品、后架构。** 当前是 64 位 Kernel 加纯 32 位 Android 用户空间。M8.0 先做共享只读盘点；M8A 保持现有 Kernel/vendor/32 位 ABI，建立真正 Android 12 AOSP ATV product；M8B 才迁移 AArch64/multilib，兼容 H616/Mali-G31 的 64 位 EGL/Gralloc/Mapper/HWC 是 M8B 第一 Go/No-Go。Test9r2 的 Remote v2 成功证据、最小 CONNECT 权限和 Play/GMS 缺口由 M8.INPUT/M8.GMS 继承；不开发 UBOX Input。
-- **Netflix 纳入长期正式验收。** 先建立原厂/Test8r2 的 Widevine、TEE/OEMCrypto、secure codec、HDCP 和实际播放基线；不复制密钥、不伪造认证或 ESN。
+这是 UBOX10 / I12 Pro Max 定制项目的 M7 发布主页，也是刷机、恢复应用和
+验收的唯一用户入口。M7 由两层组成：
 
-## 本地镜像保留集
+1. **Test8r2 固件**：Projectivy 4.71、英文界面、实体遥控器友好的稳定基线；
+2. **刷机后应用层**：SmartTube、Kodi、Jellyfin TV、Moonlight、AnExplorer，
+   加上由 Google Play 管理的 AirReceiverLite。
 
-| 角色 | 文件 | SHA-256 |
-|---|---|---|
-| 官方恢复与唯一源原件 | `x12-1024.img` | `371A653604618E8B78786F279EA6F64E5D1028B430C9B41F330B08456A264065` |
-| 稳定基线 | `out/candidates/test8r2-restore-contacts-provider-r1/x12-test8r2-restore-contacts-provider.img` | `6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8` |
-| 已完成技术探针（不晋级） | `out/candidates/test9r2-android-tv-remote-service-rro-path-r1/x12-test9r2-android-tv-remote-service-rro-path.img` | `27B54FB83E96D3863FAE2EF2718E8EC9ADDD863E5ED123082D5E6C8CA6FFFD52` |
+[GitHub Release `m7`](https://github.com/tianyili-outlook/ubox10-rom-customization/releases/tag/m7)
+附带可复现源码包和校验文件。由于官方固件、Google APK 与第三方 APK 的授权
+边界，Release **不重新分发这些二进制文件**；本地已有 Test8r2 时直接校验
+使用，没有时按本页从合法取得的官方原件重建。
 
-其他候选固件和候选中间镜像不长期保留。四个 SHA-256 锁定的官方逻辑分区构建缓存长期保留，避免每轮重新提取；配置、脚本、哈希、生成方法和 Git 历史仍承担复现。详见 `docs/STORAGE_AND_REPRODUCTION.md`。
+机器可读组成清单位于
+[`configs/releases/m7.json`](configs/releases/m7.json)，完整验收结论位于
+[`docs/archive/m7/M7_COMPLETION_REPORT.md`](docs/archive/m7/M7_COMPLETION_REPORT.md)。
+`main` 在本次发布后代表 M7 稳定基线；后续 M8 开发应在独立分支进行。
 
-## M7 快速复现
+## 最短恢复流程
 
-完整的镜像校验、重建、PhoenixCard Product 刷机、首次启动和故障定位见
-`docs/M7_RELEASE_GUIDE.md`。刷入 Test8r2、连接 Wi‑Fi 并记下电视 IP 后，
-从仓库根目录运行：
+已有通过校验的 Test8r2 镜像时，实际使用流程只有四步：
+
+1. 用 PhoenixCard 4.2.7 以 `Product` 模式把 Test8r2 写入 TF 卡并刷机；
+2. 首次启动后连接 Wi-Fi，优先使用更稳定的 5 GHz，并记下电视 IP；
+3. 在电视 Play Store 登录 Google 账号，出现付款设置时选择
+   `Skip` / `Not now`；
+4. 在仓库根目录运行：
 
 ```powershell
 python .\scripts\install-userdata-apps.py `
@@ -39,59 +37,215 @@ python .\scripts\install-userdata-apps.py `
   --device "<电视IP>:7896"
 ```
 
-脚本会下载并严格校验缺失的五项官方 APK，验证 Test8r2 合同，打开
-AirReceiverLite 的 Play Store 页面；用户登录、跳过付款方式并安装 Lite
-后回到终端按 Enter，脚本再统一安装其余应用。机器可读发布清单位于
-`configs/releases/m7.json`。
+脚本会打开 AirReceiverLite 的 Play 页面，等待用户完成免费安装，然后统一、
+幂等地安装其余五项应用。下面是完整准备、刷机、重建和故障处理说明。
 
-## 后续工作顺序
+## 1. 准备
 
-1. M7 冻结；新功能、Play Store/GMS、官方手机遥控产品化和 64 位系统进入 M8。
-2. 锁定 Android 12 `aosp_tv_arm` 参考并形成 M8A 产品差异。
-3. 先以 M8A 建立 ARM32 真 ATV product，在 M8.INPUT/M8.GMS 中原生复现
-   已证明可行的官方手机遥控链；再原样验证 BPI H618 供体并决定 M8B
-   是否可进入 AArch64/multilib。
+日常复现需要 Windows PowerShell、Python 3.11+、同一局域网和：
 
-## 固件重建
+- PhoenixCard 4.2.7、读卡器及一张可清空的 TF 卡；
+- Android Platform Tools（`adb.exe`）；
+- Android SDK Build Tools（`aapt`、`apksigner`）；
+- Java 17。
 
-清理后先从官方原件恢复并验证构建输入：
+安装器会从 `ANDROID_SDK_ROOT` / `ANDROID_HOME`、PATH 和项目本地工具目录
+查找这些工具，也可显式传入 `--adb`、`--aapt`、`--apksigner` 和
+`--java-home`。项目惯用 ADB 路径为 `tools/platform-tools/adb.exe`。
 
-```powershell
-python .\scripts\prepare-candidate-inputs.py
+只有从官方原件重建 Test8r2 时，才需要
+[`docs/BUILD_ENVIRONMENT.md`](docs/BUILD_ENVIRONMENT.md) 中的 WSL2、
+e2fsprogs 和固件工具链。
+
+## 2. 取得并校验 Test8r2
+
+### 路径 A：复用本地稳定镜像
+
+优先复用：
+
+```text
+out/candidates/test8r2-restore-contacts-provider-r1/
+  x12-test8r2-restore-contacts-provider.img
 ```
 
-再按 M7 锁定的候选配置构建：
+从仓库根目录校验：
 
 ```powershell
+$release = Get-Content .\configs\releases\m7.json -Raw |
+  ConvertFrom-Json
+$image = $release.firmware.image
+$actual = (Get-FileHash $image -Algorithm SHA256).Hash
+if ($actual -ne $release.firmware.sha256) {
+  throw "M7 image SHA-256 mismatch: $actual"
+}
+if ((Get-Item $image).Length -ne $release.firmware.bytes) {
+  throw "M7 image byte size mismatch"
+}
+Write-Host "M7 image verified: $image"
+```
+
+Test8r2 的固定值为：
+
+```text
+大小：2,005,954,560 bytes
+SHA-256：6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8
+```
+
+哈希或大小不符时不要刷写。
+
+### 路径 B：从官方原件重建
+
+把用户合法取得的官方 `x12-1024.img` 放在仓库根目录。固定值为：
+
+```text
+大小：2,018,890,752 bytes
+SHA-256：371A653604618E8B78786F279EA6F64E5D1028B430C9B41F330B08456A264065
+```
+
+准备 Projectivy 的锁定官方版本：
+
+```powershell
+$projectivy = Get-Content .\configs\apps\projectivy-4.71.json -Raw |
+  ConvertFrom-Json
+New-Item -ItemType Directory -Force `
+  (Split-Path $projectivy.local_path) | Out-Null
+if (-not (Test-Path -LiteralPath $projectivy.local_path)) {
+  Invoke-WebRequest `
+    -Uri $projectivy.download_url `
+    -OutFile $projectivy.local_path
+}
+$actual = (Get-FileHash $projectivy.local_path -Algorithm SHA256).Hash
+if ($actual -ne $projectivy.sha256) {
+  throw "Projectivy SHA-256 mismatch: $actual"
+}
+```
+
+随后执行：
+
+```powershell
+# 仅当缓存缺失、损坏或需要重新审计时运行
+python .\scripts\prepare-candidate-inputs.py
+
 python .\scripts\build-candidate-firmware.py `
   --config .\configs\candidates\test8r2-restore-contacts-provider.json
 ```
 
-第一条仅在官方逻辑分区缓存缺失、损坏或需要审计时运行；四份锁定缓存长期
-保留，不能为常规构建反复删除。构建器只在 ext4 语义、e2fsck、完整 AVB、
-super、IMAGEWTY 和单元测试全部通过后发布候选。Projectivy 及用户态第三方
-APK 不提交 Git 或公开镜像；其官方来源和完整性约束由配置锁定。
+构建器需要至少 7 GiB 临时空间，并会执行单元测试、ext4、AVB、dynamic
+super 与 IMAGEWTY 校验。不要为了常规重建删除以下四份官方逻辑分区缓存：
 
-## 文档入口
+```text
+out/official-system-a/20260726-r1/system_a.img
+out/official-product-a/20260726-r1/product_a.img
+out/official-vendor-a/20260726-r1/vendor_a.img
+out/official-vendor-dlkm-a/20260726-r1/vendor_dlkm_a.img
+```
 
-- 总索引：`docs/README.md`
-- M7 发布与复现：`docs/M7_RELEASE_GUIDE.md`
-- 当前运行手册：`docs/RUNBOOK.md`
-- M7 完成报告与历史实验：`docs/archive/m7/M7_COMPLETION_REPORT.md`
-- 路线与里程碑：`docs/ROADMAP.md`、`docs/MILESTONES.md`
-- M8 架构计划：`docs/architecture/M8_ARM64_AOSP_TV_MIGRATION.md`
-- M8 研究区：`docs/research/m8/README.md`
-- TV GMS/Remote 参考项目与路线门：`docs/research/tv-gms-remote/README.md`
-- Test9r2 真机证据与收束决定：`docs/research/tv-gms-remote/test9r2-runtime-report.md`、`docs/research/tv-gms-remote/route-decision.md`
-- 构建环境：`docs/BUILD_ENVIRONMENT.md`
-- 存储与复现：`docs/STORAGE_AND_REPRODUCTION.md`
-- 事实、决策、风险：`docs/DISCOVERIES.md`、`docs/DECISIONS.md`、`docs/RISK_REGISTER.md`
-- 历史归档：`docs/archive/README.md`
+构建器拒绝覆盖已有候选目录。已有目录应先按“路径 A”核验；异常输出应隔离
+后再从干净目录重试，不能删除官方原件。
 
-## 安全边界
+## 3. 用 PhoenixCard 刷机
 
-- 官方 `x12-1024.img` 永不覆盖或删除，候选使用新文件名。
-- 不修改 eFuse、OTP、BootROM、唯一密钥或未知安全分区。
-- 不直接刷其他 H616/H618 板型的完整镜像、bootloader、DTB/DTBO、TEE 或分区表。
-- PhoenixCard 可能清除 userdata/metadata；刷写前备份用户数据并确认目标 TF 卡。
-- 大型 BSP/AOSP 下载与构建必须先锁定来源、commit、空间和退出条件，并放在 WSL/Linux 文件系统或独立构建盘。
+刷机会清除盒子的 userdata / metadata，包括账号、设置和用户安装应用。
+
+1. 备份需要保留的数据，关闭 UBOX10 电源。
+2. 断开其他不必要的移动磁盘，只保留目标 TF 卡；再次核对盘符和容量。
+3. 以管理员身份运行 PhoenixCard 4.2.7。
+4. 选择 TF 卡和已经通过 SHA-256 校验的 Test8r2 镜像。
+5. 选择 `Product` 模式，点击 `Burn`；写卡成功后安全弹出 TF 卡。
+6. 保持盒子断电，插入量产 TF 卡后上电；刷写期间不要断电或拔卡。
+7. 等待写入完成。历史 UART 成功标志为 `CARD OK` 和 `sprite success`；
+   没有 UART 时也要留足时间，不要因电视暂时无画面而提前断电。
+8. 盒子断电，取出 TF 卡，再次上电进入 Test8r2。
+
+PhoenixCard 中若无法确定目标磁盘、模式或结果，应停止操作，不要猜测。需要
+回滚时，用相同步骤刷回已经校验的官方 `x12-1024.img`。
+
+## 4. 首次启动与联网
+
+1. 确认 Projectivy 启动、界面为英语，方向、OK、Back、Home 和 Settings 正常。
+2. 连接 Wi-Fi；5 GHz 扫描和连接更稳定，建议优先使用。
+3. 在已连接网络详情中记下电视 IP。
+4. 确认电脑和电视处于同一局域网；Test8r2 的 TCP ADB 端口为 `7896`。
+
+连接检查：
+
+```powershell
+$adb = ".\tools\platform-tools\adb.exe"
+& $adb connect "<电视IP>:7896"
+& $adb devices -l
+```
+
+设备必须显示为 `device`，不能是 `offline` 或 `unauthorized`。
+
+## 5. 一条命令完成应用安装
+
+```powershell
+python .\scripts\install-userdata-apps.py `
+  --guided-after-flash `
+  --device "<电视IP>:7896"
+```
+
+引导模式会：
+
+1. 从配置锁定的官方 HTTPS 地址下载缺失的五个 APK；
+2. 校验文件名、大小、SHA-256、APK metadata 和签名证书；
+3. 验证电视符合 Test8r2 合同；
+4. 打开 AirReceiverLite 的 Google Play 页面并暂停；
+5. 等待用户登录 Play Store；出现 `Complete account setup` 时选择
+   `Skip` / `Not now`，无需绑定信用卡；
+6. 等待用户安装免费的 AirReceiverLite；
+7. 统一、幂等安装 SmartTube、Kodi、Jellyfin TV、Moonlight 和 AnExplorer；
+8. 将结果写入已被 Git 忽略的 `work/test9.3-guided-install.json`。
+
+下载使用临时文件与原子发布，校验失败的 APK 不会投入使用；已有文件也不会
+被静默覆盖。重复运行时，正确版本会返回 `already-current`。Google 账号、
+付款信息和 Play 专有 APK 不会写入报告或 Git。
+
+首次打开 AirReceiverLite 时，按提示授予“显示在其他应用上层”权限。Lite
+必须保持前台，部分功能每次会话限 5 分钟；这是 M7 明确接受的范围，不要求
+购买完整版。
+
+## 6. 最小验收
+
+安装后确认：
+
+- Projectivy 中五个新图标可见，滚动、打开和焦点正常；
+- 五项均可用方向、OK、Back、Home 导航，不强制鼠标模式；
+- SmartTube 可播放 1080p，声音和返回正常；
+- Kodi 可进入界面；
+- Jellyfin TV 可进入服务器连接流程；
+- Moonlight 可发现或手动添加 Sunshine；
+- AnExplorer 可浏览内置存储 / USB，并能选择本地 APK；
+- 打开 AirReceiverLite 后，iPhone 可发现电视，镜像、声音和同步正常。
+
+Kodi、Jellyfin 和 Moonlight 在 M7 验收时缺少本地媒体、Jellyfin 服务器和
+Sunshine 主机，只验证到界面及连接/发现边界；这是已记录的有限豁免，不代表
+端到端播放已经测试。
+
+## 7. 常见问题
+
+- `adb connect` 失败：确认电视 IP、`7896` 端口和同一局域网，再重试。
+- `baseline mismatch`：停止安装；可能刷入了 Test9r1/Test9r2 或其他镜像，
+  不要用参数绕过合同。
+- 找不到 `aapt` / `apksigner` / Java：安装 Android SDK Build Tools 与
+  Java 17，或用命令行参数给出路径。
+- Play Store 显示 `not compatible`：先确认 Test8r2 合同；不要加入 Leanback、
+  混装 Google APK 或伪造设备身份规避。
+- APK 下载或校验失败：保留错误信息并重试网络，不要改用随机 APK 镜像站。
+
+## 发布与后续边界
+
+- GitHub Release 只发布代码、配置、来源锁、校验值和文档；不发布官方固件、
+  Google APK、Remote Service donor 或第三方 APK。
+- 本地长期保留的可刷写镜像仅为官方原件与 M7/Test8r2；Test9r1/Test9r2
+  已删除，但配置、生成脚本、固定哈希与实验文档仍可复现。
+- M7 不再接受新功能修改。Play Store 电视化、GMS/认证、官方手机遥控产品化、
+  64 位系统及 Netflix/DRM 属于 M8，并应在独立分支继续。
+
+更多入口：
+
+- [文档索引](docs/README.md)
+- [M7 完成报告](docs/archive/m7/M7_COMPLETION_REPORT.md)
+- [存储与复现策略](docs/STORAGE_AND_REPRODUCTION.md)
+- [构建环境](docs/BUILD_ENVIRONMENT.md)
+- [历史归档](docs/archive/README.md)

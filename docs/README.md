@@ -6,7 +6,7 @@
 - Test9r2 技术探针已完成：system_ext RRO、provider、Remote v2 端口、mDNS、
   官方 Google TV iPhone 配对、遥控和文字输入均通过；唯一必要的临时修正是
   授予 `BLUETOOTH_CONNECT`。因 Play Store 仍不兼容，候选总体为
-  `PARTIAL`、不晋级。
+  `PARTIAL`、不晋级；本地镜像已删除，复现配置与证据保留。
 - Test9r1 真机失败原因已确认：RRO 位于未扫描路径，framework 未白名单化
   provider；该镜像已删除，配置和证据保留。
 - Test9w1 已退役；后续不继承其 driver patch。
@@ -21,7 +21,7 @@
 
 | 主题 | 文档 |
 |---|---|
-| M7 发布、刷机与一键恢复 | [M7_RELEASE_GUIDE.md](M7_RELEASE_GUIDE.md) |
+| M7 发布、刷机与一键恢复 | [仓库首页](../README.md) |
 | 当前操作 | [RUNBOOK.md](RUNBOOK.md) |
 | M7 完成报告与历史实验 | [archive/m7/M7_COMPLETION_REPORT.md](archive/m7/M7_COMPLETION_REPORT.md) |
 | TV GMS/Remote 参考项目与路线门 | [research/tv-gms-remote/README.md](research/tv-gms-remote/README.md) |

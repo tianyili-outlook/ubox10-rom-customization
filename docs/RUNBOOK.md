@@ -12,7 +12,8 @@ Test8r2 是唯一稳定基线：
 
 Test9r2 已完成一次性技术探针，不再是开发基线：
 
-- 镜像：`out/candidates/test9r2-android-tv-remote-service-rro-path-r1/x12-test9r2-android-tv-remote-service-rro-path.img`
+- 本地镜像与候选输出目录已在 M7 发布收束时删除；配置、生成脚本、固定哈希
+  和真机报告保留，可按需复现。
 - SHA-256：`27B54FB83E96D3863FAE2EF2718E8EC9ADDD863E5ED123082D5E6C8CA6FFFD52`
 - Remote 技术链：`R2-REMOTE-PASS`。
 - 整机结果：`PARTIAL`；Play Store 进入
@@ -105,7 +106,7 @@ python .\scripts\install-userdata-apps.py
 ```
 
 完整结果、有限豁免与来源锁见
-`M7_RELEASE_GUIDE.md`、
+仓库根 `README.md`、
 `archive/m7/M7_COMPLETION_REPORT.md` 和
 `archive/m7/TEST9_3_USERDATA_APPS.md`。M7 不再接受 Play Store、GMS、
 设备身份、framework remote gate 或 Google Remote Service 修改。

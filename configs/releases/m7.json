@@ -35,12 +35,17 @@
     "report": "work/test9.3-guided-install.json"
   },
   "documentation": {
-    "release_guide": "docs/M7_RELEASE_GUIDE.md",
+    "release_guide": "README.md",
     "completion_report": "docs/archive/m7/M7_COMPLETION_REPORT.md"
   },
   "distribution": {
     "firmware_in_git": false,
     "third_party_apks_in_git": false,
-    "note": "Git stores the reproducible recipe, source locks, checksums and validation evidence; proprietary firmware and third-party APK binaries remain local."
+    "github_release": {
+      "tag": "m7",
+      "asset": "ubox10-m7-reproducibility.zip",
+      "asset_is_source_only": true
+    },
+    "note": "GitHub Release stores the reproducible recipe, source locks, checksums and validation evidence; proprietary firmware and third-party APK binaries remain local."
   }
 }
