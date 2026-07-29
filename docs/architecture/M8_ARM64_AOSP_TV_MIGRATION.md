@@ -1,6 +1,7 @@
-# M8：AArch64、AOSP Android TV 与 Netflix/DRM 迁移计划
+# M8：ARM32 AOSP Android TV、AArch64 与 Netflix/DRM 迁移计划
 
-研究快照：2026-07-28。本文吸收用户提供的后续调研，作为 M8 的当前架构计划；它不授权下载大型源码、复制闭源安全材料或制作 64 位刷机候选。
+研究快照：2026-07-29。本文吸收两轮用户调研，作为 M8 的当前架构计划；
+它不授权下载大型源码、复制闭源安全材料或制作刷机候选。
 
 ## 1. 状态词
 
@@ -27,23 +28,38 @@
 | Widevine/TEE/HDCP/secure decoder | 尚无完整基线 | UNKNOWN |
 | Netflix | 安装、登录、播放和最大分辨率尚未建立基线 | UNKNOWN |
 
-## 3. 两条并行主线
+## 3. 路线重排：先产品，后架构
 
-| 产品体验线 | 架构研究线 |
-|---|---|
-| Test9r2 验证官方 Google TV iPhone 遥控与文字输入 | M8.0 只读盘点当前 ELF/HAL/VINTF/DRM |
-| Test9.3 完成应用、AirPlay、文件管理和整体验收 | M8.1 锁定并审计 H618 BSP 供体 |
-| 当前 32 位产品完成最终交叉回归 | M8.2 建立 Android 12 AOSP ATV 差异基线 |
+原计划把 AOSP ATV product 与 AArch64 迁移交错推进，会在首个可刷写候选中
+同时引入 product、framework、ABI、图形和 Vendor 风险。M8 现拆为：
 
-M8.0 可以在 Test9r2 刷测期间推进；M8.3 之后的可刷写迁移必须等待
-M8.0–M8.2 的 Go/No-Go 结论。
+| 工作流 | 目标 | 前置条件 |
+|---|---|---|
+| M8.0 共享证据门 | 当前 ELF/HAL/VINTF/图形/媒体/DRM 与 Test9 remote 证据闭合 | 只读，可与 Test9r2 刷测并行 |
+| M8A ARM32 真 ATV | 保留当前 Kernel/vendor/ABI，先建立 Android 12 AOSP ATV product | M8.0 与 AOSP Android 12 source-lock |
+| M8.GMS / M8.INPUT | 分别验证 TV GMS 组件一致性与官方手机遥控 | 不阻塞纯 AOSP ATV 定义，但必须独立标状态 |
+| M8B AArch64/multilib | 在稳定 TV product 上迁移 64 位 framework 与硬件栈 | M8A 产品合同稳定、64 位图形栈为 `GO` |
+| M8.DRM | 保护并分级验证安全播放与 Netflix | 任何图形/媒体/TEE 相关修改前先完成 N0 |
+
+Test9r2 结束前不制作新的 Test9 或 M8 候选；先完成其 runtime report，再在
+Test9r3、Test10p1 或结束 32 位 remote 三条路线中只选择一条。
 
 ## 4. 目标与非目标
 
-首选目标架构：
+M8A 目标架构：
 
 ```text
-保留 UBOX10 64-bit Kernel 5.4.125 与板级启动链
+保留 UBOX10 64-bit Kernel 5.4.125 与现有 32-bit vendor/userspace ABI
+  ├─ 从锁定 Android 12 源码建立 AOSP ATV system/product/system_ext
+  ├─ 原生 TV Settings / input / power / network / display / overlays
+  ├─ 保持当前 boot0/U-Boot/DTB/DTBO/vendor/vendor_dlkm/TEE
+  └─ 将 GMS TV、官方手机遥控与 DRM 作为独立门禁
+```
+
+M8B 目标架构：
+
+```text
+继承已经稳定的 M8A TV product 合同与 UBOX10 板级启动链
   ├─ 64-bit Framework / ART / zygote64 / system_server
   ├─ 64-bit SurfaceFlinger 与必须同进程加载的图形 SP-HAL
   ├─ arm32 secondary ABI 作为过渡兼容
@@ -65,9 +81,12 @@ M8.0–M8.2 的 Go/No-Go 结论。
 
 当前也不同时升级 Android 主版本、Kernel、ABI、Vendor、HAL 和设备树。
 
-## 5. 第一硬门槛：64 位图形栈
+## 5. M8B 第一硬门槛：64 位图形栈
 
-64 位 SurfaceFlinger/应用不能加载 32 位 EGL、Mali、Gralloc、Mapper 或 HWC。M8 的第一项 Go/No-Go 是取得并证明与 UBOX10 H616/Mali-G31、Kernel Mali ABI、allocator 和 VINTF 匹配的 64 位图形栈。
+64 位 SurfaceFlinger/应用不能加载 32 位 EGL、Mali、Gralloc、Mapper 或 HWC。
+M8B 的第一项 Go/No-Go 是取得并证明与 UBOX10 H616/Mali-G31、Kernel Mali
+ABI、allocator 和 VINTF 匹配的 64 位图形栈。这不阻止 M8A 先用当前 32 位
+图形合同建立正确的 ATV product。
 
 最低审计范围：
 
@@ -101,12 +120,25 @@ H618 只作为 SoC/BSP/组件参考。不得复制其 boot0、U-Boot、DDR/PMIC�
 
 ### AOSP Android TV
 
-使用与 Android 12 匹配的 `device/google/atv` tag 建立 `aosp_tv_arm64`、
-`gsi_tv_arm64` 和必要的 arm32 对照，提取 product inheritance、packages、
-permissions、overlays、VINTF、Settings、输入、网络和电源差异。remote
-专项必须追踪 `com.android.media.tv.remoteprovider`、framework provider
-package resource、privapp policy、mDNS/配对与 uinput bridge。不得把当前
-`main` 直接当作 Android 12 配置。
+先锁定 `device/google/atv` 的 `android12-release` commit，以 `aosp_tv_arm`
+建立 M8A 参考，再以 `aosp_tv_arm64`/`gsi_tv_arm64` 服务 M8B。提取 product
+inheritance、packages、permissions、overlays、VINTF、Settings、输入、网络
+和电源差异。remote 专项必须追踪
+`com.android.media.tv.remoteprovider`、framework provider package
+resource、privapp policy、mDNS/配对与 uinput bridge。不得把当前 `main`
+直接当作 Android 12 配置。
+
+### TV GMS 组件结构
+
+MindTheGapps `vendor_gapps_tv` 可用于研究 ARM/ARM64/common/overlay、
+proprietary file list、privapp/default permission 与内联构建结构。当前可见
+GitHub `baklava` 和 GitLab `vic` 分支均比 Android 12 更新，因此状态只是
+`REFERENCE`，不是 Test10p1 donor。
+
+任何 TV GMS 实验必须先锁定精确 Android 12、ABI、package 版本、签名、
+shared library、permission、overlay、property、SELinux 和 Setup/Provision
+依赖。不存在合法且依赖闭合的 ARM32 集合时标记 `BLOCKED`，不得混装较新
+组件、伪造签名/身份或把认证状态写成已完成。
 
 ### LineageOS
 
@@ -114,77 +146,149 @@ package resource、privapp policy、mDNS/配对与 uinput bridge。不得把当�
 
 ## 7. M8 分阶段计划
 
-### M8.0：当前设备 32/64 位与依赖审计
+### M8.0：共享证据门
 
 只读输入：
 
 - 官方恢复镜像、Test8r2 配置/镜像、当前设备 ADB；
-- Test9r1 的 donor 审计、普通安装失败、system 集成和真机结果；
-- boot/vendor_boot/system/product/vendor/vendor_dlkm；
+- Test9r1/Test9r2 的 donor、构建、RRO、runtime 与 Play/GMS 证据；
+- boot/vendor_boot/system/product/system_ext/vendor/vendor_dlkm；
 - init rc、VINTF、service/lshal、Kernel modules；
-- 图形、媒体、Wi‑Fi/BT 与 DRM 相关文件。
+- 图形、媒体、Wi‑Fi/BT 与 DRM 相关文件；
+- 锁定的 Android 12 AOSP ATV 与 remote framework 源码。
 
 交付物：
 
-- ELF inventory：partition、path、class、machine、interpreter、SONAME、NEEDED、SHA-256；
-- HAL/service/init/VINTF inventory；
-- Kernel module inventory；
+- ELF inventory：partition、path、class、machine、interpreter、SONAME、
+  NEEDED、SHA-256；
+- HAL/service/init/VINTF 与 Kernel module inventory；
 - graphics、media、Wi‑Fi/BT 依赖报告；
-- arm64 blockers 与 donor component map；
-- M8.DRM-0 基线。
+- current product 对 `aosp_tv_arm` 的 package/property/feature/overlay 差异；
+- Test9r2 runtime report、TV GMS component gap 与 remote component map；
+- arm64 blockers 和 M8.DRM-0 采集设计。
 
-退出条件：关键组件均能追踪位数、依赖、启动方式和分区；明确 must-be-64、can-remain-32、preserve-security-state、missing-source；图形栈得出 Go/Blocked/Unknown。此阶段不生成刷机镜像。
+退出条件：关键组件均能追踪位数、依赖、启动方式和分区；明确
+must-be-64、can-remain-32、preserve-security-state、missing-source；
+图形栈得出 Go/Blocked/Unknown；Test9 近期路线有唯一决策。此阶段不生成
+刷机镜像。
 
-### M8.1：BPI H618 BSP 可复现构建与供体判定
+### M8A.1：Android 12 ARM32 ATV 参考与产品差异
 
-固定源码和 oversized files 后原样构建，不加入 UBOX10 修改。对产物执行与 M8.0 相同的 inventory。
+锁定 `device/google/atv` 的 `android12-release` commit，构建或静态审计
+`aosp_tv_arm`，与 Test8r2 比较：
 
-- `GO`：真实 arm64/multilib userspace、可识别的兼容 64 位图形栈和相对匹配的 Android 12 Vendor 接口。
-- `PARTIAL GO`：缺完整 64 位产品，但有可编译 HAL/驱动补丁或有价值的 BSP 结构。
+- product inheritance、partition ownership 与 build properties；
+- television/leanback/leanback_only feature；
+- TV Settings、Launcher、input、power、network、display 与 media packages；
+- framework/product/system_ext overlay；
+- permission、shared library、SELinux、VINTF 与 init；
+- remoteprovider、provider package resource、discovery/pairing 和 uinput。
+
+输出 UBOX10 ARM32 ATV product/device tree 草案和分区容量预算，不下载或纳入
+Google 专有二进制。
+
+### M8A.2：最小 ARM32 AOSP ATV product
+
+初次候选保持以下输入不变：
+
+- boot0、U-Boot、DDR/PMIC、UBOX10 DTB/DTBO 与 Kernel 5.4.125；
+- vendor、vendor_dlkm、Wi‑Fi/BT firmware、遥控/LED 和 TEE/安全材料；
+- 32 位 ABI、分区表、AVB 恢复链。
+
+分层出口：
+
+1. `M8A.2a`：system/product/system_ext 离线依赖、权限、SELinux 与 VINTF 闭合；
+2. `M8A.2b`：init、zygote32、system_server；
+3. `M8A.2c`：SurfaceFlinger、HDMI 最小 UI 与 ADB；
+4. `M8A.2d`：TV Settings、Home、实体遥控和重启。
+
+每层只扩大一个变量，失败时回到 Test8r2。AOSP ATV 启动不等于 GMS TV、
+官方手机遥控、DRM 或 Netflix 通过。
+
+### M8A.3：ARM32 ATV 产品与硬件验收
+
+顺序：GPU/显示 → 实体遥控 → 音频 → Wi‑Fi → 蓝牙 → 视频硬解 → CEC →
+suspend/resume → 应用体验。每个子系统执行基线、依赖、最小移植、离线
+检查、单变量候选、压力与交叉回归。
+
+M8.INPUT、M8.GMS 与 M8.DRM 使用独立状态：
+
+- AOSP ATV 可在 `M8.GMS=BLOCKED` 时作为开放产品继续；
+- 官方 Google TV iPhone remote/text input 只有发现、配对、遥控、Unicode
+  输入和重启复验都通过时才记为 `PASS`；
+- Google 商业资格、Play Protect、TV Play Store 与 Netflix 分发不得由 AOSP
+  产品启动推断。
+
+### M8B.1：BPI H618 BSP 可复现构建与 64 位供体判定
+
+固定源码和 oversized files 后原样构建，不加入 UBOX10 修改。对产物执行与
+M8.0 相同的 inventory。
+
+- `GO`：真实 arm64/multilib userspace、可识别且 Kernel ABI 兼容的 64 位
+  图形栈、相对匹配的 Android 12 Vendor 接口。
+- `PARTIAL GO`：缺完整 64 位产品，但有可编译 HAL/驱动补丁或有价值的 BSP
+  结构。
 - `NO-GO`：关键大文件不可得、图形 Kernel ABI 不兼容或构建不可复现。
 
-### M8.2：Android 12 AOSP ATV 参考构建
+### M8B.2：最小 AArch64/multilib 启动
 
-锁定 Android 12 tag，构建 arm64 ATV/GSI 参考并与 Test8r2 比较。输出 UBOX10
-自有 ATV product/device tree 草案；TV 化不再以 Play Store 页面为判据。
-remoteprovider 必须由源码构建并通过 shared-library/API 边界检查，不从旧
-Test9r1 镜像反向复制生成物。
+继承 M8A 已验证的 ATV product 合同和 UBOX10 板级/安全输入，分层验证：
 
-### M8.3：最小 64 位启动
-
-初次实验保持 boot0、U-Boot、UBOX10 DTB/DTBO、Kernel 5.4.125、DDR/PMIC、分区表、Wi‑Fi/BT firmware、遥控/LED、TEE 与安全材料不变。
-
-分层候选：
-
-1. M8.3a：离线 arm64 system/vendor 依赖闭合；
-2. M8.3b：init/linker；
-3. M8.3c：zygote64/system_server；
-4. M8.3d：SurfaceFlinger/graphics；
-5. M8.3e：HDMI 最小 UI 与 ADB。
+1. `M8B.2a`：离线 arm64/multilib system/vendor 依赖闭合；
+2. `M8B.2b`：init/linker；
+3. `M8B.2c`：zygote64/system_server；
+4. `M8B.2d`：SurfaceFlinger/64 位 graphics；
+5. `M8B.2e`：HDMI 最小 UI 与 ADB。
 
 必须以 UART、ADB、ELF 与进程位数共同证明真实 64 位 userspace。
 
-### M8.4：逐项恢复硬件
+### M8B.3：64 位硬件与 DRM 回归
 
-顺序：GPU/显示 → 实体遥控 → Google TV iPhone remote/text input → 音频 →
-Wi‑Fi → 蓝牙 → 视频硬解 → CEC → suspend/resume → DRM/secure playback →
-Netflix N1。每个子系统执行基线、依赖、最小移植、离线检查、单变量候选、
-压力与交叉回归。
+使用 M8A.3 的相同顺序和验收脚本，逐项恢复硬件，再执行
+M8.INPUT、M8.GMS、M8.DRM 和 Netflix N1。禁止用“32 位版本曾通过”替代
+64 位实测。
 
-### M8.5：UBOX10 原生 AOSP ATV 产品
+### M8B.4：Android/Kernel 后续升级
 
-建立 device tree、ATV product inheritance、TV
-overlays/Settings/Launcher/input/power/network/display、SELinux、
-`proprietary-files.txt` 和 Vendor 提取流程；执行适用 CTS/VTS/GSI。即使
-没有 GMS TV 商业认证，也应能作为开放 AOSP ATV 使用；但官方 Google TV
-手机遥控目标若受 GMS TV 许可/签名阻塞，必须单独标记 `BLOCKED`，不能用
-“AOSP ATV 已启动”代替通过。
+仅在 Android 12 arm64/multilib、硬件、SELinux/VINTF、Netflix N1 和恢复链
+稳定后评估。Android Framework 与 Kernel major version 每次只改变一个维度；
+Panfrost、Cedrus、GKI 和主线 Kernel 属于长期研究。
 
-### M8.6：Android/Kernel 后续升级
+### 旧编号映射
 
-仅在 Android 12 arm64/multilib、硬件、SELinux/VINTF、Netflix N1 和恢复链稳定后评估。Android Framework 与 Kernel major version 每次只改变一个维度；Panfrost、Cedrus、GKI 和主线 Kernel 属于长期研究。
+| 2026-07-28 编号 | 当前编号 |
+|---|---|
+| M8.0 当前设备审计 | M8.0 共享证据门 |
+| M8.1 H618 供体验证 | M8B.1 |
+| M8.2 AOSP ATV 参考 | M8A.1 |
+| M8.3 最小 64 位启动 | M8B.2 |
+| M8.4 硬件恢复 | M8A.3 / M8B.3 |
+| M8.5 原生 ATV 产品 | M8A.2 / M8A.3 |
+| M8.6 后续平台 | M8B.4 |
 
-## 8. M8.INPUT：官方 Google TV 手机遥控与文字输入
+旧编号只用于解释历史提交；新工作项使用 M8A/M8B。
+
+## 8. M8.GMS 与 M8.INPUT
+
+### M8.GMS：一致的 Android TV Google 组件层
+
+M8.GMS 的目标不是“让某个 Play Store APK 能打开”，而是判断是否存在与
+Android 12、ARM32/M8A 或 ARM64/M8B、签名和产品 feature 一致的合法组件层。
+组件差距报告至少覆盖：
+
+- GMSCore/GSF、Play Store、Google Services Framework 与账号组件；
+- TV Setup/Provision、TV Search/Assistant、media shell 与 Remote Service；
+- shared library、privapp/default permission、overlay、property 与 SELinux；
+- package 签名、版本/SDK/ABI、更新关系和开机顺序；
+- Play Store 首页、遥控器导航、搜索/安装、认证显示与 Remote Service 运行时
+  依赖。
+
+MindTheGapps TV 仅作为清单与打包结构参考。Google 专有文件由用户合法本地
+提供并固定哈希，项目不下载或再分发。缺少兼容输入时允许
+`AOSP ATV=PASS, M8.GMS=BLOCKED`，不得伪造设备身份、签名、Play Protect 或
+商业资格。
+
+### M8.INPUT：官方 Google TV 手机遥控与文字输入
 
 Test9r1 已证明当前 Android 12 framework 包含 TV remote 服务端骨架，也证明
 普通 data-app 安装会被缺失的 required shared library 拒绝；真机还证明
@@ -208,6 +312,17 @@ Test9r1 已证明当前 Android 12 framework 包含 TV remote 服务端骨架，
 若第 5–6 项因 Google TV/GMS TV 商业许可、认证或服务端资格不可获得，状态
 记为 `BLOCKED` 并保留证据。项目明确不开发 UBOX Input 作为替代验收。
 
+以下开源客户端只用于分层诊断，不替代 receiver 或最终验收：
+
+- `tronikos/androidtvremote2`：Python/Apache-2.0，适合自动化配对、协议、
+  按键、URL 与语音消息测试；
+- `odyshewroman/AndroidTVRemoteControl`：Swift/MIT，适合在 iPhone 上独立
+  复现 Remote v2；
+- `Legvan/tv-remote`：ADB/Web 路线仅作安全隔离的末级参考，默认 LAN 暴露、
+  raw shell 和 ASCII 限制不符合当前产品门槛。
+
+完整评估见 `docs/research/tv-gms-remote/README.md`。
+
 ## 9. M8.DRM：Netflix 与安全播放
 
 Netflix 分级：
@@ -225,22 +340,34 @@ Widevine L1、Play Protect、TV Play Store 分发和 Netflix HD/4K 资格互不�
 
 ## 10. 当前下一步
 
-Test9r2 刷测期间只推进无写设备风险的 M8.0：
+Test9r2 刷测期间只推进文档和只读 M8.0，不制作新镜像：
 
-1. 建立 M8 研究索引和数据脱敏规则；
-2. 编写 ELF inventory 工具；
-3. 生成当前图形、媒体、Wi‑Fi/BT 组件清单；
-4. 形成 BPI H618 source-lock 方案，不下载大型源码；
-5. 将 Test9r1/Test9r2 的 remoteprovider/RRO/权限和真机日志结论写入 M8.INPUT
-   component map；
-6. 设计原厂/Test8r2 DRM 只读采集；若原厂基线需要重新刷机，必须另行排期，
-   不与 Test9r2 回归混做。
+1. 完成 Test9r2 分层 runtime report；
+2. 形成精确的 framework startup gate 最小修改报告，不先构建 Test9r3；
+3. 以 AOSP ATV 与 MindTheGapps TV 结构形成 Android 12 ARM32
+   `tv-gms-component-gap`，不下载或混装专有二进制；
+4. 仅在官方 iOS 客户端与正常接收端结果矛盾时，用 Python/Swift v2 客户端
+   建立 receiver-client matrix；
+5. 在 S1/Test9r3、S2/Test10p1、S3/结束 32 位 remote 中作唯一选择；
+6. 编写 ELF inventory 工具，生成当前图形、媒体、Wi‑Fi/BT、HAL/VINTF 与
+   Kernel module 报告；
+7. 锁定 `device/google/atv` Android 12 commit，形成 M8A.1 source-lock 与
+   product/package/overlay 差异合同；
+8. 形成 BPI H618 M8B.1 source-lock 方案，不下载大型源码；
+9. 设计原厂/Test8r2 DRM 只读采集；若原厂基线需要重新刷机，另行排期，不与
+   Test9r2 回归混做。
 
 ## 11. 主要资料
 
 - BPI H618 Android 12 BSP：<https://github.com/BPI-SINOVOIP/BPI-H618-Android12>
 - AOSP ATV device：<https://android.googlesource.com/device/google/atv/>
+- AOSP ATV Android 12 products：<https://android.googlesource.com/device/google/atv/+/refs/heads/android12-release/products/>
 - AOSP Android 12 TV remoteprovider：<https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-12.0.0_r1/media/lib/tvremote/>
+- MindTheGapps TV：<https://github.com/MindTheGapps/vendor_gapps_tv>、
+  <https://gitlab.com/MindTheGapps/vendor_gapps_tv>
+- Remote v2 Python 客户端：<https://github.com/tronikos/androidtvremote2>
+- Remote v2 Swift 客户端：<https://github.com/odyshewroman/AndroidTVRemoteControl>
+- ADB/Web remote 安全参考：<https://github.com/Legvan/tv-remote>
 - GSI/VNDK/VINTF：<https://source.android.com/docs/core/tests/vts/gsi>、<https://source.android.com/docs/core/architecture/vndk>、<https://source.android.com/docs/core/architecture/vintf>
 - Android DRM：<https://source.android.com/docs/core/media/drm>
 - Android Trusty：<https://source.android.com/docs/security/features/trusty>

@@ -46,16 +46,21 @@
 - **Test9r2 只修正 RRO 扫描路径**：仍从 Test8r2 构筑，同一 RRO 移到启动日志明确扫描的 `/system/system_ext/overlay`；在 RRO package、lookup 和 watcher 通过前，不混入蓝牙运行时授权或 mDNS 改动。
 - **Test9r2 只作一次性 remote 技术探针**：Test9r1 已确认 Play Store 进入 `AccessRestrictedActivity`，且 Remote Service 报告 Store “missing”；Test9r2 保留相同 leanback/Google stack，故无论 remote 结果如何都不晋级，完成采证后回到 Test8r2。
 - **保住当前 Play Store 的后续 32 位路径必须单独立项**：AOSP `SystemServer` 以 `FEATURE_LEANBACK` 作为 `TvRemoteService` 启动 gate；若 Test9r2 证明 remote 链有效，下一候选才考虑移除 leanback并定点修改 framework gate，不同时修改 GMS/Play、身份、donor 或网络。
+- **Test9r2 之后先出报告、再选唯一候选路线**：必须把 RRO、framework、receiver、mDNS/iPhone 和 Play/GMS 分层归类；在 S1/Test9r3、S2/Test10p1、S3/结束 32 位 remote 中只选一条。路线决策前不制作下一镜像。
+- **Remote v2 开源客户端只作诊断**：`androidtvremote2` 和 `AndroidTVRemoteControl` 用于区分 receiver、协议、mDNS 与官方 iOS 客户端问题；它们不提供电视端 receiver，也不替代官方 Google TV 应用最终验收。
+- **ADB/Web remote 不进入当前产品路线**：`Legvan/tv-remote` 只作为末级技术参考；默认 LAN 可达服务、raw shell、ADB key 和 ASCII 输入模型不符合当前配对认证、Unicode、最小权限与攻击面门槛。
 - **Wi‑Fi 先采证再改固件**：连接与传输已通过，但扫描不可靠；先比较 Settings、shell 扫描和 Wi‑Fi 栈日志，不在无根因时修改 vendor/HAL 或路由器。
 - **Test9w1 只检验 AW869A 天线分集假设**：在 Test8r2 的 system 内容不变前提下，只把已锁定来源哈希的 `aic8800_fdrv.ko` 默认 `ant_div` 字节由 `01` 改为 `00`；不替换未知版本的 AIC 驱动/固件，不修改 Wi‑Fi HAL，也不把推断写成已证实根因。
 - **不在当前 TCP ADB 会话中热卸载 Wi‑Fi 模块**：控制链本身依赖 Wi‑Fi，热卸载可能同时失去诊断与恢复通道；参数持久性改由可刷回的 Test9w1 在启动、一次 Wi‑Fi 开关和重启后三次验证。
 - **Test9w1 已退役**：真机 `ant_div=N` 但目标 2.4 GHz SSID 仍未出现，5 GHz 本来稳定，未证明实质改善；配置/哈希保留作证据，镜像删除，Test8r2 继续作为唯一稳定基线。
 - **Test9w1 的 vendor_dlkm 暂不生成 FEC**：本地工具链没有可信 `fec` 生成器；候选保留 AVB/dm-verity 并在结果中显式标记 `vendor_dlkm_fec=disabled`。该镜像仅用于可恢复实验；若进入长期发布，需引入可追溯、可复现的 FEC 工具链，或单独记录并接受无 FEC 策略。
-- **M8 先审计、后供体、再启动**：M8.0–M8.2 只做 inventory、source-lock、原样供体构建和 AOSP ATV 差异，不在缺少依赖图时生成 64 位 UBOX10 镜像。
+- **M8 先审计、后供体、再启动**：M8.0、M8A.1 与 M8B.1 只做 inventory、source-lock、原样供体构建和 AOSP ATV 差异；不在缺少依赖图时生成 UBOX10 迁移镜像。
+- **M8 改为先产品、后架构**：M8.0 是共享证据门；M8A 保持当前 Kernel/vendor/32 位 ABI，先建立真正 Android 12 AOSP ATV product；M8B 只在 M8A 产品合同稳定且 64 位图形栈为 `GO` 后迁移 AArch64/multilib。旧 M8.1–M8.6 编号只用于历史追溯。
 - **首选 arm64 + arm32 multilib**：目标是 64 位 Framework/ART/SurfaceFlinger，过渡期保留 arm32 secondary ABI；只有 Binder/VINTF/进程边界明确的 32 位 Vendor service 才可能暂留。
-- **64 位图形栈是第一 Go/No-Go**：没有匹配当前 H616 Kernel Mali ABI 的 64 位 EGL/Mali/Gralloc/Mapper/HWC，不进入 M8.3 64 位 UI 候选。
+- **64 位图形栈是 M8B 第一 Go/No-Go**：没有匹配当前 H616 Kernel Mali ABI 的 64 位 EGL/Mali/Gralloc/Mapper/HWC，不进入 M8B.2 64 位 UI 候选；该阻塞不妨碍 M8A 先建立 ARM32 ATV product。
 - **BPI H618 只是供体候选**：先锁定 commit 和大文件并原样构建；H618 `-a arm64`、README 或其他板型能启动均不能证明 UBOX10 可用。boot0/U-Boot/DDR/PMIC/完整 DTB/TEE/密钥/分区表永不直接移植。
 - **真正 TV 化从 Android 12 ATV product 开始**：AOSP ATV 可自主完成；Google TV/GMS TV、TV Play Store 商业资格和 Play Protect 认证不能靠复制组件保证。
+- **MindTheGapps TV 只作组件与集成结构参考**：当前可见分支比 Android 12 更新；在精确 Android 12 ARM32 版本、签名和依赖未锁定前，不把其中专有二进制当作 donor，也不因 proprietary file list 推定使用或再分发权。
 - **M8.INPUT 继承官方手机遥控验收，不继承 Test9r1 二进制**：remoteprovider 从锁定 AOSP 源码构建，product 原生声明共享库/provider/权限；用户本地提供官方原签名 APK。若 GMS TV 许可、签名或认证构成外部阻塞，记为 `BLOCKED`，不把 UBOX Input 当作替代通过。
 - **Netflix 采用 N0–N3 分级且不规避安全机制**：N1 是正式目标，N2 条件性，N3 机会型；Widevine L1 不等于 Netflix HD。不得复制密钥、证书、ESN、secure storage 或伪造认证。
 - **只长期保留三份可刷写镜像**：官方恢复/来源原件、Test8r2、当前 Test9r2；Test9r1/Test9w1 与其他淘汰镜像和旧工作树删除，配置、脚本、哈希与 Git 历史承担复现。官方原件不受“只保留当前候选”清理规则影响。
@@ -63,7 +68,7 @@
 
 ## 后续再决定
 
-- M8.0/M8.1 证据能否放行 M8.3，特别是 64 位 Mali/Gralloc/Mapper/HWC 兼容性。
+- M8.0/M8A 是否能建立稳定 ATV 产品合同，以及 M8B.1 的 64 位 Mali/Gralloc/Mapper/HWC 证据能否放行 M8B.2。
 - 原厂/Test8r2 的 Widevine、secure decoder、HDCP 和 Netflix 实际能力是否允许 N2/N3。
 - AirPlay 接收器和现代文件管理器的最终选择。
 - AwTvProvision、SettingsSetup、AwManager、PackageOverride 是否有继续清理价值。

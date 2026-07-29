@@ -63,8 +63,8 @@
 
 ## M8 门槛
 
-- M8.0–M8.2 只产生 inventory、source-lock、差异和 Go/No-Go 报告，不产生刷机镜像。
-- M8.3 前必须明确 64 位 Mali/EGL/Gralloc/Mapper/HWC 与当前 Kernel ABI 的兼容结论。
+- M8.0、M8A.1 与 M8B.1 只产生 inventory、source-lock、差异和 Go/No-Go 报告，不产生刷机镜像。
+- M8A.2 前必须闭合当前 32 位 vendor 与 AOSP ATV product 的 package/permission/overlay/VINTF/容量合同；M8B.2 前必须明确 64 位 Mali/EGL/Gralloc/Mapper/HWC 与当前 Kernel ABI 的兼容结论。
 - `ro.zygote`、ABI 属性或目录名不能替代 ELF 和运行进程位数证据。
 - 原厂/Test8r2 的 Widevine、DRM HAL、TEE/OEMCrypto、secure codec、protected buffer 和 HDCP 基线必须在相关修改前建立。
 - 其他板型 bootloader、DTB/DTBO、TEE、密钥和分区表不得进入候选。

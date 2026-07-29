@@ -2,6 +2,11 @@
 
 ## 2026-07-29
 
+- 吸收 `UBOX10_TV_GMS_REMOTE_CODEX_HANDOFF.md` 中的后续调研并逐项核验参考项目；新增 TV GMS/Remote 研究索引，记录 AOSP ATV、MindTheGapps TV、Python/Swift Remote v2 客户端与 ADB/Web remote 的用途、许可证、限制和安全边界。
+- Test9r2 后新增强制证据门：先分层记录 RRO、framework、receiver、mDNS/iPhone 与 Play/GMS，再在 S1/Test9r3、S2/Test10p1、S3/结束 32 位 remote 中只选一条；路线决策前不制作下一镜像。
+- 明确 MindTheGapps TV 当前可见分支比 Android 12 更新，只用于组件、权限、overlay 和打包结构参考，不作为已验证 Android 12 ARM32 donor；独立 Remote v2 客户端只作诊断，不替代电视 receiver 或官方 Google TV iOS 验收。
+- M8 重排为 M8.0 共享证据门、M8A ARM32 真 AOSP ATV product、M8B AArch64/multilib；M8.GMS、M8.INPUT 与 M8.DRM 改为横向独立门禁。旧 M8.1–M8.6 编号保留映射用于历史追溯。
+- 将 ADB/Web remote 记为末级隔离参考；默认 LAN 可达 HTTP、raw shell、ADB key 与 ASCII 输入模型不满足当前配对认证、Unicode、最小权限和攻击面要求。
 - Test9r1 真机确认 feature、`com.android.media.tv.remoteprovider` shared library、Remote Service 5.2.473254133 和 privileged permissions 已加载，但 `/system/overlay` 中的静态 RRO 未被 Package Manager 注册；framework lookup 为空，`TvRemoteProviderWatcher` 持续拒绝未配置/白名单化的 provider，6466/6467 未监听，iPhone 无法发现电视。
 - Test9r1 上的 Play Store 29.2.15 同时确认失效：package/Launcher 入口存在，但启动进入 `com.google.android.finsky.accessrestricted.AccessRestrictedActivity`；Remote Service 多次报告 Play Store “missing”。因此不改变 leanback/Google stack 的 Test9r2 只作 remote 分层探针，即使 remote 成功也不能晋级。
 - 启动日志显示该固件扫描 `/system/system_ext/overlay` 和 `/product/overlay`，且明确报告前者为空；据此从 Test8r2 创建 Test9r2，只把同一 RRO 移至 `/system/system_ext/overlay`，不改变 remoteprovider、权限、donor、feature 或 `vendor_dlkm`。

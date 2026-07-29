@@ -18,7 +18,12 @@
 | Remote Service 在 corrected RRO 后仍把 Play Store 判定为 missing | Test9r1 已出现该日志；Test9r2 分开记录 RRO/provider、端口和 Google API 初始化层。不得用替换/破解 Play Store 或伪造设备身份绕过。 |
 | 预置 RRO 文件存在但不在设备实际扫描路径 | Test9r1 已暴露该风险；Test9r2 先验收 package path、overlay list、lookup 和 watcher，再测试网络发现。M8 必须在 product 构建中原生声明并验证实际注册。 |
 | 局域网 remote discovery/监听扩大攻击面 | 只接受官方配对码或等价认证；验证未配对客户端不能注入输入，不开放通用 ADB/键盘端口，失败即停止候选。 |
-| 缺少兼容 H616/Mali-G31 的 64 位图形栈 | 作为 M8 第一 Go/No-Go；未证明 EGL/Mali/Gralloc/Mapper/HWC 与 Kernel ABI 匹配前不制作 64 位 UI 候选。 |
+| Test9r2 后同时修改 framework、GMS、身份和网络导致无法归因 | 先生成分层 runtime report；在 Test9r3、Test10p1 或结束 32 位 remote 中只选一条，路线决策前不制作候选。 |
+| 把新版本 MindTheGapps TV 二进制误当 Android 12 ARM32 donor | 仓库只用于 package/permission/overlay/打包结构参考；必须另行锁定精确 Android 12、ABI、签名、依赖与合法来源，未闭合则标记 `BLOCKED`。 |
+| 诊断客户端被误当作电视 receiver 修复 | Python/Swift Remote v2 项目只在接收端已监听时隔离客户端问题；它们不提供 system receiver，也不替代官方 Google TV iOS 验收。 |
+| ADB/Web remote 向 LAN 暴露按键、文字或 shell 注入 | 当前不集成默认绑定 `0.0.0.0`、开放 HTTP、raw shell 或共享 ADB key 的方案；末级备选必须先完成强认证、绑定/CSRF、API 最小化、密钥与 SELinux 安全审计。 |
+| M8A 的 AOSP ATV system/product 与现有 32 位 vendor 不兼容 | M8A.1 先做 package/permission/overlay/VINTF/容量差异；M8A.2 保持 boot/kernel/vendor/vendor_dlkm/TEE 不变并分层启动，每层可刷回 Test8r2。 |
+| 缺少兼容 H616/Mali-G31 的 64 位图形栈 | 作为 M8B 第一 Go/No-Go；未证明 EGL/Mali/Gralloc/Mapper/HWC 与 Kernel ABI 匹配前不制作 64 位 UI 候选，但不阻塞 M8A 的 ARM32 ATV 产品研究。 |
 | H618/其他板型供体破坏 UBOX10 板级启动或硬件 | 只引用源码、配置或经依赖验证的单组件；不刷供体 bootloader、完整 DTB/DTBO、TEE、密钥或分区表。 |
 | 64 位、图形或媒体迁移破坏合法 DRM 能力 | 相关修改前建立原厂/Test8r2 的 Widevine、TEE/OEMCrypto、secure codec、protected path 和 HDCP 基线；安全材料只保留 UBOX10 原件。 |
 | 把 Widevine L1 或系统属性误当 Netflix HD/4K | 使用 N0–N3 分级和实际播放证据；缺服务端资格或 provisioning 时记录外部阻塞，不伪造通过。 |

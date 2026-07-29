@@ -90,3 +90,7 @@
 - Android 12 AOSP `SystemServer` 以 `PackageManager.FEATURE_LEANBACK` 为启动 `TvRemoteService` 的条件；当前 Play Store 又在 Test9a/Test9b/Test9r1 的 leanback 组合下失效。要在 32 位系统同时保留现有 Play 行为与官方 remote，技术候选很可能需要移除 leanback并定点改变 framework 启动 gate，而不是继续叠加 feature。
 - Test9r2 仍从 Test8r2 构筑，唯一相对 Test9r1 的变化是把相同 SHA-256 的 RRO 移至 `/system/system_ext/overlay`。system manifest 只有修正后的路径，官方 `vendor_dlkm` 不变；ext4/e2fsck、完整 AVB、super、IMAGEWTY 和 25 项单元测试套件通过。固件为 2,005,946,368 bytes，SHA-256 `27B54FB83E96D3863FAE2EF2718E8EC9ADDD863E5ED123082D5E6C8CA6FFFD52`，真机结果仍为 UNKNOWN。
 - Google Remote Service APK 只作为用户本地 donor 存在于被忽略的 `work/`；仓库没有提交或重新分发该专有二进制。M8 将继承 product/API/验收合同，而不是从 Test9r1 镜像复制二进制。
+- AOSP `device/google/atv` 的 `android12-release/products` 明确提供 `aosp_tv_arm.mk`、`aosp_tv_arm64.mk`、`atv_product.mk`、`atv_system.mk` 与 `atv_system_ext.mk`，因此可以先用 ARM32 参考隔离 ATV product 问题，再单独迁移 AArch64。
+- MindTheGapps TV 确实提供 arm/arm64/common/overlay、proprietary file list、权限与内联构建结构；当前可见 GitHub `baklava` 和 GitLab `vic` 分支均比 Android 12 更新，不能据此认定存在可直接用于本机的 Android 12 ARM32 donor。
+- `tronikos/androidtvremote2` 和 `odyshewroman/AndroidTVRemoteControl` 分别提供 Python 与 Swift 的 Remote protocol v2 客户端实现，都要求电视端 receiver 已存在；它们适合隔离客户端/协议问题，不会补齐缺失的 system receiver 或 GMS 依赖。
+- `Legvan/tv-remote` 的上游设计包括 ADB over TCP、默认绑定 `0.0.0.0` 的 Flask 服务、可在 LAN 访问的 on-device 8080 服务、带 raw shell 的 CLI 和 ASCII-only 文字输入；未经重构不满足本项目的认证、Unicode、最小权限与攻击面要求。

@@ -10,8 +10,10 @@
   provider；该镜像已删除，配置和证据保留。
 - Test9w1 已退役；后续不继承其 driver patch。
 - 产品体验主线：Test9r2 iPhone 官方 Google TV 遥控/文字输入 → Test9.3
-  应用与整体验收。
-- 架构研究主线：M8.0 只读盘点，与 Test9 实机测试并行；在图形栈和 DRM 基线明确前不制作 64 位候选。
+  应用与整体验收；Test9r2 后必须先完成分层报告，再在 Test9r3、
+  Test10p1 或结束 32 位 remote 中只选一条。
+- 架构研究主线：M8.0 共享证据门 → M8A ARM32 真 ATV → M8B
+  AArch64/multilib；M8.GMS、M8.INPUT 和 M8.DRM 独立验收。
 
 ## 核心文档
 
@@ -20,6 +22,7 @@
 | 当前操作 | [RUNBOOK.md](RUNBOOK.md) |
 | Test9r1 移植实验 | [experiments/TEST9R1_ANDROID_TV_REMOTE_SERVICE.md](experiments/TEST9R1_ANDROID_TV_REMOTE_SERVICE.md) |
 | Test9r2 RRO 路径修正 | [experiments/TEST9R2_RRO_SCAN_PATH.md](experiments/TEST9R2_RRO_SCAN_PATH.md) |
+| TV GMS/Remote 参考项目与路线门 | [research/tv-gms-remote/README.md](research/tv-gms-remote/README.md) |
 | 产品与 M8 路线 | [ROADMAP.md](ROADMAP.md) |
 | M8 架构计划 | [architecture/M8_ARM64_AOSP_TV_MIGRATION.md](architecture/M8_ARM64_AOSP_TV_MIGRATION.md) |
 | 当前待办与里程碑 | [TODO.md](TODO.md)、[MILESTONES.md](MILESTONES.md) |
@@ -32,7 +35,11 @@
 
 ## M8 研究区
 
-[research/m8/README.md](research/m8/README.md) 定义 M8.0 的输入、交付物、状态标签和敏感数据边界。大型 BSP、AOSP 构建产物、闭源 blob、设备密钥和用户数据不进入 Git。
+[research/m8/README.md](research/m8/README.md) 定义 M8.0/M8A/M8B 的输入、
+交付物、状态标签和敏感数据边界；
+[research/tv-gms-remote/README.md](research/tv-gms-remote/README.md) 记录
+外部参考项目、Test9r2 结果分类和 TV GMS/remote 路线门。大型 BSP、AOSP
+构建产物、闭源 blob、设备密钥和用户数据不进入 Git。
 
 ## 权威顺序
 

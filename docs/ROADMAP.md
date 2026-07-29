@@ -73,22 +73,40 @@ UBOX Input。
   `TvRemoteProvider`/uinput 桥。
 - Projectivy、Settings、Play Store、Wi‑Fi、蓝牙和重启无新增关键回归。
 
-### Test9r2 后的 32 位分叉
+### Test9r2 后的证据门与单一路线决策
 
 Android 12 `SystemServer` 只在 `FEATURE_LEANBACK` 存在时启动
 `TvRemoteService`，而本项目 Test9a/Test9b/Test9r1 已连续证明 leanback 会让
-当前手机式 Play Store 进入受限页。因此：
+当前手机式 Play Store 进入受限页；Test9r1 的 Remote Service 还把已安装的
+Play Store 判定为 “missing”。因此 Test9r2 必须先把 RRO、framework、
+receiver、发现/配对和 Play/GMS 依赖分层记录，再决定下一步：
 
-- Test9r2 只用于确认 RRO/provider/官方 iPhone 输入链能否工作；
-- 若 remote 通过，另立从 Test8r2 出发的候选，移除 leanback并定点改变
-  framework 的 TvRemoteService 启动 gate；
-- 不同时更换 Play Store/GMS、身份、donor 或网络参数；
-- 若 framework 定点修改风险不可接受，32 位分支记录 `BLOCKED`，正式能力
-  留给 M8 源码级 ATV product。
+- `R2-REMOTE-PASS`：接收端和官方 iPhone 输入完整通过，才评估 Test9r3。
+  Test9r3 从 Test8r2 构筑、移除 leanback，只定点改变 framework 的
+  `TvRemoteService` 启动 gate。
+- `R2-CLIENT-FAIL`：6466/6467 与接收端正常但官方客户端失败，先用独立
+  Python/Swift Remote v2 客户端区分 mDNS、协议和官方 App 问题。
+- `R2-GOOGLE-FAIL`：RRO/provider 正常但接收端被 Play/GMS 依赖阻塞，停止
+  Test9r3，先完成 Android 12 ARM32 TV GMS 组件差距报告。
+- `R2-PLATFORM-FAIL`：只修正失败的平台层，不混入 GMS、身份或网络变化。
+
+证据报告之后只选择一条近期路线：
+
+1. **S1 / Test9r3**：仅在 `R2-REMOTE-PASS` 且 framework patch 可由锁定源码
+   最小化复现时执行。
+2. **S2 / Test10p1**：仅在能锁定合法、精确 Android 12、ARM32、依赖闭合的
+   TV 组件集合时，构建一致的 ATV product/GMS 技术实验；MindTheGapps TV
+   只作组件和集成结构参考，不直接提供已验证 donor。
+3. **S3 / 收束 32 位 remote**：若 S1 风险不可接受且 S2 缺少合法兼容输入，
+   保留 Test8r2，完成 Test9.3，把官方手机遥控目标转入 M8A。
+
+不得在同一候选中同时改变 framework gate、整套 GMS、设备身份和网络。
+路线决策完成前不制作 Test9r3 或 Test10p1。
 
 完整设计、哈希与判错树见
 `experiments/TEST9R1_ANDROID_TV_REMOTE_SERVICE.md` 和
-`experiments/TEST9R2_RRO_SCAN_PATH.md`。
+`experiments/TEST9R2_RRO_SCAN_PATH.md`；参考项目、结果分类和研究交付物见
+`research/tv-gms-remote/README.md`。
 
 ## Test9.3：当前 32 位系统产品化收尾
 
@@ -97,25 +115,47 @@ Android 12 `SystemServer` 只在 `FEATURE_LEANBACK` 存在时启动
 - 将应用来源、版本、签名和校验写入配置；第三方 APK 不提交公共仓库。
 - 完成 Projectivy 流畅度、启动、遥控、影音、蓝牙、Wi‑Fi、应用安装和重启回归。
 
-## M8：AArch64 与真正 AOSP Android TV
+## M8：先建立真正 AOSP Android TV，再迁移 AArch64
 
-M8 不再以“找到一套 Google TV APK”定义，而是两项相互关联但可分别验收的工程：
+M8 不再以“找到一套 Google TV APK”定义，也不再把 TV product 与 64 位 ABI
+放在同一个首发候选中。路线拆为：
 
-1. 建立真实 arm64/multilib Android userspace 和匹配 H616 的硬件栈；
-2. 从源码继承 Android 12 AOSP ATV product，替代手机产品配置加 Launcher/feature 的伪装路线。
+1. **M8.0 共享证据门**：盘点当前 ELF/HAL/VINTF/图形/媒体/DRM，锁定参考
+   源码与安全边界。
+2. **M8A / ARM32 真 ATV**：保留当前 Kernel、vendor、vendor_dlkm 和 32 位 ABI，
+   先从源码继承 Android 12 AOSP ATV product，验证真正 TV product、输入、
+   Settings、电源、网络、显示和应用合同。
+3. **M8B / AArch64**：M8A 产品合同稳定且 64 位图形栈为 `GO` 后，再建立真实
+   arm64/multilib userspace 和匹配 H616 的硬件栈。
 
-M8.0 可与 Test9r2 真机验收并行进行，只允许本地/ADB 只读盘点，不制作
-64 位固件。
+M8.GMS、M8.INPUT 和 M8.DRM 是横向门禁。AOSP ATV 可在没有 Google 商业认证
+时独立完成；TV Play Store、官方 Google TV 手机遥控和 Netflix 资格必须分别
+记录，不得用其中一项替代另一项。
 
 ### 阶段与出口
 
-- **M8.0 当前设备审计**：递归盘点 ELF、HAL/service、VINTF、Kernel modules、图形、媒体、Wi‑Fi/BT 和 DRM；标记 must-be-64、can-remain-32、missing-source 与 security-state。图形栈必须得到 Go/Blocked/Unknown。
-- **M8.1 BPI H618 供体验证**：先锁定 commit、oversized files、Docker 环境和磁盘预算，再原样构建。`-a arm64` 只是一条线索，最终以 userspace ELF、`lib64` 和 Mali/Gralloc/Mapper/HWC 产物判定。
-- **M8.2 Android 12 AOSP ATV 参考**：固定 Android 12 tag，比较 product inheritance、package、permission、overlay、VINTF、Settings、输入、网络、电源和显示，形成 UBOX10 product/device tree 草案；单列 remoteprovider shared library、provider package resource、privapp policy 与发现/配对路径。
-- **M8.3 最小 64 位启动**：保持 UBOX10 boot0/U-Boot/DTB/DTBO/Kernel/DDR/PMIC/TEE/分区表不变，依次验证 linker、zygote64、system_server、SurfaceFlinger、HDMI、ADB 和最小 UI。
-- **M8.4 硬件恢复**：GPU/显示、实体遥控与 official Google TV iPhone remote/text input、音频、Wi‑Fi、蓝牙、视频硬解、CEC、休眠、DRM 和 Netflix N1 分子系统恢复与压力回归。
-- **M8.5 原生 AOSP ATV 产品**：完成 device tree、TV overlays/Settings/Launcher/input、SELinux、blob 提取和适用 CTS/VTS/GSI；官方原签名 Remote Service 可由用户本地提供，项目不重新分发。
-- **M8.6 后续 Android/Kernel**：只有 Android 12 arm64 与 Netflix N1 稳定后才评估；Android 主版本和 Kernel major 每次只改变一个。
+- **M8.0 共享审计**：递归盘点 ELF、HAL/service、VINTF、Kernel modules、
+  图形、媒体、Wi‑Fi/BT 和 DRM；锁定 Android 12 ATV 参考与 Test9 remote
+  证据。此阶段不生成刷机镜像。
+- **M8A.1 ATV 参考与差异**：固定 `device/google/atv` 的
+  `android12-release` commit，比较 `aosp_tv_arm` product inheritance、
+  package、permission、overlay、VINTF、Settings、输入、网络、电源和显示。
+- **M8A.2 最小 ARM32 ATV product**：保持 UBOX10 boot/kernel/vendor/
+  vendor_dlkm/TEE/分区表不变，建立自有 system/product/system_ext，
+  先闭合离线依赖，再分层验证启动、HDMI、ADB 和最小 TV UI。
+- **M8A.3 产品与硬件验收**：恢复实体遥控、音频、Wi‑Fi、蓝牙、视频硬解、
+  CEC、休眠和应用体验；M8.INPUT 与 M8.GMS 单列，不把 Play 页面当 ATV
+  产品完成判据。
+- **M8B.1 64 位供体验证**：锁定并原样构建 BPI H618 BSP，以实际 ELF、
+  `lib64` 和 Mali/Gralloc/Mapper/HWC 判定，不以 `-a arm64` 文档代替证据。
+- **M8B.2 最小 AArch64/multilib 启动**：在 M8A product 合同上依次验证
+  linker、zygote64、system_server、SurfaceFlinger、HDMI、ADB 和最小 UI。
+- **M8B.3 硬件/DRM 回归**：按 M8A 已建立的子系统基线逐项恢复并完成
+  Netflix N1。
+- **M8B.4 后续 Android/Kernel**：只有 Android 12 arm64/multilib 与 N1
+  稳定后才评估；Android 主版本和 Kernel major 每次只改变一个。
+
+旧编号 M8.1–M8.6 仅用于历史追溯；新旧映射和详细退出条件见架构文档。
 
 ### Netflix/DRM 横向门禁
 
