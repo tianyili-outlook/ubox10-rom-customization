@@ -8,7 +8,9 @@
 python -m unittest discover -s tests -p "test_*.py" -v
 ```
 
-该命令当前覆盖 IMAGEWTY/LP/ext4 解析与语义门禁、候选配置约束、Test8r2/Test9 系列差异合同、vendor_dlkm 二进制补丁的严格原字节前置条件、官方原件/四个逻辑分区的恢复合同，以及 Test9.3 userdata bundle 的 schema、路径边界、APK metadata/签名解析和版本选择。恢复测试还会拒绝与容器 payload 等长但内容不同的缓存。单元测试不会修改官方镜像、调用 PhoenixCard 或访问设备；完整候选构建会另外执行 ext4、AVB、super 和 IMAGEWTY 集成验证。
+该命令覆盖 IMAGEWTY/LP/ext4、候选配置、Test8r2/Test9 差异合同、
+vendor_dlkm 补丁、官方分区恢复、userdata bundle，以及 ARM32/AArch64 ELF
+和 APK 内嵌 ELF fixture。单元测试不会修改官方镜像、调用 PhoenixCard 或访问设备。
 
 ## 测试层次
 

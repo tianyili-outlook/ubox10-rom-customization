@@ -1,8 +1,7 @@
 # M8 研究索引
 
-状态：`M8.0 READY`。Test9r2 runtime 证据和近期路线决策已经闭合；当前可开始
-只读 inventory 与 source-lock，但不下载大型 BSP/AOSP、不混装 Google 专有
-组件、不制作 M8 候选。
+状态：`M8.0 ACTIVE / M8A.1 COMPLETE`。硬件、运行时、ELF、Test8r2 DRM
+和 Android 12 `aosp_tv_arm` 产品差异已完成。
 
 M8 执行顺序为：
 
@@ -35,13 +34,12 @@ M8.GMS、M8.INPUT 和 M8.DRM 是横向门禁。详细路线见
 ```text
 docs/research/m8/
 ├─ current-device/
+│  ├─ hardware-identity.md
+│  ├─ runtime-baseline.md
 │  ├─ elf-inventory.csv
 │  ├─ elf-dependency-summary.md
 │  ├─ hal-inventory.json
 │  ├─ kernel-module-inventory.csv
-│  ├─ graphics-stack.md
-│  ├─ media-stack.md
-│  ├─ wifi-bt-stack.md
 │  └─ arm64-blockers.md
 ├─ m8a-atv-arm32/
 │  ├─ source-lock.md
@@ -84,14 +82,15 @@ M8.GMS/M8.INPUT 交付物。
 - 外部项目进入实验前记录 URL、branch/tag/commit、许可证、版本/ABI/签名、
   构建方式和输入哈希。
 
-## 第一批工作
+## 当前工作
 
-1. 编写 ELF inventory 工具与小型 fixture；
-2. 生成 Test8r2 图形、媒体、Wi‑Fi/BT、HAL/VINTF 和 Kernel module 只读报告；
-3. 锁定 Android 12 `device/google/atv` commit，形成 M8A.1 差异合同；
-4. 形成 M8.INPUT provider contract，继承 Test9r2 已证实的 system_ext RRO、
-   最小 `BLUETOOTH_CONNECT`、Remote v2、uinput 与官方 iPhone 验收；
-5. 形成 TV GMS component gap，单列 Play package visibility 与 Google API；
-6. 形成 BPI H618 M8B.1 source-lock；用户确认前不下载；
-7. 设计原厂/Test8r2 M8.DRM-0 采集；
-8. 不开发 UBOX Input，不以 ADB/Web remote 代替官方 M8.INPUT 验收。
+已完成硬件身份、Test8r2 运行时、ELF、HAL 和 Kernel module 基线。ELF 清单可
+用以下命令重建：
+
+```powershell
+python .\scripts\inventory-elf.py '@configs/m8-test8r2-elf.args'
+```
+
+Android 12 platform 已锁定；接下来准备至少 400 GB 可用的 Linux/ext4
+构建卷并进入 M8A.2a 静态构建，首刷前补官方 ROM DRM 对照。当前无需继续
+搜索硬件丝印或下载 H618 BSP。

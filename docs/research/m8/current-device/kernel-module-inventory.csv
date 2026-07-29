@@ -1,0 +1,23 @@
+file,loaded,runtime_name,role
+aic8800_bsp.ko,true,aic8800_bsp,AIC8800 bus/firmware
+aic8800_btlpm.ko,true,aic8800_btlpm,AIC8800 Bluetooth low-power
+aic8800_fdrv.ko,true,aic8800_fdrv,AIC8800 Wi-Fi
+arc4.ko,false,,legacy crypto
+auth_rpcgss.ko,false,,RPC authentication
+bcm_btlpm.ko,false,,Broadcom Bluetooth alternative
+bcmdhd.ko,false,,Broadcom Wi-Fi alternative
+dma-buf-test-exporter.ko,false,,DMA-BUF test
+ehci-sunxi.ko,true,ehci_sunxi,USB 2 EHCI
+gspca_main.ko,false,,USB camera framework
+init-input.ko,false,,vendor input helper
+mali_kbase.ko,true,mali_kbase,Mali-G31 kernel driver
+ohci-sunxi.ko,true,ohci_sunxi,USB OHCI
+rpcsec_gss_krb5.ko,false,,Kerberos RPC
+rtl_usb.ko,false,,Realtek USB Wi-Fi support
+rtlwifi.ko,false,,Realtek Wi-Fi support
+sunxi-hci.ko,true,sunxi_hci,Allwinner USB host glue
+sunxi_rfkill.ko,true,sunxi_rfkill,wireless power/rfkill
+sunxi_usbc.ko,true,sunxi_usbc,Allwinner USB controller
+uwe5622_bsp_sdio.ko,false,,Unisoc wireless alternative
+wireless_switch.ko,false,,vendor wireless selector
+xr819.ko,false,,XRadio Wi-Fi alternative

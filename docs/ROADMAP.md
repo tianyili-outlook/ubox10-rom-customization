@@ -157,7 +157,7 @@ M8.GMS、M8.INPUT 和 M8.DRM 是横向门禁。AOSP ATV 可在没有 Google 商�
 - **M8.0 共享审计**：递归盘点 ELF、HAL/service、VINTF、Kernel modules、
   图形、媒体、Wi‑Fi/BT 和 DRM；锁定 Android 12 ATV 参考与 Test9 remote
   证据。此阶段不生成刷机镜像。
-- **M8A.1 ATV 参考与差异**：固定 `device/google/atv` 的
+- **M8A.1 ATV 参考与差异（完成）**：固定 `device/google/atv` 的
   `android12-release` commit，比较 `aosp_tv_arm` product inheritance、
   package、permission、overlay、VINTF、Settings、输入、网络、电源和显示。
 - **M8A.2 最小 ARM32 ATV product**：保持 UBOX10 boot/kernel/vendor/
@@ -191,7 +191,7 @@ M8.GMS、M8.INPUT 和 M8.DRM 是横向门禁。AOSP ATV 可在没有 Google 商�
 ## 参考依据
 
 - AOSP 的 TV 核心 feature 文件同时声明 television、leanback 与 leanback_only：
-  <https://android.googlesource.com/device/google/atv/+/578751f94fdc584be22d7b1ea3112723a861b3af/tv_core_hardware.xml>
+  <https://android.googlesource.com/device/google/atv/+/3ce48358b7e06ab1f1a1b713fb0f285aaa0983ca/permissions/tv_core_hardware.xml>
 - Android TV 应用和 Leanback 要求：
   <https://developer.android.com/training/tv/get-started/create>
 - Android 12 兼容性定义：

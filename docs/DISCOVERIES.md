@@ -72,7 +72,9 @@
 - 官方 `vendor_dlkm` 带 2-root FEC；本地主机没有可信可复现的 `fec` 可执行文件，因此 Test9w1 重建该分区时保留 dm-verity 哈希树但明确关闭 FEC。这不改变正常读取路径，却降低介质位错误时的纠错能力，是实验候选与官方分区之间除目标内容/AVB 元数据外的已知差异。
 - BPI-SINOVOIP 的公开 H618 Android 12 仓库当前可访问，确实包含 Android、device、hardware、vendor、kernel、longan 等源码目录，并给出 H618/Linux 5.4/`-a arm64` 的 Longan 命令；但仓库说明还要求外部 oversized files，且该参数不能证明 Android userspace、`lib64` 或 64 位 Mali/Gralloc/HWC 已成立。
 - AOSP `device/google/atv` 提供独立分支和版本 tag；M8 的 Android 12 ATV 参考必须锁定对应 tag，不能直接依据当前 `main`。
-- 当前没有原厂 ROM 与 Test8r2 的 Widevine、DRM HAL、OEMCrypto/TEE、secure decoder、protected buffer、HDCP 或 Netflix 实际最大分辨率对照报告。Play Store 无可见 Play Protect certification 项只证明 UI 观察，认证结论仍为未知。
+- Test8r2 的 Widevine、DRM service、secure decoder 和 HDCP 基线已建立；
+  原厂 ROM、OEMCrypto/TEE 实际参与情况、Play Protect、Netflix App 与真实
+  最大分辨率仍待对照。Play Store 无可见认证项只代表 UI 观察。
 - Android DRM Framework 只提供统一接口，具体 DRM scheme 与安全强度由设备实现决定；因此 SoC 解码规格、Widevine level、Play Protect、TV Play Store 分发和 Netflix HD/4K 资格必须分开验证。
 - 清理前工作区共有 149 个 `.img`、约 85.677 GiB；第一轮清理后曾保留官方恢复原件、Test8r2 和 Test9w1，共 3 个可刷写 `.img`、约 5.617 GiB。连同旧工作树共释放约 81.604 GiB；当前可刷写保留集已切换为 Test9r2。
 - 四个官方逻辑分区缓存全部删除后，`prepare-candidate-inputs.py` 已从保留的 `x12-1024.img`/`super.fex` 成功重建 `system_a`、`product_a`、`vendor_a` 和 `vendor_dlkm_a`，且全部命中锁定 SHA-256。它们虽可复现，但现按用户指令长期保留，以缩短连续候选构建时间。
@@ -132,3 +134,26 @@
 - Kodi、Jellyfin TV、Moonlight 分别在界面、服务器连接流程和 Sunshine
   发现/手动添加边界通过；本轮缺少媒体、Jellyfin 服务器和串流主机，故以
   资源型有限豁免关闭，不声明未测试的端到端播放。
+- PCB、设备树和运行时共同确认 UBOX10 为 H616/AXP313A、4 GiB DDR3L、
+  64 GB eMMC；`VIC H16S01` 更可能是 RJ45 隔离磁性器件而非无线模组。
+- Test8r2 使用 64 位内核和纯 32 位用户空间；Mali-G31 EGL、Gralloc、
+  Mapper、HWC、Vulkan 均只有 32 位产物，构成 M8B 的首个硬阻塞。
+- Widevine engine、DRM passthrough 实现和 OP-TEE TA 存在，但
+  `ro.boot.drmkey=false`、无已注册 DRM HAL、无 secure codec，Netflix/DRM
+  能力继续标记为未知。
+- Test8r2 四分区共识别 1667 个 ELF：1554 个 ARM32 用户空间、0 个 AArch64
+  用户空间、22 个 AArch64 Kernel module、85 个 APK/JAR 内嵌 ELF。当前
+  ARM32 SONAME 名称级依赖闭合，但不能替代 linker namespace 验证。
+- Android 12 `aosp_tv_arm` 是 ARM32 userspace/64-bit Binder GSI；其 ATV
+  system/system_ext/product 可作为 UBOX10 产品参考，但随后继承的 emulator、
+  goldfish 和 generic_x86 vendor 与本机无关。
+- Test8r2 的 product compatibility matrix 单独接纳
+  `vendor.display.config@1.0` 与 `vendor.display.output` AIDL v2；重建
+  product 时必须保留，否则会丢失 UBOX 显示 VINTF 合同。
+- `AwTvProvision` 的常规路径设置三个 setup-complete 标志并自禁用，另有由
+  `tmp_provision*` 触发的 Device Owner/DPC 流程；当前无这些设置，也无
+  Device/Profile Owner。`SettingsSetup` 只隐藏旋转图标，`AwManager` 依赖
+  私有 `android.aw.BackgroundManager`，`PackageOverride` 无代码或组件。
+- Test8r2 的 Widevine 不是静态残留：MediaDrm 可打开 Google Widevine CDM
+  16.1.0，MP4/WebM 可用，但 security level 为 L3、HDCP connected/max
+  均为 NONE，AVC/HEVC/VP9 不要求 secure decoder；当前不能宣称 Netflix HD。

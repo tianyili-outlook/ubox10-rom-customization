@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.ubox10.m8.drmprobe">
+
+    <uses-sdk android:minSdkVersion="31" android:targetSdkVersion="31" />
+
+    <application
+        android:allowBackup="false"
+        android:debuggable="true"
+        android:label="M8 DRM Probe"
+        android:theme="@android:style/Theme.NoDisplay">
+        <activity
+            android:name="com.ubox10.m8.DrmProbeActivity"
+            android:excludeFromRecents="true"
+            android:exported="true" />
+    </application>
+</manifest>

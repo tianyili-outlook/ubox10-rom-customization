@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "baseline": "Test8r2",
+  "capturedAt": "2026-07-29",
+  "vintfTargetLevel": 6,
+  "userspaceAbi": "armeabi-v7a",
+  "coreEntries": [
+    { "name": "android.hardware.audio", "version": "7.0", "instance": "default", "state": "registered" },
+    { "name": "android.hardware.audio.effect", "version": "7.0", "instance": "default", "state": "registered" },
+    { "name": "android.hardware.bluetooth", "version": "1.0", "instance": "default", "state": "registered" },
+    { "name": "android.hardware.boot", "version": "1.2", "instance": "default", "state": "registered" },
+    { "name": "android.hardware.camera.provider", "version": "2.4", "instance": "external/0", "state": "registered" },
+    { "name": "android.hardware.cas", "version": "1.2", "instance": "default", "state": "registered" },
+    { "name": "android.hardware.gatekeeper", "version": "1.0", "instance": "default", "state": "registered" },
+    { "name": "android.hardware.graphics.allocator", "version": "2.0", "instance": "default", "state": "registered" },
+    { "name": "android.hardware.graphics.composer", "version": "2.2", "instance": "default", "state": "registered" },
+    { "name": "android.hardware.graphics.mapper", "version": "2.1", "instance": "default", "state": "passthrough-in-use" },
+    { "name": "android.hardware.health", "version": "2.1", "instance": "default", "state": "registered" },
+    { "name": "android.hardware.media.c2", "version": "1.2", "instance": "software", "state": "registered" },
+    { "name": "android.hardware.media.omx", "version": "1.0", "instance": "default", "state": "registered" },
+    { "name": "android.hardware.radio", "version": "1.6", "instance": "slot1", "state": "registered" },
+    { "name": "android.hardware.radio.config", "version": "1.3", "instance": "default", "state": "registered" },
+    { "name": "android.hardware.tv.cec", "version": "1.0", "instance": "default", "state": "registered" },
+    { "name": "android.hardware.usb", "version": "1.0", "instance": "default", "state": "registered" },
+    { "name": "android.hardware.usb.gadget", "version": "1.1", "instance": "default", "state": "registered" },
+    { "name": "android.hardware.wifi", "version": "1.5", "instance": "default", "state": "registered" },
+    { "name": "android.hardware.wifi.supplicant", "version": "1.4", "instance": "default", "state": "registered" },
+    { "name": "vendor.display.config", "version": "1.0", "instance": "default", "state": "registered" },
+    { "name": "android.hardware.drm", "version": "1.0", "instance": null, "state": "passthrough-implementation-only" }
+  ],
+  "notObserved": [
+    "registered android.hardware.drm service",
+    "android.hardware.power service"
+  ]
+}

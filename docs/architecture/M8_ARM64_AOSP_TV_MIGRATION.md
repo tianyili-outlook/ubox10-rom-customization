@@ -160,8 +160,7 @@ shared library、permission、overlay、property、SELinux 和 Setup/Provision
 
 交付物：
 
-- ELF inventory：partition、path、class、machine、interpreter、SONAME、
-  NEEDED、SHA-256；
+- ELF inventory：partition、path、class、machine、interpreter、SONAME、NEEDED；
 - HAL/service/init/VINTF 与 Kernel module inventory；
 - graphics、media、Wi‑Fi/BT 依赖报告；
 - current product 对 `aosp_tv_arm` 的 package/property/feature/overlay 差异；
@@ -353,18 +352,18 @@ Widevine L1、Play Protect、TV Play Store 分发和 Netflix HD/4K 资格互不�
 Test9r2 分层报告和 S3 路线决策已完成；不制作 Test9r3/Test10p1：
 
 1. M7/Test9.3 已完成并归档；后续不重新开启 32 位产品化候选；
-2. 编写 ELF inventory 工具，生成当前图形、媒体、Wi‑Fi/BT、HAL/VINTF 与
-   Kernel module 报告；
-3. 锁定 `device/google/atv` Android 12 commit，形成 M8A.1 source-lock 与
-   product/package/overlay/default-permission 差异合同；
+2. ELF、图形、媒体、Wi‑Fi/BT、HAL/VINTF 与 Kernel module 基线已完成；
+3. M8A.1 已锁定 `device/google/atv` Android 12 commit，并完成 product、
+   package、overlay、permission、VINTF 与容量差异；
 4. 将 Test9r2 的 system_ext RRO、最小 `BLUETOOTH_CONNECT`、6466/6467、
    mDNS、TLS、uinput 和官方 iPhone 证据写入 M8.INPUT provider contract；
 5. 以 AOSP ATV 与 MindTheGapps TV 结构形成 Android 12 ARM32
    `tv-gms-component-gap`，包括 Play package visibility，不下载或混装
    专有二进制；
-6. 形成 BPI H618 M8B.1 source-lock 方案，不下载大型源码；
-7. 设计原厂/Test8r2 DRM 只读采集；若原厂基线需要重新刷机，另行排期，
-   不与 Test9.3 回归混做。
+6. Android 12 platform 已锁定；准备至少 400 GB Linux/ext4 构建卷后开始
+   M8A.2a；
+7. Test8r2 DRM 已确认 Widevine L3、HDCP NONE、无 secure codec；官方 ROM
+   对照在首个 M8A 刷写候选前单独完成。
 
 ## 11. 主要资料
 

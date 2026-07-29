@@ -85,14 +85,23 @@
 - [x] 存储：新增官方原件恢复候选构建输入的脚本并锁定四个逻辑分区 SHA-256。
 - [x] 存储：可刷写保留集切换为官方恢复源、Test8r2 和当前 Test9r2；Test9r1/Test9w1 最终镜像与候选中间分区删除，配置、日志和哈希承担历史复现。
 - [x] 存储：四个锁定 SHA-256 的官方逻辑分区缓存改为长期保留，不再在每轮构建后删除，以缩短后续候选构建时间。
-- [ ] M8.0：编写 ELF inventory 工具及小型测试，输出 partition/path/class/machine/interpreter/SONAME/NEEDED/SHA-256。
-- [ ] M8.0：生成当前图形、媒体、Wi‑Fi/BT、HAL/VINTF 和 Kernel module 只读报告，形成 ARM32 product gap 与 arm64 blockers。
-- [ ] M8.DRM-0：先设计脱敏采集，再分别建立原厂 ROM 与 Test8r2 的 Widevine/TEE/OEMCrypto/secure codec/HDCP/Netflix 基线。
-- [ ] M8A.1：锁定 Android 12 `device/google/atv` 的 `android12-release` commit，以 `aosp_tv_arm` 建立 product/package/overlay/permission/VINTF 差异合同。
+- [x] M8.0：完成 ELF inventory 工具、小型 fixture 和 Test8r2 四分区扫描，输出 partition/path/class/machine/interpreter/SONAME/NEEDED。
+- [x] M8.0：完成 UBOX10 硬件身份和 Test8r2 图形、媒体、Wi‑Fi/BT、HAL/VINTF、Kernel module 只读基线，形成 arm64 blockers。
+- [x] M8.DRM-0a：完成脱敏探针与 Test8r2 Widevine/service/secure-codec/
+  HDCP 基线；确认 Widevine L3、HDCP NONE。
+- [ ] M8.DRM-0b：刷回官方 ROM 后运行同一探针并完成 Netflix N1 实际播放。
+- [x] M8A.1：锁定 Android 12 `device/google/atv` 的 `android12-release`
+  commit，完成 `aosp_tv_arm` product/package/overlay/permission/VINTF
+  差异与分区预算。
+- [x] M8A.2 source-lock：固定 Android 12 platform manifest
+  `8e7a5217…` 与 superproject `51d9636f…`，并核对 ATV gitlink。
+- [ ] M8A.2 build volume：准备至少 400 GB 可用的 Linux/ext4 构建卷；当前
+  C/D 盘余量不足，不启动完整 AOSP 同步。
 - [ ] M8A.2：M8.0/M8A.1 通过后，设计保持 UBOX10 boot/kernel/vendor/vendor_dlkm/TEE/32 位 ABI 不变的最小 ARM32 ATV 分层候选；未过离线门禁前不构建。
 - [ ] M8B.1：建立 BPI H618 的 source-lock、oversized files、Docker 环境和磁盘预算；用户确认前不下载或构建。
 - [ ] M8.INPUT：把 AOSP remoteprovider、product provider 配置、默认 `BLUETOOTH_CONNECT`、官方 Google TV iPhone 发现/配对/遥控/文字输入和重启复验纳入正式门槛；不开发 UBOX Input。
-- [ ] 分析 AwTvProvision、SettingsSetup、AwManager、PackageOverride；只保留确有硬件/平台职责者。
+- [x] 分析 AwTvProvision、SettingsSetup、AwManager、PackageOverride：
+  首版仅保留含可选 DPC provisioning 的 AwTvProvision；后三者不迁移。
 - [ ] 保留 AOSP `ProxyHandler`、`VpnDialogs`，除非实机证据证明它们参与厂商网络干预。
 
 ## 后续准备

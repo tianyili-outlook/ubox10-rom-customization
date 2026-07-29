@@ -12,6 +12,15 @@
 
 旧的 WSL/Fastboot 配置过程已移至 `docs/archive/host/`，不需要日常重复执行。
 
+## M8 AOSP 构建空间
+
+- Android 12 manifest 与 superproject 已锁定，完整源码尚未同步。
+- 2026-07-30：C 盘剩余 156.5 GiB，D 盘剩余 52.5 GiB，均不足。
+- [AOSP 官方要求](https://source.android.com/docs/setup/start/requirements)
+  为至少 400 GB 可用空间（约 250 GB checkout + 150 GB build）。
+- 后续使用单独的 Linux/ext4 构建卷；路径确定前不向当前 WSL VHDX 下载完整
+  AOSP。
+
 ## 从保留集恢复候选构建输入
 
 仓库主动删除可再生成的逻辑分区和候选中间镜像。首次构建或清理后先执行：

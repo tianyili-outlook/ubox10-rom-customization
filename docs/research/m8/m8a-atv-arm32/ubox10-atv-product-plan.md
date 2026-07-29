@@ -1,0 +1,32 @@
+# UBOX10 ARM32 ATV product 计划
+
+状态：`M8A.1 COMPLETE`，`M8A.2 SOURCE LOCKED / WAITING FOR BUILD VOLUME`
+
+## 分层
+
+- 不变：boot0、U-Boot、DTB/DTBO、Kernel 5.4.125、vendor、vendor_dlkm、
+  Wi-Fi/BT firmware、遥控/LED、TEE、安全材料和分区表。
+- 重建：Android 12 ARM32 `system`、`system_ext`、`product`。
+- 继承：ATV system/system_ext/product；不继承 emulator/goldfish vendor。
+- 产品选择：Projectivy、LatinIME、ContactsProvider；首版保留
+  `AwTvProvision`，其余非硬件 Allwinner UI 不迁移。
+- 隔离：GMS、Google Remote Service、DRM 改动和 AArch64 不进入首版。
+
+## 实施顺序
+
+1. Android 12 platform manifest、superproject 和 Test8r2 DRM 已锁定；
+   在有足够空间的 WSL/Linux 文件系统准备构建树。
+2. 建立 `device/ubox/ubox10`，生成 ARM32 system/system_ext/product；先跑
+   ELF/依赖、privapp、`checkvintf`、分区容量和 AVB 离线门。
+3. 与 Test8r2 的 boot/vendor/vendor_dlkm 组合最小候选，只验
+   zygote32、system_server、SurfaceFlinger、HDMI UI 和 ADB。
+4. 再验 TV Settings、Projectivy、实体遥控、音频、Wi-Fi/BT 和硬解。
+5. 基础产品稳定后，单独替换 AOSP `TvProvision`；M8.INPUT、M8.GMS、
+   M8.DRM 各自作为后续单变量。
+
+首个失败点若位于 VINTF、32 位图形/媒体依赖或最小 UI，先修产品层，不改
+vendor 或转向 AArch64。Test8r2 始终是刷回基线。
+
+当前 C/D 分别只余 156.5/52.5 GiB。AOSP 官方建议 checkout + build 至少预留
+400 GB，因此现有盘不启动完整同步；需要新增或清理出单个 Linux/ext4
+构建卷。

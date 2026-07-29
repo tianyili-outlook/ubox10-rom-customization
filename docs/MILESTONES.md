@@ -9,10 +9,12 @@
 - [x] **M6 分批净化**：测试版 2/3/4/5/6 已实机通过，纯删除阶段完成。
 - [x] **M7 Android TV 产品化**：Test8r2 稳定基线、五项 userdata 应用来源锁/统一安装/启动/重启、D-pad/Back/Home、SmartTube 1080p、AnExplorer USB/APK 与 AirReceiverLite iPhone 音视频通过。Kodi/Jellyfin/Moonlight 因缺外部资源只验到界面和连接/发现边界；有限豁免已记录。用户不把 AirReceiver 完整版购买纳入项目，M7 于 2026-07-29 完成。
 - [ ] **M8.0 共享证据门**：Test9r2 runtime 与 S3 路线决策已闭合；继续盘点 ELF/HAL/VINTF/图形/媒体/Wi‑Fi-BT/DRM，完成 TV GMS gap 与 Android 12 ATV source-lock；不制作迁移镜像。
-- [ ] **M8A.1 ARM32 ATV 参考**：以锁定的 `aosp_tv_arm` 建立 UBOX10 product/package/overlay/permission/VINTF 差异和容量预算。
+- [x] **M8A.1 ARM32 ATV 参考**：以锁定的 `aosp_tv_arm` 建立 UBOX10 product/package/overlay/permission/VINTF 差异和容量预算。
 - [ ] **M8A.2–M8A.3 真正 ARM32 AOSP ATV**：保持 UBOX10 boot/kernel/vendor/vendor_dlkm/TEE 与 32 位 ABI，分层启动原生 ATV product并恢复硬件；M8.GMS/M8.INPUT/M8.DRM 独立验收。
 - [ ] **M8B.1 64 位供体门**：原样验证 BPI H618 BSP 的真实 arm64/multilib、图形和 Vendor 接口能力。
 - [ ] **M8B.2–M8B.3 AArch64 迁移**：继承 M8A 产品合同，分层验证 linker→zygote64→SurfaceFlinger→HDMI/ADB，再逐项完成硬件、官方手机遥控和 Netflix N1 回归。
 - [ ] **M8B.4 后续平台**：Android 12 arm64/multilib 稳定后，再单变量评估 Android 主版本、LineageOS 工程和 Kernel 更新。
 
-当前关键节点：**M7 已完成，Test8r2 仍是唯一稳定基线；Test9r2 remote 技术链为 PASS、整机为 PARTIAL，已选择 S3 并关闭 Test9r3/Test10p1。官方手机遥控产品化转入 M8.INPUT。M8 先以 M8A 建立 ARM32 真 ATV product，再以 M8B 迁移 AArch64；64 位图形 same-process HAL 只阻塞 M8B。M8.INPUT 不以 UBOX Input 替代，M8.GMS 不以混装 APK 或伪造认证通过，Netflix/DRM 原厂与 Test8r2 基线必须在相关修改前建立。**
+当前关键节点：**M7 已完成，Test8r2 仍是唯一稳定基线；M8A.1 和 Test8r2
+DRM 基线已完成，完整 Android 12 platform 也已锁定。当前等待至少 400 GB
+Linux/ext4 构建卷，再开始 M8A.2a；首刷前补官方 ROM DRM 对照。**

@@ -1,0 +1,16 @@
+{
+  "elf32": {
+    "class": 32,
+    "machine": 40,
+    "interpreter": "/system/bin/linker",
+    "soname": "libfixture32.so",
+    "needed": ["libc.so", "libdl.so"]
+  },
+  "elf64": {
+    "class": 64,
+    "machine": 183,
+    "interpreter": "/system/bin/linker64",
+    "soname": "libfixture64.so",
+    "needed": ["libc.so"]
+  }
+}

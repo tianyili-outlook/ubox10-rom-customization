@@ -1,5 +1,22 @@
 # 变更日志
 
+## 2026-07-30
+
+- 完成 M8A.1：锁定 Android 12 `device/google/atv` commit
+  `3ce48358b7e06ab1f1a1b713fb0f285aaa0983ca`，形成 package、overlay、
+  permission、VINTF、分区预算和 UBOX10 ARM32 ATV 分层计划。确认只采用
+  ATV 产品层、保留 UBOX vendor/product display matrix，不采用 emulator/
+  goldfish vendor；dynamic group 容量足够，但 product 必须扩容。
+- 静态审计 AwTvProvision、SettingsSetup、AwManager、PackageOverride：
+  AwTvProvision 含可选 Device Owner provisioning，首版保留；其余分别为
+  一次性旋转图标设置、Allwinner 私有后台管理 UI 和空壳资源包，不迁移。
+- 新增临时安装后自动卸载的脱敏 MediaDrm 探针；Test8r2 实测 Widevine
+  16.1.0 可打开但仅为 L3，HDCP connected/max 均为 NONE，AVC/HEVC/VP9
+  均不要求 secure decoder。Netflix N2/N3 阻塞，N1 待实际播放。
+- 锁定 Android 12 platform manifest `8e7a5217…` 与 superproject
+  `51d9636f…`；superproject 的 ATV gitlink 命中 `3ce48358…`。主机 C/D
+  仅余 156.5/52.5 GiB，低于 AOSP 官方 400 GB 建议，故不启动完整同步。
+
 ## 2026-07-29
 
 - M7 正式完成：Projectivy 中五项新应用的实体遥控和焦点通过，SmartTube
@@ -8,6 +25,9 @@
 - 发布入口补齐 `configs/releases/m7.json` 和 `M7_RELEASE_GUIDE.md`；
   `--guided-after-flash` 会下载并严格校验缺失 APK，打开 Play 页面等待用户
   登录、跳过付款方式并安装 Lite，再统一安装五项应用。
+- M8.0 完成 UBOX10 硬件、Test8r2 运行时及 1667 项 ELF 基线；平台用户空间
+  全部为 ARM32，图形/媒体/无线均无 AArch64 用户态产物。M8A 可继续，
+  M8B 保持阻塞；新增只读采集脚本、HAL、Kernel module 和 ELF 工具/清单。
 - 设备已从 Test9r2 刷回 Test8r2；自动复核 SDK 31/ARMv7、television、
   Projectivy HOME、ContactsProvider、Play Store 29.2.15、5 GHz Wi‑Fi 6/
   公网和蓝牙，确认 leanback/Remote Service 均已退出。
