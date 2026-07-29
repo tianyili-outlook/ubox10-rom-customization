@@ -38,4 +38,4 @@
 
 ## 当前状态
 
-UART、Fastboot、WSL2、ext4/AVB/super/IMAGEWTY 构建链均已完成。Test8r2 是唯一稳定基线；Test9w1 未证明改善并已退役，Test9r2 已在最小 `BLUETOOTH_CONNECT` 临时授权下证明官方 Google TV iPhone 发现、配对、遥控与文字输入可行，但因 Play Store 回归总体为 `PARTIAL`。项目已选择 S3，当前 M7 从 Test8r2 进入 Test9.3，官方手机遥控产品化转入 M8.INPUT。M8.0 已具备开始只读 ELF/HAL/VINTF/图形/媒体/DRM 盘点的条件，但在图形栈与 DRM 基线明确前不制作 64 位候选；M8.INPUT 明确不以 UBOX Input 替代。
+UART、Fastboot、WSL2、ext4/AVB/super/IMAGEWTY 构建链均已完成。Test8r2 是唯一稳定基线且设备已刷回；Test9w1 未证明改善并已退役，Test9r2 已在最小 `BLUETOOTH_CONNECT` 临时授权下证明官方 Google TV iPhone 发现、配对、遥控与文字输入可行，但因 Play Store 回归总体为 `PARTIAL`。项目已选择 S3；Test9.3 五项 userdata 应用自动化门已通过，AirReceiverLite 的 iPhone 发现/镜像/音频试用门也已通过并确认前台/五分钟限制，当前等待五项遥控/播放/USB、AnExplorer 体验及可选的完整版后台/开机复验。官方手机遥控产品化转入 M8.INPUT。M8.0 已具备开始只读 ELF/HAL/VINTF/图形/媒体/DRM 盘点的条件，但在图形栈与 DRM 基线明确前不制作 64 位候选；M8.INPUT 明确不以 UBOX Input 替代。

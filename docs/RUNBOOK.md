@@ -50,10 +50,10 @@ RemoteService.onCreate
 `research/tv-gms-remote/test9r2-runtime-report.md`，路线决定见
 `research/tv-gms-remote/route-decision.md`。
 
-## 当前设备退出 Test9r2
+## 已完成：当前设备退出 Test9r2
 
-用户方便时使用 PhoenixCard Product 模式刷回 Test8r2。该过程可能清除
-userdata/metadata：
+设备已于 2026-07-29 使用 PhoenixCard Product 模式刷回 Test8r2，并完成
+自动基线复核。该过程清除了 userdata/metadata：
 
 1. 备份需要保留的账号和本地数据。
 2. 确认目标是 TF 卡。
@@ -68,10 +68,10 @@ userdata/metadata：
 4. 只有结果为
    `6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8`
    时写卡。
-5. 刷回后验证 Projectivy、英语、方向/OK/Back/Home、Settings、HDMI、
+5. 刷回后已验证 Projectivy、英语、方向/OK/Back/Home、Settings、HDMI、
    5 GHz Wi‑Fi、互联网、TCP ADB 和蓝牙。
-6. 确认 Play Store 回到 Test8r2 的已知状态：界面手机化、首页可能失败，
-   但可登录、搜索和安装；不应再出现 Test9r2 的 Leanback 不兼容受限页。
+6. Play Store 已回到 Test8r2 29.2.15；fresh userdata 当前进入未登录页面，
+   不再进入 Test9r2 的 `AccessRestrictedActivity`。
 
 本轮临时授予的 CONNECT 权限位于 userdata；刷写清除 userdata 时会自然消失，
 无需修改只读分区或制作清理镜像。
@@ -80,13 +80,33 @@ userdata/metadata：
 
 所有新工作继续从 Test8r2 出发，不继承 Test9w1、Test9r1 或 Test9r2：
 
-1. 提供 SmartTube、Kodi、Jellyfin 和 Moonlight 的可重复 data 分区安装配置。
-2. 选择有明确来源、许可证和遥控器体验的 AirPlay 接收器。
-3. 选择遥控器友好的现代文件管理器，恢复 USB 浏览和本地 APK 安装能力。
-4. 固定来源、版本、包名、签名和 SHA-256；第三方 APK 只放忽略的
-   `work/preinstall_apks/`，不进入公共 Git。
-5. 完成 Projectivy 流畅度、启动、实体遥控、HDMI 音视频、Wi‑Fi、蓝牙、
-   应用安装和重启回归。
+已完成自动化部分：
+
+1. `configs/apps/test9.3-userdata-apps.json` 固定五项来源、许可证、版本、
+   包名、ABI、签名和 SHA-256。
+2. `scripts/install-userdata-apps.py` 在 Test8r2 合同通过后，幂等安装
+   SmartTube、Kodi、Jellyfin TV、Moonlight 和 AnExplorer TV。
+3. 五项首次安装、launch activity、LEANBACK_LAUNCHER、真实重启持久性和
+   重启后再次启动均通过；重复运行全部为 `already-current`。
+4. 重启后 Projectivy HOME、5 GHz Wi‑Fi 6/互联网、蓝牙、Play Store 和
+   feature guard 无回归。
+
+当前人工步骤：
+
+```powershell
+python .\scripts\install-userdata-apps.py --verify-only
+python .\scripts\install-userdata-apps.py --dry-run
+python .\scripts\install-userdata-apps.py
+```
+
+- 用实体遥控逐项测试五个应用的焦点、Back/Home 和真实播放；
+- 用 AnExplorer 测试存储权限、USB 和本地 APK 选择；
+- AirReceiverLite 的 iPhone 发现、镜像、HDMI 音频和同步已经通过；Lite
+  明确要求前台且部分功能每次限 5 分钟。由用户决定是否购买完整版，购买后
+  再测后台接收、开机启动、长会话和电视广播名称。
+
+完整源锁、命令、结果和人工清单见
+`experiments/TEST9_3_USERDATA_APPS.md`。
 
 Test9.3 不继续修改 Play Store、GMS、设备身份、framework remote gate 或
 Google Remote Service。

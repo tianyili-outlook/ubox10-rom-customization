@@ -63,8 +63,30 @@
 - Play Store 继续进入 `AccessRestrictedActivity` 并显示 not compatible；
   因此 Test9r2 remote 分类为 `R2-REMOTE-PASS`，整机只能记录
   `PARTIAL`、不得晋级。
-- 已选择 S3：不制作 Test9r3/Test10p1，用户方便时刷回 Test8r2；当前 M7
-  进入 Test9.3，remote 产品化转入 M8.INPUT。
+- 已选择 S3：不制作 Test9r3/Test10p1；设备已刷回 Test8r2，当前 M7
+  进入 Test9.3 人工门，remote 产品化转入 M8.INPUT。
+
+## Test9.3 用户态应用门
+
+- 本地门：APK 必须匹配配置中的 bytes、SHA-256、package、versionCode、
+  versionName、min/target SDK、native ABI、launch activity 和 signer
+  certificate SHA-256。
+- 设备门：只允许 SDK 31/ARMv7 的 Test8r2；必须保留 television、
+  Projectivy、ContactsProvider 和 Play Store，且不得出现 leanback 或
+  Google Remote Service。
+- 安装门：默认五项全部 `adb install -r` 成功，设备端 `base.apk` SHA-256
+  必须等于来源锁；重复运行必须 `already-current`，发现更高 versionCode
+  时禁止静默降级。
+- 启动门：五项均可解析 LEANBACK_LAUNCHER、进入主 activity，且无
+  `AndroidRuntime` crash。
+- 重启门：真实 uptime 重置后五项仍在、可再次启动；Projectivy、Wi‑Fi/
+  互联网、蓝牙、Play Store 和 feature guard 不回归。
+- 人工门：实体遥控/Back/Home、真实媒体播放、USB/APK、广告体验与 iPhone
+  AirPlay 必须逐项通过。自动化通过不能替代人工门。AirReceiverLite 已完成
+  发现、镜像、HDMI 音频和同步验证。
+- AirPlay 商业边界：Lite 明确要求前台且部分功能每次限 5 分钟；购买完整版
+  必须由用户决定。购买后再验后台、开机、长会话和广播名称；项目不导出、
+  提交或再分发付费 APK。
 
 ## M8 门槛
 

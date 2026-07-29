@@ -120,6 +120,18 @@ system stack。
 - 将应用来源、版本、签名和校验写入配置；第三方 APK 不提交公共仓库。
 - 完成 Projectivy 流畅度、启动、遥控、影音、蓝牙、Wi‑Fi、应用安装和重启回归。
 
+2026-07-29 进度：
+
+- 已从 Test9r2 刷回并自动确认 Test8r2 合同。
+- 五项 source-lock、安装器、单元测试、首次安装、启动和真实重启门通过；
+  AnExplorer TV 作为文件管理候选进入人工体验门。
+- AirReceiverLite 5.1.7 已通过 iPhone 发现、镜像、HDMI 音频与同步实测；
+  重启证明 Lite 因产品限制不会后台/开机运行，且部分功能每次限 5 分钟。
+- 用户决定是否购买 AirReceiver 完整版；购买后只复验后台、开机、长会话和
+  广播名称。AirScreen 只在完整版仍失败时作为第二候选。
+- 当前剩余的是实体遥控、真实播放、USB/广告体验与可选的完整版 AirPlay
+  产品门；Test9.3 尚未整体标记完成。
+
 ## M8：先建立真正 AOSP Android TV，再迁移 AArch64
 
 M8 不再以“找到一套 Google TV APK”定义，也不再把 TV product 与 64 位 ABI

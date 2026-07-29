@@ -2,6 +2,25 @@
 
 ## 2026-07-29
 
+- 设备已从 Test9r2 刷回 Test8r2；自动复核 SDK 31/ARMv7、television、
+  Projectivy HOME、ContactsProvider、Play Store 29.2.15、5 GHz Wi‑Fi 6/
+  公网和蓝牙，确认 leanback/Remote Service 均已退出。
+- 新增 `test9.3-userdata-apps.json` 与 `install-userdata-apps.py`：锁定
+  SmartTube 32.03、Kodi 21.3、Jellyfin TV 0.19.9、Moonlight 12.1 和
+  AnExplorer TV 6.0.5 的官方来源、许可证、版本、ABI、大小、SHA-256 与
+  signer certificate；安装前 fail-closed 验证 Test8r2 合同。
+- 五项 APK 本地校验和首次 userdata 安装全部通过；均可解析
+  LEANBACK_LAUNCHER 并进入主 activity。真实系统重启后五项仍可启动，
+  安装器再次运行全部返回 `already-current`，未见 AndroidRuntime crash，
+  Projectivy/Wi‑Fi/蓝牙/Play Store 无自动化回归。
+- AnExplorer TV 暂作为文件管理候选：官方页面版本标签落后于实际 APK，故
+  改锁官方 data repo 不可变 commit；免费版广告/Pro 限制留待人工体验。
+  AirPlay 选型固定为 AirReceiverLite 免费测试 → 用户决定是否购买
+  AirReceiver；不导出或再分发商业 APK。
+- AirReceiverLite 5.1.7 已从 Play 安装并通过 iPhone 发现、498×1080 镜像、
+  HDMI 音频和同步实测；mDNS `_airplay._tcp.local` 与 7000/7100 可达。
+  真实重启确认 Lite 不自动恢复服务，其弹窗明确要求前台且部分功能每次限
+  5 分钟；结果记为 `AIRPLAY-TRIAL-PASS`，完整版后台/开机门等待用户购买决定。
 - 完成 Test9r2 真机分层采证：system_ext RRO lookup、framework provider 和
   shared library 均正常；初始 Remote Service 因缺少运行时
   `BLUETOOTH_CONNECT` 在 `getBondedDevices/getAddress` 处崩溃，主进程退出且

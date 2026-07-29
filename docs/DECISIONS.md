@@ -34,6 +34,25 @@
 - **Projectivy 先作为用户应用试跑**：4.71 用户态和 Test7 system app 均已实机通过；Test8 因此删除 X12。
 - **保留当前 32 位 Android 用户空间**：H616 和内核支持 64 位，但 system/vendor 只有 32 位运行库和硬件栈；没有匹配的 64 位 BSP/厂商二进制时不迁移 arm64。
 - **大型目标应用使用配置脚本安装**：Kodi、Jellyfin、Moonlight、SmartTube 不固化进只读分区，便于更新和替换；Projectivy 仍在 Test7 注入固件。
+- **Test9.3 安装器必须同时锁 APK 内容和签名身份**：配置记录 bytes、
+  SHA-256、package/version/SDK/ABI/launch activity 与 signer certificate；
+  脚本还验证 Test8r2 baseline contract 和设备端 `base.apk` SHA-256，任何
+  一项不符即停止，不以文件名、版本号或“安装成功”代替来源验证。
+- **Test9.3 五项保持 userdata 应用**：SmartTube、Kodi、Jellyfin TV、
+  Moonlight 和 AnExplorer 不进入 system/product；刷机后用同一幂等脚本恢复，
+  版本已相同时跳过，发现更高版本时拒绝静默降级。
+- **SmartTube 在 Test9.3 冻结 32.03**：官方 beta 为推荐 channel，但本轮不
+  追逐刚出现的 32.10；先用已核验 release asset/签名完成整体验收，再把 updater
+  升级作为单变量测试。
+- **AnExplorer TV 是有条件文件管理候选**：官方 TV 专版具备 D-pad、USB 与
+  APK 安装路径，APK 来源锁到不可变官方 commit；免费版广告和 Pro 网络功能
+  必须经人工体验门，不通过则改测 X-plore，不修改固件。
+- **AirPlay 采用先试用、后购买的合法路径**：先从 Play Store 安装
+  AirReceiverLite 验证 iPhone 协议和性能；通过后只有用户可决定购买
+  AirReceiver。AirScreen 因广告/内购只作第二候选，付费 APK 不导出、不进入
+  bundle 或 Git。2026-07-29 试用已通过发现、镜像、HDMI 音频和同步；
+  Lite 明确要求前台且部分功能每次限 5 分钟，所以最终后台/开机门只在用户
+  购买完整版后复验，不为绕过试用限制修改或重打包 APK。
 - **Test7 将 Projectivy 注入 `/system/app`**：沿用已验证的 system ext4 修改链，并替换厂商已有的两项默认 Launcher 属性；X12 仅在 Test7 保留作回退。
 - **Test9a/Test9b 只作为失败诊断实验保留**：加入 Leanback/Leanback-only feature 后，Play Store 仍拒绝当前设备组合；配置和通用文件注入能力用于复现证据，但镜像不作为部署基线。
 - **当前阶段不再修补 Play Store APK**：保留现有 Google 服务用于登录、搜索、安装和更新；电视版 Play Store、Play Protect/认证、设备身份一致性与 64 位 BSP 合并到未来平台阶段。

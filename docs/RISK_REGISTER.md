@@ -13,8 +13,12 @@
 | Google 服务授权或认证被破坏 | 保留设备原有 GMS，不从项目重新分发或盲目替换。 |
 | 历史 Test9w1 Wi‑Fi driver patch/无 FEC vendor_dlkm 被误传到后续 | Test9w1 已退役；Test9r1/Test9r2 和后续候选从 Test8r2 构筑，语义检查要求 `vendor_dlkm` 与官方输入一致。历史配置只用于复现证据。 |
 | Google Remote Service 专有 APK 被误提交或重新分发 | donor 只放忽略的 `work/`；脚本验证固定 APK/证书哈希但不下载，Git 只保存 AOSP 构建脚本、XML、配置和哈希。提交前检查 ignored/untracked 文件。 |
+| Test9.3 APK 被同名替换、latest URL 漂移或签名身份变化 | 安装器同时验证 bytes、SHA-256、aapt metadata 与 signer certificate；AnExplorer 的可变官方直链改锁不可变 commit，任何不符均停止。 |
+| 刷机清空五个 userdata 目标应用 | 不把大型应用固化进 system/product；保留 source-lock 和幂等安装器，按配置把本地 APK 放回忽略的 `work/` 后重跑。 |
+| 免费文件管理器广告或 Pro 门槛破坏简洁体验 | AnExplorer 只处于人工候选；测试 D-pad、USB、APK 和广告后再定版，不通过则单变量改测 X-plore。 |
+| AirPlay 试用/付费 APK 的许可或账户依赖 | AirReceiverLite 协议/性能已通过，但试用版本身要求前台且部分功能每次限 5 分钟；购买由用户决定，完整版须再验后台/开机，项目不导出、破解、提交或再分发付费 APK。 |
 | Remote Service 特权过大或绕过输入安全 | privapp allowlist 只列 Android 12 上具有 privileged bit 的请求；不伪授予纯 signature 的 `INJECT_EVENTS`，provider 必须走 BIND_TV_REMOTE_SERVICE、显式 package allowlist、配对认证和 framework uinput bridge。 |
-| Test9r2 的 leanback 重新触发 Play Store 不兼容 | 已确认回归并禁止晋级；路线选择 S3，用户方便时刷回 Test8r2，不制作 Test9r3/Test10p1。 |
+| Test9r2 的 leanback 重新触发 Play Store 不兼容 | 已确认回归并禁止晋级；路线选择 S3，设备已刷回 Test8r2，不制作 Test9r3/Test10p1。 |
 | Remote Service 把已安装 Play Store 判定为 missing | Test9r2 证明该警告不阻塞本地 Remote v2，但 package visibility/Google API 仍不一致；转入 M8.GMS，不替换/破解 Play Store 或伪造设备身份。 |
 | 预置 RRO 文件存在但不在设备实际扫描路径 | Test9r1 暴露、Test9r2 通过 system_ext 路径修复并由 lookup/provider 真机证明；M8 仍须在 product 构建中原生声明并验证实际注册。 |
 | Remote Service 缺 Android 12+ 默认运行时权限 | Test9r2 只授予 `BLUETOOTH_CONNECT` 即通过；M8 用 default-permissions 原生授予最小权限，SCAN/ADVERTISE 必须有新证据才扩大。 |

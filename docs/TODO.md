@@ -69,8 +69,12 @@
 - [x] Test9.2：官方客户端已通过，不触发 Python/Swift receiver-client matrix。
 - [x] 路线决策：选择 S3，结束当前 32 位 remote；不制作 Test9r3/Test10p1，后续候选从 Test8r2 构筑。
 - [ ] M8.GMS：以 AOSP ATV 与 MindTheGapps TV 的结构形成 Android 12 ARM32 package/shared-library/permission/overlay/property/SELinux/Setup/Play/Remote 组件差距报告；单列 Play package visibility，不下载或混装未验证专有二进制。
-- [ ] 当前设备：用户方便时刷回 Test8r2，确认 Play Store 回到可搜索/安装的已知基线行为。
-- [ ] Test9.3：提供 SmartTube、Kodi、Jellyfin、Moonlight 的用户态配置安装脚本，选择 AirPlay 接收器和现代文件管理器，完成最终验证。
+- [x] 当前设备：已刷回 Test8r2；Projectivy、SDK/ABI/feature、ContactsProvider、Play Store、Wi‑Fi/互联网和蓝牙自动基线通过。
+- [x] Test9.3：锁定 SmartTube、Kodi、Jellyfin TV、Moonlight 与 AnExplorer TV 的官方来源、许可证、版本、ABI、SHA-256 和签名，提供 fail-closed 的幂等 userdata 安装器。
+- [x] Test9.3：五项首次安装、LEANBACK_LAUNCHER、启动、真实重启持久性和重启后 `already-current` 通过；系统基线无自动化回归。
+- [ ] Test9.3：人工完成五项实体遥控/真实播放、AnExplorer USB/APK/广告体验，并决定文件管理器是否最终采用。
+- [x] Test9.3：从 Play Store 安装 AirReceiverLite 5.1.7；iPhone 发现、镜像、HDMI 音频和同步通过，真实重启确认 Lite 因试用限制不会后台/开机运行且部分功能每次限 5 分钟。
+- [ ] Test9.3：由用户决定是否购买完整版 AirReceiver；若购买，复验后台接收、开机启动、长会话和电视广播名称。付费 APK 不进入项目资产。
 - [x] M8：吸收 2026-07-28 架构调研，建立 arm64/multilib、AOSP ATV、供体和 Netflix/DRM 分阶段计划及研究索引。
 - [x] M8：按 2026-07-29 调研重排为 M8.0 共享证据门、M8A ARM32 真 ATV、M8B AArch64/multilib，并将 M8.GMS/M8.INPUT/M8.DRM 作为横向门禁。
 - [x] 存储：新增官方原件恢复候选构建输入的脚本并锁定四个逻辑分区 SHA-256。
@@ -88,8 +92,9 @@
 
 ## 后续准备
 
-- 需要确定现代文件管理器和 AirPlay 接收器的可追溯 APK 来源、版本与许可证。
-- SmartTube 曾发生构建环境/签名密钥事件，纳入固件前必须单独核对当前官方稳定版和签名；不得使用随机 APK 镜像站。
+- AnExplorer TV 已锁定官方不可变 commit、版本、哈希和签名；免费版含广告且部分网络功能需 Pro，最终采用取决于人工体验。若淘汰，再单变量评估 X-plore。
+- AirReceiverLite 的协议/性能试用门已经通过；最终采用取决于用户是否购买完整版及其后台/开机复验。付费 APK 不导出、不进入 bundle。
+- SmartTube 32.03 已核对官方 release asset、MIT 许可证、ARMv7 变体和签名；本轮不随最新 beta 滚动，不得使用随机 APK 镜像站。
 - 待下载的原始 APK 统一放入 `work/preinstall_apks/incoming/`，保留原文件名和来源 URL。
 - Kodi 21.3、Jellyfin TV 0.19.9、Moonlight 12.1 和 SmartTube 32.03 Beta 均已匹配官方发布；最终通过配置脚本安装，不固化进 system/product。
 - USB ADB 无枚举，但 TCP ADB 已验证可用；默认连接 `192.168.1.5:7896`。

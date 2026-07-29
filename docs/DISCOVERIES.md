@@ -95,7 +95,33 @@
 - Remote Service 继续报告 Play Store “missing”、Google API `SERVICE_INVALID` 和 security provider warning，但它能自行生成服务器证书并完成本地协议链，故这些日志不是当前 remote 首个阻塞。framework `config_forceQueryablePackages` 只有 Settings/SettingsProvider，Remote Service `queriesPackages=[]` 且 Play Store `forceQueryable=false`，package visibility 是 Store “missing” 的强解释，转入 M8.GMS。
 - Test9r2 的 Play Store 仍进入 `AccessRestrictedActivity` 并显示 not compatible，所以整机候选只能记为 `PARTIAL`。路线选择 S3，不制作 Test9r3/Test10p1，后续从 Test8r2 完成 Test9.3，官方手机遥控产品化转入 M8.INPUT。
 - Google Remote Service APK 只作为用户本地 donor 存在于被忽略的 `work/`；仓库没有提交或重新分发该专有二进制。M8 将继承 product/API/验收合同，而不是从 Test9r1 镜像复制二进制。
+- 设备已于 2026-07-29 刷回 Test8r2；fresh userdata 下 Play Store
+  29.2.15 启动到 `UnauthenticatedMainActivity` 而不是 Test9r2 的
+  `AccessRestrictedActivity`。Test8r2 的 SDK 31、ARMv7、television、
+  Projectivy HOME、ContactsProvider、5 GHz Wi‑Fi 6/公网和蓝牙基线均复核通过。
+- SmartTube 32.03、Kodi 21.3、Jellyfin TV 0.19.9、Moonlight 12.1 与
+  AnExplorer TV 6.0.5 已按 APK SHA-256、aapt metadata 和 signer certificate
+  全量锁定；首次 data 安装、LEANBACK_LAUNCHER 和启动通过。
+- 真实系统重启后上述五项仍存在并可再次启动，安装器重复运行全部返回
+  `already-current`；未观察到 AndroidRuntime crash，Projectivy、Wi‑Fi、
+  蓝牙、Play Store、television/leanback guard 无自动化回归。
+- AnExplorer 官方 TV 下载页仍标 6.0.1，官方直链实际 APK 为 6.0.5；锁定
+  `1hakr/data` commit `2cc09a11f320cd67845154385b1893260e5a80e0`
+  后来源可复现。免费版含广告且部分网络/云功能需 Pro，仍需人工决定。
 - AOSP `device/google/atv` 的 `android12-release/products` 明确提供 `aosp_tv_arm.mk`、`aosp_tv_arm64.mk`、`atv_product.mk`、`atv_system.mk` 与 `atv_system_ext.mk`，因此可以先用 ARM32 参考隔离 ATV product 问题，再单独迁移 AArch64。
 - MindTheGapps TV 确实提供 arm/arm64/common/overlay、proprietary file list、权限与内联构建结构；当前可见 GitHub `baklava` 和 GitLab `vic` 分支均比 Android 12 更新，不能据此认定存在可直接用于本机的 Android 12 ARM32 donor。
 - `tronikos/androidtvremote2` 和 `odyshewroman/AndroidTVRemoteControl` 分别提供 Python 与 Swift 的 Remote protocol v2 客户端实现，都要求电视端 receiver 已存在；它们适合隔离客户端/协议问题，不会补齐缺失的 system receiver 或 GMS 依赖。
 - `Legvan/tv-remote` 的上游设计包括 ADB over TCP、默认绑定 `0.0.0.0` 的 Flask 服务、可在 LAN 访问的 on-device 8080 服务、带 raw shell 的 CLI 和 ASCII-only 文字输入；未经重构不满足本项目的认证、Unicode、最小权限与攻击面要求。
+- Play Store 下发的 AirReceiverLite 为 `com.softmedia.receiver.lite` 5.1.7
+  （versionCode `2020164765`）ARMv7 split；base signer certificate SHA-256
+  为 `54EAA65CB223EE1EA69B049480A1C3F186E3B3700AE8B0019879EAE7E7DA05A4`。
+  它声明 Launcher/Leanback Launcher、前台 AirReceiverService 与
+  BOOT_COMPLETED receiver。
+- 首次授权后 AirReceiverLite 在 5353 发布 `_airplay._tcp.local`，监听
+  7000/7100 并以 `Pixel3-5[AirPlay]` 广播。主机 mDNS 查询与 TCP 可达性通过；
+  iPhone 实机进入 498×1080 AirMirrorActivity，OpenSL ES 音频输出到 HDMI，
+  用户确认镜像、声音和同步均正常。
+- 真实重启后 AirReceiverLite package 与 overlay 权限保留，但 service 和
+  AirPlay 监听未自动恢复；Lite 弹窗明确说明试用版必须保持前台且部分功能
+  每次限 5 分钟。因此协议/性能结论为 PASS，后台/开机失败是版本限制而非
+  Test8r2 回归，须由用户购买完整版后另行验收。

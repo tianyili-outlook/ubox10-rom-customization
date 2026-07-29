@@ -51,9 +51,11 @@ Remote Service 会扩大变量并损害可归因性。
 
 ## 当前执行顺序
 
-1. 用户方便时刷回 Test8r2。
-2. 在 Test8r2 上完成 Test9.3 用户态应用、AirPlay、现代文件管理器和整体
-   回归；不重新开启 32 位 Google Remote 候选。
+1. 设备已刷回 Test8r2。
+2. Test9.3 五项用户态应用的自动化门已通过；AirReceiverLite 的 iPhone
+   发现/镜像/音频试用门也已通过并确认前台/五分钟限制。继续完成遥控/播放/
+   USB、AnExplorer 及可选的完整版后台/开机验收，不重新开启 32 位 Google
+   Remote 候选。
 3. M8.0 接收 Test9r2 runtime report，继续只读 inventory 和 Android 12 ATV
    source-lock。
 4. M8A 建立真正 ARM32 AOSP ATV product 后，以 M8.INPUT/M8.GMS 独立门禁
