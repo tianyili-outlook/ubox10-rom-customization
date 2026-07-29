@@ -10,10 +10,10 @@
 - Test9r1 真机失败原因已确认：RRO 位于未扫描路径，framework 未白名单化
   provider；该镜像已删除，配置和证据保留。
 - Test9w1 已退役；后续不继承其 driver patch。
-- 产品体验主线：已选择 S3 收束 32 位 remote，设备已刷回 Test8r2。
-  Test9.3 五项 userdata 应用的源锁、安装、启动和重启自动化门已通过；
-  AirReceiverLite 的 iPhone 发现/镜像/音频试用门也已通过。当前等待五项
-  应用人工遥控/播放/USB，以及用户决定是否购买完整版并复验后台/开机。
+- 产品体验主线：M7 已完成。Test8r2 为稳定基线；Test9.3 五项 userdata
+  应用完成来源锁、统一安装、启动、重启和实体遥控验收，SmartTube 1080p、
+  AnExplorer USB/APK 与 AirReceiverLite iPhone 音视频通过。Kodi/Jellyfin/
+  Moonlight 的外部资源缺口以有限豁免记录，不阻塞 M7。
 - 架构研究主线：M8.0 共享证据门 → M8A ARM32 真 ATV → M8B
   AArch64/multilib；M8.GMS、M8.INPUT 和 M8.DRM 独立验收。
 
@@ -21,10 +21,9 @@
 
 | 主题 | 文档 |
 |---|---|
+| M7 发布、刷机与一键恢复 | [M7_RELEASE_GUIDE.md](M7_RELEASE_GUIDE.md) |
 | 当前操作 | [RUNBOOK.md](RUNBOOK.md) |
-| Test9r1 移植实验 | [experiments/TEST9R1_ANDROID_TV_REMOTE_SERVICE.md](experiments/TEST9R1_ANDROID_TV_REMOTE_SERVICE.md) |
-| Test9r2 RRO 路径修正 | [experiments/TEST9R2_RRO_SCAN_PATH.md](experiments/TEST9R2_RRO_SCAN_PATH.md) |
-| Test9.3 用户态应用 | [experiments/TEST9_3_USERDATA_APPS.md](experiments/TEST9_3_USERDATA_APPS.md) |
+| M7 完成报告与历史实验 | [archive/m7/M7_COMPLETION_REPORT.md](archive/m7/M7_COMPLETION_REPORT.md) |
 | TV GMS/Remote 参考项目与路线门 | [research/tv-gms-remote/README.md](research/tv-gms-remote/README.md) |
 | Test9r2 真机运行报告 | [research/tv-gms-remote/test9r2-runtime-report.md](research/tv-gms-remote/test9r2-runtime-report.md) |
 | Test9r2 后路线决策 | [research/tv-gms-remote/route-decision.md](research/tv-gms-remote/route-decision.md) |

@@ -63,8 +63,8 @@
 - Play Store 继续进入 `AccessRestrictedActivity` 并显示 not compatible；
   因此 Test9r2 remote 分类为 `R2-REMOTE-PASS`，整机只能记录
   `PARTIAL`、不得晋级。
-- 已选择 S3：不制作 Test9r3/Test10p1；设备已刷回 Test8r2，当前 M7
-  进入 Test9.3 人工门，remote 产品化转入 M8.INPUT。
+- 已选择 S3：不制作 Test9r3/Test10p1；设备已刷回 Test8r2，M7 已完成，
+  remote 产品化转入 M8.INPUT。
 
 ## Test9.3 用户态应用门
 
@@ -81,12 +81,20 @@
   `AndroidRuntime` crash。
 - 重启门：真实 uptime 重置后五项仍在、可再次启动；Projectivy、Wi‑Fi/
   互联网、蓝牙、Play Store 和 feature guard 不回归。
-- 人工门：实体遥控/Back/Home、真实媒体播放、USB/APK、广告体验与 iPhone
-  AirPlay 必须逐项通过。自动化通过不能替代人工门。AirReceiverLite 已完成
-  发现、镜像、HDMI 音频和同步验证。
-- AirPlay 商业边界：Lite 明确要求前台且部分功能每次限 5 分钟；购买完整版
-  必须由用户决定。购买后再验后台、开机、长会话和广播名称；项目不导出、
-  提交或再分发付费 APK。
+- 人工门：实体遥控/Back/Home、可用资源下的真实媒体播放、USB/APK、
+  广告体验与 iPhone AirPlay 必须逐项确认；缺少外部资源时必须明确记录有限
+  豁免，不能写成未发生的端到端 PASS。自动化不能替代人工门。
+  AirReceiverLite 已完成发现、镜像、HDMI 音频和同步验证。
+- AirPlay 商业边界：Lite 明确要求前台且部分功能每次限 5 分钟；用户接受
+  该有限范围并决定不购买完整版。后台、开机和长会话不属于 M7 承诺；
+  项目不导出、提交或再分发付费 APK。
+
+最终结果为 `PASS`：Projectivy/五项通用遥控、SmartTube 1080p、
+AnExplorer 内置存储/USB/APK 和 AirReceiverLite iPhone 音视频通过。
+Kodi 缺媒体、Jellyfin 缺服务器、Moonlight 缺串流主机，仅验到界面与
+连接/发现边界；三项记录为资源型有限豁免。用户决定不购买完整版，
+Lite 的后台/开机与长会话不属于 M7 承诺。详见
+`archive/m7/M7_COMPLETION_REPORT.md`。
 
 ## M8 门槛
 

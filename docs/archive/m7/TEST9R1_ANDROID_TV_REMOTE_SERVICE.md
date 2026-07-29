@@ -1,5 +1,7 @@
 # Test9r1：Android TV Remote Service 移植实验
 
+> M7 完成后归档；本文件只用于追溯失败的 RRO 路径实验，不是当前操作手册。
+>
 > 真机结论（2026-07-29）：**FAIL，产品集成路径错误。** APK、shared
 > library、leanback 和 privileged permissions 均加载成功，但静态 RRO 位于
 > 此设备不会扫描的 `/system/overlay`，所以

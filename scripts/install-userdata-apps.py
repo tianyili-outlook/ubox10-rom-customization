@@ -12,12 +12,20 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from typing import Any
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 
 REPO = Path(__file__).resolve().parents[1]
 DEFAULT_CONFIG = REPO / "configs/apps/test9.3-userdata-apps.json"
 DEFAULT_ENDPOINT = "192.168.1.5:7896"
+PLAY_STORE_PACKAGE = "com.android.vending"
+AIRRECEIVER_LITE_PACKAGE = "com.softmedia.receiver.lite"
+AIRRECEIVER_LITE_MARKET_URI = (
+    f"market://details?id={AIRRECEIVER_LITE_PACKAGE}"
+)
 HEX64 = re.compile(r"^[0-9A-Fa-f]{64}$")
 PACKAGE = re.compile(r"^[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z0-9_]+)+$")
 APP_ID = re.compile(r"^[a-z0-9][a-z0-9.-]*$")
@@ -211,6 +219,10 @@ def load_bundle(path: Path = DEFAULT_CONFIG) -> dict[str, Any]:
             ) from exc
         if local_path.suffix.lower() != ".apk" or local_path in seen_paths:
             raise InstallError(f"{prefix}.local_path is invalid or duplicated")
+        if local_path.name != app["filename"]:
+            raise InstallError(
+                f"{prefix}.local_path basename must equal filename"
+            )
         seen_paths.add(local_path)
         for key in ("sha256", "signer_sha256"):
             if not isinstance(app[key], str) or not HEX64.fullmatch(app[key]):
@@ -232,6 +244,92 @@ def artifact_path(app: dict[str, Any]) -> Path:
 
 def relative_artifact_path(app: dict[str, Any]) -> str:
     return os.fspath(artifact_path(app).relative_to(REPO.resolve()))
+
+
+def download_artifact(
+    app: dict[str, Any],
+    destination: Path | None = None,
+) -> dict[str, Any]:
+    path = destination or artifact_path(app)
+    if path.exists():
+        if not path.is_file():
+            raise InstallError(f"{app['id']}: APK path is not a file: {path}")
+        return {
+            "id": app["id"],
+            "path": os.fspath(path),
+            "status": "already-present",
+        }
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    handle = tempfile.NamedTemporaryFile(
+        mode="w+b",
+        prefix=f".{path.name}.",
+        suffix=".part",
+        dir=path.parent,
+        delete=False,
+    )
+    temporary = Path(handle.name)
+    digest = hashlib.sha256()
+    total = 0
+    try:
+        request = Request(
+            app["download_url"],
+            headers={
+                "Accept-Encoding": "identity",
+                "User-Agent": "ubox10-m7-installer/1",
+            },
+        )
+        with handle, urlopen(request, timeout=120) as response:
+            final_url = response.geturl()
+            if not final_url.startswith("https://"):
+                raise InstallError(
+                    f"{app['id']}: download redirected to a non-HTTPS URL"
+                )
+            content_length = response.headers.get("Content-Length")
+            if (
+                content_length
+                and content_length.isdigit()
+                and int(content_length) != app["bytes"]
+            ):
+                raise InstallError(
+                    f"{app['id']}: server Content-Length mismatch: expected "
+                    f"{app['bytes']}, got {content_length}"
+                )
+            while True:
+                chunk = response.read(1024 * 1024)
+                if not chunk:
+                    break
+                handle.write(chunk)
+                digest.update(chunk)
+                total += len(chunk)
+                if total > app["bytes"]:
+                    raise InstallError(
+                        f"{app['id']}: download exceeds locked byte size"
+                    )
+            handle.flush()
+            os.fsync(handle.fileno())
+        actual_sha = digest.hexdigest().upper()
+        if total != app["bytes"] or actual_sha != app["sha256"]:
+            raise InstallError(
+                f"{app['id']}: downloaded APK does not match the source lock: "
+                f"bytes {total}/{app['bytes']}, SHA-256 {actual_sha}"
+            )
+        os.replace(temporary, path)
+    except InstallError:
+        raise
+    except (HTTPError, URLError, OSError) as exc:
+        raise InstallError(
+            f"{app['id']}: cannot download {app['download_url']}"
+        ) from exc
+    finally:
+        temporary.unlink(missing_ok=True)
+    return {
+        "id": app["id"],
+        "path": os.fspath(path),
+        "bytes": total,
+        "sha256": digest.hexdigest().upper(),
+        "status": "downloaded",
+    }
 
 
 def _candidate_sdk_tools(filename: str) -> list[Path]:
@@ -572,6 +670,105 @@ def installed_version(output: str) -> tuple[int, str] | None:
     return int(code.group(1)), name.group(1).strip()
 
 
+def guided_play_setup(
+    adb: Path,
+    serial: str,
+    *,
+    input_fn: Any = input,
+) -> dict[str, Any]:
+    installed_paths = package_path(
+        adb,
+        serial,
+        AIRRECEIVER_LITE_PACKAGE,
+    )
+    if installed_paths.startswith("package:"):
+        version_output = adb_shell(
+            adb,
+            serial,
+            ["dumpsys", "package", AIRRECEIVER_LITE_PACKAGE],
+        )
+        version = installed_version(version_output)
+        if version is None:
+            raise InstallError(
+                "cannot read the installed AirReceiverLite version"
+            )
+        print(
+            f"[guided] AirReceiverLite {version[1]} "
+            f"(versionCode {version[0]}) 已安装，跳过 Play 步骤。"
+        )
+        return {
+            "package": AIRRECEIVER_LITE_PACKAGE,
+            "version_code": version[0],
+            "version_name": version[1],
+            "status": "already-installed",
+        }
+
+    print("[guided] 正在电视上打开 AirReceiverLite 的 Play Store 页面。")
+    print("[guided] 请登录 Google Play；出现 Complete account setup 时选择")
+    print("[guided] Skip/Not now，无需绑定信用卡，然后安装免费 AirReceiverLite。")
+    result = adb_run(
+        adb,
+        serial,
+        [
+            "shell",
+            "am",
+            "start",
+            "-W",
+            "-a",
+            "android.intent.action.VIEW",
+            "-d",
+            AIRRECEIVER_LITE_MARKET_URI,
+            "-p",
+            PLAY_STORE_PACKAGE,
+        ],
+        check=False,
+    )
+    if result.returncode:
+        details = (result.stdout + "\n" + result.stderr).strip()
+        raise InstallError(
+            "cannot open the AirReceiverLite Play Store page"
+            + (f": {details}" if details else "")
+        )
+    try:
+        input_fn(
+            "完成登录、跳过付款方式并安装 AirReceiverLite 后，"
+            "回到此窗口按 Enter："
+        )
+    except EOFError as exc:
+        raise InstallError(
+            "--guided-after-flash needs an interactive terminal"
+        ) from exc
+
+    installed_paths = package_path(
+        adb,
+        serial,
+        AIRRECEIVER_LITE_PACKAGE,
+    )
+    if not installed_paths.startswith("package:"):
+        raise InstallError(
+            "AirReceiverLite is not installed; finish the Play Store install "
+            "before continuing"
+        )
+    version_output = adb_shell(
+        adb,
+        serial,
+        ["dumpsys", "package", AIRRECEIVER_LITE_PACKAGE],
+    )
+    version = installed_version(version_output)
+    if version is None:
+        raise InstallError("cannot read the installed AirReceiverLite version")
+    print(
+        f"[guided] AirReceiverLite {version[1]} "
+        f"(versionCode {version[0]}) 已安装，开始统一安装五项本地应用。"
+    )
+    return {
+        "package": AIRRECEIVER_LITE_PACKAGE,
+        "version_code": version[0],
+        "version_name": version[1],
+        "status": "play-installed",
+    }
+
+
 def installed_base_apk(package_output: str) -> str:
     paths = [
         line.removeprefix("package:").strip()
@@ -683,6 +880,22 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="verify local APKs and Test8r2 device contract without installing",
     )
+    parser.add_argument(
+        "--guided-after-flash",
+        action="store_true",
+        help=(
+            "open Play Store, pause for login/payment-skip/AirReceiverLite install, "
+            "then install the complete default local bundle"
+        ),
+    )
+    parser.add_argument(
+        "--download-missing",
+        action="store_true",
+        help=(
+            "download missing APKs from the locked official HTTPS URLs before "
+            "verification; existing files are never overwritten"
+        ),
+    )
     parser.add_argument("--device", default=DEFAULT_ENDPOINT, help="ADB serial or TCP endpoint")
     parser.add_argument(
         "--no-connect",
@@ -712,8 +925,26 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def validate_args(args: argparse.Namespace) -> None:
+    if args.guided_after_flash and (
+        args.list or args.verify_only or args.dry_run
+    ):
+        raise InstallError(
+            "--guided-after-flash cannot be combined with --list, "
+            "--verify-only, or --dry-run"
+        )
+    if args.guided_after_flash and (args.apps or args.launch):
+        raise InstallError(
+            "--guided-after-flash always installs the complete default bundle; "
+            "do not combine it with --app or --launch"
+        )
+
+
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+    validate_args(args)
+    if args.guided_after_flash and not args.report:
+        args.report = "work/test9.3-guided-install.json"
     bundle = load_bundle(Path(args.config))
     apps = select_apps(bundle, args.apps)
 
@@ -750,19 +981,31 @@ def main(argv: list[str] | None = None) -> int:
     )
     signer_env = java_environment(args.java_home)
 
+    download_results: list[dict[str, Any]] = []
+    if args.download_missing or args.guided_after_flash:
+        for app in apps:
+            print(f"[download] {app['id']} {app['version_name']}")
+            download = download_artifact(app)
+            download_results.append(download)
+            print(f"           {download['status']}")
+
     report: dict[str, Any] = {
         "schema_version": 1,
         "bundle_id": bundle["bundle_id"],
         "config": os.fspath(bundle["_config_path"].relative_to(REPO.resolve())),
         "mode": (
-            "verify-only"
+            "guided-after-flash"
+            if args.guided_after_flash
+            else "verify-only"
             if args.verify_only
             else "dry-run"
             if args.dry_run
             else "install"
         ),
         "artifacts": [],
+        "downloads": download_results,
         "device": None,
+        "play_setup": None,
         "installations": [],
     }
     for app in apps:
@@ -784,6 +1027,8 @@ def main(argv: list[str] | None = None) -> int:
         report["device"] = verify_baseline(
             adb, args.device, bundle["baseline"], apps
         )
+        if args.guided_after_flash:
+            report["play_setup"] = guided_play_setup(adb, args.device)
         if not args.dry_run:
             for app in apps:
                 print(f"[install] {app['id']} {app['version_name']}")
@@ -805,6 +1050,12 @@ def main(argv: list[str] | None = None) -> int:
                     ["shell", "am", "start", "-W", "-n", component],
                 )
                 print(f"[launch] {args.launch}")
+            if args.guided_after_flash:
+                print(
+                    "[guided] 本地应用安装完成。请在 Projectivy 中打开 "
+                    "AirReceiverLite，按提示授予“显示在其他应用上层”；"
+                    "Lite 需保持前台且部分功能每次会话限 5 分钟。"
+                )
 
     if args.report:
         report_path = write_report(args.report, report)

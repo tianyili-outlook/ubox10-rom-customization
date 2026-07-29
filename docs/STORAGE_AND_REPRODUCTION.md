@@ -49,12 +49,22 @@ python .\scripts\build-candidate-firmware.py --config <候选配置.json>
 python .\scripts\install-userdata-apps.py --verify-only
 python .\scripts\install-userdata-apps.py --dry-run
 python .\scripts\install-userdata-apps.py
+python .\scripts\install-userdata-apps.py --guided-after-flash
 ```
 
-第一条只在四个官方缓存缺失、损坏或需要重新审计时运行；正常连续构建直接复用缓存。第二条验证用户本地 Remote Service donor，并从锁定 Android 12 AOSP 源码构建 remoteprovider/RRO；第三条事务式重建指定候选。Google/第三方 APK 必须按配置中的来源、版本、签名和 SHA-256 放回忽略的 `work/`，不能提交或由项目下载。
+第一条只在四个官方缓存缺失、损坏或需要重新审计时运行；正常连续构建直接
+复用缓存，不能为了常规构建反复删除。第二条验证用户本地 Remote Service
+donor，并从锁定 Android 12 AOSP 源码构建 remoteprovider/RRO；第三条事务式
+重建指定候选。Google/第三方 APK 不能提交或由项目镜像再分发。
+
 后三条依次核验 Test9.3 本地 APK、核验 Test8r2 实机合同、执行幂等的
 userdata 安装。机器可读来源锁位于
-`configs/apps/test9.3-userdata-apps.json`；安装器本身不下载 APK。
+`configs/apps/test9.3-userdata-apps.json`。显式使用 `--download-missing`
+时，安装器只会把缺失文件从锁定的官方 HTTPS 地址下载到忽略的 `work/`，
+并在使用前核对 bytes、SHA-256、metadata 和 signer；现有文件不会被覆盖。
+交互式最后一条自动包含该下载步骤，用于刷机后恢复：先打开 Play Store，
+等待用户登录、跳过付款绑定并安装 AirReceiverLite，再统一安装五项 APK；
+账号、付款信息和 Play 专有 APK 均不进入项目。
 
 ## 清理记录
 

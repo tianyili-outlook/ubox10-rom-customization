@@ -1,6 +1,6 @@
 # Test9.3 用户态应用收尾
 
-状态：`AUTOMATED-PASS / AIRPLAY-TRIAL-PASS / MANUAL-PENDING`
+状态：`PASS / M7-COMPLETE`
 
 日期：2026-07-29
 
@@ -77,6 +77,11 @@ Kodi 匹配官方 mirror service 公布的 SHA-256。Moonlight 的旧 GitHub ass
 # 查看 bundle
 python .\scripts\install-userdata-apps.py --list
 
+# 下载缺失的锁定官方 APK 并核验，不连接电视
+python .\scripts\install-userdata-apps.py `
+  --download-missing `
+  --verify-only
+
 # 只核验本地 APK，不连接电视
 python .\scripts\install-userdata-apps.py --verify-only
 
@@ -94,6 +99,18 @@ python .\scripts\install-userdata-apps.py `
   --app anexplorer-tv `
   --launch anexplorer-tv
 ```
+
+刷机后的推荐入口是：
+
+```powershell
+python .\scripts\install-userdata-apps.py `
+  --guided-after-flash `
+  --device "<电视IP>:7896"
+```
+
+该模式自动取得缺失的五项官方 APK、完成来源锁和 Test8r2 合同校验，打开
+AirReceiverLite 的 Play 页面并等待用户登录、跳过付款方式、安装 Lite，
+随后统一安装五项应用。现有 APK 永不被下载器覆盖。
 
 默认重复运行是幂等的：版本完全相同时返回 `already-current`。若设备已有更高
 versionCode，脚本拒绝静默降级；只有明确使用 `--allow-downgrade` 才传递
@@ -115,8 +132,9 @@ versionCode，脚本拒绝静默降级；只有明确使用 `--allow-downgrade` 
    成功；蓝牙为 `ON`、`Bluetooth crashed 0 times`；Play Store 29.2.15
    仍存在；leanback 与 Google Remote Service 未被引入。
 
-自动化门结论为 `PASS`。用户可见界面、遥控手感、真实媒体播放、USB 和
-最终付费 AirPlay 接收器仍必须人工验收，因此 Test9.3 尚未整体完成。
+自动化门当时结论为 `PASS`，尚不能替代用户可见界面、遥控手感、真实媒体、
+USB 与 AirPlay 人工验收；这些后续结果已记录在本页“人工验收清单”和
+“最终验收与有限豁免”中，Test9.3 最终状态为 `PASS / M7-COMPLETE`。
 
 ## AirPlay 选型门
 
@@ -160,33 +178,53 @@ versionCode，脚本拒绝静默降级；只有明确使用 `--allow-downgrade` 
   而是试用版产品限制。
 
 结论为 `AIRPLAY-TRIAL-PASS`：协议、发现和实际音视频性能已证明可行，
-无需转测 AirScreen。最终产品门改为由用户决定是否购买 Play 商店完整版
-AirReceiver；购买后再验证后台接收、开机启动、会话时长，并把广播名从
-Pixel 派生名称改为清晰的电视名称。项目不代购、不导出或再分发付费 APK。
+无需转测 AirScreen。用户决定不把购买完整版纳入当前项目；M7 接受 Lite
+作为需要前台启动、部分功能每次会话限 5 分钟的按需 AirPlay 能力，不承诺
+后台或开机自启。项目不代购、不导出或再分发付费 APK。
 
 ## 人工验收清单
 
-- [ ] Projectivy 中五个新图标可见，滚动和打开没有明显焦点错误。
-- [ ] 五项均可用方向、OK、Back、Home 完成基础导航，不强制鼠标模式。
-- [ ] SmartTube 可浏览并播放一段 1080p 内容，声音与返回行为正常。
-- [ ] Kodi 可播放本地或 USB 测试片段，音视频正常。
-- [ ] Jellyfin TV 可进入服务器连接流程；若有服务器，完成一次实际播放。
-- [ ] Moonlight 可发现/手动添加 Sunshine；若有主机，完成一次串流和控制器测试。
-- [ ] AnExplorer 可授予存储权限、浏览内置存储/USB、从本地选择 APK；记录广告
-  是否破坏电视体验。
+- [x] Projectivy 中五个新图标可见，滚动和打开没有明显焦点错误。
+- [x] 五项均可用方向、OK、Back、Home 完成基础导航，不强制鼠标模式。
+- [x] SmartTube 可浏览并播放一段 1080p 内容，声音与返回行为正常。
+- [x] Kodi 可进入界面并完成遥控导航；本轮没有本地媒体资源，播放项按下述
+  有限豁免记录。
+- [x] Jellyfin TV 可进入服务器连接流程；本轮没有 Jellyfin 服务器，不要求
+  伪造端到端播放结果。
+- [x] Moonlight 可发现并可手动添加 Sunshine；本轮没有可用串流主机，串流与
+  控制器项按有限豁免记录。
+- [x] AnExplorer 可授予存储权限、浏览内置存储/USB，并从本地选择 APK；
+  当前遥控与焦点体验可接受。
 - [x] AirReceiverLite 可由 iPhone 发现，镜像、音频与同步测试通过。
 - [x] 已执行 Lite 重启门并确认其前台/五分钟限制；该限制属于试用版设计。
-- [ ] 若用户购买完整版 AirReceiver，复验后台接收、开机启动、长会话和电视
-  广播名称；付费 APK 不进入项目资产。
-- [ ] HDMI 音视频、红外/蓝牙实体遥控、Settings、Wi‑Fi 和蓝牙没有人工可见回归。
+- [x] 用户决定不把完整版购买与后台/开机门纳入 M7；付费 APK 不进入项目资产。
+- [x] HDMI 音视频、红外/蓝牙实体遥控、Settings、Wi‑Fi 和蓝牙没有人工可见回归。
+
+## 最终验收与有限豁免
+
+2026-07-29，用户完成上述实体遥控、SmartTube 1080p、AnExplorer 内置存储/
+USB/APK 和 AirReceiverLite iPhone 音视频测试。Kodi 缺本地媒体、
+Jellyfin 缺服务器、Moonlight 缺可用串流主机，因此三者只验证到应用入口、
+遥控导航和连接/发现边界，不虚构端到端播放。
+
+这些豁免不阻塞 M7，理由是：
+
+1. 三个未做端到端播放的项目均由缺少外部测试资源造成，不是已观察到的故障；
+2. SmartTube 已覆盖真实 1080p 网络媒体与 HDMI 音频；
+3. AirReceiverLite 已独立覆盖实时网络视频、音频和同步；
+4. AnExplorer 已覆盖内置存储、USB 和本地 APK 路径；
+5. 五项应用的安装、启动、重启持久性、D-pad/Back/Home 与系统回归门均已通过。
+
+因此 Test9.3 记为 `PASS`，M7 记为 `COMPLETE`。未来若用户具备 Kodi 媒体、
+Jellyfin 服务器或 Sunshine 主机，可作为非阻塞扩展复测，不重新开启 M7。
 
 ## 出口
 
-- 所有人工项通过：Test9.3 记为 `PASS`，M7 收束，进入 M8.0/M8A.1。
+- 最终结果：Test9.3 为 `PASS`，M7 已收束，进入 M8.0/M8A.1。
 - AnExplorer 仅因广告/焦点体验失败：保持其配置为历史候选，改测官方 X-plore，
   不更改固件。
-- AirReceiverLite 协议/性能已通过；完整版购买前保持
-  `AIRPLAY-TRIAL-PASS`，不把 Lite 的前台/五分钟限制误判为固件故障。
+- AirReceiverLite 协议/性能已通过；用户不把完整版购买纳入项目，
+  不把 Lite 的前台/五分钟限制误判为固件故障。
 - 若完整版仍发生协议或性能失败：记录 iPhone/iOS、媒体类型和日志，再单变量
   评估 AirScreen；不从 APK 镜像站取所谓 premium/cracked 包。
 - 任一应用导致系统回归：卸载对应 data package，Test8r2 固件本身无需重刷。

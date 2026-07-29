@@ -2,7 +2,7 @@
   "schema_version": 1,
   "bundle_id": "test9.3-userdata-apps",
   "baseline": {
-    "candidate_id": "test8r2-restore-contacts-provider",
+    "candidate_id": "test8r2-restore-contacts-provider-r1",
     "sdk": 31,
     "required_abis": [
       "armeabi-v7a"
@@ -44,7 +44,7 @@
       "license": "MIT",
       "license_url": "https://github.com/yuliskov/SmartTube/blob/32.03/LICENSE",
       "filename": "SmartTube_beta_32.03_armeabi-v7a.apk",
-      "local_path": "work/preinstall_apks/incoming/SmartTube_beta_32.03_armeabi-v7a (1).apk",
+      "local_path": "work/preinstall_apks/incoming/SmartTube_beta_32.03_armeabi-v7a.apk",
       "bytes": 25021715,
       "sha256": "0B6222CD3246235D003AF5FBE032135239D13BD81B8AEB73F508ECA6C9C3044C",
       "signer_sha256": "109735AA24FE85E2E1623EBB3B1ECC4BF4263F4C6374E4411D646BFA2EDA482A",
@@ -161,7 +161,7 @@
       "license": "Apache-2.0",
       "license_url": "https://github.com/1hakr/AnExplorer/blob/master/LICENSE.txt",
       "filename": "otherTelevisionFree-release.apk",
-      "local_path": "work/preinstall_apks/incoming/AnExplorer-TV-6.0.1-official.apk",
+      "local_path": "work/preinstall_apks/incoming/otherTelevisionFree-release.apk",
       "bytes": 58913587,
       "sha256": "C596F8A52D40D7C970DE84A71F29AA762B917DC00A3799A4EFC36C9E7A26A985",
       "signer_sha256": "67016069E9D0DFA00AE36F8BB5AE1487B6665F317F0D44CB30227FCBCE975680",

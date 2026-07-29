@@ -124,4 +124,11 @@
 - 真实重启后 AirReceiverLite package 与 overlay 权限保留，但 service 和
   AirPlay 监听未自动恢复；Lite 弹窗明确说明试用版必须保持前台且部分功能
   每次限 5 分钟。因此协议/性能结论为 PASS，后台/开机失败是版本限制而非
-  Test8r2 回归，须由用户购买完整版后另行验收。
+  Test8r2 回归。用户接受该有限范围并决定不购买完整版，后台/开机不再是
+  M7 门禁。
+- Projectivy 中五个新图标的焦点和滚动正常，五项应用均能以方向、OK、Back、
+  Home 完成基础导航且不强制鼠标模式；SmartTube 1080p 音视频、
+  AnExplorer 内置存储/USB/APK 均通过。
+- Kodi、Jellyfin TV、Moonlight 分别在界面、服务器连接流程和 Sunshine
+  发现/手动添加边界通过；本轮缺少媒体、Jellyfin 服务器和串流主机，故以
+  资源型有限豁免关闭，不声明未测试的端到端播放。

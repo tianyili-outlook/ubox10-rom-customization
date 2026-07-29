@@ -80,7 +80,7 @@ runtime DEX，构建/签名单资源 framework RRO，再把三个输入写入忽
 | Android Build Tools 31 zip | `BFF1286DD77FFF51981DF15AC4349A618430DC5064870886B7108870433549F1` |
 
 完整 donor/source/output 哈希见
-`experiments/TEST9R1_ANDROID_TV_REMOTE_SERVICE.md`。
+`archive/m7/TEST9R1_ANDROID_TV_REMOTE_SERVICE.md`。
 
 ## M8 环境边界
 

@@ -1,5 +1,8 @@
 # Test9r2：Android TV Remote Service RRO 扫描路径修正
 
+> M7 完成后归档；Remote v2 的可迁移结论由 M8.INPUT 继承，本文件不是当前
+> 固件构建入口。
+
 ## 1. 状态
 
 - 基线：Test8r2。

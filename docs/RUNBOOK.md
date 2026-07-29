@@ -76,22 +76,27 @@ RemoteService.onCreate
 本轮临时授予的 CONNECT 权限位于 userdata；刷写清除 userdata 时会自然消失，
 无需修改只读分区或制作清理镜像。
 
-## 当前 M7 工作：Test9.3
+## M7 已完成：刷机后应用恢复
 
-所有新工作继续从 Test8r2 出发，不继承 Test9w1、Test9r1 或 Test9r2：
+M7 已完成；重新刷入 Test8r2 后，不继承 Test9w1、Test9r1 或 Test9r2。
+推荐使用交互式统一入口：
 
-已完成自动化部分：
+```powershell
+python .\scripts\install-userdata-apps.py --guided-after-flash
+```
 
-1. `configs/apps/test9.3-userdata-apps.json` 固定五项来源、许可证、版本、
-   包名、ABI、签名和 SHA-256。
-2. `scripts/install-userdata-apps.py` 在 Test8r2 合同通过后，幂等安装
-   SmartTube、Kodi、Jellyfin TV、Moonlight 和 AnExplorer TV。
-3. 五项首次安装、launch activity、LEANBACK_LAUNCHER、真实重启持久性和
-   重启后再次启动均通过；重复运行全部为 `already-current`。
-4. 重启后 Projectivy HOME、5 GHz Wi‑Fi 6/互联网、蓝牙、Play Store 和
-   feature guard 无回归。
+引导模式先从锁定的官方 HTTPS 地址下载缺失的五项 APK，再验证其大小、
+SHA-256、metadata 和签名以及 Test8r2 实机合同，然后直接打开
+AirReceiverLite 的 Play Store 页面。用户在电视上登录 Play Store；出现
+`Complete account setup` 时选择 `Skip`/`Not now`，无需绑定信用卡；安装
+免费 AirReceiverLite 后回到终端按 Enter，脚本再统一安装 SmartTube、Kodi、
+Jellyfin TV、Moonlight 和 AnExplorer，并把报告写入忽略的 `work/`。
 
-当前人工步骤：
+首次使用 AirReceiverLite 时，在 Projectivy 中打开它并按界面提示授予
+“显示在其他应用上层”。Lite 只能作为前台按需能力，部分功能每次会话限
+5 分钟；M7 不要求购买完整版。
+
+诊断或非交互复现仍可分步运行：
 
 ```powershell
 python .\scripts\install-userdata-apps.py --verify-only
@@ -99,17 +104,11 @@ python .\scripts\install-userdata-apps.py --dry-run
 python .\scripts\install-userdata-apps.py
 ```
 
-- 用实体遥控逐项测试五个应用的焦点、Back/Home 和真实播放；
-- 用 AnExplorer 测试存储权限、USB 和本地 APK 选择；
-- AirReceiverLite 的 iPhone 发现、镜像、HDMI 音频和同步已经通过；Lite
-  明确要求前台且部分功能每次限 5 分钟。由用户决定是否购买完整版，购买后
-  再测后台接收、开机启动、长会话和电视广播名称。
-
-完整源锁、命令、结果和人工清单见
-`experiments/TEST9_3_USERDATA_APPS.md`。
-
-Test9.3 不继续修改 Play Store、GMS、设备身份、framework remote gate 或
-Google Remote Service。
+完整结果、有限豁免与来源锁见
+`M7_RELEASE_GUIDE.md`、
+`archive/m7/M7_COMPLETION_REPORT.md` 和
+`archive/m7/TEST9_3_USERDATA_APPS.md`。M7 不再接受 Play Store、GMS、
+设备身份、framework remote gate 或 Google Remote Service 修改。
 
 ## M8 并行边界
 

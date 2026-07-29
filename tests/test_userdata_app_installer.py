@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import importlib.util
 import json
 from pathlib import Path
@@ -106,6 +107,29 @@ native-code: 'arm64-v8a' 'armeabi-v7a'
         with self.assertRaisesRegex(installer.InstallError, "work/preinstall_apks"):
             installer.load_bundle(temp_path)
 
+    def test_local_path_basename_must_match_filename(self) -> None:
+        raw = json.loads(CONFIG.read_text(encoding="utf-8"))
+        raw["apps"][0]["local_path"] = (
+            "work/preinstall_apks/incoming/different-name.apk"
+        )
+        work = REPO / "work"
+        work.mkdir(exist_ok=True)
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            suffix=".json",
+            dir=work,
+            delete=False,
+        ) as handle:
+            json.dump(raw, handle)
+            temp_path = Path(handle.name)
+        self.addCleanup(temp_path.unlink, missing_ok=True)
+        with self.assertRaisesRegex(
+            installer.InstallError,
+            "basename must equal filename",
+        ):
+            installer.load_bundle(temp_path)
+
     def test_duplicate_package_is_rejected(self) -> None:
         raw = json.loads(CONFIG.read_text(encoding="utf-8"))
         duplicate = copy.deepcopy(raw["apps"][0])
@@ -166,6 +190,139 @@ package:/data/app/~~abc/org.example-xyz/base.apk
                     Path("adb"), "device", "org.example.missing"
                 ),
             )
+
+    def test_guided_play_setup_opens_store_and_records_version(self) -> None:
+        completed = installer.subprocess.CompletedProcess(
+            args=["adb"], returncode=0, stdout="Status: ok", stderr=""
+        )
+        prompts: list[str] = []
+        with (
+            mock.patch.object(installer, "adb_run", return_value=completed) as adb_run,
+            mock.patch.object(
+                installer,
+                "package_path",
+                side_effect=["", "package:/data/app/example/base.apk"],
+            ),
+            mock.patch.object(
+                installer,
+                "adb_shell",
+                return_value="versionCode=2020164765\nversionName=5.1.7\n",
+            ),
+        ):
+            result = installer.guided_play_setup(
+                Path("adb"),
+                "device",
+                input_fn=lambda prompt: prompts.append(prompt),
+            )
+        self.assertEqual("play-installed", result["status"])
+        self.assertEqual("5.1.7", result["version_name"])
+        self.assertEqual(2020164765, result["version_code"])
+        self.assertEqual(1, len(prompts))
+        command = adb_run.call_args.args[2]
+        self.assertIn(installer.AIRRECEIVER_LITE_MARKET_URI, command)
+        self.assertIn(installer.PLAY_STORE_PACKAGE, command)
+
+    def test_guided_play_setup_skips_store_when_lite_is_installed(self) -> None:
+        prompts: list[str] = []
+        with (
+            mock.patch.object(installer, "adb_run") as adb_run,
+            mock.patch.object(
+                installer,
+                "package_path",
+                return_value="package:/data/app/example/base.apk",
+            ),
+            mock.patch.object(
+                installer,
+                "adb_shell",
+                return_value="versionCode=2020164765\nversionName=5.1.7\n",
+            ),
+        ):
+            result = installer.guided_play_setup(
+                Path("adb"),
+                "device",
+                input_fn=lambda prompt: prompts.append(prompt),
+            )
+        self.assertEqual("already-installed", result["status"])
+        self.assertEqual("5.1.7", result["version_name"])
+        self.assertEqual([], prompts)
+        adb_run.assert_not_called()
+
+    def test_guided_play_setup_requires_lite_install(self) -> None:
+        completed = installer.subprocess.CompletedProcess(
+            args=["adb"], returncode=0, stdout="Status: ok", stderr=""
+        )
+        with (
+            mock.patch.object(installer, "adb_run", return_value=completed),
+            mock.patch.object(installer, "package_path", side_effect=["", ""]),
+        ):
+            with self.assertRaisesRegex(
+                installer.InstallError,
+                "AirReceiverLite is not installed",
+            ):
+                installer.guided_play_setup(
+                    Path("adb"),
+                    "device",
+                    input_fn=lambda _prompt: None,
+                )
+
+    def test_guided_mode_rejects_partial_selection(self) -> None:
+        args = installer.parse_args(
+            ["--guided-after-flash", "--app", "kodi"]
+        )
+        with self.assertRaisesRegex(
+            installer.InstallError,
+            "complete default bundle",
+        ):
+            installer.validate_args(args)
+
+    def test_download_artifact_is_atomic_and_hash_locked(self) -> None:
+        payload = b"locked apk payload"
+        app = {
+            "id": "example",
+            "download_url": "https://example.invalid/example.apk",
+            "bytes": len(payload),
+            "sha256": hashlib.sha256(payload).hexdigest().upper(),
+        }
+        response = mock.MagicMock()
+        response.__enter__.return_value = response
+        response.__exit__.return_value = False
+        response.geturl.return_value = app["download_url"]
+        response.headers = {"Content-Length": str(len(payload))}
+        response.read.side_effect = [payload, b""]
+        with tempfile.TemporaryDirectory(dir=REPO / "work") as temp_dir:
+            destination = Path(temp_dir) / "example.apk"
+            with mock.patch.object(installer, "urlopen", return_value=response):
+                result = installer.download_artifact(app, destination)
+            self.assertEqual("downloaded", result["status"])
+            self.assertEqual(payload, destination.read_bytes())
+            self.assertEqual([], list(destination.parent.glob("*.part")))
+
+    def test_download_artifact_rejects_hash_mismatch(self) -> None:
+        payload = b"unexpected"
+        app = {
+            "id": "example",
+            "download_url": "https://example.invalid/example.apk",
+            "bytes": len(payload),
+            "sha256": "0" * 64,
+        }
+        response = mock.MagicMock()
+        response.__enter__.return_value = response
+        response.__exit__.return_value = False
+        response.geturl.return_value = app["download_url"]
+        response.headers = {"Content-Length": str(len(payload))}
+        response.read.side_effect = [payload, b""]
+        with tempfile.TemporaryDirectory(dir=REPO / "work") as temp_dir:
+            destination = Path(temp_dir) / "example.apk"
+            with (
+                mock.patch.object(installer, "urlopen", return_value=response),
+                self.assertRaisesRegex(
+                    installer.InstallError,
+                    "does not match the source lock",
+                ),
+            ):
+                installer.download_artifact(app, destination)
+            self.assertFalse(destination.exists())
+            self.assertEqual([], list(destination.parent.glob("*.part")))
 
 
 if __name__ == "__main__":

@@ -13,8 +13,8 @@
   package visibility 或设备身份。
 - 官方 Google TV 手机遥控的产品化、默认权限与重启验收转入 M8.INPUT。
 - TV Play Store 与 Google 组件一致性转入 M8.GMS。
-- 当前 M7 剩余工作进入 Test9.3：目标应用、AirPlay、现代文件管理器和整体
-  回归。
+- Test9.3 的目标应用、AirPlay、现代文件管理器和整体回归已完成；M7 于
+  2026-07-29 收束，发布入口见 `../../M7_RELEASE_GUIDE.md`。
 
 ## 依据
 
@@ -52,10 +52,7 @@ Remote Service 会扩大变量并损害可归因性。
 ## 当前执行顺序
 
 1. 设备已刷回 Test8r2。
-2. Test9.3 五项用户态应用的自动化门已通过；AirReceiverLite 的 iPhone
-   发现/镜像/音频试用门也已通过并确认前台/五分钟限制。继续完成遥控/播放/
-   USB、AnExplorer 及可选的完整版后台/开机验收，不重新开启 32 位 Google
-   Remote 候选。
+2. M7/Test9.3 已完成并归档；不重新开启 32 位 Google Remote 候选。
 3. M8.0 接收 Test9r2 runtime report，继续只读 inventory 和 Android 12 ATV
    source-lock。
 4. M8A 建立真正 ARM32 AOSP ATV product 后，以 M8.INPUT/M8.GMS 独立门禁

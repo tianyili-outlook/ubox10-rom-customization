@@ -104,8 +104,8 @@ Remote v2；但 S3 已选择，因此不再制作 Test9r3。
 当前执行：
 
 - Test8r2 继续作为稳定基线，设备已经刷回；
-- Test9.3 五项应用自动化门和 AirReceiverLite iPhone 发现/镜像/音频试用门
-  已通过；只继续文件管理、整体人工回归及可选的完整版后台/开机复验；
+- M7/Test9.3 已完成并归档；五项应用遥控、SmartTube 1080p、
+  AnExplorer USB/APK 与 AirReceiverLite iPhone 音视频通过；
 - 官方 Google TV 手机遥控目标转入 M8.INPUT；
 - 蓝牙键盘可以作为用户回退，但不算项目目标通过。
 

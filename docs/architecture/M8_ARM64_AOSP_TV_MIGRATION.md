@@ -42,8 +42,8 @@
 | M8.DRM | 保护并分级验证安全播放与 Netflix | 任何图形/媒体/TEE 相关修改前先完成 N0 |
 
 Test9r2 runtime report 已完成，近期路线已选择 S3：结束 32 位 remote 候选，
-不制作 Test9r3/Test10p1；设备已回到 Test8r2，Test9.3 自动化应用门通过、
-人工门待完成，remote 产品化转入 M8.INPUT。
+不制作 Test9r3/Test10p1；设备已回到 Test8r2，M7/Test9.3 已完成，remote
+产品化转入 M8.INPUT。
 
 ## 4. 目标与非目标
 
@@ -352,9 +352,7 @@ Widevine L1、Play Protect、TV Play Store 分发和 Netflix HD/4K 资格互不�
 
 Test9r2 分层报告和 S3 路线决策已完成；不制作 Test9r3/Test10p1：
 
-1. 完成 Test9.3 的实体遥控/播放/USB 与 AnExplorer 人工验收；设备刷回
-   Test8r2、五项应用自动化门和 AirReceiverLite iPhone 发现/镜像/音频试用门
-   已经通过，完整版后台/开机门取决于用户购买决定；
+1. M7/Test9.3 已完成并归档；后续不重新开启 32 位产品化候选；
 2. 编写 ELF inventory 工具，生成当前图形、媒体、Wi‑Fi/BT、HAL/VINTF 与
    Kernel module 报告；
 3. 锁定 `device/google/atv` Android 12 commit，形成 M8A.1 source-lock 与

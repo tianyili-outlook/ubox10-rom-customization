@@ -2,6 +2,12 @@
 
 ## 2026-07-29
 
+- M7 正式完成：Projectivy 中五项新应用的实体遥控和焦点通过，SmartTube
+  1080p、AnExplorer 内置存储/USB/APK、AirReceiverLite iPhone 镜像/音频/
+  同步通过；Kodi/Jellyfin/Moonlight 的外部资源缺口以有限豁免记录。
+- 发布入口补齐 `configs/releases/m7.json` 和 `M7_RELEASE_GUIDE.md`；
+  `--guided-after-flash` 会下载并严格校验缺失 APK，打开 Play 页面等待用户
+  登录、跳过付款方式并安装 Lite，再统一安装五项应用。
 - 设备已从 Test9r2 刷回 Test8r2；自动复核 SDK 31/ARMv7、television、
   Projectivy HOME、ContactsProvider、Play Store 29.2.15、5 GHz Wi‑Fi 6/
   公网和蓝牙，确认 leanback/Remote Service 均已退出。
@@ -13,14 +19,15 @@
   LEANBACK_LAUNCHER 并进入主 activity。真实系统重启后五项仍可启动，
   安装器再次运行全部返回 `already-current`，未见 AndroidRuntime crash，
   Projectivy/Wi‑Fi/蓝牙/Play Store 无自动化回归。
-- AnExplorer TV 暂作为文件管理候选：官方页面版本标签落后于实际 APK，故
-  改锁官方 data repo 不可变 commit；免费版广告/Pro 限制留待人工体验。
-  AirPlay 选型固定为 AirReceiverLite 免费测试 → 用户决定是否购买
-  AirReceiver；不导出或再分发商业 APK。
+- AnExplorer TV 的官方页面版本标签落后于实际 APK，故锁定官方 data repo
+  不可变 commit；实体遥控、内置存储、USB 与本地 APK 路径已通过并最终采用。
+  AirReceiverLite 作为需前台、部分功能每次限 5 分钟的按需能力保留；
+  用户不购买完整版，不导出或再分发商业 APK。
 - AirReceiverLite 5.1.7 已从 Play 安装并通过 iPhone 发现、498×1080 镜像、
   HDMI 音频和同步实测；mDNS `_airplay._tcp.local` 与 7000/7100 可达。
   真实重启确认 Lite 不自动恢复服务，其弹窗明确要求前台且部分功能每次限
-  5 分钟；结果记为 `AIRPLAY-TRIAL-PASS`，完整版后台/开机门等待用户购买决定。
+  5 分钟；结果记为 `AIRPLAY-TRIAL-PASS`。用户接受该有限范围，完整版后台/
+  开机门不再属于 M7。
 - 完成 Test9r2 真机分层采证：system_ext RRO lookup、framework provider 和
   shared library 均正常；初始 Remote Service 因缺少运行时
   `BLUETOOTH_CONNECT` 在 `getBondedDevices/getAddress` 处崩溃，主进程退出且

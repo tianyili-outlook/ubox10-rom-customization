@@ -104,33 +104,36 @@ Play Store 判定为 “missing”。Test9r2 已把 RRO、framework、receiver�
 不制作 Test9r3 或 Test10p1。
 
 完整设计、哈希与判错树见
-`experiments/TEST9R1_ANDROID_TV_REMOTE_SERVICE.md` 和
-`experiments/TEST9R2_RRO_SCAN_PATH.md`；参考项目、结果分类和研究交付物见
+`archive/m7/TEST9R1_ANDROID_TV_REMOTE_SERVICE.md` 和
+`archive/m7/TEST9R2_RRO_SCAN_PATH.md`；参考项目、结果分类和研究交付物见
 `research/tv-gms-remote/README.md`。最终真机证据和路线选择分别见
 `research/tv-gms-remote/test9r2-runtime-report.md` 与
 `research/tv-gms-remote/route-decision.md`。
 
-## Test9.3：当前 32 位系统产品化收尾
+## Test9.3：32 位系统产品化收尾（已完成）
 
-这是当前 M7 活跃阶段，从 Test8r2 继续，不继承 Test9r2 的 leanback/remote
-system stack。
+M7 已从 Test8r2 完成，不继承 Test9r2 的 leanback/remote system stack。
 
 - 提供 SmartTube、Kodi、Jellyfin 和 Moonlight 的可重复 data 分区安装脚本。
 - 选择有明确来源、许可证和遥控器体验的 AirPlay 接收器及现代文件管理器。
 - 将应用来源、版本、签名和校验写入配置；第三方 APK 不提交公共仓库。
 - 完成 Projectivy 流畅度、启动、遥控、影音、蓝牙、Wi‑Fi、应用安装和重启回归。
 
-2026-07-29 进度：
+2026-07-29 最终结果：
 
 - 已从 Test9r2 刷回并自动确认 Test8r2 合同。
-- 五项 source-lock、安装器、单元测试、首次安装、启动和真实重启门通过；
-  AnExplorer TV 作为文件管理候选进入人工体验门。
+- 五项 source-lock、安装器、单元测试、首次安装、启动和真实重启自动化门
+  通过。
 - AirReceiverLite 5.1.7 已通过 iPhone 发现、镜像、HDMI 音频与同步实测；
   重启证明 Lite 因产品限制不会后台/开机运行，且部分功能每次限 5 分钟。
-- 用户决定是否购买 AirReceiver 完整版；购买后只复验后台、开机、长会话和
-  广播名称。AirScreen 只在完整版仍失败时作为第二候选。
-- 当前剩余的是实体遥控、真实播放、USB/广告体验与可选的完整版 AirPlay
-  产品门；Test9.3 尚未整体标记完成。
+- Projectivy 图标/焦点、五项 D-pad/Back/Home、SmartTube 1080p 与
+  AnExplorer 存储/USB/APK 人工门通过。
+- Kodi/Jellyfin/Moonlight 因无媒体、服务器或串流主机，仅验到界面与
+  连接/发现边界；以有限豁免记录，不虚构端到端播放。
+- 用户不把 AirReceiver 完整版购买纳入项目；Lite 作为按需前台能力被接受，
+  AirScreen 不再评估。Test9.3 为 `PASS`，M7 为 `COMPLETE`。
+
+完成报告与实验历史见 `archive/m7/M7_COMPLETION_REPORT.md`。
 
 ## M8：先建立真正 AOSP Android TV，再迁移 AArch64
 

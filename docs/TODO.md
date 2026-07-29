@@ -1,6 +1,6 @@
 # 待办事项
 
-## 当前：从 Test8r2 完成 Test9.3，并启动 M8.0 只读研究
+## 当前：M7 已完成，进入 M8
 
 - [x] 提取官方 `system_a/product_a/vendor_a/vendor_dlkm_a`。
 - [x] 建立官方 `system_a` 的 3857 条 ext4 语义清单。
@@ -72,9 +72,14 @@
 - [x] 当前设备：已刷回 Test8r2；Projectivy、SDK/ABI/feature、ContactsProvider、Play Store、Wi‑Fi/互联网和蓝牙自动基线通过。
 - [x] Test9.3：锁定 SmartTube、Kodi、Jellyfin TV、Moonlight 与 AnExplorer TV 的官方来源、许可证、版本、ABI、SHA-256 和签名，提供 fail-closed 的幂等 userdata 安装器。
 - [x] Test9.3：五项首次安装、LEANBACK_LAUNCHER、启动、真实重启持久性和重启后 `already-current` 通过；系统基线无自动化回归。
-- [ ] Test9.3：人工完成五项实体遥控/真实播放、AnExplorer USB/APK/广告体验，并决定文件管理器是否最终采用。
+- [x] Test9.3：五项实体遥控通过；SmartTube 1080p 与 AnExplorer
+  USB/APK 通过。Kodi/Jellyfin/Moonlight 因缺媒体、服务器或主机，以明确的
+  资源型有限豁免完成。
 - [x] Test9.3：从 Play Store 安装 AirReceiverLite 5.1.7；iPhone 发现、镜像、HDMI 音频和同步通过，真实重启确认 Lite 因试用限制不会后台/开机运行且部分功能每次限 5 分钟。
-- [ ] Test9.3：由用户决定是否购买完整版 AirReceiver；若购买，复验后台接收、开机启动、长会话和电视广播名称。付费 APK 不进入项目资产。
+- [x] Test9.3：用户决定不购买完整版 AirReceiver；M7 接受 Lite 必须前台、
+  部分功能每次限 5 分钟的范围，后台/开机/长会话不作为 M7 门禁。
+- [x] M7 发布：新增机器可读发布清单、完整刷机/恢复指南，以及能下载缺失
+  官方 APK、引导 Play 登录并统一安装五项应用的交互入口。
 - [x] M8：吸收 2026-07-28 架构调研，建立 arm64/multilib、AOSP ATV、供体和 Netflix/DRM 分阶段计划及研究索引。
 - [x] M8：按 2026-07-29 调研重排为 M8.0 共享证据门、M8A ARM32 真 ATV、M8B AArch64/multilib，并将 M8.GMS/M8.INPUT/M8.DRM 作为横向门禁。
 - [x] 存储：新增官方原件恢复候选构建输入的脚本并锁定四个逻辑分区 SHA-256。
@@ -92,10 +97,14 @@
 
 ## 后续准备
 
-- AnExplorer TV 已锁定官方不可变 commit、版本、哈希和签名；免费版含广告且部分网络功能需 Pro，最终采用取决于人工体验。若淘汰，再单变量评估 X-plore。
-- AirReceiverLite 的协议/性能试用门已经通过；最终采用取决于用户是否购买完整版及其后台/开机复验。付费 APK 不导出、不进入 bundle。
+- AnExplorer TV 已锁定官方不可变 commit、版本、哈希和签名；实体遥控、
+  内置存储、USB 和本地 APK 路径通过，M7 最终采用免费 TV 版。广告和 Pro
+  网络功能不是本里程碑承诺。
+- AirReceiverLite 的协议/性能门已经通过；最终采用为按需前台 Lite，
+  接受部分功能每次 5 分钟限制。付费 APK 不导出、不进入 bundle。
 - SmartTube 32.03 已核对官方 release asset、MIT 许可证、ARMv7 变体和签名；本轮不随最新 beta 滚动，不得使用随机 APK 镜像站。
-- 待下载的原始 APK 统一放入 `work/preinstall_apks/incoming/`，保留原文件名和来源 URL。
+- 锁定的第三方 APK 统一位于 `work/preinstall_apks/incoming/`；M7 引导安装器
+  可从配置中的官方 HTTPS 地址取得缺失文件，保留原文件名并严格校验。
 - Kodi 21.3、Jellyfin TV 0.19.9、Moonlight 12.1 和 SmartTube 32.03 Beta 均已匹配官方发布；最终通过配置脚本安装，不固化进 system/product。
 - USB ADB 无枚举，但 TCP ADB 已验证可用；默认连接 `192.168.1.5:7896`。
 - M8 大型源码和产物放 WSL/Linux 文件系统或独立构建盘，不放本仓库或 `C:\` NTFS 工作树。
