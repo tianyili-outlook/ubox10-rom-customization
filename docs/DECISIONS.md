@@ -24,6 +24,9 @@
   build flag 或 GSI 启动不算证明。
 - **针对性检查**：`check_elf_file.py`、`checkvintf`、linkerconfig、APEX、
   classpath 和 SELinux 只在相关变更或故障中使用，不设全树形式门禁。
+- **现有兼容性快照足够**：Test8r2 的 linkerconfig、APEX、classpath、
+  uses-library 和 VINTF 结构已保存；设备缺少 `checkvintf` 不阻塞 M8A，
+  构建树可用后只检查实际变更。
 - **轻量 candidate 验收**：3 次冷启动、5–10 次重启、数小时使用，以及
   Launcher/Settings、遥控、网络、音频、视频和回退；用户体验优于前一基线
   即可晋级。
@@ -35,7 +38,8 @@
   Legvan Web/ADB remote 仅作 fallback，不替代电视端 receiver 和官方 iPhone
   体验验收。
 - **DRM 按实际播放能力描述**：当前只确认 Widevine L3、HDCP `NONE` 和无
-  secure decoder；不把 Netflix HD 当作 M8A 启动门禁。
+  secure decoder；不把 Netflix HD 当作 M8A 启动门禁，也不为 DRM 对照单独
+  刷回官方 ROM。
 - **大型源码放独立 ext4 卷**：当前磁盘不满足 AOSP 构建空间，不向现有
   C/D 盘或仓库工作树同步完整源码。
 - **文档单一事实来源**：架构、状态、TODO、文件地图和 candidate 索引各一份；

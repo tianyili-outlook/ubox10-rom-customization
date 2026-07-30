@@ -33,7 +33,7 @@
 |---|---|
 | 建立 M8A AOSP product | [m8/research/m8a-atv-arm32/ubox10-atv-product-plan.md](m8/research/m8a-atv-arm32/ubox10-atv-product-plan.md)、[BUILD_ENVIRONMENT.md](BUILD_ENVIRONMENT.md) |
 | 判断 ARM32/ARM64 依赖 | [m8/research/current-device/elf-dependency-summary.md](m8/research/current-device/elf-dependency-summary.md)、[m8/research/current-device/arm64-blockers.md](m8/research/current-device/arm64-blockers.md) |
-| 定位 linker namespace / ELF 错误 | [m8/research/COMMUNITY_REFERENCES.md](m8/research/COMMUNITY_REFERENCES.md)、[m8/research/current-device/elf-dependency-summary.md](m8/research/current-device/elf-dependency-summary.md) |
+| 定位 linker namespace / ELF 错误 | [m8/research/current-device/compatibility-runtime-snapshot.md](m8/research/current-device/compatibility-runtime-snapshot.md)、[m8/research/current-device/linkerconfig-test8r2.txt](m8/research/current-device/linkerconfig-test8r2.txt)、[m8/research/current-device/elf-dependency-summary.md](m8/research/current-device/elf-dependency-summary.md) |
 | 设计 overlay / TV package | [m8/research/m8a-atv-arm32/overlay-permission-vintf-diff.md](m8/research/m8a-atv-arm32/overlay-permission-vintf-diff.md)、[m8/research/COMMUNITY_REFERENCES.md](m8/research/COMMUNITY_REFERENCES.md) |
 | 处理 GMS / 手机遥控 | [archive/m7/tv-gms-remote/README.md](archive/m7/tv-gms-remote/README.md)、[m8/research/COMMUNITY_REFERENCES.md](m8/research/COMMUNITY_REFERENCES.md) |
 | 判断 DRM / Netflix 边界 | [m8/research/drm-netflix/netflix-feasibility-verdict.md](m8/research/drm-netflix/netflix-feasibility-verdict.md) |

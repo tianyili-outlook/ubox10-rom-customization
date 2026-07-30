@@ -18,7 +18,8 @@
 1. Android 12 platform manifest、superproject 和 Test8r2 DRM 已锁定；
    在有足够空间的 WSL/Linux 文件系统准备构建树。
 2. 建立 `device/ubox/ubox10`，生成 ARM32 system/system_ext/product；先跑
-   ELF/依赖、privapp、`checkvintf`、分区容量和 AVB 离线门。
+   分区容量和 AVB 离线门；只对新增/替换 ELF、privapp 和 VINTF 做针对性
+   检查。
 3. 与 Test8r2 的 boot/vendor/vendor_dlkm 组合最小候选，只验
    zygote32、system_server、SurfaceFlinger、HDMI UI 和 ADB。
 4. 再验 TV Settings、Projectivy、实体遥控、音频、Wi-Fi/BT 和硬解。

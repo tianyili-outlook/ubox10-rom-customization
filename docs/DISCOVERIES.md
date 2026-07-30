@@ -73,8 +73,9 @@
 - BPI-SINOVOIP 的公开 H618 Android 12 仓库当前可访问，确实包含 Android、device、hardware、vendor、kernel、longan 等源码目录，并给出 H618/Linux 5.4/`-a arm64` 的 Longan 命令；但仓库说明还要求外部 oversized files，且该参数不能证明 Android userspace、`lib64` 或 64 位 Mali/Gralloc/HWC 已成立。
 - AOSP `device/google/atv` 提供独立分支和版本 tag；M8 的 Android 12 ATV 参考必须锁定对应 tag，不能直接依据当前 `main`。
 - Test8r2 的 Widevine、DRM service、secure decoder 和 HDCP 基线已建立；
-  原厂 ROM、OEMCrypto/TEE 实际参与情况、Play Protect、Netflix App 与真实
-  最大分辨率仍待对照。Play Store 无可见认证项只代表 UI 观察。
+  OEMCrypto/TEE 实际参与情况、Play Protect、Netflix App 与真实最大分辨率
+  未测。不为这些信息单独刷回官方 ROM；Play Store 无可见认证项只代表 UI
+  观察。
 - Android DRM Framework 只提供统一接口，具体 DRM scheme 与安全强度由设备实现决定；因此 SoC 解码规格、Widevine level、Play Protect、TV Play Store 分发和 Netflix HD/4K 资格必须分开验证。
 - 清理前工作区共有 149 个 `.img`、约 85.677 GiB；第一轮清理后曾保留官方恢复原件、Test8r2 和 Test9w1，共 3 个可刷写 `.img`、约 5.617 GiB。连同旧工作树共释放约 81.604 GiB；当前可刷写保留集已切换为 Test9r2。
 - 四个官方逻辑分区缓存全部删除后，`prepare-candidate-inputs.py` 已从保留的 `x12-1024.img`/`super.fex` 成功重建 `system_a`、`product_a`、`vendor_a` 和 `vendor_dlkm_a`，且全部命中锁定 SHA-256。它们虽可复现，但现按用户指令长期保留，以缩短连续候选构建时间。
@@ -138,9 +139,9 @@
   64 GB eMMC；`VIC H16S01` 更可能是 RJ45 隔离磁性器件而非无线模组。
 - Test8r2 使用 64 位内核和纯 32 位用户空间；Mali-G31 EGL、Gralloc、
   Mapper、HWC、Vulkan 均只有 32 位产物，构成 M8B 的首个硬阻塞。
-- Widevine engine、DRM passthrough 实现和 OP-TEE TA 存在，但
-  `ro.boot.drmkey=false`、无已注册 DRM HAL、无 secure codec，Netflix/DRM
-  能力继续标记为未知。
+- 静态清单能看到 Widevine engine、DRM passthrough 实现和 OP-TEE TA，但
+  `ro.boot.drmkey=false`、无已注册 DRM HAL、无 secure codec；该清单本身
+  不能确定播放能力，后续 MediaDrm 探针结论见文末。
 - Test8r2 四分区共识别 1667 个 ELF：1554 个 ARM32 用户空间、0 个 AArch64
   用户空间、22 个 AArch64 Kernel module、85 个 APK/JAR 内嵌 ELF。当前
   ARM32 SONAME 名称级依赖闭合，但不能替代 linker namespace 验证。
@@ -157,3 +158,8 @@
 - Test8r2 的 Widevine 不是静态残留：MediaDrm 可打开 Google Widevine CDM
   16.1.0，MP4/WebM 可用，但 security level 为 L3、HDCP connected/max
   均为 NONE，AVC/HEVC/VP9 不要求 secure decoder；当前不能宣称 Netflix HD。
+- Test8r2 生成态 `/linkerconfig/` 共 10 个文件；活动 APEX 共 21 个，
+  BOOT/SYSTEMSERVER/DEX2OATBOOT classpath 分别为 25/7/12 项。required
+  uses-library 缺失为 0。
+- 四个分区共采集 36 份 VINTF XML，全部结构有效；设备没有 `checkvintf`
+  命令，因此不宣称正式兼容性 PASS，后续只对 M8A 实际变更运行 host 检查。

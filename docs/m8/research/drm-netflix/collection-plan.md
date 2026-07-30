@@ -7,7 +7,7 @@
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File `
   .\scripts\run-m8-drm-probe.ps1 `
-  -Device 192.168.1.5:7896 `
+  -Device "<电视IP>:7896" `
   -OutputFile logs/device/<date>-m8-<baseline>-drm-api.txt
 ```
 
@@ -21,8 +21,8 @@ System ID 只输出是否存在。
 | 基线 | 状态 |
 |---|---|
 | Test8r2 | API、service、codec、HDCP 已采集 |
-| 官方 ROM | 待单独刷回后运行同一探针 |
+| 官方 ROM | 跳过；不为 DRM 对照单独刷回 |
 | Netflix N1 | 待本人账号实际安装、登录和播放 |
 
-当前不需要继续搜索互联网；官方 ROM 结果出来后再决定是否查具体 Widevine/
-HDCP 实现问题。
+当前不需要继续搜索互联网；只在 N1 实际播放或 M8A 保留能力出现具体故障时
+查询对应 Widevine/HDCP 问题。

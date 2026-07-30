@@ -93,13 +93,13 @@ M8B 不阻塞 M8A，也不下载 H618 BSP 只为“先看看”。
 建议但不作为每轮硬门禁：
 
 - 针对新增/替换 ELF 运行 `check_elf_file.py` 或等价检查；
-- 对可疑 HAL 运行基本 `checkvintf`；
-- 保存 `/linkerconfig/`、活动 APEX/classpath、uses-library 和 SELinux 摘要；
-- 在方便时补官方 ROM DRM 对照；
+- 对实际新增或修改的 VINTF/HAL，在构建树提供工具后运行 `checkvintf`；
+- 出现相关故障时重采 linkerconfig、APEX/classpath、uses-library 或 SELinux；
 - 做更长压力测试、完整 ABI 审计、CTS/VTS 或 SELinux enforcing 收敛。
 
 这些检查在能快速排除砖机或提升归因时执行；不能为了清单完整而无限推迟
-可恢复的实机实验。
+可恢复的实机实验。Test8r2 的首份兼容性快照已经完成；设备端没有
+`checkvintf` 不构成门禁，也不为 DRM 对照单独刷回官方 ROM。
 
 ## 轻量 candidate 标准
 

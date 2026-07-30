@@ -21,8 +21,12 @@
 
 - M8A 可继续做 ARM32 AOSP ATV 产品层迁移。
 - M8B 暂停在 64 位图形栈门禁。
-- Test8r2 没有 Netflix HD/4K 所需的 L1/HDCP/secure-decoder 证据；N1 实际播放和官方 ROM 对照仍待完成。
+- Test8r2 没有 Netflix HD/4K 所需的 L1/HDCP/secure-decoder 证据；N1 实际
+  播放可按需要验证，不为对照单独刷回官方 ROM。
 
 只读采集入口为
 [`capture-m8-runtime-readonly.ps1`](../../../../scripts/capture-m8-runtime-readonly.ps1)。
 本次执行 67 项，9 项因目标路径或组件不存在而返回非零，0 超时。
+
+linkerconfig、APEX、classpath、uses-library 和 VINTF 结果见
+[兼容性运行时快照](compatibility-runtime-snapshot.md)。

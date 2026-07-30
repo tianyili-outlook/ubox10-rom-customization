@@ -1,12 +1,17 @@
 [CmdletBinding()]
 param(
     [ValidatePattern('^[A-Za-z0-9._:-]+$')]
-    [string]$Device = '192.168.1.5:7896',
+    [string]$Device = '192.168.1.8:7896',
 
     [ValidatePattern('^[A-Za-z0-9._-]+$')]
     [string]$BaselineLabel = 'test8r2',
 
     [string]$OutputRoot,
+
+    [string]$AdbExecutable,
+
+    [ValidateRange(1, 65535)]
+    [int]$AdbServerPort = 5037,
 
     [ValidateRange(5, 300)]
     [int]$DefaultTimeoutSeconds = 45,
@@ -15,14 +20,16 @@ param(
 
     [switch]$UserDataAppsPresent,
 
+    [switch]$CompatibilityOnly,
+
     [switch]$SelfTest
 )
 
 # M8 read-only Android runtime collector.
 #
-# Device-side operations are deliberately limited to get/list/dump/cat/find
-# commands. The script does not use adb root/remount/push/pull/install, su,
-# setprop, pm grant, settings put, or any filesystem write on the target.
+# Device-side operations are limited to read-only property, file, mount and
+# service inspection. The script does not use adb root/remount/push/pull/install,
+# su, setprop, pm grant, settings put, or any filesystem write on the target.
 $ErrorActionPreference = 'Stop'
 
 function Write-Utf8NoBom {
@@ -280,9 +287,25 @@ if ($SelfTest) {
 }
 
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
-$adbPath = Join-Path $repositoryRoot 'tools\platform-tools\adb.exe'
+if ([string]::IsNullOrWhiteSpace($AdbExecutable)) {
+    $adbPath = Join-Path $repositoryRoot 'tools\platform-tools\adb.exe'
+}
+elseif ([System.IO.Path]::IsPathRooted($AdbExecutable)) {
+    $adbPath = [System.IO.Path]::GetFullPath($AdbExecutable)
+}
+else {
+    $adbPath = [System.IO.Path]::GetFullPath(
+        (Join-Path $repositoryRoot $AdbExecutable)
+    )
+}
 if (-not (Test-Path -LiteralPath $adbPath -PathType Leaf)) {
     throw "adb.exe not found at the project-local path: $adbPath"
+}
+$adbClientPrefix = if ($AdbServerPort -eq 5037) {
+    @()
+}
+else {
+    @('-P', $AdbServerPort.ToString())
 }
 
 if ([string]::IsNullOrWhiteSpace($OutputRoot)) {
@@ -295,7 +318,7 @@ elseif (-not [System.IO.Path]::IsPathRooted($OutputRoot)) {
 if (-not $NoConnect -and $Device.Contains(':')) {
     $connectResult = Invoke-AdbClient `
         -AdbPath $adbPath `
-        -Arguments @('connect', $Device) `
+        -Arguments ($adbClientPrefix + @('connect', $Device)) `
         -TimeoutSeconds 15
     if ($connectResult.ExitCode -ne 0) {
         throw "adb connect failed: $($connectResult.Stderr.Trim())"
@@ -304,14 +327,15 @@ if (-not $NoConnect -and $Device.Contains(':')) {
 
 $stateResult = Invoke-AdbClient `
     -AdbPath $adbPath `
-    -Arguments @('-s', $Device, 'get-state') `
+    -Arguments ($adbClientPrefix + @('-s', $Device, 'get-state')) `
     -TimeoutSeconds 10
 if ($stateResult.ExitCode -ne 0 -or $stateResult.Stdout.Trim() -ne 'device') {
     throw "ADB device is not ready: $Device"
 }
 
 $runId = Get-Date -Format 'yyyyMMdd-HHmmss'
-$outputDir = Join-Path $OutputRoot "$runId-m8-$BaselineLabel-runtime"
+$captureKind = if ($CompatibilityOnly) { 'compat' } else { 'runtime' }
+$outputDir = Join-Path $OutputRoot "$runId-m8-$BaselineLabel-$captureKind"
 New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
 
 $commands = @(
@@ -393,6 +417,75 @@ $commands = @(
     [ordered]@{ Name = 'modules-options'; Category = 'modules'; Timeout = 15; Args = @('shell', 'cat', '/vendor_dlkm/lib/modules/modules.options') }
 )
 
+$compatibilityCommands = @(
+    [ordered]@{ Name = 'compat-identity-sdk'; Category = 'compat'; Timeout = 10; Args = @('shell', 'getprop', 'ro.build.version.sdk') },
+    [ordered]@{ Name = 'compat-identity-abi'; Category = 'compat'; Timeout = 10; Args = @('shell', 'getprop', 'ro.product.cpu.abilist') },
+    [ordered]@{ Name = 'compat-identity-fingerprint'; Category = 'compat'; Timeout = 10; Args = @('shell', 'getprop', 'ro.build.fingerprint') },
+
+    [ordered]@{ Name = 'compat-linkerconfig-files'; Category = 'compat'; Timeout = 15; Args = @('shell', 'find', '/linkerconfig', '-type', 'f', '-print') },
+    [ordered]@{
+        Name = 'compat-linkerconfig-content'
+        Category = 'compat'
+        Timeout = 30
+        Args = @(
+            'shell',
+            'for f in $(find /linkerconfig -type f); do echo; echo ===== $f =====; cat $f; echo; done'
+        )
+    },
+
+    [ordered]@{ Name = 'compat-apex-info-list'; Category = 'compat'; Timeout = 15; Args = @('shell', 'cat', '/apex/apex-info-list.xml') },
+    [ordered]@{ Name = 'compat-apexservice-active'; Category = 'compat'; Timeout = 15; Args = @('shell', 'cmd', 'apexservice', 'list', '--active') },
+    [ordered]@{
+        Name = 'compat-apex-mounts'
+        Category = 'compat'
+        Timeout = 15
+        Args = @('shell', 'mount | grep " /apex/"')
+    },
+
+    [ordered]@{ Name = 'compat-bootclasspath'; Category = 'compat'; Timeout = 10; Args = @('shell', 'printenv', 'BOOTCLASSPATH') },
+    [ordered]@{ Name = 'compat-systemserverclasspath'; Category = 'compat'; Timeout = 10; Args = @('shell', 'printenv', 'SYSTEMSERVERCLASSPATH') },
+    [ordered]@{ Name = 'compat-dex2oatbootclasspath'; Category = 'compat'; Timeout = 10; Args = @('shell', 'printenv', 'DEX2OATBOOTCLASSPATH') },
+    [ordered]@{ Name = 'compat-init-environ'; Category = 'compat'; Timeout = 15; Args = @('shell', 'cat', '/init.environ.rc') },
+
+    [ordered]@{ Name = 'compat-shared-libraries'; Category = 'compat'; Timeout = 20; Args = @('shell', 'dumpsys', 'package', 'libraries') },
+    [ordered]@{ Name = 'compat-package-uses-libraries'; Category = 'compat'; Timeout = 45; Args = @('shell', 'dumpsys', 'package', 'packages') },
+
+    [ordered]@{
+        Name = 'compat-vintf-files'
+        Category = 'compat'
+        Timeout = 20
+        Args = @(
+            'shell',
+            'find',
+            '/vendor/etc/vintf',
+            '/system/etc/vintf',
+            '/system/system_ext/etc/vintf',
+            '/product/etc/vintf',
+            '-type',
+            'f',
+            '-print'
+        )
+    },
+    [ordered]@{
+        Name = 'compat-vintf-content'
+        Category = 'compat'
+        Timeout = 30
+        Args = @(
+            'shell',
+            'for d in /vendor/etc/vintf /system/etc/vintf /system/system_ext/etc/vintf /product/etc/vintf; do for f in $(find $d -type f 2>/dev/null); do echo; echo ===== $f =====; cat $f; echo; done; done'
+        )
+    },
+    [ordered]@{ Name = 'compat-checkvintf-path'; Category = 'compat'; Timeout = 10; Args = @('shell', 'which', 'checkvintf') },
+    [ordered]@{ Name = 'compat-checkvintf'; Category = 'compat'; Timeout = 20; Args = @('shell', 'checkvintf', '--check-compat') }
+)
+
+if ($CompatibilityOnly) {
+    $commands = $compatibilityCommands
+}
+else {
+    $commands += $compatibilityCommands
+}
+
 $results = [System.Collections.Generic.List[object]]::new()
 $startedAt = Get-Date
 
@@ -403,7 +496,7 @@ foreach ($command in $commands) {
     else {
         $DefaultTimeoutSeconds
     }
-    $arguments = @('-s', $Device) + @($command.Args)
+    $arguments = $adbClientPrefix + @('-s', $Device) + @($command.Args)
 
     Write-Output ("[{0}] {1}" -f $command.Category, $command.Name)
     $started = Get-Date
@@ -448,6 +541,7 @@ $manifest = [ordered]@{
     Collector = 'scripts/capture-m8-runtime-readonly.ps1'
     ReadOnlyContract = $true
     BaselineLabel = $BaselineLabel
+    CaptureKind = $captureKind
     UserDataAppsPresent = [bool]$UserDataAppsPresent
     EndpointKind = if ($Device.Contains(':')) { 'tcp' } else { 'local-or-usb' }
     StartedAt = $startedAt.ToString('o')
@@ -456,6 +550,7 @@ $manifest = [ordered]@{
     Host = [ordered]@{
         PowerShellVersion = $PSVersionTable.PSVersion.ToString()
         AdbVersion = (Get-Item -LiteralPath $adbPath).VersionInfo.FileVersion
+        AdbServerPort = $AdbServerPort
     }
     Privacy = [ordered]@{
         SanitizedBeforeWrite = $true

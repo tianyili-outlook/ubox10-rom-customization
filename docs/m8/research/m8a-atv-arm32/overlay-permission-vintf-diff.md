@@ -27,4 +27,5 @@ AOSP `TvProvision` 替换时改用上游自带 policy，不允许两个 Setup HO
   `vendor.display.output` AIDL v2 的声明；丢失它会破坏显示栈 VINTF 合同。
 - system/system_ext 使用 Android 12 framework matrix 与 ATV system_ext
   policy；不导入 ATV emulator vendor manifest 或 vendor policy。
-- 离线候选必须通过 `checkvintf`；ATV 本身不需要新增设备 HAL。
+- ATV 本身不需要新增设备 HAL。只有实际修改 VINTF/HAL 时才用构建树的
+  `checkvintf` 做针对性检查；设备端缺少该工具不阻塞首个候选。

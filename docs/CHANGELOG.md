@@ -29,6 +29,14 @@
 - 锁定 Android 12 platform manifest `8e7a5217…` 与 superproject
   `51d9636f…`；superproject 的 ATV gitlink 命中 `3ce48358…`。主机 C/D
   仅余 156.5/52.5 GiB，低于 AOSP 官方 400 GB 建议，故不启动完整同步。
+- 通过只读 ADB 完成兼容性快照：保存 Test8r2 的 10 份生成态
+  linkerconfig、21 个活动 APEX、三组 classpath、uses-library 和 36 份
+  VINTF XML；required library 缺失为 0。
+- 设备没有 `apexservice`/`checkvintf` 命令；APEX 以
+  `apex-info-list.xml` 加挂载确认，VINTF 只声明 XML 结构有效，host
+  `checkvintf` 延后到相关 M8A 变更。按用户决定不为 DRM 对照刷回官方 ROM。
+- 只读采集器新增 `-CompatibilityOnly`、外部 ADB 路径和隔离 server 端口，
+  便于单独重采兼容性信息。
 
 ## 2026-07-29
 
