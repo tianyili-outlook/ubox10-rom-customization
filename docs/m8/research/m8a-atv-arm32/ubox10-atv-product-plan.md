@@ -23,12 +23,13 @@
 3. 与 Test8r2 的 boot/vendor/vendor_dlkm 组合最小候选，只验
    zygote32、system_server、SurfaceFlinger、HDMI UI 和 ADB。
 4. 再验 TV Settings、Projectivy、实体遥控、音频、Wi-Fi/BT 和硬解。
+3. 与 Test8r2 的 boot/vendor/vendor_dlkm 组合最小候选，只验
+   zygote32、system_server、SurfaceFlinger、HDMI UI 和 ADB。
+4. 再验 TV Settings、Projectivy、实体遥控、音频、Wi-Fi/BT 和硬解。
 5. 基础产品稳定后，单独替换 AOSP `TvProvision`；M8.INPUT、M8.GMS、
    M8.DRM 各自作为后续单变量。
 
 首个失败点若位于 VINTF、32 位图形/媒体依赖或最小 UI，先修产品层，不改
 vendor 或转向 AArch64。Test8r2 始终是刷回基线。
 
-当前 C/D 分别只余 156.5/52.5 GiB。AOSP 官方建议 checkout + build 至少预留
-400 GB，因此现有盘不启动完整同步；需要新增或清理出单个 Linux/ext4
-构建卷。
+宿主 C 盘已成功清理出 435.12 GiB 空闲空间，WSL2 Linux/ext4 构建卷（位于 `/home/tianyi/ubox10-aosp/`）可用空间 954 GB，已满足 400 GB 构建卷要求。P0 解除，可以按锁定 revision 启动源码同步与产品构建。

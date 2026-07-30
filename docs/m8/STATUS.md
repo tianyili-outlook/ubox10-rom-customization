@@ -29,11 +29,12 @@
 
 ## 阶段进度
 
+- `M8.P0 COMPLETE`：构建阻塞已解除；C 盘已清理出 435 GiB 空闲空间，WSL2 ext4 构建卷 `/home/tianyi/ubox10-aosp/` 可用空间 954 GB。
 - `M8.0 COMPLETE`：硬件、运行时和兼容性轻量快照均已完成，证据足够开始
   M8A。
 - `M8A.1 COMPLETE`：Android 12 `aosp_tv_arm` 来源、产品差异、overlay/
   permission/VINTF、分区预算和 UBOX10 product 计划已锁定。
-- `M8A.2 ACTIVE`：尚未同步完整 AOSP，也没有生成 M8 candidate。
+- `M8A.2 ACTIVE`：准备按锁定 revision 同步源码并建立 UBOX10 product 离线构建。
 - `M8A.3 PENDING`：等待最小 TV UI candidate。
 - `M8B PARKED`：0 个 AArch64 userspace ELF；没有可用 64 位图形供体。
 
@@ -54,8 +55,10 @@ secure decoder 结论已足够界定 M8A，实际播放以后按需要验证。
 
 ## 当前阻塞
 
-完整 Android 12 checkout 与构建需要至少 400 GB 可用的 Linux/ext4 构建卷。
-当前 C/D 盘空间不足，因此没有下载源码或启动大型构建。
+无。P0 已完成：
+- **宿主 C 盘空闲**：435.12 GiB
+- **WSL2 ext4 构建卷**：`/home/tianyi/ubox10-aosp/`（挂载于 `/`，可用空间 954 GB）
+- **清理与重置方式**：`rm -rf /home/tianyi/ubox10-aosp/out` 可随时释放编译中间产物。
 
 ## 下一动作
 
