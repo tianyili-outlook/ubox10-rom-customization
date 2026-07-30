@@ -102,9 +102,22 @@ class M7ReleaseTests(unittest.TestCase):
     def test_release_documents_exist_and_binaries_are_not_claimed(self) -> None:
         for path in self.release["documentation"].values():
             self.assertTrue((REPO / path).is_file(), path)
+        self.assertEqual(
+            "README.md",
+            self.release["documentation"]["release_guide"],
+        )
+        homepage = (REPO / "README.md").read_text(encoding="utf-8")
+        self.assertIn("# UBOX10 M7 稳定版", homepage)
+        self.assertIn("--guided-after-flash", homepage)
+
         distribution = self.release["distribution"]
         self.assertIs(False, distribution["firmware_in_git"])
         self.assertIs(False, distribution["third_party_apks_in_git"])
+        self.assertEqual("m7", distribution["github_release"]["tag"])
+        self.assertTrue(
+            distribution["github_release"]["asset_is_source_only"]
+        )
+        self.assertTrue((REPO / "scripts" / "package-m7-release.py").is_file())
 
 
 if __name__ == "__main__":

@@ -33,6 +33,6 @@
 | 64 位、图形或媒体迁移破坏合法 DRM 能力 | 相关修改前建立原厂/Test8r2 的 Widevine、TEE/OEMCrypto、secure codec、protected path 和 HDCP 基线；安全材料只保留 UBOX10 原件。 |
 | 把 Widevine L1 或系统属性误当 Netflix HD/4K | 使用 N0–N3 分级和实际播放证据；缺服务端资格或 provisioning 时记录外部阻塞，不伪造通过。 |
 | M8 大型源码/产物耗尽系统盘 | 下载前锁定 commit、文件清单和空间；源码/产物放 WSL/Linux 文件系统或独立构建盘，不放当前仓库。 |
-| 空间清理误删唯一恢复或高频构建输入 | 官方 `x12-1024.img`、Test8r2、最新技术探针 Test9r2 和四个 `out/official-*` 逻辑分区缓存使用固定路径/哈希保留清单；Test9r2 不因保留而成为基线，常规清理只删除淘汰候选和候选中间镜像。 |
+| 空间清理误删唯一恢复或高频构建输入 | 官方 `x12-1024.img`、Test8r2 和四个 `out/official-*` 逻辑分区缓存使用固定路径/哈希保留清单；Test9r1/Test9r2 只删除本地候选产物，配置、生成脚本、固定哈希和实验报告保留。 |
 
 当前恢复路径：使用 PhoenixCard 将官方 `x12-1024.img` 重新写入设备。
