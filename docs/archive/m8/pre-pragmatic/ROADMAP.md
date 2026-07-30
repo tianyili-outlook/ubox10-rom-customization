@@ -106,9 +106,9 @@ Play Store 判定为 “missing”。Test9r2 已把 RRO、framework、receiver�
 完整设计、哈希与判错树见
 `archive/m7/TEST9R1_ANDROID_TV_REMOTE_SERVICE.md` 和
 `archive/m7/TEST9R2_RRO_SCAN_PATH.md`；参考项目、结果分类和研究交付物见
-`research/tv-gms-remote/README.md`。最终真机证据和路线选择分别见
-`research/tv-gms-remote/test9r2-runtime-report.md` 与
-`research/tv-gms-remote/route-decision.md`。
+`../../m7/tv-gms-remote/README.md`。最终真机证据和路线选择分别见
+`../../m7/tv-gms-remote/test9r2-runtime-report.md` 与
+`../../m7/tv-gms-remote/route-decision.md`。
 
 ## Test9.3：32 位系统产品化收尾（已完成）
 
@@ -186,7 +186,7 @@ M8.GMS、M8.INPUT 和 M8.DRM 是横向门禁。AOSP ATV 可在没有 Google 商�
 
 不得复制或伪造 Widevine/TEE/HDCP 密钥、设备证书、ESN 或认证状态。Google TV/GMS TV 商业认证不是个人 AOSP ATV 工程可保证的结果。
 
-完整架构、供体政策和退出条件见 `architecture/M8_ARM64_AOSP_TV_MIGRATION.md`。
+完整架构、供体政策和退出条件见同目录 `ARCHITECTURE.md`。
 
 ## 参考依据
 

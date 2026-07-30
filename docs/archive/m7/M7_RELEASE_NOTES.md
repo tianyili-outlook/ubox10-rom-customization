@@ -9,7 +9,7 @@ M7 是 UBOX10 / I12 Pro Max 当前稳定发布，固件基线为 Test8r2。
 - 通过 Google Play 安装的免费 AirReceiverLite 引导流程；
 - PhoenixCard 刷机、官方原件重建、哈希校验、回滚与最小验收说明。
 
-完整用户入口为仓库根目录 `README.md`。刷机联网后运行：
+本说明与 `m7` tag 是固定发布入口。刷机联网后运行：
 
 ```powershell
 python .\scripts\install-userdata-apps.py `

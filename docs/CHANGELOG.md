@@ -2,6 +2,19 @@
 
 ## 2026-07-30
 
+- 将 M8 文档改为个人项目的轻量执行体系：体验、日常稳定、回退和故障归因
+  优先于形式完整；candidate 采用 3 次冷启动、5–10 次重启、数小时日常使用
+  与核心电视功能验收，不以 CTS/VTS、24 小时压力或 exhaustive ABI audit
+  作为常规门禁。
+- 统一当前路线为 `M8A.2 ACTIVE`：先在现有 UBOX10 硬件栈上构建 ARM32
+  Android 12 ATV，M8B 只在真实 AArch64 图形供体证明后开始。旧
+  M8.1–M8.6、路线图、旧 TODO/验收/风险文档归档。
+- 新增 `docs/FILE_MAP.md`、M8 架构、状态、TODO、candidate 索引和社区参考；
+  M8 研究证据移至 `docs/m8/research/`，Test9/GMS/Remote 证据移至 M7 归档。
+- 为 candidate 配置中按字节锁定的 `assets/system_files/*.xml` 固定 LF，
+  避免 Windows 新工作树因自动 CRLF 转换导致来源哈希误报。
+- M8 分支首页不再承担 M7 发布指南；M7 release 元数据改指向固定归档 release
+  notes，Test8r2 和官方恢复基线未修改。
 - 完成 M8A.1：锁定 Android 12 `device/google/atv` commit
   `3ce48358b7e06ab1f1a1b713fb0f285aaa0983ca`，形成 package、overlay、
   permission、VINTF、分区预算和 UBOX10 ARM32 ATV 分层计划。确认只采用

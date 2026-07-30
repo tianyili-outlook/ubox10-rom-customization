@@ -103,12 +103,14 @@ class M7ReleaseTests(unittest.TestCase):
         for path in self.release["documentation"].values():
             self.assertTrue((REPO / path).is_file(), path)
         self.assertEqual(
-            "README.md",
+            "docs/archive/m7/M7_RELEASE_NOTES.md",
             self.release["documentation"]["release_guide"],
         )
-        homepage = (REPO / "README.md").read_text(encoding="utf-8")
-        self.assertIn("# UBOX10 M7 稳定版", homepage)
-        self.assertIn("--guided-after-flash", homepage)
+        release_guide = (
+            REPO / self.release["documentation"]["release_guide"]
+        ).read_text(encoding="utf-8")
+        self.assertIn("# M7 GitHub Release Notes", release_guide)
+        self.assertIn("--guided-after-flash", release_guide)
 
         distribution = self.release["distribution"]
         self.assertIs(False, distribution["firmware_in_git"])

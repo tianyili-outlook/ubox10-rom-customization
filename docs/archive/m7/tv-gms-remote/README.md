@@ -219,7 +219,7 @@ Git。MindTheGapps 或其他项目的 proprietary file list 只能帮助盘点�
 当前目录已有真实证据：
 
 ```text
-docs/research/tv-gms-remote/
+docs/archive/m7/tv-gms-remote/
 ├─ README.md
 ├─ test9r2-runtime-report.md
 └─ route-decision.md

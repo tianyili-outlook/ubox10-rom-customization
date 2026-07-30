@@ -35,7 +35,7 @@
     "report": "work/test9.3-guided-install.json"
   },
   "documentation": {
-    "release_guide": "README.md",
+    "release_guide": "docs/archive/m7/M7_RELEASE_NOTES.md",
     "completion_report": "docs/archive/m7/M7_COMPLETION_REPORT.md"
   },
   "distribution": {

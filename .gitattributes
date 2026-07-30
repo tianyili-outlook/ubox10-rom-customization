@@ -1,0 +1,2 @@
+# These build inputs are byte-for-byte hash locked by candidate configs.
+assets/system_files/*.xml text eol=lf

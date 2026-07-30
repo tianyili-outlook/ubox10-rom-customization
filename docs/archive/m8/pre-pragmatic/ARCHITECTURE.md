@@ -330,7 +330,7 @@ Test9r1 已证明当前 Android 12 framework 包含 TV remote 服务端骨架，
 - `Legvan/tv-remote`：ADB/Web 路线仅作安全隔离的末级参考，默认 LAN 暴露、
   raw shell 和 ASCII 限制不符合当前产品门槛。
 
-完整评估见 `docs/research/tv-gms-remote/README.md`。
+完整评估现归档于 `docs/archive/m7/tv-gms-remote/README.md`。
 
 ## 9. M8.DRM：Netflix 与安全播放
 

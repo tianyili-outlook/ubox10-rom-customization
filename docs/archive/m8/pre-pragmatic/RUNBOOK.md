@@ -48,8 +48,8 @@ RemoteService.onCreate
   `TvRemoteProvider`/uinput bridge。
 
 重启后的自动启动和配对持久性未复验。完整证据见
-`research/tv-gms-remote/test9r2-runtime-report.md`，路线决定见
-`research/tv-gms-remote/route-decision.md`。
+`../../m7/tv-gms-remote/test9r2-runtime-report.md`，路线决定见
+`../../m7/tv-gms-remote/route-decision.md`。
 
 ## 已完成：当前设备退出 Test9r2
 

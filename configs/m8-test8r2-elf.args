@@ -19,8 +19,8 @@ vendor_dlkm=out/official-vendor-dlkm-a/20260726-r1/vendor_dlkm_a.img
 --manifest
 vendor_dlkm=out/official-vendor-dlkm-a/20260726-r1/manifest.json
 --csv
-docs/research/m8/current-device/elf-inventory.csv
+docs/m8/research/current-device/elf-inventory.csv
 --summary
-docs/research/m8/current-device/elf-dependency-summary.md
+docs/m8/research/current-device/elf-dependency-summary.md
 --label
 Test8r2

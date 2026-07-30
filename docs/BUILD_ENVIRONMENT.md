@@ -2,95 +2,66 @@
 
 ## 已验证主机
 
-- Windows PowerShell 为候选构建入口。
-- Python 3.11+；当前主机使用 Python 3.13。
-- WSL2：`Ubuntu-24.04`。
-- 私有 e2fsprogs：`1.47.2`。
-- 固定路径：`/home/tianyi/ubox10-toolchain/prefix/e2fsprogs-1.47.2-gcc13.3.0/sbin`。
-- Windows 工具：`avbtool.py`、`lpmake.exe`、`lpdumps.exe`、`simg2img.exe`、IMAGEWTY 解析/封装工具。
-- PhoenixCard 4.2.7 只用于用户确认目标 TF 卡后的实机刷写。
+- Windows PowerShell：仓库脚本、IMAGEWTY 打包和设备操作入口。
+- Python 3.11+；当前主机为 Python 3.13。
+- WSL2 `Ubuntu-24.04`。
+- 私有 e2fsprogs 1.47.2：
+  `/home/tianyi/ubox10-toolchain/prefix/e2fsprogs-1.47.2-gcc13.3.0/sbin`。
+- Windows 侧已有 AVB、lpmake/lpdump、simg2img/img2simg 和 IMAGEWTY 工具。
+- PhoenixCard 4.2.7 只在用户确认目标 TF 卡后使用。
 
-旧的 WSL/Fastboot 配置过程已移至 `docs/archive/host/`，不需要日常重复执行。
+旧 WSL/Fastboot 配置过程位于 [archive/host/](archive/host/)。
 
-## M8 AOSP 构建空间
+## M8A AOSP 构建卷
 
-- Android 12 manifest 与 superproject 已锁定，完整源码尚未同步。
-- 2026-07-30：C 盘剩余 156.5 GiB，D 盘剩余 52.5 GiB，均不足。
-- [AOSP 官方要求](https://source.android.com/docs/setup/start/requirements)
-  为至少 400 GB 可用空间（约 250 GB checkout + 150 GB build）。
-- 后续使用单独的 Linux/ext4 构建卷；路径确定前不向当前 WSL VHDX 下载完整
-  AOSP。
+Android 12 manifest、superproject 和 ATV revision 已锁定，但完整源码尚未
+同步。
 
-## 从保留集恢复候选构建输入
+- 2026-07-30：C 盘约余 156.5 GiB，D 盘约余 52.5 GiB。
+- AOSP 官方建议至少 400 GB 可用空间。
+- 下一步使用独立 Linux/ext4 卷；当前 C/D 盘和仓库工作树不承担完整 checkout
+  与 build output。
 
-仓库主动删除可再生成的逻辑分区和候选中间镜像。首次构建或清理后先执行：
+构建卷准备后只需记录：
+
+```text
+mount/path:
+filesystem:
+free space:
+source revision:
+out path:
+cleanup path:
+```
+
+不要求先设计完整容器、CI 或长期归档体系。
+
+## 旧 IMAGEWTY candidate 输入
+
+当官方逻辑分区缓存缺失时：
 
 ```powershell
 python .\scripts\prepare-candidate-inputs.py
 ```
 
-该脚本会：
-
-1. 核对官方 `x12-1024.img` SHA-256；
-2. 验证 IMAGEWTY 伴生校验；
-3. 必要时恢复 `firmware/extracted/` 和 `work/manifest.json`；
-4. 从官方 `super.fex` 流式提取 `system_a/product_a/vendor_a/vendor_dlkm_a`；
-5. 核对四个分区的固定 SHA-256；
-6. 重新生成 ext4 语义清单。
-
-脚本拒绝覆盖哈希不匹配的现有逻辑分区。
-
-## 构建候选
+构建配置驱动的旧式 candidate：
 
 ```powershell
 python .\scripts\build-candidate-firmware.py `
-  --config .\configs\candidates\test9r1-android-tv-remote-service.json
+  --config .\configs\candidates\<candidate>.json
 ```
 
-构建器需要至少 7 GiB 临时空间，并在唯一事务目录完成 ext4、AVB、super、IMAGEWTY 和单元测试验证后才发布候选。目标目录已经存在时会拒绝覆盖。
+构建器从 Windows PowerShell 启动，内部调用 WSL ext4 工具。完整管线见
+[BUILD_PIPELINE.md](BUILD_PIPELINE.md)，保留集见
+[STORAGE_AND_REPRODUCTION.md](STORAGE_AND_REPRODUCTION.md)。
 
-Test8r2/Test9r1/Test9r2 依赖本地、未提交 Git 的 Projectivy 官方 APK：
+Test9r1/Test9r2 的 JDK、Android Build Tools、Remote Service donor 和 AOSP
+remoteprovider 细节属于 M7 历史实验，只有复现该实验时才读取
+[archive/m7/TEST9R1_ANDROID_TV_REMOTE_SERVICE.md](archive/m7/TEST9R1_ANDROID_TV_REMOTE_SERVICE.md)。
 
-```text
-work/preinstall_apks/ProjectivyLauncher-4.71-c95-xda-release.apk
-SHA-256 6818FC2DB44411A605CA4D7067FB9D7227AAEF2414CFF42DE58FE13E9321B47A
-```
+## 当前边界
 
-## Test9r1/Test9r2 Remote 准备工具链
-
-Test9r1/Test9r2 额外使用本地、不提交 Git 的：
-
-- Eclipse Temurin JDK 17.0.19+10；
-- Android API 31 platform；
-- Android Build Tools 31；
-- OpenSSL（当前为 Git for Windows 自带版本）；
-- Android 12 `android-12.0.0_r1` 的 AOSP tvremote/media-tv source archive；
-- 用户本地提供、原始 Google 签名的 Android TV Remote Service
-  5.2.473254133 APK。
-
-执行：
-
-```powershell
-python .\scripts\prepare-tv-remote-experiment.py
-```
-
-脚本不会下载 Google APK。它会验证 APK SHA-256、Google 签名证书、
-package/version 和 AOSP archive 哈希，编译只含 `TvRemoteProvider*` 的
-runtime DEX，构建/签名单资源 framework RRO，再把三个输入写入忽略的
-`work/`。Android Build Tools 31 在 Windows 对非 ASCII 路径兼容不稳定，
-脚本因此在主机临时目录构建，最后只复制结果。
-
-当前锁定工具包哈希：
-
-| 文件 | SHA-256 |
-|---|---|
-| Temurin JDK 17 zip | `B5B235C48ADF6A081874B812C630B9F4B5F637B7A5ED18B9174D08A41EC4C235` |
-| Android API 31 platform zip | `1D69FE1D7F9788D82FF3A374FAF4F6CCC9D1D372AA84A86B5BCFB517523B0B3F` |
-| Android Build Tools 31 zip | `BFF1286DD77FFF51981DF15AC4349A618430DC5064870886B7108870433549F1` |
-
-完整 donor/source/output 哈希见
-`archive/m7/TEST9R1_ANDROID_TV_REMOTE_SERVICE.md`。
-
-## M8 环境边界
-
-M8 的 BPI H618 BSP 和 AOSP Android 12 构建必须放在 WSL/Linux 文件系统或独立构建盘，不放入本仓库或 `C:\` NTFS 工作树。开始大型下载前必须先锁定 commit、oversized files 清单、容器环境、预计磁盘空间和退出条件；当前未授权下载或编译。
+- 在构建卷准备好前，不向当前磁盘同步完整 AOSP。
+- 不下载 H618 BSP，除非 M8B 已进入具体 64 位图形供体评估。
+- 大型 source/build/out 不放入 Git；仓库只保存 source-lock、device 配置、
+  小型报告和可复现脚本。
+- M8A.2a 的目标是先得到可打包 ARM32 product，不被生产级审计环境阻塞。

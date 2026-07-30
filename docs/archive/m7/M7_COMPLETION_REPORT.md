@@ -81,15 +81,15 @@ Play 专有 APK。第三方 APK 只进入 Git 忽略的 `work/`，并须通过�
 签名校验。非交互的 `--verify-only`、`--dry-run` 和默认安装模式继续
 保留用于诊断与复现。
 
-面向最终用户的完整刷机、工具准备、重建和故障定位见
-[M7 发布与复现指南](../../../README.md)。
+面向最终用户的固定发布说明见
+[M7 GitHub Release notes](M7_RELEASE_NOTES.md)。
 
 ## 归档索引
 
 - [Test9.3 用户态应用与详细证据](TEST9_3_USERDATA_APPS.md)
 - [Test9r1 RRO 路径失败实验](TEST9R1_ANDROID_TV_REMOTE_SERVICE.md)
 - [Test9r2 Remote v2 技术探针](TEST9R2_RRO_SCAN_PATH.md)
-- [TV GMS/Remote 后续研究](../../research/tv-gms-remote/README.md)
+- [TV GMS/Remote 后续研究](tv-gms-remote/README.md)
 
 ## M8 交接
 

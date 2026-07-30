@@ -15,5 +15,5 @@ ELF 名称级依赖在当前 ARM32 class 内闭合；这不代表 linker namespa
 APK 内嵌的 AArch64/x86 库和 22 个 AArch64 Kernel module 不构成 64 位 Android
 用户空间。
 
-M8A.1 与完整 Android 12 platform source-lock 已完成。下一步准备构建卷并做
-M8A.2a 静态构建；目前不需要搜索芯片丝印或下载完整 H618 BSP。
+本报告只给出架构 Go/No-Go，不维护执行顺序。当前动作见
+[../../TODO.md](../../TODO.md)。

@@ -10,7 +10,7 @@
 ## Test8r2 实机检查结果
 
 - PASS：启动后直接进入 Projectivy，英语界面、遥控和 Settings 正常。
-- PARTIAL：Wi‑Fi 成功关联后互联网与 TCP ADB 正常；重复扫描目标 SSID 的可靠性尚未通过，按 `docs/ROADMAP.md` 的 Test9.1 单独验收。
+- PARTIAL：Wi‑Fi 成功关联后互联网与 TCP ADB 正常；重复扫描目标 SSID 的可靠性尚未通过，按同目录 `ROADMAP.md` 的 Test9.1 单独验收。
 - PASS：蓝牙保持开启并能扫描。
 - PASS：ADB 确认 ContactsProvider 来自 `/system/priv-app`，蓝牙为 `state: ON`、`Bluetooth crashed 0 times`。
 - PASS：X12、settingwizard 和 HappyCast 三个厂商包均不存在。

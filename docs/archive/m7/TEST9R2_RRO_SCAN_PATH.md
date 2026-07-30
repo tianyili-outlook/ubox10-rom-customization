@@ -110,7 +110,7 @@ Test9r2 已证明 RRO 路径修正有效：
 
 因此 remote stack 分类为 `R2-REMOTE-PASS`，候选总体仍为 `PARTIAL`。
 重启持久性未复验。完整脱敏证据见
-`../research/tv-gms-remote/test9r2-runtime-report.md`。
+`tv-gms-remote/test9r2-runtime-report.md`。
 
 ## 5. 已执行的真机 RRO 判错步骤
 
@@ -178,7 +178,7 @@ Remote 技术链已经通过，但 Play Store 回归也再次确认，因此 Tes
 - 官方 Google TV 手机遥控产品化转入 M8.INPUT。
 
 Test9r2 完成采证后应刷回 Test8r2。路线依据见
-`../research/tv-gms-remote/route-decision.md`。
+`tv-gms-remote/route-decision.md`。
 
 ## 8. M8 继承
 

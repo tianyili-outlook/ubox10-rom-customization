@@ -14,7 +14,7 @@
 - 官方 Google TV 手机遥控的产品化、默认权限与重启验收转入 M8.INPUT。
 - TV Play Store 与 Google 组件一致性转入 M8.GMS。
 - Test9.3 的目标应用、AirPlay、现代文件管理器和整体回归已完成；M7 于
-  2026-07-29 收束，发布入口见 `../../M7_RELEASE_GUIDE.md`。
+  2026-07-29 收束，发布入口见 `../../../M7_RELEASE_GUIDE.md`。
 
 ## 依据
 

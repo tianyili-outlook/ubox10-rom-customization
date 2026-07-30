@@ -1,6 +1,7 @@
 # UBOX10 ARM32 ATV product 计划
 
-状态：`M8A.1 COMPLETE`，`M8A.2 SOURCE LOCKED / WAITING FOR BUILD VOLUME`
+用途：M8A product 设计证据。当前阶段以
+[../../STATUS.md](../../STATUS.md) 为准。
 
 ## 分层
 
