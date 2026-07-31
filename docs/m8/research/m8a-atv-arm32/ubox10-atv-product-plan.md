@@ -32,4 +32,4 @@
 首个失败点若位于 VINTF、32 位图形/媒体依赖或最小 UI，先修产品层，不改
 vendor 或转向 AArch64。Test8r2 始终是刷回基线。
 
-宿主 C 盘已成功清理出 435.12 GiB 空闲空间，WSL2 Linux/ext4 构建卷（位于 `/home/tianyi/ubox10-aosp/`）可用空间 954 GB，已满足 400 GB 构建卷要求。P0 解除，可以按锁定 revision 启动源码同步与产品构建。
+宿主 C 盘已成功清理出 435.12 GiB 空闲空间，WSL2 Linux/ext4 构建卷（位于 `/home/tianyi/ubox10-aosp/`）可用空间 954 GB，已满足 400 GB 构建卷要求。P0 解除，已按锁定 revision 完成源码同步与 M8A.2a 离线产品构建。

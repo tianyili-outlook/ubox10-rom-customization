@@ -14,13 +14,10 @@
 
 ## M8A AOSP 构建卷
 
-Android 12 manifest、superproject 和 ATV revision 已锁定，但完整源码尚未
-同步。
+Android 12 manifest、superproject 和 ATV revision 已锁定，AOSP 源码同步与 M8A.2a 离线产品构建已完成。
 
-- 2026-07-30：C 盘约余 156.5 GiB，D 盘约余 52.5 GiB。
-- AOSP 官方建议至少 400 GB 可用空间。
-- 下一步使用独立 Linux/ext4 卷；当前 C/D 盘和仓库工作树不承担完整 checkout
-  与 build output。
+- 2026-07-31：宿主 C 盘可用空间 435 GiB，WSL2 ext4 构建卷 `/home/tianyi/ubox10-aosp/` 可用空间 954 GB。
+- 已完成 93 GB AOSP 源码同步，并成功生成 `ubox10` 架构的 `system.img` (537MB)、`product.img` (73MB) 与 `system_ext.img` (53MB)。
 
 构建卷准备后只需记录：
 

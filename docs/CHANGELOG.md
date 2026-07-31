@@ -1,5 +1,16 @@
 # 变更日志
 
+## 2026-07-31 / 2026-08-01
+
+- 完成 P0 磁盘清理：宿主 C 盘释放至 435.12 GiB，WSL2 ext4 构建卷可用空间 954 GB，达到 AOSP 400 GB 构建门禁要求。
+- 完成 P1（M8A.2a 离线 product）：
+  - 成功完成 Android 12 AOSP (`android12-release`) 源码同步（93 GB 工作树）。
+  - 创建 `device/ubox/ubox10` 产品适配层（包含 `AndroidProducts.mk`、`ubox10.mk`、`BoardConfig.mk` 和 privapp 权限项）。
+  - 配置 WSL2 12GB RAM + 16GB Swap 解决 `soong_build` 内存溢出。
+  - 修复 Ubuntu 24.04 WSL 下 `libncurses.so.5` 宿主工具链依赖缺失与 `unzip` 构建依赖。
+  - 纠偏规范：声明 `TARGET_USES_64_BIT_BINDER := true` 开启标准 64-bit Binder 支持，完成 `system.img` (537MB)、`product.img` (73MB)、`system_ext.img` (53MB) 的全编译构建与 installed-files 架构核验。
+- 全量校验文档一致性并更新 `docs/m8/STATUS.md`、`docs/m8/TODO.md`、`docs/BUILD_ENVIRONMENT.md` 和 `docs/m8/research/m8a-atv-arm32/ubox10-atv-product-plan.md`。
+
 ## 2026-07-30
 
 - 将 M8 文档改为个人项目的轻量执行体系：体验、日常稳定、回退和故障归因
