@@ -9,13 +9,13 @@
 
 ## P1：M8A.2a 离线 product
 
-- [ ] 按锁定 revision 同步 Android 12 源码。
-- [ ] 建立 UBOX10 device/product 目录；继承 AOSP ATV product 层。
-- [ ] 保留现有 boot、Kernel、vendor、vendor_dlkm、DTB/DTBO、TEE 和 ARM32
+- [x] 按锁定 revision 同步 Android 12 源码。
+- [x] 建立 UBOX10 device/product 目录；继承 AOSP ATV product 层。
+- [x] 保留现有 boot、Kernel、vendor、vendor_dlkm、DTB/DTBO、TEE 和 ARM32
   Vendor ABI。
-- [ ] 保留 `AwTvProvision`；不引入 emulator/goldfish/generic_x86 硬件层。
-- [ ] 构建 system/product/system_ext，核对分区容量与打包路径。
-- [ ] 只对新增/替换 ELF 和可疑 VINTF 项做针对性检查。
+- [x] 保留 `AwTvProvision`；不引入 emulator/goldfish/generic_x86 硬件层。
+- [x] 构建 system/product/system_ext，核对分区容量与打包路径。
+- [x] 只对新增/替换 ELF 和可疑 VINTF 项做针对性检查。
 
 ## P2：首个 M8A candidate
 

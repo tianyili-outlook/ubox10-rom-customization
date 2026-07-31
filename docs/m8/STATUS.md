@@ -34,8 +34,9 @@
   M8A。
 - `M8A.1 COMPLETE`：Android 12 `aosp_tv_arm` 来源、产品差异、overlay/
   permission/VINTF、分区预算和 UBOX10 product 计划已锁定。
-- `M8A.2 ACTIVE`：准备按锁定 revision 同步源码并建立 UBOX10 product 离线构建。
-- `M8A.3 PENDING`：等待最小 TV UI candidate。
+- `M8A.2a COMPLETE`：已完成 AOSP 源码同步、UBOX10 ATV product 目录配置与纯净 system.img (537MB)、product.img (73MB)、system_ext.img (53MB) 的离线构建。
+- `M8A.2b-d ACTIVE`：进入首个 M8A candidate 组合与打包准备。
+- `M8A.3 PENDING`：等待最小 TV UI candidate 实机测试。
 - `M8B PARKED`：0 个 AArch64 userspace ELF；没有可用 64 位图形供体。
 
 ## 信息是否足够
