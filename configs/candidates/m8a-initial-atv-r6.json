@@ -1,0 +1,35 @@
+{
+  "id": "m8a-initial-atv-r6",
+  "base_candidate_relative": "out/candidates/m8a-initial-atv-r5/x12-m8a-initial-atv-r5.img",
+  "base_candidate_size": 996951040,
+  "base_candidate_sha256": "B2EE421510BA6D6FE4C224960223DC08A8A8BFD71AD64D092B4FD9BB9E962AF0",
+  "source_super_relative": "out/candidates/m8a-initial-atv-r1/super.img",
+  "source_super_size": 817152392,
+  "source_super_sha256": "96AF1F65BB62863ECD934BF88DFAC34B9BAD6B5FC195311CED6898AE3A4D7517",
+  "super": {
+    "device_size": 3221225472,
+    "metadata_size": 65536,
+    "metadata_slots": 3,
+    "alignment": 1048576,
+    "group_size": 3212836864,
+    "header_flags": 1
+  },
+  "logical_partitions": {
+    "system_a": 1651167232,
+    "vendor_a": 119066624,
+    "product_a": 272629760,
+    "vendor_dlkm_a": 6680576
+  },
+  "expected_partition_order": [
+    "system_a", "system_b",
+    "vendor_a", "vendor_b",
+    "product_a", "product_b",
+    "vendor_dlkm_a", "vendor_dlkm_b"
+  ],
+  "container": {
+    "total_entries": 50,
+    "preserved_entries": 48,
+    "replacement": "super.fex",
+    "companion": "Vsuper.fex"
+  }
+}

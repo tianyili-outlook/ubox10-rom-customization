@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.ubox10.invalid/antigravity-worker-result.schema.json",
+  "title": "UBOX10 Antigravity worker result",
+  "description": "Compact structured evidence returned by one bounded Antigravity worker run.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "summary",
+    "task_completed",
+    "files_read",
+    "files_changed",
+    "artifacts_created",
+    "commands_run",
+    "validation_results",
+    "evidence",
+    "unresolved_issues",
+    "risks",
+    "assumptions",
+    "recommended_next_action",
+    "physical_device_actions_performed"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["success", "partial", "failed"]
+    },
+    "summary": {"type": "string"},
+    "task_completed": {"type": "boolean"},
+    "files_read": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "files_changed": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "artifacts_created": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "commands_run": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "validation_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["check", "status", "details"],
+        "properties": {
+          "check": {"type": "string"},
+          "status": {
+            "type": "string",
+            "enum": ["passed", "failed", "not_run", "device_only", "environment_blocked", "tool_limited"]
+          },
+          "details": {"type": "string"}
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "unresolved_issues": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "risks": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "recommended_next_action": {"type": "string"},
+    "physical_device_actions_performed": {"const": false},
+    "conversation_id": {"type": "string", "minLength": 1}
+  }
+}

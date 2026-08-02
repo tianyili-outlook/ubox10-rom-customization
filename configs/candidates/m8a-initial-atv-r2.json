@@ -1,0 +1,30 @@
+{
+  "id": "m8a-initial-atv-r2",
+  "base_candidate": "m8a-initial-atv-r1",
+  "base_candidate_relative": "out/candidates/m8a-initial-atv-r1/x12-m8a-initial-atv-r1.img",
+  "base_candidate_size": 963391488,
+  "base_candidate_sha256": "68029C3F5EE3BEFC2AFD6187A3EE3EA9D4BD0A2A4C10B4C686429232B18491C5",
+  "metadata": {
+    "partition_name": "metadata",
+    "gpt_partition_index": 20,
+    "dlinfo_download_sector": 13206528,
+    "card_boot_offset_sectors": 40960,
+    "gpt_first_lba_sector": 13247488,
+    "size_sectors": 32768,
+    "size_bytes": 16777216,
+    "fs_type": "ext4",
+    "fs_label": "metadata",
+    "fn1": "METADATA_FEX0000",
+    "fn2": "VMETADATA_FEX000"
+  },
+  "declared_stock": {
+    "container": "x12-1024.img",
+    "size": 2018890752,
+    "sha256": "371A653604618E8B78786F279EA6F64E5D1028B430C9B41F330B08456A264065"
+  },
+  "declared_rollback": {
+    "path": "out/candidates/test8r2-restore-contacts-provider-r1/x12-test8r2-restore-contacts-provider.img",
+    "size": 2005954560,
+    "sha256": "6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "id": "m8a-initial-atv-r5",
+  "base_candidate": "m8a-initial-atv-r4",
+  "base_candidate_relative": "out/candidates/m8a-initial-atv-r4/x12-m8a-initial-atv-r4.img",
+  "base_candidate_size": 996952064,
+  "base_candidate_sha256": "5AFE57DE82B0A42BD3EFB4618375DB896FB0BD7C3C82FF9BD7E817C374C4AAB5",
+  "vbmeta": {
+    "algorithm": "NONE",
+    "algorithm_type": 0,
+    "flags": 2,
+    "rollback_index": 0,
+    "padding_size": 4096,
+    "property": "com.ubox10.candidate.id:m8a-initial-atv-r5"
+  },
+  "container": {
+    "total_entries": 50,
+    "preserved_entries": 48,
+    "replacement": "vbmeta.fex",
+    "companion": "Vvbmeta.fex"
+  }
+}

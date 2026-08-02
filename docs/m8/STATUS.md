@@ -1,70 +1,36 @@
-# M8 当前状态
+# M8 status
 
-更新时间：2026-07-30
+Updated: 2026-08-01
 
-阶段：`M8A.2 — ACTIVE`
+| Phase | State | Boundary |
+|---|---|---|
+| M8.0 inventory / M8A.1 design | COMPLETE | Existing device and source evidence |
+| M8A.2a offline product build | COMPLETE - VERIFIED OFFLINE | Locked AOSP product build |
+| M8A r1 first boot triage | FLASHED / FAILED | Booted through first-stage init; failed on `/metadata` ext4 mount |
+| M8A r2 metadata repair candidate | FLASHED / FAILED | Flash failed during download-map fetch (`logs/device/20260801-210354`) due to stale dlinfo CRC |
+| M8A r3 dlinfo CRC repair candidate | FLASHED / FAILED | Booted through kernel init (`logs/device/20260801-212804`); failed on first-stage `/oem` mount due to erased `media_data` |
+| M8A.2b r4 media_data repair candidate | FLASHED / FAILED | Product flash passed; storage mount errors disappeared, but first-stage init still rebooted to bootloader at 1.105528 s |
+| M8A.2b r5 AVB bypass candidate | FLASHED / FAILED - NO HDMI | AVB bypass did not change the failure: first-stage init rebooted to bootloader at 1.112778 s |
+| M8A.2b r6 LP-order repair candidate | OFFLINE CHECKED - READY TO FLASH | Rebuilt super with stock interleaved A/B partition-table order; logical payload bytes unchanged |
+| M8A.2c boot/init/framework/ADB/HDMI | PENDING | Requires explicit physical authorization |
+| M8A.2d TV UI | PENDING | Follows M8A.2c |
+| M8B AArch64/multilib | PARKED | No compatible graphics-provider proof |
 
-## 当前设备
+## Active candidate
 
-| 项目 | 已确认状态 |
-|---|---|
-| 设备 | UBOX10 / I12 Pro Max，Allwinner H616 + AXP313A |
-| 内存 / 存储 | 4 GiB DDR3L / 64 GB eMMC |
-| 运行系统 | Test8r2，另有用户安装的日常软件 |
-| 访问 | ADB 可用 |
-| Android | Android 12 / SDK 31 |
-| 架构 | 64 位 Kernel + 纯 ARM32 userspace |
-| 图形 | 当前 32 位 Mali-G31 / Gralloc / Mapper / HWC 可工作 |
-| DRM | Widevine 16.1 L3；HDCP `NONE`；未发现 secure decoder |
-| 稳定回退 | Test8r2；官方 `x12-1024.img` 为最终恢复源 |
+ID: `m8a-initial-atv-r6`.
 
-证据入口：
+- Path: `out/candidates/m8a-initial-atv-r6/x12-m8a-initial-atv-r6.img`
+- Size: 996582400
+- SHA-256: `8796B4FC9ABA2D213B044043F979992CE9C5996425D52273A088A04EA3BE5D93`
 
-- [硬件身份](research/current-device/hardware-identity.md)
-- [运行时基线](research/current-device/runtime-baseline.md)
-- [兼容性运行时快照](research/current-device/compatibility-runtime-snapshot.md)
-- [ELF 依赖摘要](research/current-device/elf-dependency-summary.md)
-- [M8B 阻塞项](research/current-device/arm64-blockers.md)
-- [DRM / Netflix 结论](research/drm-netflix/netflix-feasibility-verdict.md)
+Triage summary & findings:
+- `M8A r5 - FLASHED / FAILED - NO HDMI`；证据：`logs/device/20260801-224818`。
+- Product 模式以 `CARD OK` 完成；冷启动到 `Kernel init done` 后在 1.112778 秒由 PID 1 重启到 `bootloader`，与 r4 同阶段、同时间尺度。
+- fstab 的四个逻辑分区没有 AVB 标志，因此 r5 的顶层 AVB 绕过被真机证伪。
+- 首个剩余的具体 boot-critical 差异是 LP 分区表顺序：原厂为 A/B 交错，r1-r5 super 为全部 A 后全部 B。
+- r6 只重建 `super.fex` 为原厂交错顺序；四个逻辑分区回读哈希一致，其他 48 个 IMAGEWTY 条目不变。
+- 聚焦测试 3/3、LP 回读、IMAGEWTY 12 个伴随校验和及 `SHA256SUMS` 均通过。
 
-## 阶段进度
-
-- `M8.P0 COMPLETE`：构建阻塞已解除；C 盘已清理出 435 GiB 空闲空间，WSL2 ext4 构建卷 `/home/tianyi/ubox10-aosp/` 可用空间 954 GB。
-- `M8.0 COMPLETE`：硬件、运行时和兼容性轻量快照均已完成，证据足够开始
-  M8A。
-- `M8A.1 COMPLETE`：Android 12 `aosp_tv_arm` 来源、产品差异、overlay/
-  permission/VINTF、分区预算和 UBOX10 product 计划已锁定。
-- `M8A.2a COMPLETE`：已完成 AOSP 源码同步、UBOX10 ATV product 目录配置与纯净 system.img (537MB)、product.img (73MB)、system_ext.img (53MB) 的离线构建。
-- `M8A.2b-d ACTIVE`：进入首个 M8A candidate 组合与打包准备。
-- `M8A.3 PENDING`：等待最小 TV UI candidate 实机测试。
-- `M8B PARKED`：0 个 AArch64 userspace ELF；没有可用 64 位图形供体。
-
-## 信息是否足够
-
-当前硬件识别和 Test8r2 软件基线足以继续 M8A，不需要拆散热器、继续猜芯片
-丝印或进行泛化硬件搜索。
-
-轻量 ADB 快照已完成：保存了 `/linkerconfig/`、活动 APEX、classpath、
-uses-library 和 36 份 VINTF XML。设备没有 `checkvintf`，因此只确认 XML
-结构有效；等构建树提供 host 工具后再对实际变更做针对性检查。
-
-不为 DRM 对照切回官方 ROM。Test8r2 的 Widevine L3、HDCP `NONE` 和无
-secure decoder 结论已足够界定 M8A，实际播放以后按需要验证。
-
-互联网调研已足够支持当前结构。后续只在出现具体构建/启动错误、选择 64 位
-供体或锁定新的 Google/Remote 组件时做针对性查询，不继续泛搜 GSI/BSP。
-
-## 当前阻塞
-
-无。P0 已完成：
-- **宿主 C 盘空闲**：435.12 GiB
-- **WSL2 ext4 构建卷**：`/home/tianyi/ubox10-aosp/`（挂载于 `/`，可用空间 954 GB）
-- **清理与重置方式**：`rm -rf /home/tianyi/ubox10-aosp/out` 可随时释放编译中间产物。
-
-## 下一动作
-
-准备构建卷后，按
-[source-lock](research/m8a-atv-arm32/source-lock.md) 同步 Android 12，
-建立 UBOX10 ARM32 ATV product，进入 `M8A.2a` 离线构建。
-
-具体任务只看 [TODO.md](TODO.md)。
+Implementation state: OFFLINE CHECKED - READY TO FLASH（未刷写）。
+Next action: 通过 PhoenixCard Product 模式刷写 r6，并抓取冷启动 UART。

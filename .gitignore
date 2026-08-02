@@ -24,3 +24,11 @@ tools/zadig.exe
 __pycache__/
 *.py[cod]
 /androguard.log
+
+# Project-local Antigravity transient orchestration state
+.orchestration/antigravity/tasks/**
+!.orchestration/antigravity/tasks/.gitkeep
+.orchestration/antigravity/runs/**
+!.orchestration/antigravity/runs/.gitkeep
+.orchestration/antigravity/conversations/**
+!.orchestration/antigravity/conversations/.gitkeep

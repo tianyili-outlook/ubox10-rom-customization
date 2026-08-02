@@ -1,36 +1,25 @@
-# M8 当前 TODO
+# M8 active TODO
 
-只记录尚未完成的工作。已完成内容和历史路线不在这里维护。
+## Offline validation completed
 
-## P0：解除构建阻塞
+- [x] `m8a-initial-atv-r4` 已完成真机测试：刷写成功，`metadata`/`media_data` 错误消失，但首阶段 init 仍在 1.105528 秒重启到 bootloader。
+- [x] `m8a-initial-atv-r5` 已完成真机测试：AVB 绕过未改变首阶段失败，1.112778 秒重启到 bootloader，无 HDMI。
+- [x] `m8a-initial-atv-r6` 聚焦离线验证通过：super LP 表恢复原厂 A/B 交错顺序，逻辑分区内容不变。
 
-- [x] 准备至少 400 GB 可用的 Linux/ext4 构建卷。
-- [x] 记录构建路径、实际空闲空间和清理方式。
+## Pending only with explicit physical authorization
 
-## P1：M8A.2a 离线 product
+- [ ] 通过 PhoenixCard Product 模式刷写 `m8a-initial-atv-r6`，并抓取冷启动 UART；本任务未执行刷写。
+- [ ] Perform M8A.2c boot/init/framework/ADB/HDMI observation using the recovery readiness runbook.
+- [ ] Capture the first relevant UART/ADB evidence without changing device state.
+- [ ] If needed, recover with Test8r2, then official stock.
+- [ ] Perform M8A.2d launcher/HOME/IME/provisioning and minimal TV UI validation.
+- [ ] Check remote, network, audio/video, Bluetooth, CEC, DRM/Widevine, reboot, cold boot, and rollback.
 
-- [x] 按锁定 revision 同步 Android 12 源码。
-- [x] 建立 UBOX10 device/product 目录；继承 AOSP ATV product 层。
-- [x] 保留现有 boot、Kernel、vendor、vendor_dlkm、DTB/DTBO、TEE 和 ARM32
-  Vendor ABI。
-- [x] 保留 `AwTvProvision`；不引入 emulator/goldfish/generic_x86 硬件层。
-- [x] 构建 system/product/system_ext，核对分区容量与打包路径。
-- [x] 只对新增/替换 ELF 和可疑 VINTF 项做针对性检查。
+## Follow-up product risks
 
-## P2：首个 M8A candidate
+- [ ] Resolve or intentionally remove configured-but-undelivered AwTvProvision.
+- [ ] Establish launcher/default HOME and IME behavior.
+- [ ] Verify Projectivy delivery before claiming it.
+- [ ] Treat runtime Binder/HAL/SELinux/VINTF/graphics/media/DRM/connectivity as device findings, not offline claims.
 
-- [ ] 在 [CANDIDATES.md](CANDIDATES.md) 建立单变量定义。
-- [ ] 确认 PhoenixCard、官方镜像和 Test8r2 回退。
-- [ ] 按核心启动 → HDMI 画面 → TV UI 的顺序刷测。
-- [ ] 保存第一条重复 fatal 和本轮差异；一次只修一个原因。
-- [ ] 达到日常 TV UI 后执行轻量 candidate 验收。
-
-## 后续横向项
-
-- [ ] M8.INPUT：把 Test9r2 已证明的 Remote v2 合同迁入原生 product。
-- [ ] M8.GMS：建立 TV Google 组件/权限/overlay/package visibility 清单。
-- [ ] M8.DRM：只验证保留后的播放能力，不修改安全材料。
-- [ ] M8B：等待真实 AArch64 图形供体；当前不下载 H618 BSP。
-
-已完成：M8 当前设备 inventory、Test8r2 DRM 与兼容性运行时快照、Android 12
-source-lock、M8A product 差异、分区预算和产品计划。
+M8A r6 已完成离线验证，等待下一次真机刷写结果。

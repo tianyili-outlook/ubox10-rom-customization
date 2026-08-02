@@ -1,0 +1,22 @@
+{
+  "id": "m8a-initial-atv-r1",
+  "stock_root": "../..",
+  "stock_container": "x12-1024.img",
+  "stock_container_size": 2018890752,
+  "stock_container_sha256": "371A653604618E8B78786F279EA6F64E5D1028B430C9B41F330B08456A264065",
+  "aosp_wsl_directory": "/home/tianyi/ubox10-aosp/out/target/product/ubox10",
+  "aosp": {
+    "system": {"size": 562741564, "sha256": "EAEA0D2D914628AEB0C035E27ED5DFE52ECC37F0E3CCB95424835E3C8994E847", "virtual_size": 1625026560},
+    "product": {"size": 75628656, "sha256": "AA832873DDC12C14219466F2764F2AAD458EF0E1D4C752955829877CE306C09D", "virtual_size": 268435456},
+    "system_ext": {"size": 55066724, "sha256": "64999E94A72CCD1F99DFC8C25E1D7324D61C85634E7A504ABBD449DB52DA592B", "virtual_size": 268435456}
+  },
+  "logical_partitions": {
+    "system_a": 1651167232,
+    "vendor_a": 119066624,
+    "product_a": 272629760,
+    "vendor_dlkm_a": 6680576
+  },
+  "super": {"device_size": 3221225472, "metadata_size": 65536, "slots": 3, "alignment": 1048576, "group_size": 3212836864},
+  "rollback": {"vbmeta": 0, "vbmeta_system": 1644019200},
+  "hash_tree": {"algorithm": "sha256", "salt": "4d38412d696e697469616c2d6174762d7231", "fec": false}
+}

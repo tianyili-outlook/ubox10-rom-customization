@@ -8,7 +8,7 @@ param(
     [int]$BaudRate = 115200,
 
     [ValidateRange(10, 6000)]
-    [int]$DurationSeconds = 90,
+    [int]$DurationSeconds = 900,
 
     [string]$OutputRoot,
 
