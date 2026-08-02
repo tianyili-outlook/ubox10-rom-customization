@@ -1,36 +1,40 @@
 # M8 status
 
-Updated: 2026-08-01
+Updated: 2026-08-02
 
-| Phase | State | Boundary |
-|---|---|---|
-| M8.0 inventory / M8A.1 design | COMPLETE | Existing device and source evidence |
-| M8A.2a offline product build | COMPLETE - VERIFIED OFFLINE | Locked AOSP product build |
-| M8A r1 first boot triage | FLASHED / FAILED | Booted through first-stage init; failed on `/metadata` ext4 mount |
-| M8A r2 metadata repair candidate | FLASHED / FAILED | Flash failed during download-map fetch (`logs/device/20260801-210354`) due to stale dlinfo CRC |
-| M8A r3 dlinfo CRC repair candidate | FLASHED / FAILED | Booted through kernel init (`logs/device/20260801-212804`); failed on first-stage `/oem` mount due to erased `media_data` |
-| M8A.2b r4 media_data repair candidate | FLASHED / FAILED | Product flash passed; storage mount errors disappeared, but first-stage init still rebooted to bootloader at 1.105528 s |
-| M8A.2b r5 AVB bypass candidate | FLASHED / FAILED - NO HDMI | AVB bypass did not change the failure: first-stage init rebooted to bootloader at 1.112778 s |
-| M8A.2b r6 LP-order repair candidate | OFFLINE CHECKED - READY TO FLASH | Rebuilt super with stock interleaved A/B partition-table order; logical payload bytes unchanged |
-| M8A.2c boot/init/framework/ADB/HDMI | PENDING | Requires explicit physical authorization |
-| M8A.2d TV UI | PENDING | Follows M8A.2c |
-| M8B AArch64/multilib | PARKED | No compatible graphics-provider proof |
+## Current candidate
 
-## Active candidate
+`m8a-initial-atv-r6` is **READY TO FLASH** and has not been device-tested.
 
-ID: `m8a-initial-atv-r6`.
+| Artifact | Value |
+|---|---|
+| Image | `out/candidates/m8a-initial-atv-r6/x12-m8a-initial-atv-r6.img` |
+| Bytes | 996582400 |
+| SHA-256 | `8796B4FC9ABA2D213B044043F979992CE9C5996425D52273A088A04EA3BE5D93` |
+| Delta from r5 | Replace only `super.fex` and regenerate `Vsuper.fex`; restore stock interleaved A/B LP table order |
+| Offline result | LP metadata valid; four logical payloads match r1; 48 other IMAGEWTY entries preserved; focused tests, companion checks, and `SHA256SUMS` passed |
 
-- Path: `out/candidates/m8a-initial-atv-r6/x12-m8a-initial-atv-r6.img`
-- Size: 996582400
-- SHA-256: `8796B4FC9ABA2D213B044043F979992CE9C5996425D52273A088A04EA3BE5D93`
+## Verified progress
 
-Triage summary & findings:
-- `M8A r5 - FLASHED / FAILED - NO HDMI`；证据：`logs/device/20260801-224818`。
-- Product 模式以 `CARD OK` 完成；冷启动到 `Kernel init done` 后在 1.112778 秒由 PID 1 重启到 `bootloader`，与 r4 同阶段、同时间尺度。
-- fstab 的四个逻辑分区没有 AVB 标志，因此 r5 的顶层 AVB 绕过被真机证伪。
-- 首个剩余的具体 boot-critical 差异是 LP 分区表顺序：原厂为 A/B 交错，r1-r5 super 为全部 A 后全部 B。
-- r6 只重建 `super.fex` 为原厂交错顺序；四个逻辑分区回读哈希一致，其他 48 个 IMAGEWTY 条目不变。
-- 聚焦测试 3/3、LP 回读、IMAGEWTY 12 个伴随校验和及 `SHA256SUMS` 均通过。
+| Stage | Result | First useful finding | Next correction |
+|---|---|---|---|
+| Test8r2 | **ROLLBACK VERIFIED** | Stable ARM32 Android 12 baseline | Retained as preferred rollback |
+| AOSP ATV product | **OFFLINE CHECKED** | ARM32 TV system/product/system_ext built from locked Android 12 sources | Assemble with stock hardware stack |
+| r1 | **FAILED - `/metadata` mount** | First-stage init could not mount an ext4 metadata partition | Add preformatted metadata payload and download-map entry |
+| r2 | **FAILED - flash map CRC** | PhoenixCard rejected the modified `dlinfo.fex` | Recompute dlinfo CRC |
+| r3 | **FAILED - `/oem` mount** | Product flash passed; erased `media_data` left required VFAT `/oem` unavailable | Add preformatted media_data payload and descriptor |
+| r4 | **FAILED - first-stage reboot** | Both filesystems mounted; PID 1 still rebooted to bootloader at about 1.106 s | Test whether the rebuilt AVB root caused the reboot |
+| r5 | **FAILED - first-stage reboot, no HDMI** | Keyless top-level AVB bypass made no material difference; reboot occurred at about 1.113 s | Restore the first remaining concrete LP metadata difference |
+| r6 | **READY TO FLASH** | Stock A/B interleaved LP partition-table order restored without changing logical payload bytes | Flash once and capture cold-boot UART |
 
-Implementation state: OFFLINE CHECKED - READY TO FLASH（未刷写）。
-Next action: 通过 PhoenixCard Product 模式刷写 r6，并抓取冷启动 UART。
+Raw UART logs and candidate images are intentionally local under ignored `logs/` and `out/` paths. Git retains the concise findings, builders, configs, hashes, and focused validators; it does not pretend a clean clone contains the large artifacts.
+
+## Boundaries
+
+- No physical action was performed during the 2026-08-02 repository cleanup.
+- Runtime Android, framework, HDMI, ADB, launcher/HOME/IME, provisioning, remote, media, DRM, Wi-Fi, Bluetooth, audio, Ethernet, and CEC remain untested on r6.
+- Current board, DT, and runtime evidence identifies the H616 platform. The device has a 64-bit kernel but no proven AArch64 Android graphics userspace, so M8B remains parked.
+
+## Next action
+
+After explicit authorization, follow [the device test guide](../DEVICE_TEST.md): verify the r6 hash, flash in PhoenixCard Product mode, remove the card, cold boot, and capture UART. Do not design r7 until the earliest reproducible r6 failure is known.

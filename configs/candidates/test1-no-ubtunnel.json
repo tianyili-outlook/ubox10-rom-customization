@@ -1,7 +1,0 @@
-{
-  "candidate_id": "test1-no-ubtunnel-rebuild",
-  "firmware_filename": "x12-test1-no-ubtunnel.img",
-  "remove_roots": [
-    "/system/app/UBTunnel.6"
-  ]
-}

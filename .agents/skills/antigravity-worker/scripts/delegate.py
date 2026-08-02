@@ -984,15 +984,14 @@ def run_bridge_preflight(
             f"authenticated, but required model is unavailable: {model}",
         )
 
-    status_file = repository_root / "docs" / "m8" / "STATUS.md"
-    uart_directories = (
-        repository_root / "logs" / "device" / "20260801-165049",
-        repository_root / "logs" / "device" / "20260801-170033",
+    smoke_files = (
+        repository_root / "docs" / "m8" / "STATUS.md",
+        repository_root / "scripts" / "capture-uart-readonly.ps1",
     )
-    for path in (status_file, *uart_directories):
-        if not path.exists():
+    for path in smoke_files:
+        if not path.is_file():
             raise BridgePreflightError(
-                "repository read smoke input", f"missing path: {path}", path=path
+                "repository read smoke input", f"missing tracked file: {path}", path=path
             )
     temporary_file = (
         repository_root
@@ -1009,33 +1008,27 @@ def run_bridge_preflight(
         )
 
     try:
-        status_text = status_file.read_text(encoding="utf-8")
+        status_text = smoke_files[0].read_text(encoding="utf-8")
     except (OSError, UnicodeError) as exc:
         raise BridgePreflightError(
-            "repository read preflight", str(exc), path=status_file
+            "repository read preflight", str(exc), path=smoke_files[0]
         ) from exc
     if not status_text.strip():
         raise BridgePreflightError(
-            "repository read preflight", "STATUS.md is empty", path=status_file
+            "repository read preflight", "STATUS.md is empty", path=smoke_files[0]
         )
 
-    uart_entries: dict[str, list[dict[str, Any]]] = {}
-    for directory in uart_directories:
+    smoke_entries: dict[str, dict[str, Any]] = {}
+    for path in smoke_files:
         try:
-            entries = []
-            for item in sorted(directory.iterdir(), key=lambda value: value.name.casefold()):
-                entries.append(
-                    {
-                        "name": item.name,
-                        "bytes": item.stat().st_size,
-                        "type": "directory" if item.is_dir() else "file",
-                    }
-                )
+            smoke_entries[path.relative_to(repository_root).as_posix()] = {
+                "bytes": path.stat().st_size,
+                "type": "file",
+            }
         except OSError as exc:
             raise BridgePreflightError(
-                "UART directory preflight", str(exc), path=directory
+                "repository read preflight", str(exc), path=path
             ) from exc
-        uart_entries[directory.relative_to(repository_root).as_posix()] = entries
 
     marker = "UBOX10 bridge preflight\n"
     created = False
@@ -1107,7 +1100,7 @@ def run_bridge_preflight(
         "git_command": "git status --short --branch",
         "python_version": python_version,
         "status_read": "passed",
-        "uart_directories": uart_entries,
+        "repository_smoke_files": smoke_entries,
         "temporary_write": "passed",
         "git_state_unchanged": True,
         "permission_rules": settings.get("permissions", {}),

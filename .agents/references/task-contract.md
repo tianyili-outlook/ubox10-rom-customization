@@ -43,7 +43,7 @@ Use this template for one bounded worker task at a time.
   2. `<observable criterion>`
 - **Validation commands:** `<exact approved commands, or "none">`
 - **Required evidence:** `<paths, command results, diffs, or findings>`
-- **Expected final response:** Return one JSON object conforming to `.agents/skills/antigravity-worker/references/result-schema.json`. Be concise and report uncertainty rather than guessing.
+- **Expected final response:** Return one JSON object conforming to `.agents/references/result-schema.json`. Be concise and report uncertainty rather than guessing.
 
 ## Stop conditions
 

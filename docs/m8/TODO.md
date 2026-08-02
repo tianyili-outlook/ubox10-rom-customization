@@ -1,25 +1,18 @@
-# M8 active TODO
+# M8 TODO
 
-## Offline validation completed
+## Next test
 
-- [x] `m8a-initial-atv-r4` 已完成真机测试：刷写成功，`metadata`/`media_data` 错误消失，但首阶段 init 仍在 1.105528 秒重启到 bootloader。
-- [x] `m8a-initial-atv-r5` 已完成真机测试：AVB 绕过未改变首阶段失败，1.112778 秒重启到 bootloader，无 HDMI。
-- [x] `m8a-initial-atv-r6` 聚焦离线验证通过：super LP 表恢复原厂 A/B 交错顺序，逻辑分区内容不变。
+- [ ] Obtain explicit authorization to flash `m8a-initial-atv-r6`.
+- [ ] Verify the image size and SHA-256 in [STATUS](STATUS.md).
+- [ ] Flash once in PhoenixCard Product mode, remove the card, and capture the cold boot at 115200 8N1.
+- [ ] Record the earliest stable failure or first successful Android milestone; recover to Test8r2 if needed.
 
-## Pending only with explicit physical authorization
+## Only after Android starts
 
-- [ ] 通过 PhoenixCard Product 模式刷写 `m8a-initial-atv-r6`，并抓取冷启动 UART；本任务未执行刷写。
-- [ ] Perform M8A.2c boot/init/framework/ADB/HDMI observation using the recovery readiness runbook.
-- [ ] Capture the first relevant UART/ADB evidence without changing device state.
-- [ ] If needed, recover with Test8r2, then official stock.
-- [ ] Perform M8A.2d launcher/HOME/IME/provisioning and minimal TV UI validation.
-- [ ] Check remote, network, audio/video, Bluetooth, CEC, DRM/Widevine, reboot, cold boot, and rollback.
+- [ ] Confirm HDMI, ADB, framework, SystemUI, TvSettings, launcher/HOME, IME, and provisioning.
+- [ ] Run practical remote, Wi-Fi, Ethernet, Bluetooth, audio/video, CEC, reboot, cold-boot, and rollback checks.
+- [ ] Then address Google TV Remote/Play integration and Netflix/Widevine according to observed behavior.
 
-## Follow-up product risks
+## Parked
 
-- [ ] Resolve or intentionally remove configured-but-undelivered AwTvProvision.
-- [ ] Establish launcher/default HOME and IME behavior.
-- [ ] Verify Projectivy delivery before claiming it.
-- [ ] Treat runtime Binder/HAL/SELinux/VINTF/graphics/media/DRM/connectivity as device findings, not offline claims.
-
-M8A r6 已完成离线验证，等待下一次真机刷写结果。
+- [ ] Resume AArch64/M8B only after a matching 64-bit Mali/Gralloc/Mapper/HWC/Vulkan provider is proven for this board.

@@ -47,6 +47,17 @@ class TestM8AR6LpOrder(unittest.TestCase):
         cls.r6_dir = REPO / "out" / "candidates" / "m8a-initial-atv-r6"
         cls.r6 = cls.r6_dir / "x12-m8a-initial-atv-r6.img"
         cls.super_image = cls.r6_dir / "super.img"
+        cls.r1_super = REPO / "out" / "candidates" / "m8a-initial-atv-r1" / "super.img"
+        required = (
+            cls.r5,
+            cls.r6,
+            cls.super_image,
+            cls.r1_super,
+            cls.r6_dir / "build-result.json",
+            cls.r6_dir / "outer-payload-audit.json",
+        )
+        if any(not path.is_file() for path in required):
+            raise unittest.SkipTest("local r1/r5/r6 artifacts are not present")
 
     def test_01_identity_and_lp_order(self) -> None:
         self.assertEqual(sha256_file(self.r5), "B2EE421510BA6D6FE4C224960223DC08A8A8BFD71AD64D092B4FD9BB9E962AF0")
@@ -67,7 +78,7 @@ class TestM8AR6LpOrder(unittest.TestCase):
             self.assertTrue(all(item.attributes == 1 for item in metadata.partitions))
         finally:
             source.close()
-        old_source = module.open_super_source(REPO / "out" / "candidates" / "m8a-initial-atv-r1" / "super.img")
+        old_source = module.open_super_source(self.r1_super)
         try:
             old_metadata = module.parse_lp_metadata(old_source)
             self.assertEqual(

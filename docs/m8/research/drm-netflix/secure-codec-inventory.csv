@@ -1,4 +1,0 @@
-baseline,drm_scheme,container_support,codec_mime,requires_secure_decoder,secure_codec_observed
-Test8r2,widevine,"video/mp4;video/webm;audio/mp4",video/avc,false,false
-Test8r2,widevine,"video/mp4;video/webm;audio/mp4",video/hevc,false,false
-Test8r2,widevine,"video/mp4;video/webm;audio/mp4",video/x-vnd.on2.vp9,false,false

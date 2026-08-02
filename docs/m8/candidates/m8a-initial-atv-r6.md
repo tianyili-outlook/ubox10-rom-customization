@@ -1,28 +1,30 @@
 # M8A initial ATV r6
 
-状态：已完成聚焦离线检查，尚未刷写。
+Status: **READY TO FLASH**; offline checked, not device-tested.
 
-## 候选
+| Artifact | Value |
+|---|---|
+| Firmware | `out/candidates/m8a-initial-atv-r6/x12-m8a-initial-atv-r6.img` |
+| Bytes | 996582400 |
+| SHA-256 | `8796B4FC9ABA2D213B044043F979992CE9C5996425D52273A088A04EA3BE5D93` |
+| Base | r5, SHA-256 `B2EE421510BA6D6FE4C224960223DC08A8A8BFD71AD64D092B4FD9BB9E962AF0` |
 
-- 路径：`out/candidates/m8a-initial-atv-r6/x12-m8a-initial-atv-r6.img`
-- 大小：996582400 字节
-- SHA-256：`8796B4FC9ABA2D213B044043F979992CE9C5996425D52273A088A04EA3BE5D93`
-- 基线：r5，SHA-256 `B2EE421510BA6D6FE4C224960223DC08A8A8BFD71AD64D092B4FD9BB9E962AF0`
+## Why r6 exists
 
-## 首错与修复
+r4 and r5 both reached `Kernel init done` and then PID 1 rebooted to bootloader at nearly the same time. The r5 top-level AVB bypass did not change the failure. The first remaining concrete candidate-specific difference was LP partition-table order: r1-r5 grouped all A entries before all B entries, while stock interleaves each A/B pair.
 
-- r5 在 `Kernel init done` 后 1.112778 秒由 PID 1 重启到 `bootloader`；Android 尚未进入可输出 HDMI 的阶段。
-- r5 的 AVB 绕过未改变故障，且 first-stage fstab 的逻辑分区项没有 AVB 标志。
-- r1-r5 的 super LP 表顺序为全部 A 后全部 B；原厂为 `system_a/system_b`、`vendor_a/vendor_b`、`product_a/product_b`、`vendor_dlkm_a/vendor_dlkm_b`。
-- r6 只替换 `super.fex` 并重算 `Vsuper.fex`，恢复原厂交错顺序。
+r6 rebuilds `super.fex` with the stock order:
 
-## 检查
+`system_a`, `system_b`, `vendor_a`, `vendor_b`, `product_a`, `product_b`, `vendor_dlkm_a`, `vendor_dlkm_b`.
 
-- 四个逻辑分区从新 super 回读后与 r1 输入逐字节一致。
-- LP 三个主副本槽位结构有效，主表顺序与原厂一致。
-- 其他 48 个 IMAGEWTY 条目与 r5 一致。
-- 聚焦测试 3/3、IMAGEWTY 12/12、`SHA256SUMS` 通过。
+No logical partition payload was changed. In the outer container only `super.fex` is replaced and `Vsuper.fex` is regenerated; the other 48 entries match r5.
 
-## 下一步
+## Offline checks
 
-通过 PhoenixCard Product 模式刷写 r6，移除烧录卡后冷启动并抓取 UART。
+- All three LP metadata slots parse and use the expected order.
+- Extracted system, vendor, product, and vendor_dlkm payloads match the r1 inputs byte-for-byte.
+- Focused r6 tests passed 3/3.
+- IMAGEWTY companion checks passed 12/12.
+- Candidate `SHA256SUMS` passed.
+
+Next: use [the device test guide](../../DEVICE_TEST.md) after explicit flash authorization.

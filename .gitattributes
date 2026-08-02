@@ -1,2 +1,10 @@
-# These build inputs are byte-for-byte hash locked by candidate configs.
-assets/system_files/*.xml text eol=lf
+* text=auto
+*.md text eol=lf
+*.py text eol=lf
+*.json text eol=lf
+*.csv text eol=lf
+*.sh text eol=lf
+*.pem text eol=lf
+*.ps1 text eol=lf
+*.exe binary
+*.img binary

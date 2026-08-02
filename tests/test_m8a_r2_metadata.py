@@ -22,13 +22,13 @@ class TestM8AR2Metadata(unittest.TestCase):
         cls.r2_dir = REPO / "out" / "candidates" / "m8a-initial-atv-r2"
         cls.r2_img = cls.r2_dir / "x12-m8a-initial-atv-r2.img"
         cls.r2_meta_img = cls.r2_dir / "metadata.img"
+        missing = [path for path in (cls.r1_img, cls.r2_img, cls.r2_meta_img) if not path.is_file()]
+        if missing:
+            raise unittest.SkipTest("local r1/r2 artifacts are not present")
 
     def test_01_r2_candidate_and_metadata_artifact_exist(self):
-        self.assertTrue(self.r1_img.is_file(), f"r1 image missing: {self.r1_img}")
-        if self.r2_img.is_file():
-            self.assertGreater(self.r2_img.stat().st_size, 963391488)
-            self.assertTrue(self.r2_meta_img.is_file(), f"r2 metadata.img missing: {self.r2_meta_img}")
-            self.assertEqual(self.r2_meta_img.stat().st_size, 16777216)
+        self.assertGreater(self.r2_img.stat().st_size, 963391488)
+        self.assertEqual(self.r2_meta_img.stat().st_size, 16777216)
 
     def test_02_sector_math_and_dlinfo_parsing(self):
         # Assert sector offset arithmetic
@@ -51,41 +51,35 @@ class TestM8AR2Metadata(unittest.TestCase):
         r1_magic = struct.unpack_from("<I", dlinfo_r1, 0x0)[0]
         self.assertEqual(r1_magic, 0x80B15BEB)
 
-        if self.r2_img.is_file():
-            with self.r2_img.open("rb") as f:
-                main_hdr_r2 = parse_main_header(f)
-                files_r2 = parse_file_headers(f, main_hdr_r2["num_files"])
-                dlinfo_file_r2 = [e for e in files_r2 if e["filename"] == "dlinfo.fex"][0]
-                f.seek(dlinfo_file_r2["offset"])
-                dlinfo_r2 = f.read(dlinfo_file_r2["orig_len"])
+        with self.r2_img.open("rb") as f:
+            main_hdr_r2 = parse_main_header(f)
+            files_r2 = parse_file_headers(f, main_hdr_r2["num_files"])
+            dlinfo_file_r2 = [e for e in files_r2 if e["filename"] == "dlinfo.fex"][0]
+            f.seek(dlinfo_file_r2["offset"])
+            dlinfo_r2 = f.read(dlinfo_file_r2["orig_len"])
 
-            r2_count = struct.unpack_from("<I", dlinfo_r2, 0x10)[0]
-            self.assertEqual(r2_count, 12)
+        r2_count = struct.unpack_from("<I", dlinfo_r2, 0x10)[0]
+        self.assertEqual(r2_count, 12)
+        self.assertEqual(struct.unpack_from("<I", dlinfo_r2, 0x0)[0], 0x80B15BEB)
 
-            r2_magic = struct.unpack_from("<I", dlinfo_r2, 0x0)[0]
-            self.assertEqual(r2_magic, 0x80B15BEB)
+        entries = []
+        for i in range(12):
+            e_bytes = dlinfo_r2[32 + i * 72 : 32 + (i + 1) * 72]
+            name = e_bytes[:20].rstrip(b"\0").decode("ascii")
+            start_sec, _, sec_cnt = struct.unpack_from("<3I", e_bytes, 20)
+            fn1 = e_bytes[32:48].rstrip(b"\0").decode("ascii")
+            fn2 = e_bytes[48:64].rstrip(b"\0").decode("ascii")
+            entries.append((name, start_sec, sec_cnt, fn1, fn2))
 
-            entries = []
-            for i in range(12):
-                e_bytes = dlinfo_r2[32 + i * 72 : 32 + (i + 1) * 72]
-                name = e_bytes[:20].rstrip(b"\0").decode("ascii")
-                start_sec, high32, sec_cnt = struct.unpack_from("<3I", e_bytes, 20)
-                fn1 = e_bytes[32:48].rstrip(b"\0").decode("ascii")
-                fn2 = e_bytes[48:64].rstrip(b"\0").decode("ascii")
-                entries.append((name, start_sec, sec_cnt, fn1, fn2))
-
-            meta_entry = [e for e in entries if e[0] == "metadata"]
-            self.assertEqual(len(meta_entry), 1)
-            name, start_sec, sec_cnt, fn1, fn2 = meta_entry[0]
-            self.assertEqual(start_sec, dlinfo_sector)
-            self.assertEqual(sec_cnt, 32768)
-            self.assertEqual(fn1, "METADATA_FEX0000")
-            self.assertEqual(fn2, "VMETADATA_FEX000")
+        meta_entry = [e for e in entries if e[0] == "metadata"]
+        self.assertEqual(len(meta_entry), 1)
+        _, start_sec, sec_cnt, fn1, fn2 = meta_entry[0]
+        self.assertEqual(start_sec, dlinfo_sector)
+        self.assertEqual(sec_cnt, 32768)
+        self.assertEqual(fn1, "METADATA_FEX0000")
+        self.assertEqual(fn2, "VMETADATA_FEX000")
 
     def test_03_all_r1_entries_and_payload_preservation(self):
-        if not self.r2_img.is_file():
-            self.skipTest("r2 candidate image not built yet")
-
         with self.r1_img.open("rb") as f1, self.r2_img.open("rb") as f2:
             hdr1 = parse_main_header(f1)
             hdr2 = parse_main_header(f2)

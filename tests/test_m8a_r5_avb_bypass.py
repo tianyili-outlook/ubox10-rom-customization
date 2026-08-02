@@ -48,6 +48,15 @@ class TestM8AR5AvbBypass(unittest.TestCase):
         cls.r5_dir = REPO / "out" / "candidates" / "m8a-initial-atv-r5"
         cls.r5 = cls.r5_dir / "x12-m8a-initial-atv-r5.img"
         cls.vbmeta = cls.r5_dir / "vbmeta.img"
+        required = (
+            cls.r4,
+            cls.r5,
+            cls.vbmeta,
+            cls.r5_dir / "outer-payload-audit.json",
+            cls.r5_dir / "build-result.json",
+        )
+        if any(not path.is_file() for path in required):
+            raise unittest.SkipTest("local r4/r5 artifacts are not present")
         cls.audit = json.loads((cls.r5_dir / "outer-payload-audit.json").read_text(encoding="utf-8"))
 
     def test_01_base_and_build_identity(self) -> None:

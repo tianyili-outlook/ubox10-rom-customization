@@ -14,7 +14,7 @@ $buildTools = Join-Path $repo "work/remote-service-migration/toolchain/build-too
 $sourceRoot = Join-Path $repo "tools/m8-drm-probe"
 $manifest = Join-Path $sourceRoot "AndroidManifest.xml"
 $testKey = Join-Path $repo "tools/testkey_rsa2048.pem"
-$testCertificate = Join-Path $repo "assets/tv_remote_overlay/ubox10-test-overlay.x509.pem"
+$testCertificate = Join-Path $sourceRoot "test-certificate.x509.pem"
 $openssl = "C:/Program Files/Git/usr/bin/openssl.exe"
 
 foreach ($required in @(

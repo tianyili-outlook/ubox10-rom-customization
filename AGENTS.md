@@ -1,29 +1,11 @@
-## Codex multi-agent operating model
+# UBOX10 operating rules
 
-- The primary thread is responsible for architecture, task decomposition, integration, conflict resolution, and final acceptance.
-- Routine exploration, implementation, testing, and review should be delegated to the relevant custom agents.
-- No more than four subagents may remain concurrently open.
-- Parallel implementation requires explicit and non-overlapping file ownership.
-- Exploration should normally precede implementation.
-- Worker reports are evidence, not automatic proof of completion.
-- Sol must inspect the final diff and validation evidence itself.
-- Original firmware images and irreplaceable device evidence must remain immutable.
-- No agent may flash the physical UBOX10 unless the user explicitly requests a flashing step.
-- Candidate testing should remain practical and experience-oriented rather than certification-level, consistent with this personal-interest project.
-- The project goal remains maximizing the available H618 hardware while moving toward a clean, remote-friendly, modern Android TV experience.
-- Existing boot, kernel, vendor, vendor_dlkm, TEE, DRM, media, graphics, wireless, and partition dependencies must not be casually removed.
-
-## External Antigravity execution model
-
-- Codex is the project orchestrator and final reviewer; routine execution should use the `antigravity-worker` skill.
-- Native Codex subagents should not be used unless the user explicitly requests them.
-- Antigravity runs use Gemini 3.6 Flash with high reasoning effort by default.
-- Use one write worker at a time. Parallel writers require isolated Git worktrees with non-overlapping ownership.
-- Sol must inspect the actual Git diff and validation evidence rather than trust the worker report.
-- Original firmware images and irreplaceable evidence remain immutable.
-- Physical flashing always requires explicit user authorization.
-- The worker must return concise structured evidence so the primary model consumes minimal context and tokens.
-
-## UBOX10 execution philosophy
-
-Use the `ubox-fast-track` skill for M8 implementation, candidate construction, testing, and fault diagnosis. This is a personal-interest project optimized for a usable, recoverable Android TV system and rapid practical progress, not production-grade process completeness. For reversible work, build and test after minimal high-value checks, then diagnose the first reproducible failure. Increase caution only for brick risk, loss of recovery, security-material damage, destruction of irreplaceable evidence, or changes that make failure attribution impractical. Keep active documentation concise and limited to current status, essential artifacts, results, and the next action.
+- Use `.agents/skills/ubox-fast-track/SKILL.md` for M8 planning, documentation, builds, candidate checks, and diagnosis.
+- Use `.agents/skills/antigravity-worker/SKILL.md` for bounded routine work when the Antigravity bridge is available. Do not use native Codex subagents unless the user explicitly asks.
+- The primary agent owns scope, architecture, final diff inspection, and acceptance. Worker output is evidence, not proof.
+- Prefer one reversible candidate, one focused offline check, and the first reproducible device failure over broad audits or production-grade gates.
+- Never modify original firmware or irreplaceable device evidence. Keep stock and Test8r2 rollback assets available.
+- Never flash or otherwise mutate the physical UBOX10 without explicit user authorization.
+- Preserve stock boot, kernel, vendor, vendor_dlkm, TEE, DRM, graphics, media, wireless, and partition dependencies unless a bounded experiment explicitly changes one.
+- Keep active documentation limited to `README.md`, `docs/m8/STATUS.md`, `docs/m8/TODO.md`, `docs/BUILD.md`, `docs/DEVICE_TEST.md`, and the current candidate record.
+- Treat the checked-in H616 platform evidence as authoritative; do not promote an H618 sales label to a confirmed hardware fact without new chip-level evidence.

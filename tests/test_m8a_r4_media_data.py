@@ -34,6 +34,15 @@ class TestM8AR4MediaData(unittest.TestCase):
         cls.r4_img = cls.r4_dir / "x12-m8a-initial-atv-r4.img"
         cls.r4_media_img = cls.r4_dir / "media_data.img"
         cls.r4_meta_img = cls.r4_dir / "metadata.img"
+        required = (
+            cls.r3_img,
+            cls.r3_meta_img,
+            cls.r4_img,
+            cls.r4_media_img,
+            cls.r4_meta_img,
+        )
+        if any(not path.is_file() for path in required):
+            raise unittest.SkipTest("local r3/r4 artifacts are not present")
 
     def test_01_r4_candidate_artifacts_exist(self):
         self.assertTrue(self.r3_img.is_file(), f"r3 image missing: {self.r3_img}")
