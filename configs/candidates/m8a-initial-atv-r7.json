@@ -1,0 +1,11 @@
+{
+  "id": "m8a-initial-atv-r7",
+  "base_candidate_relative": "out/candidates/m8a-initial-atv-r6/x12-m8a-initial-atv-r6.img",
+  "base_candidate_size": 996582400,
+  "base_candidate_sha256": "8796B4FC9ABA2D213B044043F979992CE9C5996425D52273A088A04EA3BE5D93",
+  "source_super_relative": "out/candidates/m8a-initial-atv-r6/super.img",
+  "source_super_size": 816784168,
+  "source_super_sha256": "43DF321B7612773424CA2C50DE2BBC6AD6DF33F5E43B523B2F338E76E66F67C9",
+  "system_a": {"size": 1651167232, "physical_offset": 1048576, "add_directory": "metadata"},
+  "container": {"total_entries": 50, "preserved_entries": 48, "replacement": "super.fex", "companion": "Vsuper.fex"}
+}

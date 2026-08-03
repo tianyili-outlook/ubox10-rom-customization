@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UBOX10 Antigravity CLI task contract",
+  "type": "object",
+  "required": ["version", "id", "mode", "objective", "read_paths", "writable_paths", "artifact_paths", "protected_paths", "approved_commands"],
+  "properties": {
+    "version": {"const": 1},
+    "id": {"type": "string"},
+    "mode": {"enum": ["inspect", "implement", "validate", "review"]},
+    "objective": {"type": "string"},
+    "read_paths": {"type": "array", "items": {"type": "string"}},
+    "writable_paths": {"type": "array", "items": {"type": "string"}},
+    "artifact_paths": {"type": "array", "items": {"type": "string"}},
+    "protected_paths": {"type": "array", "items": {"type": "string"}},
+    "approved_commands": {"type": "array", "items": {"type": "array", "items": {"type": "string"}}}
+  }
+}

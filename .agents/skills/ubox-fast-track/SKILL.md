@@ -35,11 +35,13 @@ Never modify original firmware or irreplaceable device evidence. Never flash wit
 
 ## Preservation
 
-Preserve stock boot, kernel, vendor, vendor_dlkm, TEE, DRM, graphics, media, wireless, and partition dependencies unless the current bounded experiment explicitly targets one.
+Preserve currently known-good hardware-facing partitions and dependencies unless the bounded experiment explicitly requires changing them.
 
 Keep original firmware, known-good rollback, the current useful candidate, hashes, minimal provenance, failure-defining logs, and scripts/configs required to recreate the current chain. Remove redundant reports, superseded temporary artifacts, and abandoned outputs when their evidence is already retained or recoverable from Git.
 
 ## Documentation
+
+Documentation must follow the simplest possible structure. Do not create a new document when an existing active source can hold the information. Prefer merging, shortening, or deleting over adding files or prose.
 
 Use only these active sources:
 

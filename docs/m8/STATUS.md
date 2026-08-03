@@ -1,18 +1,18 @@
 # M8 status
 
-Updated: 2026-08-02
+Updated: 2026-08-04
 
 ## Current candidate
 
-`m8a-initial-atv-r6` is **READY TO FLASH** and has not been device-tested.
+`m8a-initial-atv-r7` is **READY TO FLASH** and has not been device-tested.
 
 | Artifact | Value |
 |---|---|
-| Image | `out/candidates/m8a-initial-atv-r6/x12-m8a-initial-atv-r6.img` |
-| Bytes | 996582400 |
-| SHA-256 | `8796B4FC9ABA2D213B044043F979992CE9C5996425D52273A088A04EA3BE5D93` |
-| Delta from r5 | Replace only `super.fex` and regenerate `Vsuper.fex`; restore stock interleaved A/B LP table order |
-| Offline result | LP metadata valid; four logical payloads match r1; 48 other IMAGEWTY entries preserved; focused tests, companion checks, and `SHA256SUMS` passed |
+| Image | `out/candidates/m8a-initial-atv-r7/x12-m8a-initial-atv-r7.img` |
+| Bytes | 996586496 |
+| SHA-256 | `3098E1B238B60A39A8D93AAD3BF80EE6295338F99BD021F2A8C452168E6A370B` |
+| Delta from r6 | Replace only `super.fex` and regenerate `Vsuper.fex`; add empty `/metadata` to the system root |
+| Offline result | System root contains `/metadata`; LP metadata and non-system logical payloads preserved; focused tests, IMAGEWTY, and `SHA256SUMS` passed |
 
 ## Verified progress
 
@@ -25,7 +25,8 @@ Updated: 2026-08-02
 | r3 | **FAILED - `/oem` mount** | Product flash passed; erased `media_data` left required VFAT `/oem` unavailable | Add preformatted media_data payload and descriptor |
 | r4 | **FAILED - first-stage reboot** | Both filesystems mounted; PID 1 still rebooted to bootloader at about 1.106 s | Test whether the rebuilt AVB root caused the reboot |
 | r5 | **FAILED - first-stage reboot, no HDMI** | Keyless top-level AVB bypass made no material difference; reboot occurred at about 1.113 s | Restore the first remaining concrete LP metadata difference |
-| r6 | **READY TO FLASH** | Stock A/B interleaved LP partition-table order restored without changing logical payload bytes | Flash once and capture cold-boot UART |
+| r6 | **FAILED - first-stage reboot** | Stock A/B interleaved LP partition-table order made no material timing change; reboot at 1.096406 s | Restore missing system-root `/metadata` switch-root target |
+| r7 | **READY TO FLASH** | Add only empty `/metadata` directory to `system_a`; retain r6 LP metadata and non-system logical bytes | Flash once and capture cold-boot UART |
 
 Raw UART logs and candidate images are intentionally local under ignored `logs/` and `out/` paths. Git retains the concise findings, builders, configs, hashes, and focused validators; it does not pretend a clean clone contains the large artifacts.
 
@@ -37,4 +38,4 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 
 ## Next action
 
-After explicit authorization, follow [the device test guide](../DEVICE_TEST.md): verify the r6 hash, flash in PhoenixCard Product mode, remove the card, cold boot, and capture UART. Do not design r7 until the earliest reproducible r6 failure is known.
+After explicit authorization, follow [the device test guide](../DEVICE_TEST.md): verify the r7 hash, flash in PhoenixCard Product mode, remove the card, cold boot, and capture UART. Do not design r8 until the earliest reproducible r7 failure is known.

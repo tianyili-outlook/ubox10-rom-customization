@@ -32,3 +32,5 @@ __pycache__/
 !.orchestration/antigravity/runs/.gitkeep
 .orchestration/antigravity/conversations/**
 !.orchestration/antigravity/conversations/.gitkeep
+.orchestration/antigravity/contracts/**
+!.orchestration/antigravity/contracts/.gitkeep
