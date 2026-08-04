@@ -4,15 +4,15 @@ Updated: 2026-08-04
 
 ## Current candidate
 
-`m8a-initial-atv-r7` is **READY TO FLASH** and has not been device-tested.
+`m8a-initial-atv-r8` is **READY TO FLASH** and has not been device-tested.
 
 | Artifact | Value |
 |---|---|
-| Image | `out/candidates/m8a-initial-atv-r7/x12-m8a-initial-atv-r7.img` |
+| Image | `out/candidates/m8a-initial-atv-r8/x12-m8a-initial-atv-r8.img` |
 | Bytes | 996586496 |
-| SHA-256 | `3098E1B238B60A39A8D93AAD3BF80EE6295338F99BD021F2A8C452168E6A370B` |
-| Delta from r6 | Replace only `super.fex` and regenerate `Vsuper.fex`; add empty `/metadata` to the system root |
-| Offline result | System root contains `/metadata`; LP metadata and non-system logical payloads preserved; focused tests, IMAGEWTY, and `SHA256SUMS` passed |
+| SHA-256 | `013AA02A59CB4A916CFEA14180824F7CFD781B514D96778C5933009B42B11B80` |
+| Delta from r7 | Replace only `boot.fex` and regenerate `Vboot.fex`; set `console=ttyS0,115200n8 ignore_loglevel` |
+| Offline result | 48 outer payloads unchanged; `boot.fex` command line is exact; all 12 paired payload checks and focused r8 tests passed |
 
 ## Verified progress
 
@@ -26,7 +26,8 @@ Updated: 2026-08-04
 | r4 | **FAILED - first-stage reboot** | Both filesystems mounted; PID 1 still rebooted to bootloader at about 1.106 s | Test whether the rebuilt AVB root caused the reboot |
 | r5 | **FAILED - first-stage reboot, no HDMI** | Keyless top-level AVB bypass made no material difference; reboot occurred at about 1.113 s | Restore the first remaining concrete LP metadata difference |
 | r6 | **FAILED - first-stage reboot** | Stock A/B interleaved LP partition-table order made no material timing change; reboot at 1.096406 s | Restore missing system-root `/metadata` switch-root target |
-| r7 | **READY TO FLASH** | Add only empty `/metadata` directory to `system_a`; retain r6 LP metadata and non-system logical bytes | Flash once and capture cold-boot UART |
+| r7 | **FAILED - first-stage reboot** | `/metadata` system-root target made no difference; reboot remained about 312 ms after `Kernel init done` | Expose first-stage fatal message on UART |
+| r8 | **READY TO FLASH** | Set the boot console and `ignore_loglevel`; this is a single boot-payload diagnostic change | Flash once and capture the first explicit first-stage failure |
 
 Raw UART logs and candidate images are intentionally local under ignored `logs/` and `out/` paths. Git retains the concise findings, builders, configs, hashes, and focused validators; it does not pretend a clean clone contains the large artifacts.
 
@@ -38,4 +39,4 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 
 ## Next action
 
-After explicit authorization, follow [the device test guide](../DEVICE_TEST.md): verify the r7 hash, flash in PhoenixCard Product mode, remove the card, cold boot, and capture UART. Do not design r8 until the earliest reproducible r7 failure is known.
+After explicit authorization, follow [the device test guide](../DEVICE_TEST.md): verify the r8 hash, flash in PhoenixCard Product mode, remove the card, cold boot, and capture UART. Use the first first-stage fatal line to make the next minimal repair.

@@ -2,10 +2,10 @@
 
 ## Next test
 
-- [ ] Obtain explicit authorization to flash `m8a-initial-atv-r7`.
-- [ ] Verify the r7 image size and SHA-256 in [STATUS](STATUS.md).
+- [ ] Obtain explicit authorization to flash `m8a-initial-atv-r8`.
+- [ ] Verify the r8 image size and SHA-256 in [STATUS](STATUS.md).
 - [ ] Flash once in PhoenixCard Product mode, remove the card, and capture the cold boot at 115200 8N1.
-- [ ] Record the earliest stable failure or first successful Android milestone; recover to Test8r2 if needed.
+- [ ] Record the first explicit first-stage fatal line or first successful Android milestone; recover to Test8r2 if needed.
 
 ## Only after Android starts
 

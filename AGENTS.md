@@ -1,7 +1,7 @@
 # UBOX10 operating rules
 
 - Use `.agents/skills/ubox-fast-track/SKILL.md` for M8 planning, documentation, builds, candidate checks, and diagnosis.
-- Use `.agents/skills/antigravity-worker/SKILL.md` for bounded routine work when the Antigravity bridge is available. Do not use native Codex subagents unless the user explicitly asks.
+- Use `scripts/run-luna-agent.ps1` for bounded routine worker tasks. It launches independent `codex exec` processes with GPT-5.6 Luna and maximum reasoning; do not use native Codex subagents or substitute another model.
 - The primary agent owns scope, architecture, final diff inspection, and acceptance. Worker output is evidence, not proof.
 - Prefer one reversible candidate, one focused offline check, and the first reproducible device failure over broad audits or production-grade gates.
 - Never modify original firmware or irreplaceable device evidence. Keep stock and Test8r2 rollback assets available.

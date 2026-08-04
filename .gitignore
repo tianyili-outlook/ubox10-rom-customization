@@ -25,12 +25,6 @@ __pycache__/
 *.py[cod]
 /androguard.log
 
-# Project-local Antigravity transient orchestration state
-.orchestration/antigravity/tasks/**
-!.orchestration/antigravity/tasks/.gitkeep
-.orchestration/antigravity/runs/**
-!.orchestration/antigravity/runs/.gitkeep
-.orchestration/antigravity/conversations/**
-!.orchestration/antigravity/conversations/.gitkeep
-.orchestration/antigravity/contracts/**
-!.orchestration/antigravity/contracts/.gitkeep
+# Local Codex worker job records
+/tmp/agent-jobs/**
+!/tmp/agent-jobs/.gitkeep

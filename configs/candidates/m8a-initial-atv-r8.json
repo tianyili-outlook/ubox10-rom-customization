@@ -1,0 +1,8 @@
+{
+  "id": "m8a-initial-atv-r8",
+  "base_candidate_relative": "out/candidates/m8a-initial-atv-r7/x12-m8a-initial-atv-r7.img",
+  "base_candidate_size": 996586496,
+  "base_candidate_sha256": "3098E1B238B60A39A8D93AAD3BF80EE6295338F99BD021F2A8C452168E6A370B",
+  "boot_cmdline": "console=ttyS0,115200n8 ignore_loglevel",
+  "container": {"total_entries": 50, "preserved_entries": 48, "replacement": "boot.fex", "companion": "Vboot.fex"}
+}
