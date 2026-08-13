@@ -1,8 +1,7 @@
 # UBOX10 operating rules
 
 - Use `.agents/skills/ubox-fast-track/SKILL.md` for M8 planning, documentation, builds, candidate checks, and diagnosis.
-- Use `scripts/run-luna-agent.ps1` for bounded routine worker tasks. It launches independent `codex exec` processes with GPT-5.6 Luna and maximum reasoning; do not use native Codex subagents or substitute another model.
-- The primary agent owns scope, architecture, final diff inspection, and acceptance. Worker output is evidence, not proof.
+- Keep scope, architecture, final diff inspection, and acceptance in the main session. Treat check output as evidence, not proof.
 - Prefer one reversible candidate, one focused offline check, and the first reproducible device failure over broad audits or production-grade gates.
 - Never modify original firmware or irreplaceable device evidence. Keep stock and Test8r2 rollback assets available.
 - Never flash or otherwise mutate the physical UBOX10 without explicit user authorization.

@@ -24,7 +24,3 @@ tools/zadig.exe
 __pycache__/
 *.py[cod]
 /androguard.log
-
-# Local Codex worker job records
-/tmp/agent-jobs/**
-!/tmp/agent-jobs/.gitkeep

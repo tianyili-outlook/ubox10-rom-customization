@@ -1,0 +1,60 @@
+{
+  "id": "m8a-initial-atv-r10",
+  "base_candidate_relative": "out/candidates/m8a-initial-atv-r9/x12-m8a-initial-atv-r9.img",
+  "base_candidate_size": 996512768,
+  "base_candidate_sha256": "6CB59E0A9A77AB83E11063EAB67762BA3FC1A8C17AD5E75E8A16278056A09E62",
+  "source_super_size": 816714508,
+  "source_super_sha256": "F69E1201B432D9EFD6937B251B9CBE7AE215A0CF738A5D711605CABD6DA28FA4",
+  "logical_partitions": {
+    "system_a": {"size": 1651167232, "sha256": "64FC2C65894C7EF36781DEDD87E1722A258F06E3361749A3AE274E24C955D851"},
+    "vendor_a": {"size": 119066624, "sha256": "BB91A8B7ED4AC0145F434F89FD76865EB4311F234AA46D67C8373A7CD5B4929A"},
+    "product_a": {"size": 272629760, "sha256": "06B7425A3D97E7423BBEC6D431F549E7FED81397EB62D774522EA90F4E490C3C"},
+    "vendor_dlkm_a": {"size": 6680576, "sha256": "C589DC0B12E150469F179738F127F36F6321943577453A7DB335AB9E647B8FE5"}
+  },
+  "reference_test8r2": {
+    "project_relative": "out/candidates/test8r2-restore-contacts-provider-r1/x12-test8r2-restore-contacts-provider.img",
+    "size": 2005954560,
+    "sha256": "6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8",
+    "super_size": 1859715332,
+    "super_sha256": "DE64B6D3D92FE6BFC1E48A83C4D70F09E71BAF48E7B499B94EE7C1E01355F7DB"
+  },
+  "compatibility_libraries": [
+    {
+      "name": "android.hardware.light-V1-ndk_platform.so",
+      "source_path": "/system/apex/com.android.vndk.current/lib/android.hardware.light-V1-ndk_platform.so",
+      "destination_path": "/system/lib/android.hardware.light-V1-ndk_platform.so",
+      "size": 22252,
+      "sha256": "57ED3A999D158EE449D6621897275610B0479B0F06B7EFB1005AF397099BF663",
+      "soname": "android.hardware.light-V1-ndk_platform.so",
+      "build_id": "3459AF00736A4C279C27AB9769A83845"
+    },
+    {
+      "name": "android.hardware.rebootescrow-V1-ndk_platform.so",
+      "source_path": "/system/apex/com.android.vndk.current/lib/android.hardware.rebootescrow-V1-ndk_platform.so",
+      "destination_path": "/system/lib/android.hardware.rebootescrow-V1-ndk_platform.so",
+      "size": 20284,
+      "sha256": "F26AA210060D449AA2D0ED8B7341DB28BA072A6F1DD4AF31BB2005E427636AB0",
+      "soname": "android.hardware.rebootescrow-V1-ndk_platform.so",
+      "build_id": "EAC197865A7DEDF247078159A6C9FB91"
+    }
+  ],
+  "system_a_physical_offset": 1048576,
+  "system_work_size": "768M",
+  "avb": {
+    "partition_size": 1651167232,
+    "salt": "4d38412d696e697469616c2d6174762d7231",
+    "rollback_index": 1644019200,
+    "rollback_index_location": 1,
+    "key_relative": "tools/testkey_rsa2048.pem"
+  },
+  "protected_contract": {
+    "stock_fstab_sha256": "6C771313A6F9DEDAEFA4061B14FE142F050F4AB13D360FF2F60FB9361277F701",
+    "stock_first_stage_init_sha256": "2A7D6E125583C79E925B5D916C54C51E4AE8EE145F2D7422B2DD77D0B6C62751"
+  },
+  "container": {
+    "total_entries": 50,
+    "preserved_entries": 46,
+    "replacements": ["super.fex", "vbmeta_system.fex"],
+    "companions": ["Vsuper.fex", "Vvbmeta_system.fex"]
+  }
+}

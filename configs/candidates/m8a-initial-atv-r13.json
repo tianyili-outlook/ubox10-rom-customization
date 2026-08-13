@@ -1,0 +1,114 @@
+{
+  "id": "m8a-initial-atv-r13",
+  "base_candidate_relative": "out/candidates/m8a-initial-atv-r12/x12-m8a-initial-atv-r12.img",
+  "base_candidate_size": 1007925248,
+  "base_candidate_sha256": "4A633A34DB1274AC3D943481806A385AFCAC9FEA7181C0251CF25A4D9F37CB7A",
+  "source_super_size": 828126576,
+  "source_super_sha256": "D08A974C5E9AD646E1B38512A4AA80041D37C37ED043F16509BE1E786639B540",
+  "logical_partitions": {
+    "system_a": {"size": 1651167232, "sha256": "7ECF3B7891F012D296BC8C0A44684011E1FD83796F33AB01371A9700B89DBDDB"},
+    "vendor_a": {"size": 119066624, "sha256": "BB91A8B7ED4AC0145F434F89FD76865EB4311F234AA46D67C8373A7CD5B4929A"},
+    "product_a": {"size": 272629760, "sha256": "06B7425A3D97E7423BBEC6D431F549E7FED81397EB62D774522EA90F4E490C3C"},
+    "vendor_dlkm_a": {"size": 6680576, "sha256": "C589DC0B12E150469F179738F127F36F6321943577453A7DB335AB9E647B8FE5"}
+  },
+  "reference_test8r2": {
+    "project_relative": "out/candidates/test8r2-restore-contacts-provider-r1/x12-test8r2-restore-contacts-provider.img",
+    "size": 2005954560,
+    "sha256": "6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8",
+    "super_size": 1859715332,
+    "super_sha256": "DE64B6D3D92FE6BFC1E48A83C4D70F09E71BAF48E7B499B94EE7C1E01355F7DB"
+  },
+  "provisioning": {
+    "package": "com.softwinner.provision",
+    "activity": "com.softwinner.provision.DefaultActivity",
+    "source_apk_path": "/system/system_ext/priv-app/AwTvProvision/AwTvProvision.apk",
+    "destination_apk_path": "/system_ext/priv-app/AwTvProvision/AwTvProvision.apk",
+    "apk_size": 20894,
+    "apk_sha256": "D74DF03C4BBAB8ADCFC543D9F34D98C87178A63D15F66785B1EE3D286EDB68D8",
+    "classes_dex_size": 9828,
+    "classes_dex_sha256": "3EFE37C57E395283940826F7DFCBB8B384ADC51195D29E32E70FB78E927E8BC7",
+    "source_allowlist_path": "/system/system_ext/etc/permissions/provision-permissions.xml",
+    "destination_allowlist_path": "/system_ext/etc/permissions/provision-permissions.xml",
+    "allowlist_size": 1146,
+    "allowlist_sha256": "98C3C29A10F4956BBAB65F74E405E7B3F8DF20C262A22FF7FCC755C0F92F7E6A",
+    "final_flags": {
+      "global.device_provisioned": 1,
+      "secure.user_setup_complete": 1,
+      "secure.tv_user_setup_complete": 1
+    }
+  },
+  "power_overlay": {
+    "source_relative": "configs/candidates/m8a-initial-atv-r13-overlay",
+    "manifest_sha256": "4EAAA1E577F17CEBAA0572D24B9B066CA9CE43A7C6021C0DABCB5BF3B7AF4ACD",
+    "resource_sha256": "0471C4D3A3E6A2427CF6D6ED8083F8872AEC535EB53E9CD50E9D8119C95DC07F",
+    "package": "com.ubox.m8.overlay.tvpolicy",
+    "destination_path": "/system_ext/overlay/M8TvPowerPolicyOverlay.apk",
+    "priority": 1,
+    "short_press_value": 1,
+    "short_press_name": "SHORT_PRESS_POWER_GO_TO_SLEEP",
+    "expected_apk_size": 8538,
+    "expected_apk_sha256": "B695200E1153F750B3BF1CD92228EE6E360BA7B12608CB56019D316017481C91",
+    "framework_res": {"path": "/system/framework/framework-res.apk", "size": 51867823, "sha256": "9B690832FCFA339EEC1E474F7072980D5F3E23C878C71232D85AE25BA2ADB388", "short_press_value": 1, "long_press_value": 5},
+    "vendor_rro": {"path": "/overlay/framework-res__auto_generated_rro_vendor.apk", "size": 2675523, "sha256": "442E3982D68D5026BBEFAAC79BF73470851FED906C28CF155CABDB424F0107CC", "priority": 0, "short_press_value": 0, "long_press_value": 3},
+    "product_rro": {"path": "/overlay/TvFrameworkOverlay.apk", "size": 222234, "sha256": "910BCF01D33BD327BC7B285BCB87542D10433940B9F938F78A8E89B14C8D01B8", "priority": -1, "long_press_value": 3}
+  },
+  "toolchain": [
+    {"path": "/home/tianyi/ubox10-aosp/out/host/linux-x86/bin/aapt2", "sha256": "B2745ECEFD9FF2003AD0584777F5E267BE67C422275BFDCC0DFD90EAE8D9C65D"},
+    {"path": "/home/tianyi/ubox10-aosp/prebuilts/build-tools/linux-x86/bin/zipalign", "sha256": "DCBB6742B4DF27CD9A012A940347C78EFAF9CF424AF6B4F7920ADDB17839BABC"},
+    {"path": "/home/tianyi/ubox10-aosp/prebuilts/jdk/jdk11/linux-x86/bin/java", "sha256": "402F86EE4BC653696FE2E97C09CC13DE0906121867AA9466D158F01749D38B7B"},
+    {"path": "/home/tianyi/ubox10-aosp/prebuilts/sdk/tools/linux/lib/apksigner.jar", "sha256": "52ADB310F732CD8FF0C899BF464AD373D7988A2E263727D88B15A10E4AD84175"},
+    {"path": "/home/tianyi/ubox10-aosp/build/target/product/security/platform.x509.pem", "sha256": "9837DE028F460C35CC8D3FA45F14EECCE30F6FBFE4B93D399AEF1ACB80C20D14"},
+    {"path": "/home/tianyi/ubox10-aosp/build/target/product/security/platform.pk8", "sha256": "1AD8EF556870EDB70F69A9D3C112544C07DE5162BA440D84D33F8BB0C5962875"}
+  ],
+  "frozen_files": [
+    {"path": "/system/app/ProjectivyLauncher/ProjectivyLauncher.apk", "size": 11316610, "sha256": "6818FC2DB44411A605CA4D7067FB9D7227AAEF2414CFF42DE58FE13E9321B47A"},
+    {"path": "/system/bin/multi_ir", "size": 23724, "sha256": "2A72F8FBCF29DB3DA9AA29EE61A95380B44B44DAFDF8CADAADB41097262FC687"},
+    {"path": "/system/etc/init/multi_ir.rc", "size": 141, "sha256": "7016A9C2648C4ECD4AE3977E1169C4CFA394FF6E721664E0A5A1FD128BBB1BBD"},
+    {"path": "/system/usr/keylayout/customer_ir_ff40.kl", "size": 1726, "sha256": "DB54F9843081DDC492F9BDD35E7EE341EBCB4562991513CB5B7A26BBBC74DE39"},
+    {"path": "/system/usr/keylayout/sunxi-ir.kl", "size": 4428, "sha256": "89F237061963CC333E55A3E3451E175BE6144794493FE0315122A7986F77DDDA"},
+    {"path": "/system/usr/keylayout/sunxi-ir-uinput.kl", "size": 4411, "sha256": "1B54A9C2B39C8922407F4A806825496AE6E4F0E1C16B394D7C09465AFB58B391"},
+    {"path": "/system/lib/libmultiirservice.so", "size": 16764, "sha256": "02BBB53F33CD0AAC2186A940B6E1B5D92539FADA2A7A07E894DC65E138183A38"},
+    {"path": "/system/lib/libinput.so", "size": 290416, "sha256": "764069A044E639A5567803FE530602A525FC66857413C6BC0E4C515040B1F557"},
+    {"path": "/system/lib/android.hardware.light-V1-ndk_platform.so", "size": 22252, "sha256": "57ED3A999D158EE449D6621897275610B0479B0F06B7EFB1005AF397099BF663"},
+    {"path": "/system/lib/android.hardware.rebootescrow-V1-ndk_platform.so", "size": 20284, "sha256": "F26AA210060D449AA2D0ED8B7341DB28BA072A6F1DD4AF31BB2005E427636AB0"}
+  ],
+  "launcher": {
+    "destination_path": "/system/app/ProjectivyLauncher/ProjectivyLauncher.apk",
+    "native_arm32_libraries": ["libanimation-decoder-gif.so", "libdatastore_shared_counter.so", "libptutils.so"]
+  },
+  "remote_artifacts": [
+    {"destination_path": "/system/bin/multi_ir", "elf": true, "build_id": "1235706C0F69DEC7EC1EB8F9AD59EA72"},
+    {"destination_path": "/system/etc/init/multi_ir.rc", "elf": false},
+    {"destination_path": "/system/usr/keylayout/customer_ir_ff40.kl", "elf": false},
+    {"destination_path": "/system/usr/keylayout/sunxi-ir.kl", "elf": false},
+    {"destination_path": "/system/usr/keylayout/sunxi-ir-uinput.kl", "elf": false},
+    {"destination_path": "/system/lib/libmultiirservice.so", "elf": true, "soname": "libmultiirservice.so", "build_id": "D17B5003A68F72DFD750756B28452709"},
+    {"destination_path": "/system/lib/libinput.so", "elf": true, "soname": "libinput.so", "build_id": "66F60F35958B628D3534848B5CE153C1"}
+  ],
+  "existing_policy_contract": {
+    "system_ueventd_sha256": "F2223150AFAA7DCAF20FE47DFE8A0FBF0D377F5F8065FECF373049E316A6D446",
+    "plat_file_contexts_sha256": "3BEE3A9AD30689FE85F069C6096CF69BAF2C033096082D1EAC0F6FF87EC543AF",
+    "vendor_sepolicy_sha256": "3940AB4FA6E70B8F1E811C2451FC17CC7E21DB62D626B2B1ABD817EEFDAC2B92",
+    "vendor_file_contexts_sha256": "D32A8FDAA5A2D7E08D7DE89E2A4A6E40B9048B42ABEBE38D39BFC189EA1EAA4A",
+    "vendor_ueventd_sha256": "44D36A80819C772E69AD16E24FD551D00F8836EDED588BFD54D24A2639B9476C"
+  },
+  "system_a_physical_offset": 1048576,
+  "system_work_size": "768M",
+  "avb": {
+    "partition_size": 1651167232,
+    "salt": "4d38412d696e697469616c2d6174762d7231",
+    "rollback_index": 1644019200,
+    "rollback_index_location": 1,
+    "key_relative": "tools/testkey_rsa2048.pem"
+  },
+  "protected_contract": {
+    "stock_fstab_sha256": "6C771313A6F9DEDAEFA4061B14FE142F050F4AB13D360FF2F60FB9361277F701",
+    "stock_first_stage_init_sha256": "2A7D6E125583C79E925B5D916C54C51E4AE8EE145F2D7422B2DD77D0B6C62751"
+  },
+  "container": {
+    "total_entries": 50,
+    "preserved_entries": 46,
+    "replacements": ["super.fex", "vbmeta_system.fex"],
+    "companions": ["Vsuper.fex", "Vvbmeta_system.fex"]
+  }
+}

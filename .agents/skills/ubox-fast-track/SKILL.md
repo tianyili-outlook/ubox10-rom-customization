@@ -56,9 +56,9 @@ For progress updates record only: change, artifact/hash, check, observed result,
 
 Use practical labels: `BUILT`, `OFFLINE CHECKED`, `READY TO FLASH`, `FLASHED`, `BOOTED`, `FAILED - <symptom>`, `ROLLBACK VERIFIED`, and `BLOCKED - <reason>`.
 
-## Delegation and review
+## Review
 
-Use `scripts/run-luna-agent.ps1` for bounded routine execution. It launches an independent `codex exec` process with GPT-5.6 Luna and maximum reasoning; do not use native Codex subagents or substitute another model. The primary agent must inspect the actual diff and key validation evidence.
+Inspect the actual diff and key validation evidence.
 
 One implementation pass and one focused validation pass are normally enough. Add an independent review only for boot/recovery logic, partition geometry, verification/security changes, unusually broad work, or conflicting evidence.
 

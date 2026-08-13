@@ -216,10 +216,11 @@ mkdir -p "$target_mount/system_ext"
 cp -a --preserve=all "$ext_mount"/. "$target_mount/system_ext"/
 sync
 umount "$ext_mount"; umount "$target_mount"
+bash "%s" "$target" "$target_mount"
 e2fsck -fy "$target"
 resize2fs -M "$target"
 debugfs -R 'stat /system/system_ext' "$target" | grep -q 'Fast link dest: "/system_ext"'
-""" % (target, source_ext, mounts)
+""" % (target, source_ext, mounts, self.wsl_path(REPO / "scripts" / "fix-m8-system-vendor-topology.sh"))
         self.wsl_script("merge-system-ext.sh", merge)
         check_product = """set -euo pipefail
 image='%s'

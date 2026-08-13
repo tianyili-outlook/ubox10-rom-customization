@@ -1,0 +1,69 @@
+{
+  "id": "m8b-rc-core-r1",
+  "base_candidate_relative": "out/candidates/m8a-initial-atv-r13/x12-m8a-initial-atv-r13.img",
+  "base_candidate_size": 1007978496,
+  "base_candidate_sha256": "1D367F7091A7BD6A0791B2CFE45E7AAB551E0312D8C68136548A4927354A8E06",
+  "source_super_size": 828179824,
+  "source_super_sha256": "FFAC0283599D9FE44383642843EA5A4645E09C140FD53CCB769196EA05A57200",
+  "logical_partitions": {
+    "system_a": {"size": 1651167232, "sha256": "28118A3316F1845A174667B527125C0FA750A719EFA0CF94FB88DC197FAE2055"},
+    "vendor_a": {"size": 119066624, "sha256": "BB91A8B7ED4AC0145F434F89FD76865EB4311F234AA46D67C8373A7CD5B4929A"},
+    "product_a": {"size": 272629760, "sha256": "06B7425A3D97E7423BBEC6D431F549E7FED81397EB62D774522EA90F4E490C3C"},
+    "vendor_dlkm_a": {"size": 6680576, "sha256": "C589DC0B12E150469F179738F127F36F6321943577453A7DB335AB9E647B8FE5"}
+  },
+  "mapping": {
+    "relative": "configs/candidates/m8b-rc-core-r1/ff40-map.json",
+    "sha256": "474C2F842E71D45282740603E3B13150242A8E0DAC9718373222CD0251C62D7F",
+    "entries": 49,
+    "native_entries": 48,
+    "inert_scan": 84
+  },
+  "disabled_multi_ir_rc": {
+    "relative": "configs/candidates/m8b-rc-core-r1/multi_ir.rc",
+    "sha256": "CD5C4FA3FAC1B3FD85B4582FFECF5D5657AB8F5543AEEB43DF1E765228E18635"
+  },
+  "kernel": {
+    "source_repo": "/home/tianyi/ubox10-kernel-sun50iw9-m8b",
+    "branch": "orange-pi-5.4-sun50iw9",
+    "commit": "9ab7a758149d3c9b721878a0c18b3f9c5d6c93e6",
+    "version": "5.4.125",
+    "clang": "/home/tianyi/ubox10-aosp/prebuilts/clang/host/linux-x86/clang-r416183b1/bin/clang",
+    "clang_version": "Android (7485623, based on r416183b1) clang version 12.0.7",
+    "boot_size": 67108864,
+    "boot_sha256": "6492F90E46671DDB10EAE030DF2AFF89FEF2AF821D458E458935F2ABF263D457",
+    "kernel_size": 23029768,
+    "kernel_sha256": "5D21D37115D82346CC1D9545743609CA71EBAF56F0B8FC95FC817E711661E25E",
+    "ramdisk_size": 12752798,
+    "ramdisk_sha256": "BE091606E285405F9FF018AE4E4BB286A380682280E72DD056B4FEB1F120A328",
+    "header_version": 3,
+    "os_version": "12.0.0",
+    "os_patch_level": "2022-02",
+    "cmdline": "console=ttyS0,115200n8 ignore_loglevel",
+    "avb_partition_size": 67108864,
+    "avb_partition_name": "boot",
+    "avb_salt": "c52f504c468b5668e4a5e443f424a3dc26800dc95881d9562cb7cc56594b04f6",
+    "boot_fingerprint": "Unblocktech/apollo_p1/apollo-p1:12/SP1A.211105.004/hush10241757:userdebug/test-keys",
+    "boot_os_version_prop": "12"
+  },
+  "system_a_physical_offset": 1048576,
+  "system_work_size": "768M",
+  "avb": {
+    "partition_size": 1651167232,
+    "salt": "4d38412d696e697469616c2d6174762d7231",
+    "rollback_index": 1644019200,
+    "rollback_index_location": 1,
+    "key_relative": "tools/testkey_rsa2048.pem"
+  },
+  "protected_contract": {
+    "stock_fstab_sha256": "6C771313A6F9DEDAEFA4061B14FE142F050F4AB13D360FF2F60FB9361277F701",
+    "stock_first_stage_init_sha256": "2A7D6E125583C79E925B5D916C54C51E4AE8EE145F2D7422B2DD77D0B6C62751",
+    "vendor_boot_size": 33554432,
+    "vendor_boot_sha256": "AAF77E65F6D882754015C7963E7A3D533282E1BCFA76F35220DB9FCAF4ED7E72"
+  },
+  "container": {
+    "total_entries": 50,
+    "preserved_entries": 44,
+    "replacements": ["boot.fex", "super.fex", "vbmeta_system.fex"],
+    "companions": ["Vboot.fex", "Vsuper.fex", "Vvbmeta_system.fex"]
+  }
+}

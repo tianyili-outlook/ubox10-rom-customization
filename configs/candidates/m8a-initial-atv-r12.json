@@ -1,0 +1,130 @@
+{
+  "id": "m8a-initial-atv-r12",
+  "base_candidate_relative": "out/candidates/m8a-initial-atv-r11/x12-m8a-initial-atv-r11.img",
+  "base_candidate_size": 1007847424,
+  "base_candidate_sha256": "03C674F7A3D3D01B4466C0AF176C5CF218B4A68C0C1802684620D0295A0DB7C2",
+  "source_super_size": 828048712,
+  "source_super_sha256": "A81947E01D5300B417A6748393758494C3106E809B81478B3FD19793524952CC",
+  "logical_partitions": {
+    "system_a": {"size": 1651167232, "sha256": "7E3BA3A79583CA29E50BAD7FC5DF1543E7B931FB53E4F88F6FFFB90AA2D9CB69"},
+    "vendor_a": {"size": 119066624, "sha256": "BB91A8B7ED4AC0145F434F89FD76865EB4311F234AA46D67C8373A7CD5B4929A"},
+    "product_a": {"size": 272629760, "sha256": "06B7425A3D97E7423BBEC6D431F549E7FED81397EB62D774522EA90F4E490C3C"},
+    "vendor_dlkm_a": {"size": 6680576, "sha256": "C589DC0B12E150469F179738F127F36F6321943577453A7DB335AB9E647B8FE5"}
+  },
+  "launcher": {
+    "name": "ProjectivyLauncher",
+    "source_project_relative": "work/preinstall_apks/ProjectivyLauncher-4.71-c95-xda-release.apk",
+    "destination_path": "/system/app/ProjectivyLauncher/ProjectivyLauncher.apk",
+    "size": 11316610,
+    "sha256": "6818FC2DB44411A605CA4D7067FB9D7227AAEF2414CFF42DE58FE13E9321B47A",
+    "package": "com.spocky.projengmenu",
+    "activity": "com.spocky.projengmenu.ui.home.MainActivity",
+    "version_code": 95,
+    "version_name": "4.71",
+    "min_sdk": 23,
+    "target_sdk": 37,
+    "partition": "system_a",
+    "mode": "0644",
+    "uid": 0,
+    "gid": 0,
+    "selinux": "u:object_r:system_file:s0",
+    "direct_boot_aware": false,
+    "privileged": false,
+    "shared_user_id": null,
+    "required_shared_libraries": [],
+    "optional_shared_libraries": [
+      "android.ext.adservices",
+      "androidx.window.extensions",
+      "androidx.window.sidecar"
+    ],
+    "categories": [
+      "android.intent.category.HOME",
+      "android.intent.category.DEFAULT",
+      "android.intent.category.LEANBACK_LAUNCHER"
+    ],
+    "native_arm32_libraries": [
+      "libanimation-decoder-gif.so",
+      "libdatastore_shared_counter.so",
+      "libptutils.so"
+    ]
+  },
+  "test8r2_reference": {
+    "build_result_project_relative": "out/candidates/test8r2-restore-contacts-provider-r1/build-result.json",
+    "firmware_sha256": "6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8",
+    "default_launcher_package": "com.spocky.projengmenu",
+    "default_launcher_class": "com.spocky.projengmenu.ui.home.MainActivity"
+  },
+  "r10_compatibility_libraries": [
+    {
+      "path": "/system/lib/android.hardware.light-V1-ndk_platform.so",
+      "size": 22252,
+      "sha256": "57ED3A999D158EE449D6621897275610B0479B0F06B7EFB1005AF397099BF663"
+    },
+    {
+      "path": "/system/lib/android.hardware.rebootescrow-V1-ndk_platform.so",
+      "size": 20284,
+      "sha256": "F26AA210060D449AA2D0ED8B7341DB28BA072A6F1DD4AF31BB2005E427636AB0"
+    }
+  ],
+  "reference_test8r2": {
+    "project_relative": "out/candidates/test8r2-restore-contacts-provider-r1/x12-test8r2-restore-contacts-provider.img",
+    "size": 2005954560,
+    "sha256": "6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8",
+    "super_size": 1859715332,
+    "super_sha256": "DE64B6D3D92FE6BFC1E48A83C4D70F09E71BAF48E7B499B94EE7C1E01355F7DB"
+  },
+  "remote_artifacts": [
+    {"source_path": "/system/bin/multi_ir", "destination_path": "/system/bin/multi_ir", "size": 23724, "sha256": "2A72F8FBCF29DB3DA9AA29EE61A95380B44B44DAFDF8CADAADB41097262FC687", "mode": "0755", "uid": 0, "gid": 2000, "selinux": "u:object_r:multi_ir_exec:s0", "elf": true, "build_id": "1235706C0F69DEC7EC1EB8F9AD59EA72"},
+    {"source_path": "/system/etc/init/multi_ir.rc", "destination_path": "/system/etc/init/multi_ir.rc", "size": 141, "sha256": "7016A9C2648C4ECD4AE3977E1169C4CFA394FF6E721664E0A5A1FD128BBB1BBD", "mode": "0644", "uid": 0, "gid": 0, "selinux": "u:object_r:system_file:s0", "elf": false},
+    {"source_path": "/system/usr/keylayout/customer_ir_ff40.kl", "destination_path": "/system/usr/keylayout/customer_ir_ff40.kl", "size": 1726, "sha256": "DB54F9843081DDC492F9BDD35E7EE341EBCB4562991513CB5B7A26BBBC74DE39", "mode": "0644", "uid": 0, "gid": 0, "selinux": "u:object_r:system_file:s0", "elf": false},
+    {"source_path": "/system/usr/keylayout/sunxi-ir.kl", "destination_path": "/system/usr/keylayout/sunxi-ir.kl", "size": 4428, "sha256": "89F237061963CC333E55A3E3451E175BE6144794493FE0315122A7986F77DDDA", "mode": "0644", "uid": 0, "gid": 0, "selinux": "u:object_r:system_file:s0", "elf": false},
+    {"source_path": "/system/usr/keylayout/sunxi-ir-uinput.kl", "destination_path": "/system/usr/keylayout/sunxi-ir-uinput.kl", "size": 4411, "sha256": "1B54A9C2B39C8922407F4A806825496AE6E4F0E1C16B394D7C09465AFB58B391", "mode": "0644", "uid": 0, "gid": 0, "selinux": "u:object_r:system_file:s0", "elf": false},
+    {"source_path": "/system/lib/libmultiirservice.so", "destination_path": "/system/lib/libmultiirservice.so", "size": 16764, "sha256": "02BBB53F33CD0AAC2186A940B6E1B5D92539FADA2A7A07E894DC65E138183A38", "mode": "0644", "uid": 0, "gid": 0, "selinux": "u:object_r:system_lib_file:s0", "elf": true, "soname": "libmultiirservice.so", "build_id": "D17B5003A68F72DFD750756B28452709"},
+    {"source_path": "/system/lib/libinput.so", "destination_path": "/system/lib/libinput.so", "size": 290416, "sha256": "764069A044E639A5567803FE530602A525FC66857413C6BC0E4C515040B1F557", "mode": "0644", "uid": 0, "gid": 0, "selinux": "u:object_r:system_lib_file:s0", "elf": true, "soname": "libinput.so", "build_id": "66F60F35958B628D3534848B5CE153C1", "replaces_sha256": "D82DBA765CAB4CA6BE42DBE8B6673FF34D97B80CD56D461A89468156CAF9FFC2"}
+  ],
+  "excluded_test8r2_artifacts": [
+    {"path": "/system/lib/libmultiir_jni.so", "sha256": "EF5617C88B21AD5F72C507870B9E6DC2AF3442A6EF35C4545B915C4CCAC48846", "reason": "multi_ir has no DT_NEEDED edge and the running Test8r2 process did not map it"},
+    {"path": "/system/usr/keylayout/virtual-remote.kl", "sha256": "9FF72D2AE12A9088EF0DC4CC50E07958B74D17C8CB80C12B6DF3107BADBE7332", "reason": "neither physical sunxi-ir nor sunxi-ir-uinput selects it"},
+    {"path": "/system/usr/keylayout/customer_ir_4040.kl", "sha256": "19FFED22C1550B7F6D292FE1BEB0B992C56AA900A3386B0F15971B524DD7CB2D", "reason": "the attached remote factory ID is ff40"}
+  ],
+  "mouse_contract": {
+    "factory_id": "ff40",
+    "toggle_scancode_decimal": 84,
+    "toggle_scancode_hex": "0x54",
+    "raw_msc_scan": "ff4054",
+    "uinput_linux_code": 232,
+    "vendor_android_keycode": 10009,
+    "vendor_labels": ["TV_SYSTEM", "GOTO", "SUBTITLE", "AUDIO", "ZOOM", "FAVOURITE", "LOOP", "EXPAND", "MOUSE", "MOVIE", "APPS", "BROWSER", "SCREENSHOT"]
+  },
+  "protected_files": [
+    {"path": "/system/app/ProjectivyLauncher/ProjectivyLauncher.apk", "size": 11316610, "sha256": "6818FC2DB44411A605CA4D7067FB9D7227AAEF2414CFF42DE58FE13E9321B47A"},
+    {"path": "/system/lib/android.hardware.light-V1-ndk_platform.so", "size": 22252, "sha256": "57ED3A999D158EE449D6621897275610B0479B0F06B7EFB1005AF397099BF663"},
+    {"path": "/system/lib/android.hardware.rebootescrow-V1-ndk_platform.so", "size": 20284, "sha256": "F26AA210060D449AA2D0ED8B7341DB28BA072A6F1DD4AF31BB2005E427636AB0"}
+  ],
+  "existing_policy_contract": {
+    "system_ueventd_sha256": "F2223150AFAA7DCAF20FE47DFE8A0FBF0D377F5F8065FECF373049E316A6D446",
+    "plat_file_contexts_sha256": "3BEE3A9AD30689FE85F069C6096CF69BAF2C033096082D1EAC0F6FF87EC543AF",
+    "vendor_sepolicy_sha256": "3940AB4FA6E70B8F1E811C2451FC17CC7E21DB62D626B2B1ABD817EEFDAC2B92",
+    "vendor_file_contexts_sha256": "D32A8FDAA5A2D7E08D7DE89E2A4A6E40B9048B42ABEBE38D39BFC189EA1EAA4A",
+    "vendor_ueventd_sha256": "44D36A80819C772E69AD16E24FD551D00F8836EDED588BFD54D24A2639B9476C"
+  },
+  "system_a_physical_offset": 1048576,
+  "system_work_size": "768M",
+  "avb": {
+    "partition_size": 1651167232,
+    "salt": "4d38412d696e697469616c2d6174762d7231",
+    "rollback_index": 1644019200,
+    "rollback_index_location": 1,
+    "key_relative": "tools/testkey_rsa2048.pem"
+  },
+  "protected_contract": {
+    "stock_fstab_sha256": "6C771313A6F9DEDAEFA4061B14FE142F050F4AB13D360FF2F60FB9361277F701",
+    "stock_first_stage_init_sha256": "2A7D6E125583C79E925B5D916C54C51E4AE8EE145F2D7422B2DD77D0B6C62751"
+  },
+  "container": {
+    "total_entries": 50,
+    "preserved_entries": 46,
+    "replacements": ["super.fex", "vbmeta_system.fex"],
+    "companions": ["Vsuper.fex", "Vvbmeta_system.fex"]
+  }
+}
