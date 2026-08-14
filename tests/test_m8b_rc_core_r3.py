@@ -41,11 +41,12 @@ class M8BRcCoreR3Tests(unittest.TestCase):
     def test_02_existing_chain_is_parameterized(self) -> None:
         builder = (REPO / "scripts" / "build-m8b-rc-core-r1-candidate.py").read_text(encoding="utf-8")
         installer = (REPO / "scripts" / "install-m8b-rc-core-input.sh").read_text(encoding="utf-8")
-        self.assertIn('parent = overlay.get("parent_config_relative")', builder)
+        self.assertIn("def load_overlay", builder)
+        self.assertIn('parent = document.get("parent_config_relative")', builder)
         self.assertIn('if self.config.get("reuse_base_boot")', builder)
         self.assertIn('device_keylayout_filename = self.config.get("device_keylayout_filename")', builder)
         self.assertIn("DEVICE_KEYLAYOUT_FILENAME", installer)
-        self.assertIn('cmp -s "$kl_target" "$device_target"', installer)
+        self.assertIn('cmp -s "$device_keylayout_source" "$device_target"', installer)
         for forbidden in ("saveenv", "setenforce 0", "permissive"):
             self.assertNotIn(forbidden, builder + installer)
 

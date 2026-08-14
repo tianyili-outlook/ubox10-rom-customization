@@ -1,6 +1,6 @@
 # M8B rc-core-r3 candidate
 
-状态：**OFFLINE CHECKED — READY FOR FOCUSED DEVICE TEST**
+状态：**FAILED — EXACT KEYLAYOUT FOUND, ANDROID 12 PARSER REJECTED**
 
 直接基线：`m8b-rc-core-r2`，SHA-256 `AE53376C3F902C8B239321E196F7886BFEFEC74C43E66B6FAB50EC100A64F3C8`。
 
@@ -13,6 +13,10 @@ r3 只把 r2 已生成的 keylayout 以 exact Android 文件名安装到：
 `/system/usr/keylayout/Vendor_0001_Product_0001_Version_0100.kl`
 
 保留原 `sunxi-ir.kl` 和全部 legacy 工件；不修改 rc-main、NEC decoder、timeout、DTS/DTBO、Power、rc-map、repeat 或 Settings framework。
+
+## 实机结果
+
+`logs/device/20260815-m8b-rc-core-r3/r3-verify.log` 与 `r3-verify2.log` 已确认 exact 文件存在、可读，路径、regular `0644 root:root`、SELinux label 和 SHA 均正确。Android 也找到了该文件，但 `KeyLayoutMap` 在 line 13 报 `Expected key flag label, got 'WAKE_DROPPED'`，EventHub 随后回退 `Generic.kl`。因此 r3 已完成路径选择证明，但因 legacy keylayout 与 Android 12 parser 不兼容而失败；后继 r4 负责完整 label/flag 转换。
 
 ## 构建与候选
 

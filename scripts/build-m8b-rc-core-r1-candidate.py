@@ -46,6 +46,8 @@ class BuildM8BRcCoreR1(r13.BuildR13):
         self.candidate_boot: Path | None = None
         self.generated_keymap_c: Path | None = None
         self.generated_kl: Path | None = None
+        self.device_keylayout_kl: Path | None = None
+        self.keylayout_parser_report: Path | None = None
         self.mapping_report: dict[str, object] | None = None
 
     @staticmethod
@@ -113,6 +115,21 @@ class BuildM8BRcCoreR1(r13.BuildR13):
         self.mapping_report = json.loads(report.read_text(encoding="utf-8"))
         if self.mapping_report["audited_entries"] != mapping["entries"] or self.mapping_report["native_rc_entries"] != mapping["native_entries"]:
             raise RuntimeError("generated ff40 mapping count mismatch")
+        self.device_keylayout_kl = self.generated_kl
+        parser_spec = self.config.get("android_keylayout_parser")
+        if parser_spec is not None:
+            assert isinstance(parser_spec, dict)
+            self.device_keylayout_kl = generated / "android12-device.kl"
+            self.keylayout_parser_report = self.stage / "keylayout-parser-validation.json"
+            self.run([
+                "wsl.exe", "-d", "Ubuntu-24.04", "--", "python3",
+                self.wsl_path(REPO / "scripts" / "convert-m8b-android12-keylayout.py"),
+                "--input", self.wsl_path(self.generated_kl), "--output", self.wsl_path(self.device_keylayout_kl),
+                "--config", self.wsl_path(REPO / str(parser_spec["config_relative"])),
+                "--input-event-labels", str(parser_spec["input_event_labels_path"]),
+                "--key-layout-map", str(parser_spec["key_layout_map_path"]),
+                "--report", self.wsl_path(self.keylayout_parser_report),
+            ])
 
     def build_kernel(self) -> Path:
         if self.stock_kernel is None or self.generated_keymap_c is None:
@@ -211,7 +228,7 @@ class BuildM8BRcCoreR1(r13.BuildR13):
         return self.candidate_boot
 
     def repair_system(self, source: Path) -> Path:
-        assert self.generated_kl is not None
+        assert self.generated_kl is not None and self.device_keylayout_kl is not None
         system = self.stage / "system_a.img"
         shutil.copyfile(source, system)
         self.run([sys.executable, str(base.TOOLS / "avbtool.py"), "erase_footer", "--image", str(system)])
@@ -229,6 +246,8 @@ class BuildM8BRcCoreR1(r13.BuildR13):
         device_keylayout_filename = self.config.get("device_keylayout_filename")
         if device_keylayout_filename is not None:
             command.append(str(device_keylayout_filename))
+            if self.device_keylayout_kl != self.generated_kl:
+                command.append(self.wsl_path(self.device_keylayout_kl))
         self.run(command)
         self.run(["wsl.exe", "-d", "Ubuntu-24.04", "-u", "root", "--", "resize2fs", "-M", self.wsl_path(system)])
         mount_dir.rmdir()
@@ -252,10 +271,10 @@ class BuildM8BRcCoreR1(r13.BuildR13):
         unexpected = [path for path in changed if path not in allowed]
         if unexpected or set(changed) != allowed:
             raise RuntimeError("unexpected M8B system differences: " + ", ".join(unexpected or changed))
-        assert self.generated_kl is not None
+        assert self.generated_kl is not None and self.device_keylayout_kl is not None
         disabled = REPO / str(self.config["disabled_multi_ir_rc"]["relative"])
         expected_label = b"u:object_r:system_file:s0\0".hex().upper()
-        targets = {device_keylayout_path: self.generated_kl} if device_keylayout_path else {
+        targets = {device_keylayout_path: self.device_keylayout_kl} if device_keylayout_path else {
             "/system/etc/init/multi_ir.rc": disabled, "/system/usr/keylayout/sunxi-ir.kl": self.generated_kl,
         }
         for path, source in targets.items():
@@ -274,8 +293,10 @@ class BuildM8BRcCoreR1(r13.BuildR13):
             for path in ("/system/etc/init/multi_ir.rc", "/system/usr/keylayout/sunxi-ir.kl"):
                 if before.get(path) != after.get(path):
                     raise RuntimeError("r2 native input file changed: " + path)
-            if after[device_keylayout_path]["sha256"] != after["/system/usr/keylayout/sunxi-ir.kl"]["sha256"]:
-                raise RuntimeError("device-specific keylayout is not identical to sunxi-ir.kl")
+            expected_identical = base.digest(self.device_keylayout_kl) == base.digest(self.generated_kl)
+            observed_identical = after[device_keylayout_path]["sha256"] == after["/system/usr/keylayout/sunxi-ir.kl"]["sha256"]
+            if observed_identical != expected_identical:
+                raise RuntimeError("device-specific keylayout compatibility identity mismatch")
         for item in self.config["frozen_files"]:
             path = str(item["path"])
             if path in allowed:
@@ -304,7 +325,7 @@ class BuildM8BRcCoreR1(r13.BuildR13):
             "legacy_artifacts_retained_inert": legacy, "mouse_mode": "intentionally dropped/inert",
             "projectivy_provisioning_power_policy_frozen": True, "canonical_vendor_topology_preserved": True,
             "device_keylayout_path": device_keylayout_path,
-            "device_keylayout_identical_to_sunxi_ir": bool(device_keylayout_path),
+            "device_keylayout_identical_to_sunxi_ir": bool(device_keylayout_path and base.digest(self.device_keylayout_kl) == base.digest(self.generated_kl)),
         }
         (self.stage / "native-input-validation.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
         return result
@@ -360,6 +381,8 @@ class BuildM8BRcCoreR1(r13.BuildR13):
             "native_input_validation": json.loads((self.stage / "native-input-validation.json").read_text(encoding="utf-8")),
             "protected_contract": self.config["protected_contract"],
             "kernel_repeat_patch": self.config.get("kernel_repeat_patch"),
+            "keylayout_parser_validation": (json.loads(self.keylayout_parser_report.read_text(encoding="utf-8"))
+                                            if self.keylayout_parser_report is not None else None),
             "physical_device_actions_performed": False,
         }
         (self.stage / "build-result.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
@@ -371,7 +394,10 @@ class BuildM8BRcCoreR1(r13.BuildR13):
         kernel_image = self.stage / "kernel-build" / "Image"
         if kernel_image.exists():
             kernel_image.unlink()
-        for name in ("build-result.json", "outer-payload-audit.json", "input-provenance-before.json", "input-provenance-after.json", "boot-validation.json"):
+        rewrite_names = ["build-result.json", "outer-payload-audit.json", "input-provenance-before.json", "input-provenance-after.json", "boot-validation.json"]
+        if self.keylayout_parser_report is not None:
+            rewrite_names.append("keylayout-parser-validation.json")
+        for name in rewrite_names:
             path = self.stage / name
             path.write_text(json.dumps(base.rewrite_paths(json.loads(path.read_text(encoding="utf-8")), self.stage, self.final), indent=2) + "\n", encoding="utf-8")
         sums = [base.digest(path) + "  " + path.relative_to(self.stage).as_posix() for path in sorted(self.stage.rglob("*")) if path.is_file() and path.name != "SHA256SUMS"]
@@ -406,15 +432,24 @@ class BuildM8BRcCoreR1(r13.BuildR13):
             raise
 
 
+def load_overlay(path: Path, stack: tuple[Path, ...] = ()) -> dict[str, object]:
+    resolved = path.resolve()
+    if resolved in stack:
+        raise RuntimeError("candidate config parent cycle")
+    document = json.loads(resolved.read_text(encoding="utf-8"))
+    parent = document.get("parent_config_relative")
+    if parent is None:
+        return document
+    result = load_overlay(REPO / str(parent), stack + (resolved,))
+    result.update(document)
+    return result
+
+
 def merged_config(path: Path) -> dict[str, object]:
     document = json.loads(R13_CONFIG.read_text(encoding="utf-8"))
     document.update(json.loads(R1_CONFIG.read_text(encoding="utf-8")))
     if path.resolve() != R1_CONFIG.resolve():
-        overlay = json.loads(path.read_text(encoding="utf-8"))
-        parent = overlay.get("parent_config_relative")
-        if parent is not None:
-            document.update(json.loads((REPO / str(parent)).read_text(encoding="utf-8")))
-        document.update(overlay)
+        document.update(load_overlay(path))
     return document
 
 

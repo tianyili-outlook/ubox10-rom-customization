@@ -17,16 +17,16 @@ Updated: 2026-08-15
 
 ## Active candidate
 
-`m8b-rc-core-r3` 已从实机验证后的 r2 构建并完成限定离线检查，状态为 **READY FOR FOCUSED DEVICE TEST**。本轮未刷机、未执行设备命令。
+`m8b-rc-core-r4` 已从设备确认 parser 失败的 r3 构建并完成限定离线检查，状态为 **READY FOR FOCUSED DEVICE TEST**。本轮未刷机、未执行设备命令。
 
 | 项目 | 值 |
 |---|---|
-| 镜像 | `out/candidates/m8b-rc-core-r3/x12-m8b-rc-core-r3.img` |
+| 镜像 | `out/candidates/m8b-rc-core-r4/x12-m8b-rc-core-r4.img` |
 | 大小 | 1007982592 bytes |
-| SHA-256 | `3CF41276615D16A7B319467E5E3F031E52E468E5240AE23835F9C8675AC1D88B` |
-| 唯一功能变量 | 将 r2 生成的同字节 keylayout 另装为 `Vendor_0001_Product_0001_Version_0100.kl` |
+| SHA-256 | `44B8D1B4787EAF8CF601725D2630D8508CC139CCC2109BA27D07D9AF1FB0D571` |
+| 唯一功能变量 | 将 exact device keylayout 转换为 Android 12 parser 支持的 label/flag 集合 |
 | Mouse | intentionally dropped；ff4054 保持 inert |
-| payload 差异 | 相对 r2 仅 `system_a`、super/vbmeta_system 及其校验 companions；boot/kernel 原字节不变 |
+| payload 差异 | 相对 r3 仅 `system_a`、super/vbmeta_system 及其校验 companions；boot/kernel 原字节不变 |
 | 设备结果 | 待测试 |
 
 ## Verified progress
@@ -50,7 +50,8 @@ Updated: 2026-08-15
 | r13 | **GOLDEN BASELINE - DEVICE ACCEPTED** | boot、Projectivy、provisioning、遥控与 Power sleep/wake/shutdown 全部通过 | 作为 M8B 和回滚基线 |
 | M8B rc-core-r1 | **FAILED - REPEAT/REPRESS LIFECYCLE** | 实机确认 native rc-core 架构成立，但单次 OK 可拆成两组 DOWN→UP，长按 UP 约每 108 ms 人工 UP→DOWN | 修正 config-off 路径的 new-event 判定 |
 | M8B rc-core-r2 | **REPEAT LIFECYCLE PASS - KEYLAYOUT SELECTION FAIL** | native repeat/release、DPAD、HOME/BACK/Power 和物理 KEY_OK 已通过；Android 因设备标识不匹配而加载 `Generic.kl` | 安装 exact vendor/product/version keylayout |
-| M8B rc-core-r3 | **OFFLINE CHECKED - DEVICE TEST PENDING** | r2 keylayout 以 `Vendor_0001_Product_0001_Version_0100.kl` 同字节安装，boot/kernel 保持不变 | 先确认 `dumpsys input` 选中该文件，再测物理 OK |
+| M8B rc-core-r3 | **FAILED - EXACT FILE FOUND, PARSE REJECTED** | exact keylayout 路径、权限、SELinux 与 SHA 均正确，但 Android 12 parser 在 line 13 拒绝 legacy `WAKE_DROPPED`，EventHub 回退 `Generic.kl` | 完整转换全部不受支持的 label/flag |
+| M8B rc-core-r4 | **OFFLINE CHECKED - DEVICE TEST PENDING** | 46 条 keylayout 映射已对 exact SP1A parser 表做完整审计；不支持项已转换且无省略 | 先确认 `dumpsys input` 实际加载 exact 文件，再测物理 OK |
 
 ## M8B native rc-core
 
@@ -60,7 +61,9 @@ r1 实机日志为 `logs/device/20260813-m8b-rc-core-r1/uart-coldboot.log` 和 `
 
 r2 候选为 `out/candidates/m8b-rc-core-r2/x12-m8b-rc-core-r2.img`，1007978496 bytes，SHA-256 `AE53376C3F902C8B239321E196F7886BFEFEC74C43E66B6FAB50EC100A64F3C8`；kernel SHA-256 `FE23BEEAE10389EA13575CA266AF45797F22BCF9BDBA7037AF6F7A8B3148C5E2`。`r2-verify.log` 已实机确认 DPAD 单击/长按、HOME/BACK/Power 和 clean KEY_OK DOWN→UP，r1 的人工 repeat/repress 周期消失，`multi_ir` 保持 disabled，因此 kernel/native rc-core 修复通过。`r2-kl.log` 显示现有 `/system/usr/keylayout/sunxi-ir.kl` 含 352→DPAD_CENTER、171→SETTINGS，但 input identifier 为 vendor/product/version `0001/0001/0100`，实际加载 `/system/usr/keylayout/Generic.kl`；剩余根因是 Android keylayout 文件名选择，不是 kernel 或 UI focus。
 
-r3 以 r2 镜像为直接基线，只新增 `/system/usr/keylayout/Vendor_0001_Product_0001_Version_0100.kl`；内容与 `sunxi-ir.kl` 同为 1848 bytes、SHA-256 `14FFF2ADF2B5F258AD77483FC5821F699EFAE008FAB28B0493A733AB7EFBC3AD`，元数据为 regular `0644 root:root`、`u:object_r:system_file:s0`。r2 boot/kernel SHA-256 分别保持 `0A9473513B309BA3168242500658F35D96EC40B49CA91E33C1068861F8756678` / `FE23BEEAE10389EA13575CA266AF45797F22BCF9BDBA7037AF6F7A8B3148C5E2`。Settings 全局行为不在 r3 范围；legacy multi_ir/uinput 清理继续延后。
+r3 以 r2 镜像为直接基线，只新增 `/system/usr/keylayout/Vendor_0001_Product_0001_Version_0100.kl`；内容与 `sunxi-ir.kl` 同为 1848 bytes、SHA-256 `14FFF2ADF2B5F258AD77483FC5821F699EFAE008FAB28B0493A733AB7EFBC3AD`，元数据为 regular `0644 root:root`、`u:object_r:system_file:s0`。`logs/device/20260815-m8b-rc-core-r3/r3-verify.log` 与 `r3-verify2.log` 已确认 Android 找到该 exact 文件，但 parser 在 line 13 报 `Expected key flag label, got 'WAKE_DROPPED'`，随后回退 `Generic.kl`；因此 r3 状态为 FAILED，路径选择假设已关闭。
+
+r4 只转换 device-specific keylayout，保留 `sunxi-ir.kl` 原字节作参考。对 exact SP1A.210812.015 `InputEventLabels.cpp` 与 `KeyLayoutMap.cpp` 的完整表审计发现不支持 flag `WAKE_DROPPED` 和 labels `APPS`、`BROWSER`、`EXPAND`；分别转换为 `WAKE`、`ALL_APPS`、`EXPLORER`、`TV_ZOOM_MODE`。最终 46 条映射全部落在 parser 支持集合内，无省略；352→DPAD_CENTER、103/108/105/106→DPAD、172→HOME、158→BACK、115/114→Volume、116→POWER、171→SETTINGS 均保持。device keylayout 为 1795 bytes、SHA-256 `C8AB0907D9F7CFCDC9B14370548643DF9BCC03E488C5086D48BC424425A5E398`，元数据继续为 regular `0644 root:root`、`u:object_r:system_file:s0`。boot/kernel 原字节不变，Settings framework 与 legacy 清理继续延后。
 
 primary evidence 仍使用 `logs/device/20260811-r11/uart-putty_3.log`、`uart-putty_8r2.log`、`uart-putty_8r2_2.log`、`uart-putty_8r2_3.log`，没有重复设备取证。r11 和 Test8r2 的物理 `sunxi-ir/event0` 均只发 `MSC_SCAN`；Test8r2 的 `multi_ir` 读取 event0、打开 `/dev/uinput` 并创建 `sunxi-ir-uinput/event1`，Android 才从 event1 获得 `EV_KEY`。
 
@@ -195,9 +198,9 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - M8B 当前 active scope 仅为 native rc-core 遥控迁移；Mouse mode intentionally dropped，legacy multi_ir 工件在 rc-core-r3 保留为 inert reference。
 - 当前 board、DT 与 runtime 证据识别为 H616。设备运行 64 位 kernel，但没有已证明可用的 AArch64 Android graphics userspace；本轮不扩展到 64 位 userspace。
 
-## M8B rc-core-r3 next action
+## M8B rc-core-r4 next action
 
-刷入 `x12-m8b-rc-core-r3.img` 后先执行：
+刷入 `x12-m8b-rc-core-r4.img` 后先执行：
 
 ```sh
 dumpsys input | grep -A 50 -B 5 'sunxi-ir'

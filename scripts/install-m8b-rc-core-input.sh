@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ $# -lt 4 || $# -gt 5 ]]; then
-  echo "usage: $0 SYSTEM_EXT4_IMAGE MOUNT_DIRECTORY DISABLED_MULTI_IR_RC SUNXI_IR_KL [DEVICE_KEYLAYOUT_FILENAME]" >&2
+if [[ $# -lt 4 || $# -gt 6 ]]; then
+  echo "usage: $0 SYSTEM_EXT4_IMAGE MOUNT_DIRECTORY DISABLED_MULTI_IR_RC SUNXI_IR_KL [DEVICE_KEYLAYOUT_FILENAME [DEVICE_KEYLAYOUT_SOURCE]]" >&2
   exit 2
 fi
 
@@ -11,9 +11,10 @@ mount_dir=$2
 multi_ir_rc=$3
 sunxi_ir_kl=$4
 device_keylayout_filename=${5:-}
+device_keylayout_source=${6:-$sunxi_ir_kl}
 
 [[ $(id -u) -eq 0 ]] || { echo "must run as root" >&2; exit 2; }
-[[ -f $image && -d $mount_dir && -f $multi_ir_rc && -f $sunxi_ir_kl ]] || {
+[[ -f $image && -d $mount_dir && -f $multi_ir_rc && -f $sunxi_ir_kl && -f $device_keylayout_source ]] || {
   echo "missing image, mount directory, or generated input source" >&2
   exit 2
 }
@@ -57,11 +58,17 @@ if [[ -n $device_keylayout_filename ]]; then
     exit 1
   }
   device_target="$mount_dir/system/usr/keylayout/$device_keylayout_filename"
-  [[ ! -e $device_target && ! -L $device_target ]] || {
-    echo "device keylayout target already exists" >&2
-    exit 1
-  }
-  install -o 0 -g 0 -m 0644 "$sunxi_ir_kl" "$device_target"
+  if [[ -e $device_target || -L $device_target ]]; then
+    [[ -f $device_target && ! -L $device_target ]] || {
+      echo "existing device keylayout is not a regular file" >&2
+      exit 1
+    }
+    [[ $(sha256sum "$device_target" | cut -d' ' -f1) == $(sha256sum "$sunxi_ir_kl" | cut -d' ' -f1) ]] || {
+      echo "existing device keylayout is not the exact r3 reference" >&2
+      exit 1
+    }
+  fi
+  install -o 0 -g 0 -m 0644 "$device_keylayout_source" "$device_target"
   metadata_targets=("$device_target")
 else
   [[ $(sha256sum "$rc_target" | cut -d' ' -f1) == 7016a9c2648c4ecd4ae3977e1169c4cfa394ff6e721664e0a5a1fd128bbb1bbd ]] || {
@@ -95,7 +102,7 @@ PY
 grep -qx '        disabled' "$rc_target"
 ! grep -q 'MOUSE' "$kl_target"
 if [[ -n $device_keylayout_filename ]]; then
-  cmp -s "$kl_target" "$device_target"
+  cmp -s "$device_keylayout_source" "$device_target"
 fi
 sync
 umount "$mount_dir"
