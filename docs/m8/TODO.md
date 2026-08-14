@@ -7,14 +7,16 @@
 - [x] 从 exact ff40 语义生成 48 项 native rc-map 和 device-specific `sunxi-ir.kl`；49 项已逐项审计，ff4054 Mouse intentionally inert。
 - [x] 禁用 `multi_ir` 自动运行，同时保留 legacy binary、rc、keylayout、libraries 作 inert rollback/reference。
 - [x] 构建并实机验证 `m8b-rc-core-r1`：native `sunxi-ir/event0 → EV_KEY` 架构成立；因 repeat frame 被误判为新按键而失败。
-- [x] 构建并限定验证 `m8b-rc-core-r2`：仅修正 config-off 路径的 `new_event` 判定。
-- [ ] 刷入 `x12-m8b-rc-core-r2.img`，记录到 `r2-verify.log`；确认 `multi_ir` 不运行且 event0 保持 native `EV_KEY`。
-- [ ] 聚焦验收 UP 单击、OK 单击/连续按、UP 长按约 2 秒后释放；不得出现人工 UP→DOWN、double press、sticky key 或释放后继续导航。
+- [x] 实机验证 `m8b-rc-core-r2`：repeat/release、DPAD、HOME/BACK/Power 和 native KEY_OK 通过；`multi_ir` 保持 disabled。
+- [x] 确认 r2 Android 实际加载 `Generic.kl`，未选择已存在的 `sunxi-ir.kl`。
+- [x] 构建并限定验证 `m8b-rc-core-r3`：仅新增 exact `Vendor_0001_Product_0001_Version_0100.kl`。
+- [ ] 刷入 r3，先确认 `dumpsys input` 选择 exact device-specific keylayout，再测物理 OK、DPAD、HOME、BACK、Power。
 - [ ] 回归 Projectivy HOME、短按 Power 休眠、IR Power 唤醒和长按 Power 关机。
 
-## rc-core-r2 通过后
+## rc-core-r3 通过后
 
-- [ ] 在后续独立候选中删除已确认无运行依赖的 multi_ir/uinput legacy 工件；不在 r2 提前清理。
+- [ ] 单独决定 `KEYCODE_SETTINGS` 全局行为；不在 r3 同时修改 framework。
+- [ ] 在后续独立候选中删除已确认无运行依赖的 multi_ir/uinput legacy 工件；不在 r3 提前清理。
 - [ ] 保持 Mouse mode dropped，不重新引入 vendor mouse framework。
 
 ## 后续设备检查

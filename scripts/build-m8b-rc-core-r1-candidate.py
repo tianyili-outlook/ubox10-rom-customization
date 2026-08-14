@@ -73,12 +73,13 @@ class BuildM8BRcCoreR1(r13.BuildR13):
         for name in ("boot.fex", "vendor_boot.fex"):
             self.run([sys.executable, str(base.TOOLS / "sunxi_image_tool.py"), "extract", "-o", str(outer), "-f", name, str(self.base)])
         kernel = self.config["kernel"]
+        boot_identity = self.config.get("base_boot", kernel)
         protected = self.config["protected_contract"]
-        assert isinstance(kernel, dict) and isinstance(protected, dict)
+        assert isinstance(kernel, dict) and isinstance(boot_identity, dict) and isinstance(protected, dict)
         self.stock_boot = outer / "boot.fex"
         vendor_boot = outer / "vendor_boot.fex"
-        if base.record(self.stock_boot)["size"] != kernel["boot_size"] or base.digest(self.stock_boot) != kernel["boot_sha256"]:
-            raise RuntimeError("r13 boot identity mismatch")
+        if base.record(self.stock_boot)["size"] != boot_identity["boot_size"] or base.digest(self.stock_boot) != boot_identity["boot_sha256"]:
+            raise RuntimeError("M8B base boot identity mismatch")
         if vendor_boot.stat().st_size != protected["vendor_boot_size"] or base.digest(vendor_boot) != protected["vendor_boot_sha256"]:
             raise RuntimeError("r13 vendor_boot identity mismatch")
 
@@ -87,10 +88,10 @@ class BuildM8BRcCoreR1(r13.BuildR13):
                   "--boot_img", self.wsl_path(self.stock_boot), "--out", self.wsl_path(unpacked), "--format=mkbootimg"],
                  output=self.stage / "boot-mkbootimg-args.txt")
         self.stock_kernel, self.stock_ramdisk = unpacked / "kernel", unpacked / "ramdisk"
-        if self.stock_kernel.stat().st_size != kernel["kernel_size"] or base.digest(self.stock_kernel) != kernel["kernel_sha256"]:
-            raise RuntimeError("r13 kernel identity mismatch")
-        if self.stock_ramdisk.stat().st_size != kernel["ramdisk_size"] or base.digest(self.stock_ramdisk) != kernel["ramdisk_sha256"]:
-            raise RuntimeError("r13 boot ramdisk identity mismatch")
+        if self.stock_kernel.stat().st_size != boot_identity["kernel_size"] or base.digest(self.stock_kernel) != boot_identity["kernel_sha256"]:
+            raise RuntimeError("M8B base kernel identity mismatch")
+        if self.stock_ramdisk.stat().st_size != boot_identity["ramdisk_size"] or base.digest(self.stock_ramdisk) != boot_identity["ramdisk_sha256"]:
+            raise RuntimeError("M8B base boot ramdisk identity mismatch")
         return result
 
     def generate_inputs(self, source_system: Path) -> None:
@@ -188,6 +189,27 @@ class BuildM8BRcCoreR1(r13.BuildR13):
         shutil.rmtree(unpacked)
         return self.candidate_boot
 
+    def reuse_base_boot(self) -> Path:
+        if self.stock_boot is None or self.stock_kernel is None or self.stock_ramdisk is None:
+            raise RuntimeError("base boot components were not prepared")
+        boot_identity = self.config["base_boot"]
+        assert isinstance(boot_identity, dict)
+        self.candidate_boot = self.stage / "boot.fex"
+        shutil.copyfile(self.stock_boot, self.candidate_boot)
+        component = lambda path: {"size": path.stat().st_size, "sha256": base.digest(path)}
+        if component(self.candidate_boot) != {"size": boot_identity["boot_size"], "sha256": boot_identity["boot_sha256"]}:
+            raise RuntimeError("reused r2 boot identity mismatch")
+        kernel_component = component(self.stock_kernel)
+        report = {
+            "header_version": boot_identity["header_version"], "cmdline": boot_identity["cmdline"],
+            "stock_ramdisk_unchanged": True, "stock_ramdisk": component(self.stock_ramdisk),
+            "stock_kernel": kernel_component, "candidate_kernel": kernel_component,
+            "candidate_boot": base.record(self.candidate_boot), "base_boot_reused_byte_for_byte": True,
+            "vendor_boot_unchanged": True, "dts_dtbo_changed": False, "persistent_bootargs_changed": False,
+        }
+        (self.stage / "boot-validation.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        return self.candidate_boot
+
     def repair_system(self, source: Path) -> Path:
         assert self.generated_kl is not None
         system = self.stage / "system_a.img"
@@ -199,11 +221,15 @@ class BuildM8BRcCoreR1(r13.BuildR13):
         mount_dir.mkdir()
         disabled = self.config["disabled_multi_ir_rc"]
         assert isinstance(disabled, dict)
-        self.run([
+        command = [
             "wsl.exe", "-d", "Ubuntu-24.04", "-u", "root", "--", "bash",
             self.wsl_path(REPO / "scripts" / "install-m8b-rc-core-input.sh"), self.wsl_path(system), self.wsl_path(mount_dir),
             self.wsl_path(REPO / str(disabled["relative"])), self.wsl_path(self.generated_kl),
-        ])
+        ]
+        device_keylayout_filename = self.config.get("device_keylayout_filename")
+        if device_keylayout_filename is not None:
+            command.append(str(device_keylayout_filename))
+        self.run(command)
         self.run(["wsl.exe", "-d", "Ubuntu-24.04", "-u", "root", "--", "resize2fs", "-M", self.wsl_path(system)])
         mount_dir.rmdir()
         avb = self.config["avb"]
@@ -219,7 +245,9 @@ class BuildM8BRcCoreR1(r13.BuildR13):
     def validate_system_diff(self, before_image: Path, after_image: Path) -> dict[str, object]:
         before = self._manifest_map(self.inventory_system(before_image, "r13-system"))
         after = self._manifest_map(self.inventory_system(after_image, "m8b-system"))
-        allowed = {"/system/etc/init/multi_ir.rc", "/system/usr/keylayout/sunxi-ir.kl"}
+        device_keylayout_filename = self.config.get("device_keylayout_filename")
+        device_keylayout_path = "/system/usr/keylayout/" + str(device_keylayout_filename) if device_keylayout_filename else None
+        allowed = {device_keylayout_path} if device_keylayout_path else {"/system/etc/init/multi_ir.rc", "/system/usr/keylayout/sunxi-ir.kl"}
         changed = [path for path in sorted(set(before) | set(after)) if before.get(path) != after.get(path)]
         unexpected = [path for path in changed if path not in allowed]
         if unexpected or set(changed) != allowed:
@@ -227,7 +255,9 @@ class BuildM8BRcCoreR1(r13.BuildR13):
         assert self.generated_kl is not None
         disabled = REPO / str(self.config["disabled_multi_ir_rc"]["relative"])
         expected_label = b"u:object_r:system_file:s0\0".hex().upper()
-        targets = {"/system/etc/init/multi_ir.rc": disabled, "/system/usr/keylayout/sunxi-ir.kl": self.generated_kl}
+        targets = {device_keylayout_path: self.generated_kl} if device_keylayout_path else {
+            "/system/etc/init/multi_ir.rc": disabled, "/system/usr/keylayout/sunxi-ir.kl": self.generated_kl,
+        }
         for path, source in targets.items():
             actual = after[path]
             if actual.get("type") != "regular" or actual.get("mode") != "0644" or actual.get("uid") != 0 or actual.get("gid") != 0:
@@ -240,6 +270,12 @@ class BuildM8BRcCoreR1(r13.BuildR13):
         ]
         if any(before.get(path) != after.get(path) for path in legacy):
             raise RuntimeError("legacy rollback artifact changed")
+        if device_keylayout_path:
+            for path in ("/system/etc/init/multi_ir.rc", "/system/usr/keylayout/sunxi-ir.kl"):
+                if before.get(path) != after.get(path):
+                    raise RuntimeError("r2 native input file changed: " + path)
+            if after[device_keylayout_path]["sha256"] != after["/system/usr/keylayout/sunxi-ir.kl"]["sha256"]:
+                raise RuntimeError("device-specific keylayout is not identical to sunxi-ir.kl")
         for item in self.config["frozen_files"]:
             path = str(item["path"])
             if path in allowed:
@@ -267,6 +303,8 @@ class BuildM8BRcCoreR1(r13.BuildR13):
             "multi_ir_init_state": "disabled", "uinput_runtime_dependency": False,
             "legacy_artifacts_retained_inert": legacy, "mouse_mode": "intentionally dropped/inert",
             "projectivy_provisioning_power_policy_frozen": True, "canonical_vendor_topology_preserved": True,
+            "device_keylayout_path": device_keylayout_path,
+            "device_keylayout_identical_to_sunxi_ir": bool(device_keylayout_path),
         }
         (self.stage / "native-input-validation.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
         return result
@@ -276,11 +314,16 @@ class BuildM8BRcCoreR1(r13.BuildR13):
             raise RuntimeError("candidate boot was not built")
         firmware = self.stage / ("x12-" + self.candidate_id + ".img")
         audit = self.stage / "outer-payload-audit.json"
-        self.run([
+        command = [
             sys.executable, str(base.TOOLS / "pack_image_preserving.py"), "--source", str(self.base), "--output", str(firmware),
-            "--replace", "boot.fex=" + str(self.candidate_boot), "--replace", "super.fex=" + str(super_image),
-            "--replace", "vbmeta_system.fex=" + str(vbmeta_system), "--audit", str(audit),
+        ]
+        if not self.config.get("reuse_base_boot"):
+            command.extend(["--replace", "boot.fex=" + str(self.candidate_boot)])
+        command.extend([
+            "--replace", "super.fex=" + str(super_image), "--replace", "vbmeta_system.fex=" + str(vbmeta_system),
+            "--audit", str(audit),
         ])
+        self.run(command)
         self.run([sys.executable, str(base.TOOLS / "sunxi_image_tool.py"), "verify", str(firmware)])
         actions = {item["filename"]: item["action"] for item in json.loads(audit.read_text(encoding="utf-8"))["payloads"]}
         container = self.config["container"]
@@ -307,10 +350,12 @@ class BuildM8BRcCoreR1(r13.BuildR13):
             "id": self.candidate_id, "status": "OFFLINE CHECKED", "firmware": base.record(firmware),
             "base_candidate": base.record(self.base), "boot": base.record(self.candidate_boot),
             "system_a": logical_after["system_a"], "super": base.record(super_image), "vbmeta_system": base.record(vbmeta_system),
-            "derived_checks": {name: base.record(self.stage / name) for name in ("Vboot.fex", "Vsuper.fex", "Vvbmeta_system.fex")},
+            "derived_checks": {name: base.record(self.stage / name) for name in self.config["container"]["companions"]},
             "logical_before": logical_before, "logical_after": logical_after,
             "repair": str(self.config.get("repair", "Replace the Allwinner MSC-only compatibility path with the existing native rc-core key lifecycle and exact ff40 semantics; keep legacy multi_ir artifacts inert.")),
-            "payload_delta": ["boot/kernel", "boot.fex", "Vboot.fex", "system_a", "super.fex", "Vsuper.fex", "vbmeta_system.fex", "Vvbmeta_system.fex"],
+            "payload_delta": (["system_a", "super.fex", "Vsuper.fex", "vbmeta_system.fex", "Vvbmeta_system.fex"]
+                              if self.config.get("reuse_base_boot") else
+                              ["boot/kernel", "boot.fex", "Vboot.fex", "system_a", "super.fex", "Vsuper.fex", "vbmeta_system.fex", "Vvbmeta_system.fex"]),
             "mapping": self.mapping_report, "boot_validation": json.loads((self.stage / "boot-validation.json").read_text(encoding="utf-8")),
             "native_input_validation": json.loads((self.stage / "native-input-validation.json").read_text(encoding="utf-8")),
             "protected_contract": self.config["protected_contract"],
@@ -323,7 +368,9 @@ class BuildM8BRcCoreR1(r13.BuildR13):
         shutil.rmtree(self.stage / "avb-validation")
         for name in ("r8-super.raw.img", "validation-super.raw.img", "system_a.img", "r13-system-filesystem-manifest.json", "m8b-system-filesystem-manifest.json", "customer_ir_ff40.kl"):
             (self.stage / name).unlink()
-        (self.stage / "kernel-build" / "Image").unlink()
+        kernel_image = self.stage / "kernel-build" / "Image"
+        if kernel_image.exists():
+            kernel_image.unlink()
         for name in ("build-result.json", "outer-payload-audit.json", "input-provenance-before.json", "input-provenance-after.json", "boot-validation.json"):
             path = self.stage / name
             path.write_text(json.dumps(base.rewrite_paths(json.loads(path.read_text(encoding="utf-8")), self.stage, self.final), indent=2) + "\n", encoding="utf-8")
@@ -337,8 +384,11 @@ class BuildM8BRcCoreR1(r13.BuildR13):
             self.setup()
             source_super, raw_super, source_system, _old_vbmeta = self.extract_r8()
             self.generate_inputs(source_system)
-            kernel_image = self.build_kernel()
-            self.build_boot(kernel_image)
+            if self.config.get("reuse_base_boot"):
+                self.reuse_base_boot()
+            else:
+                kernel_image = self.build_kernel()
+                self.build_boot(kernel_image)
             system = self.repair_system(source_system)
             vbmeta_system = self.make_vbmeta_system(system)
             super_image = self.make_super(raw_super, system)
@@ -360,7 +410,11 @@ def merged_config(path: Path) -> dict[str, object]:
     document = json.loads(R13_CONFIG.read_text(encoding="utf-8"))
     document.update(json.loads(R1_CONFIG.read_text(encoding="utf-8")))
     if path.resolve() != R1_CONFIG.resolve():
-        document.update(json.loads(path.read_text(encoding="utf-8")))
+        overlay = json.loads(path.read_text(encoding="utf-8"))
+        parent = overlay.get("parent_config_relative")
+        if parent is not None:
+            document.update(json.loads((REPO / str(parent)).read_text(encoding="utf-8")))
+        document.update(overlay)
     return document
 
 

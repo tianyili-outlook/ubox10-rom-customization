@@ -1,10 +1,16 @@
 # M8B rc-core-r2 candidate
 
-状态：**OFFLINE CHECKED — READY FOR FOCUSED DEVICE TEST**
+状态：**REPEAT LIFECYCLE PASS — KEYLAYOUT SELECTION FAIL**
 
 基线：**m8a-initial-atv-r13 — GOLDEN BASELINE / DEVICE ACCEPTED**
 
 前代：`m8b-rc-core-r1` 的 native rc-core 架构已实机证明，但 repeat/release 生命周期失败。本轮未刷机、未执行设备命令。
+
+## 实机结果
+
+`logs/device/20260814-m8b-rc-core-r2/r2-verify.log` 已确认 r1 人工 repeat/repress 周期消失，UP/DOWN/LEFT/RIGHT 单击与长按、HOME/BACK/Power 正常，物理 OK 产生 clean KEY_OK DOWN→UP，`multi_ir` 保持 disabled。kernel/native rc-core 修复通过。
+
+`r2-kl.log` 确认 Android input identifier 为 vendor/product/version `0001/0001/0100`，实际选择 `Generic.kl`，没有选择已存在且内容正确的 `sunxi-ir.kl`。因此 r2 的剩余失败是 keylayout 文件名选择，后继 r3 仅补 exact device-specific 文件名。
 
 ## 根因与单变量修复
 

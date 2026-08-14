@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ $# -ne 4 ]]; then
-  echo "usage: $0 SYSTEM_EXT4_IMAGE MOUNT_DIRECTORY DISABLED_MULTI_IR_RC SUNXI_IR_KL" >&2
+if [[ $# -lt 4 || $# -gt 5 ]]; then
+  echo "usage: $0 SYSTEM_EXT4_IMAGE MOUNT_DIRECTORY DISABLED_MULTI_IR_RC SUNXI_IR_KL [DEVICE_KEYLAYOUT_FILENAME]" >&2
   exit 2
 fi
 
@@ -10,6 +10,7 @@ image=$1
 mount_dir=$2
 multi_ir_rc=$3
 sunxi_ir_kl=$4
+device_keylayout_filename=${5:-}
 
 [[ $(id -u) -eq 0 ]] || { echo "must run as root" >&2; exit 2; }
 [[ -f $image && -d $mount_dir && -f $multi_ir_rc && -f $sunxi_ir_kl ]] || {
@@ -42,19 +43,41 @@ kl_target="$mount_dir/system/usr/keylayout/sunxi-ir.kl"
   echo "r13 remote target is missing or not a regular file" >&2
   exit 1
 }
-[[ $(sha256sum "$rc_target" | cut -d' ' -f1) == 7016a9c2648c4ecd4ae3977e1169c4cfa394ff6e721664e0a5a1fd128bbb1bbd ]] || {
-  echo "r13 multi_ir.rc identity mismatch" >&2
-  exit 1
-}
-[[ $(sha256sum "$kl_target" | cut -d' ' -f1) == 89f237061963cc333e55a3e3451e175be6144794493fe0315122a7986f77ddda ]] || {
-  echo "r13 sunxi-ir.kl identity mismatch" >&2
-  exit 1
-}
+if [[ -n $device_keylayout_filename ]]; then
+  [[ $device_keylayout_filename =~ ^Vendor_[0-9A-Fa-f]{4}_Product_[0-9A-Fa-f]{4}_Version_[0-9A-Fa-f]{4}\.kl$ ]] || {
+    echo "invalid Android device keylayout filename" >&2
+    exit 1
+  }
+  [[ $(sha256sum "$rc_target" | cut -d' ' -f1) == $(sha256sum "$multi_ir_rc" | cut -d' ' -f1) ]] || {
+    echo "base multi_ir.rc is not the disabled r2 file" >&2
+    exit 1
+  }
+  [[ $(sha256sum "$kl_target" | cut -d' ' -f1) == $(sha256sum "$sunxi_ir_kl" | cut -d' ' -f1) ]] || {
+    echo "base sunxi-ir.kl is not the generated r2 file" >&2
+    exit 1
+  }
+  device_target="$mount_dir/system/usr/keylayout/$device_keylayout_filename"
+  [[ ! -e $device_target && ! -L $device_target ]] || {
+    echo "device keylayout target already exists" >&2
+    exit 1
+  }
+  install -o 0 -g 0 -m 0644 "$sunxi_ir_kl" "$device_target"
+  metadata_targets=("$device_target")
+else
+  [[ $(sha256sum "$rc_target" | cut -d' ' -f1) == 7016a9c2648c4ecd4ae3977e1169c4cfa394ff6e721664e0a5a1fd128bbb1bbd ]] || {
+    echo "r13 multi_ir.rc identity mismatch" >&2
+    exit 1
+  }
+  [[ $(sha256sum "$kl_target" | cut -d' ' -f1) == 89f237061963cc333e55a3e3451e175be6144794493fe0315122a7986f77ddda ]] || {
+    echo "r13 sunxi-ir.kl identity mismatch" >&2
+    exit 1
+  }
+  install -o 0 -g 0 -m 0644 "$multi_ir_rc" "$rc_target"
+  install -o 0 -g 0 -m 0644 "$sunxi_ir_kl" "$kl_target"
+  metadata_targets=("$rc_target" "$kl_target")
+fi
 
-install -o 0 -g 0 -m 0644 "$multi_ir_rc" "$rc_target"
-install -o 0 -g 0 -m 0644 "$sunxi_ir_kl" "$kl_target"
-
-python3 - "$rc_target" "$kl_target" <<'PY'
+python3 - "${metadata_targets[@]}" <<'PY'
 import os
 import stat
 import sys
@@ -71,6 +94,9 @@ PY
 
 grep -qx '        disabled' "$rc_target"
 ! grep -q 'MOUSE' "$kl_target"
+if [[ -n $device_keylayout_filename ]]; then
+  cmp -s "$kl_target" "$device_target"
+fi
 sync
 umount "$mount_dir"
 check_ext4

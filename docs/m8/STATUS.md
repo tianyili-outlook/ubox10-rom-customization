@@ -1,6 +1,6 @@
 # M8 status
 
-Updated: 2026-08-14
+Updated: 2026-08-15
 
 ## Golden baseline
 
@@ -17,16 +17,16 @@ Updated: 2026-08-14
 
 ## Active candidate
 
-`m8b-rc-core-r2` 已完成构建和限定离线检查，状态为 **READY FOR FOCUSED DEVICE TEST**。本轮未刷机、未执行设备命令。
+`m8b-rc-core-r3` 已从实机验证后的 r2 构建并完成限定离线检查，状态为 **READY FOR FOCUSED DEVICE TEST**。本轮未刷机、未执行设备命令。
 
 | 项目 | 值 |
 |---|---|
-| 镜像 | `out/candidates/m8b-rc-core-r2/x12-m8b-rc-core-r2.img` |
-| 大小 | 1007978496 bytes |
-| SHA-256 | `AE53376C3F902C8B239321E196F7886BFEFEC74C43E66B6FAB50EC100A64F3C8` |
-| 唯一功能变量 | 保留 r1 native rc-core 路径，仅把 `!key_repeat` 的 new-event 条件限定到 `CONFIG_SUNXI_MULTI_IR_SUPPORT` |
+| 镜像 | `out/candidates/m8b-rc-core-r3/x12-m8b-rc-core-r3.img` |
+| 大小 | 1007982592 bytes |
+| SHA-256 | `3CF41276615D16A7B319467E5E3F031E52E468E5240AE23835F9C8675AC1D88B` |
+| 唯一功能变量 | 将 r2 生成的同字节 keylayout 另装为 `Vendor_0001_Product_0001_Version_0100.kl` |
 | Mouse | intentionally dropped；ff4054 保持 inert |
-| payload 差异 | boot kernel、`system_a`，以及派生的 boot/super/vbmeta_system 外层校验 payload |
+| payload 差异 | 相对 r2 仅 `system_a`、super/vbmeta_system 及其校验 companions；boot/kernel 原字节不变 |
 | 设备结果 | 待测试 |
 
 ## Verified progress
@@ -49,7 +49,8 @@ Updated: 2026-08-14
 | r12 | **REMOTE PATH DEVICE VERIFIED - SUPERSEDED BY r13** | exact Test8r2 `multi_ir → uinput` 恢复 ff40 遥控；后续 UI policy 由 r13 完成 | 保留为历史对照 |
 | r13 | **GOLDEN BASELINE - DEVICE ACCEPTED** | boot、Projectivy、provisioning、遥控与 Power sleep/wake/shutdown 全部通过 | 作为 M8B 和回滚基线 |
 | M8B rc-core-r1 | **FAILED - REPEAT/REPRESS LIFECYCLE** | 实机确认 native rc-core 架构成立，但单次 OK 可拆成两组 DOWN→UP，长按 UP 约每 108 ms 人工 UP→DOWN | 修正 config-off 路径的 new-event 判定 |
-| M8B rc-core-r2 | **OFFLINE CHECKED - DEVICE TEST PENDING** | exact vendor source 确认 `!key_repeat` 在 config-off 路径恒为 true，导致每个 repeat frame 被当作新按键 | 聚焦验证单击、连按、长按 repeat/release |
+| M8B rc-core-r2 | **REPEAT LIFECYCLE PASS - KEYLAYOUT SELECTION FAIL** | native repeat/release、DPAD、HOME/BACK/Power 和物理 KEY_OK 已通过；Android 因设备标识不匹配而加载 `Generic.kl` | 安装 exact vendor/product/version keylayout |
+| M8B rc-core-r3 | **OFFLINE CHECKED - DEVICE TEST PENDING** | r2 keylayout 以 `Vendor_0001_Product_0001_Version_0100.kl` 同字节安装，boot/kernel 保持不变 | 先确认 `dumpsys input` 选中该文件，再测物理 OK |
 
 ## M8B native rc-core
 
@@ -57,7 +58,9 @@ r1 实机日志为 `logs/device/20260813-m8b-rc-core-r1/uart-coldboot.log` 和 `
 
 锁定源码 commit `9ab7a758149d3c9b721878a0c18b3f9c5d6c93e6` 的 `drivers/media/rc/rc-main.c` 中，`ir_do_keydown()` 的 `new_event` 无条件包含 `!key_repeat`，而 `key_repeat` 只在 `CONFIG_SUNXI_MULTI_IR_SUPPORT` 分支赋值。r1 关闭该 config 后 `key_repeat` 恒为 false，故每个 NEC repeat frame 都被误判为新按键。r2 仅用条件编译把 `!key_repeat ||` 限定回该兼容分支，不改 decoder、release timeout、DTS、wake、framework、Power、rc-map 或 keylayout。
 
-r2 候选为 `out/candidates/m8b-rc-core-r2/x12-m8b-rc-core-r2.img`，1007978496 bytes，SHA-256 `AE53376C3F902C8B239321E196F7886BFEFEC74C43E66B6FAB50EC100A64F3C8`；kernel SHA-256 `FE23BEEAE10389EA13575CA266AF45797F22BCF9BDBA7037AF6F7A8B3148C5E2`。限定验证确认 source diff 仅为 `rc-main.c` 两行条件编译和 r1 已有的生成 keymap；r1/r2 的 rc-map、`sunxi-ir.kl`、system 文件合同、multi_ir disabled 状态、r13 provisioning/HOME/Power 合同均一致。legacy multi_ir/uinput 清理继续延后到 r2 实机验收后。
+r2 候选为 `out/candidates/m8b-rc-core-r2/x12-m8b-rc-core-r2.img`，1007978496 bytes，SHA-256 `AE53376C3F902C8B239321E196F7886BFEFEC74C43E66B6FAB50EC100A64F3C8`；kernel SHA-256 `FE23BEEAE10389EA13575CA266AF45797F22BCF9BDBA7037AF6F7A8B3148C5E2`。`r2-verify.log` 已实机确认 DPAD 单击/长按、HOME/BACK/Power 和 clean KEY_OK DOWN→UP，r1 的人工 repeat/repress 周期消失，`multi_ir` 保持 disabled，因此 kernel/native rc-core 修复通过。`r2-kl.log` 显示现有 `/system/usr/keylayout/sunxi-ir.kl` 含 352→DPAD_CENTER、171→SETTINGS，但 input identifier 为 vendor/product/version `0001/0001/0100`，实际加载 `/system/usr/keylayout/Generic.kl`；剩余根因是 Android keylayout 文件名选择，不是 kernel 或 UI focus。
+
+r3 以 r2 镜像为直接基线，只新增 `/system/usr/keylayout/Vendor_0001_Product_0001_Version_0100.kl`；内容与 `sunxi-ir.kl` 同为 1848 bytes、SHA-256 `14FFF2ADF2B5F258AD77483FC5821F699EFAE008FAB28B0493A733AB7EFBC3AD`，元数据为 regular `0644 root:root`、`u:object_r:system_file:s0`。r2 boot/kernel SHA-256 分别保持 `0A9473513B309BA3168242500658F35D96EC40B49CA91E33C1068861F8756678` / `FE23BEEAE10389EA13575CA266AF45797F22BCF9BDBA7037AF6F7A8B3148C5E2`。Settings 全局行为不在 r3 范围；legacy multi_ir/uinput 清理继续延后。
 
 primary evidence 仍使用 `logs/device/20260811-r11/uart-putty_3.log`、`uart-putty_8r2.log`、`uart-putty_8r2_2.log`、`uart-putty_8r2_3.log`，没有重复设备取证。r11 和 Test8r2 的物理 `sunxi-ir/event0` 均只发 `MSC_SCAN`；Test8r2 的 `multi_ir` 读取 event0、打开 `/dev/uinput` 并创建 `sunxi-ir-uinput/event1`，Android 才从 event1 获得 `EV_KEY`。
 
@@ -189,29 +192,15 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - No physical action was performed during the 2026-08-02 repository cleanup.
 - r10 已在实机完成 framework boot；r9 Lights/Watchdog/llkd 方向保持关闭，不再修改。
 - r13 是当前 GOLDEN BASELINE；Projectivy、provisioning、遥控和 Power sleep/wake/shutdown 均以实机 UART 为准。
-- M8B 当前 active scope 仅为 native rc-core 遥控迁移；Mouse mode intentionally dropped，legacy multi_ir 工件在 rc-core-r2 保留为 inert reference。
+- M8B 当前 active scope 仅为 native rc-core 遥控迁移；Mouse mode intentionally dropped，legacy multi_ir 工件在 rc-core-r3 保留为 inert reference。
 - 当前 board、DT 与 runtime 证据识别为 H616。设备运行 64 位 kernel，但没有已证明可用的 AArch64 Android graphics userspace；本轮不扩展到 64 位 userspace。
 
-## M8B rc-core-r2 next action
+## M8B rc-core-r3 next action
 
-刷入 `x12-m8b-rc-core-r2.img` 后把完整现场保存为 `r2-verify.log`，先执行：
+刷入 `x12-m8b-rc-core-r3.img` 后先执行：
 
 ```sh
-getprop sys.boot_completed
-getprop init.svc.multi_ir
-cat /proc/bus/input/devices
-for e in /sys/class/input/event*; do
-    echo "$(basename "$e") : $(cat "$e/device/name")"
-done
 dumpsys input | grep -A 50 -B 5 'sunxi-ir'
-cat /sys/class/rc/rc0/protocols
-cat /sys/class/rc/rc0/uevent
 ```
 
-然后 root：
-
-```sh
-su 0 sh -c 'getevent -lt /dev/input/event0'
-```
-
-成功条件：`sys.boot_completed=1`，`multi_ir` 不为 running，不出现 `sunxi-ir-uinput`，物理 `sunxi-ir` 继续直接发 `EV_KEY`。本轮只验证 UP 单击、OK 单击、OK 连续按、UP 长按约 2 秒后释放：每次单击仅一组 DOWN→UP，长按期间不得再出现约 108 ms 周期的人工 UP→DOWN，释放后不得继续导航。通过后再做完整键位和 r13 Power 回归。
+第一成功条件是 `KeyLayoutFile: /system/usr/keylayout/Vendor_0001_Product_0001_Version_0100.kl`。随后只验证物理 OK 能激活 UI，以及 DPAD、HOME、BACK、Power 保持 r2 行为；Settings 的全局启动语义留待独立候选。
