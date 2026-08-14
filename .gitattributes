@@ -1,9 +1,11 @@
 * text=auto
+.gitattributes text eol=lf
 *.md text eol=lf
 *.py text eol=lf
 *.json text eol=lf
 *.csv text eol=lf
 *.sh text eol=lf
+*.patch text eol=lf
 *.pem text eol=lf
 *.ps1 text eol=lf
 *.exe binary

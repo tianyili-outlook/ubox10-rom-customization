@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build M8B rc-core-r1 from the hardware-accepted r13 golden baseline."""
+"""Build an M8B native rc-core candidate from the accepted r13 baseline."""
 from __future__ import annotations
 
 import argparse
@@ -17,6 +17,7 @@ REPO = Path(__file__).resolve().parents[1]
 R13_BUILDER = REPO / "scripts" / "build-m8a-r13-candidate.py"
 R13_CONFIG = REPO / "configs" / "candidates" / "m8a-initial-atv-r13.json"
 DEFAULT_CONFIG = REPO / "configs" / "candidates" / "m8b-rc-core-r1.json"
+R1_CONFIG = DEFAULT_CONFIG
 AUDITOR = REPO / "scripts" / "audit-logical-system-init.py"
 MKBOOTIMG = "/home/tianyi/ubox10-aosp/system/tools/mkbootimg/mkbootimg.py"
 UNPACK_BOOTIMG = "/home/tianyi/ubox10-aosp/system/tools/mkbootimg/unpack_bootimg.py"
@@ -59,6 +60,12 @@ class BuildM8BRcCoreR1(r13.BuildR13):
             path = REPO / str(spec["relative"])
             if not path.is_file() or base.digest(path) != spec["sha256"]:
                 raise RuntimeError("M8B source identity mismatch: " + str(path))
+        patch = self.config.get("kernel_repeat_patch")
+        if patch is not None:
+            assert isinstance(patch, dict)
+            path = REPO / str(patch["relative"])
+            if not path.is_file() or base.digest(path) != patch["sha256"]:
+                raise RuntimeError("M8B kernel patch identity mismatch: " + str(path))
 
     def extract_r8(self) -> tuple[Path, Path, Path, Path]:
         result = base.BuildR9.extract_r8(self)
@@ -117,11 +124,16 @@ class BuildM8BRcCoreR1(r13.BuildR13):
         # source paths in several objects, so a staging UUID would make an
         # otherwise identical candidate produce a different Image hash.
         build_id = self.candidate_id
-        self.run([
+        command = [
             "wsl.exe", "-d", "Ubuntu-24.04", "--", "bash", self.wsl_path(REPO / "scripts" / "build-m8b-rc-core-kernel.sh"),
             self.wsl_path(self.stock_kernel), self.wsl_path(self.generated_keymap_c), self.wsl_path(output),
             build_id, str(kernel["commit"]),
-        ], output=self.stage / "kernel-build.log")
+        ]
+        patch = self.config.get("kernel_repeat_patch")
+        if patch is not None:
+            assert isinstance(patch, dict)
+            command.append(self.wsl_path(REPO / str(patch["relative"])))
+        self.run(command, output=self.stage / "kernel-build.log")
         image = output / "Image"
         if image.stat().st_size != kernel["kernel_size"]:
             raise RuntimeError("M8B kernel size no longer matches r13 boot contract")
@@ -297,11 +309,13 @@ class BuildM8BRcCoreR1(r13.BuildR13):
             "system_a": logical_after["system_a"], "super": base.record(super_image), "vbmeta_system": base.record(vbmeta_system),
             "derived_checks": {name: base.record(self.stage / name) for name in ("Vboot.fex", "Vsuper.fex", "Vvbmeta_system.fex")},
             "logical_before": logical_before, "logical_after": logical_after,
-            "repair": "Replace the Allwinner MSC-only compatibility path with the existing native rc-core key lifecycle and exact ff40 semantics; keep legacy multi_ir artifacts inert.",
+            "repair": str(self.config.get("repair", "Replace the Allwinner MSC-only compatibility path with the existing native rc-core key lifecycle and exact ff40 semantics; keep legacy multi_ir artifacts inert.")),
             "payload_delta": ["boot/kernel", "boot.fex", "Vboot.fex", "system_a", "super.fex", "Vsuper.fex", "vbmeta_system.fex", "Vvbmeta_system.fex"],
             "mapping": self.mapping_report, "boot_validation": json.loads((self.stage / "boot-validation.json").read_text(encoding="utf-8")),
             "native_input_validation": json.loads((self.stage / "native-input-validation.json").read_text(encoding="utf-8")),
-            "protected_contract": self.config["protected_contract"], "physical_device_actions_performed": False,
+            "protected_contract": self.config["protected_contract"],
+            "kernel_repeat_patch": self.config.get("kernel_repeat_patch"),
+            "physical_device_actions_performed": False,
         }
         (self.stage / "build-result.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
         for directory in ("r8-logical", "validation-logical", "r8-outer", "boot-unpacked"):
@@ -344,7 +358,9 @@ class BuildM8BRcCoreR1(r13.BuildR13):
 
 def merged_config(path: Path) -> dict[str, object]:
     document = json.loads(R13_CONFIG.read_text(encoding="utf-8"))
-    document.update(json.loads(path.read_text(encoding="utf-8")))
+    document.update(json.loads(R1_CONFIG.read_text(encoding="utf-8")))
+    if path.resolve() != R1_CONFIG.resolve():
+        document.update(json.loads(path.read_text(encoding="utf-8")))
     return document
 
 

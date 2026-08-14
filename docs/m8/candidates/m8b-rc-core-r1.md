@@ -1,10 +1,16 @@
 # M8B rc-core-r1 candidate
 
-状态：**OFFLINE CHECKED — READY FOR FIRST DEVICE TEST**
+状态：**FAILED — REPEAT/REPRESS LIFECYCLE；NATIVE ARCHITECTURE DEVICE PROVEN**
 
 基线：**m8a-initial-atv-r13 — GOLDEN BASELINE / DEVICE ACCEPTED**
 
 本轮未刷机、未执行设备命令。
+
+## 实机结果
+
+证据为 `logs/device/20260813-m8b-rc-core-r1/uart-coldboot.log` 和 `input-debug.log`。r1 已确认 boot complete、`multi_ir` disabled、物理 `sunxi-ir/event0` 直接产生 `EV_KEY`，独立 UP/OK 均有完整 DOWN→UP，故 native rc-core 架构成立。
+
+r1 未通过 repeat/release：单次 OK 可拆成 DOWN→UP→DOWN→UP；长按 UP 约每 108 ms 重复人工 UP→DOWN。exact source 显示 config-off 路径中的 `key_repeat` 恒为 false，而 `new_event` 无条件检查 `!key_repeat`，从而把每个 NEC repeat frame 当成新按键。后继 r2 只修正这个条件，不回退架构。
 
 ## 基线与单变量
 

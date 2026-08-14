@@ -1,0 +1,17 @@
+{
+  "id": "m8b-rc-core-r2",
+  "repair": "Keep the r1 native rc-core path and scope the vendor !key_repeat new-event condition to CONFIG_SUNXI_MULTI_IR_SUPPORT so repeated NEC frames do not force keyup+keydown cycles.",
+  "kernel_repeat_patch": {
+    "relative": "configs/candidates/m8b-rc-core-r2/rc-main-repeat.patch",
+    "sha256": "70A316DA67274FC2ED2584CCC090DC4282E6D740FFA04EE3C3B47DA2CD266549",
+    "target": "drivers/media/rc/rc-main.c",
+    "base_commit": "9ab7a758149d3c9b721878a0c18b3f9c5d6c93e6"
+  },
+  "avb": {
+    "partition_size": 1651167232,
+    "salt": "4d38412d696e697469616c2d6174762d7232",
+    "rollback_index": 1644019200,
+    "rollback_index_location": 1,
+    "key_relative": "tools/testkey_rsa2048.pem"
+  }
+}
