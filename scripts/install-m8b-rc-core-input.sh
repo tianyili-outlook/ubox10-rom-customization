@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ $# -lt 4 || $# -gt 6 ]]; then
-  echo "usage: $0 SYSTEM_EXT4_IMAGE MOUNT_DIRECTORY DISABLED_MULTI_IR_RC SUNXI_IR_KL [DEVICE_KEYLAYOUT_FILENAME [DEVICE_KEYLAYOUT_SOURCE]]" >&2
+if [[ $# -lt 4 || $# -gt 7 ]]; then
+  echo "usage: $0 SYSTEM_EXT4_IMAGE MOUNT_DIRECTORY DISABLED_MULTI_IR_RC SUNXI_IR_KL [DEVICE_KEYLAYOUT_FILENAME [DEVICE_KEYLAYOUT_SOURCE [EXISTING_DEVICE_KEYLAYOUT_SHA256]]]" >&2
   exit 2
 fi
 
@@ -12,6 +12,7 @@ multi_ir_rc=$3
 sunxi_ir_kl=$4
 device_keylayout_filename=${5:-}
 device_keylayout_source=${6:-$sunxi_ir_kl}
+existing_device_keylayout_sha256=${7:-}
 
 [[ $(id -u) -eq 0 ]] || { echo "must run as root" >&2; exit 2; }
 [[ -f $image && -d $mount_dir && -f $multi_ir_rc && -f $sunxi_ir_kl && -f $device_keylayout_source ]] || {
@@ -63,8 +64,15 @@ if [[ -n $device_keylayout_filename ]]; then
       echo "existing device keylayout is not a regular file" >&2
       exit 1
     }
-    [[ $(sha256sum "$device_target" | cut -d' ' -f1) == $(sha256sum "$sunxi_ir_kl" | cut -d' ' -f1) ]] || {
-      echo "existing device keylayout is not the exact r3 reference" >&2
+    if [[ -z $existing_device_keylayout_sha256 ]]; then
+      existing_device_keylayout_sha256=$(sha256sum "$sunxi_ir_kl" | cut -d' ' -f1)
+    fi
+    [[ $existing_device_keylayout_sha256 =~ ^[0-9A-Fa-f]{64}$ ]] || {
+      echo "invalid existing device keylayout SHA-256" >&2
+      exit 1
+    }
+    [[ $(sha256sum "$device_target" | cut -d' ' -f1) == ${existing_device_keylayout_sha256,,} ]] || {
+      echo "existing device keylayout identity mismatch" >&2
       exit 1
     }
   fi

@@ -248,6 +248,9 @@ class BuildM8BRcCoreR1(r13.BuildR13):
             command.append(str(device_keylayout_filename))
             if self.device_keylayout_kl != self.generated_kl:
                 command.append(self.wsl_path(self.device_keylayout_kl))
+                base_keylayout_sha256 = self.config.get("base_device_keylayout_sha256")
+                if base_keylayout_sha256 is not None:
+                    command.append(str(base_keylayout_sha256))
         self.run(command)
         self.run(["wsl.exe", "-d", "Ubuntu-24.04", "-u", "root", "--", "resize2fs", "-M", self.wsl_path(system)])
         mount_dir.rmdir()

@@ -1,6 +1,6 @@
 # M8B rc-core-r4 candidate
 
-状态：**OFFLINE CHECKED — READY FOR FOCUSED DEVICE TEST**
+状态：**DEVICE ACCEPTED — SETTINGS SEMANTIC FAIL**
 
 直接基线：`m8b-rc-core-r3`，SHA-256 `3CF41276615D16A7B319467E5E3F031E52E468E5240AE23835F9C8675AC1D88B`。
 
@@ -67,3 +67,7 @@ dumpsys input | grep -A 50 -B 5 'sunxi-ir'
 ```
 
 必须显示 `KeyLayoutFile: /system/usr/keylayout/Vendor_0001_Product_0001_Version_0100.kl`，不得回退 `Generic.kl`。随后先测试物理 OK，再测试 DPAD、HOME、BACK、Power。Settings 全局启动语义和 legacy 清理继续延后。
+
+## 实机结果
+
+r4 已确认 exact device `.kl` 正常加载，native rc-core/repeat、物理 OK、DPAD、HOME、BACK 与 Power 均通过。物理 Settings 产生 Linux `KEY_CONFIG` 171，并映射为 Android `SETTINGS` 176；当前 Android 12 上 `input keyevent 176` 无效果，而 `input keyevent 82` 可打开 Projectivy settings menu，83 打开 notifications 且不符合目标。后继 r5 仅修改 171 的 Android 语义，不回退 r4 其他验收结果。

@@ -49,8 +49,9 @@ def main() -> None:
 
     keycode_conversions = spec["keycode_conversions"]
     flag_conversions = spec["flag_conversions"]
+    linux_keycode_overrides = spec.get("linux_keycode_overrides", {})
     output = [
-        "# M8B rc-core-r4 Android 12 parser-compatible device keylayout.",
+        f"# {document['id']} Android 12 parser-compatible device keylayout.",
         "# Derived from the generated r2/r3 sunxi-ir.kl; Linux rc-map is unchanged.",
     ]
     seen_codes: set[int] = set()
@@ -59,6 +60,7 @@ def main() -> None:
     final_keycodes: set[str] = set()
     final_flags: set[str] = set()
     conversions: list[dict[str, object]] = []
+    applied_overrides: set[str] = set()
     entries = 0
 
     for line_number, line in enumerate(args.input.read_text(encoding="utf-8").splitlines(), 1):
@@ -86,6 +88,19 @@ def main() -> None:
             conversions.append({"line": line_number, "linux_code": code, "kind": "keycode", "from": keycode, "to": final_keycode})
         if final_keycode not in keycodes:
             raise RuntimeError("converted Android keycode label is unsupported: " + final_keycode)
+        override = linux_keycode_overrides.get(str(code))
+        if override is not None:
+            if final_keycode != override["from"]:
+                raise RuntimeError(f"Linux keycode {code} override source mismatch")
+            replacement = override["to"]
+            if replacement == final_keycode or replacement not in keycodes:
+                raise RuntimeError(f"Linux keycode {code} override target is invalid")
+            conversions.append({
+                "line": line_number, "linux_code": code, "kind": "linux_keycode_override",
+                "from": final_keycode, "to": replacement,
+            })
+            final_keycode = replacement
+            applied_overrides.add(str(code))
 
         converted_flags: list[str] = []
         for flag in entry_flags:
@@ -106,6 +121,10 @@ def main() -> None:
         suffix = " " + " ".join(converted_flags) if converted_flags else ""
         output.append(f"key {code:3d}   {final_keycode:<20}{suffix}")
         entries += 1
+
+    if applied_overrides != set(linux_keycode_overrides):
+        missing = sorted(set(linux_keycode_overrides) - applied_overrides)
+        raise RuntimeError("configured Linux keycode override was not applied: " + ", ".join(missing))
 
     args.output.write_text("\n".join(output) + "\n", encoding="utf-8", newline="\n")
     report = {
@@ -128,6 +147,8 @@ def main() -> None:
         "final_keycodes": sorted(final_keycodes),
         "final_flags": sorted(final_flags),
         "conversions": conversions,
+        "linux_keycode_overrides": linux_keycode_overrides,
+        "applied_linux_keycode_overrides": sorted(applied_overrides, key=int),
         "parsed_entries": entries,
         "complete_parse_audit": True,
         "omitted_entries": [],

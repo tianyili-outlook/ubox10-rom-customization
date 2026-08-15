@@ -1,0 +1,44 @@
+{
+  "id": "m8b-rc-core-r5",
+  "parent_config_relative": "configs/candidates/m8b-rc-core-r4.json",
+  "repair": "Keep the device-accepted r4 native rc-core and Android 12 keylayout contract, changing only Linux KEY_CONFIG 171 from Android SETTINGS to MENU.",
+  "base_candidate_relative": "out/candidates/m8b-rc-core-r4/x12-m8b-rc-core-r4.img",
+  "base_candidate_size": 1007982592,
+  "base_candidate_sha256": "44B8D1B4787EAF8CF601725D2630D8508CC139CCC2109BA27D07D9AF1FB0D571",
+  "source_super_size": 828183920,
+  "source_super_sha256": "5171A589C38F911621065C23E5141302A0B2B23862A94A75EC4003A3A5ABA3DE",
+  "logical_partitions": {
+    "system_a": {"size": 1651167232, "sha256": "55DA1582A3684D0B9FA4ECA461B9B680E511469B08897CE3CD8F7D9BF8907D44"},
+    "vendor_a": {"size": 119066624, "sha256": "BB91A8B7ED4AC0145F434F89FD76865EB4311F234AA46D67C8373A7CD5B4929A"},
+    "product_a": {"size": 272629760, "sha256": "06B7425A3D97E7423BBEC6D431F549E7FED81397EB62D774522EA90F4E490C3C"},
+    "vendor_dlkm_a": {"size": 6680576, "sha256": "C589DC0B12E150469F179738F127F36F6321943577453A7DB335AB9E647B8FE5"}
+  },
+  "base_device_keylayout_sha256": "C8AB0907D9F7CFCDC9B14370548643DF9BCC03E488C5086D48BC424425A5E398",
+  "android_keylayout_parser": {
+    "config_relative": "configs/candidates/m8b-rc-core-r5.json",
+    "input_event_labels_path": "/home/tianyi/ubox10-aosp/frameworks/native/libs/input/InputEventLabels.cpp",
+    "input_event_labels_sha256": "1FFFF95895274B79196C0F090AA7813E71A6737B8A67CE4F931681D0ECA0B1C8",
+    "key_layout_map_path": "/home/tianyi/ubox10-aosp/frameworks/native/libs/input/KeyLayoutMap.cpp",
+    "key_layout_map_sha256": "F4949D9C04368CE98DF81E60301320A517EBCC898DBC68C874AD27DCA31BBDF7",
+    "frameworks_native_commit": "3e846409f064570d19769748a3050882c29fa999",
+    "frameworks_base_commit": "c53e71dc397de7486c9a8899f71598c3c3a18d44",
+    "keycode_conversions": {
+      "APPS": "ALL_APPS",
+      "BROWSER": "EXPLORER",
+      "EXPAND": "TV_ZOOM_MODE"
+    },
+    "flag_conversions": {
+      "WAKE_DROPPED": "WAKE"
+    },
+    "linux_keycode_overrides": {
+      "171": {"from": "SETTINGS", "to": "MENU"}
+    }
+  },
+  "avb": {
+    "partition_size": 1651167232,
+    "salt": "4d38412d696e697469616c2d6174762d7235",
+    "rollback_index": 1644019200,
+    "rollback_index_location": 1,
+    "key_relative": "tools/testkey_rsa2048.pem"
+  }
+}

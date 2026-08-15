@@ -12,13 +12,14 @@
 - [x] 构建并限定验证 `m8b-rc-core-r3`：仅新增 exact `Vendor_0001_Product_0001_Version_0100.kl`。
 - [x] 实机确认 r3 找到 exact 文件，但 Android 12 parser 拒绝 legacy `WAKE_DROPPED` 并回退 `Generic.kl`。
 - [x] 构建并限定验证 `m8b-rc-core-r4`：完整审计 46 条映射并转换全部不受支持的 label/flag。
-- [ ] 刷入 r4，先确认 `dumpsys input` 选择 exact device-specific keylayout，再先测物理 OK，随后测 DPAD、HOME、BACK、Power。
-- [ ] 回归 Projectivy HOME、短按 Power 休眠、IR Power 唤醒和长按 Power 关机。
+- [x] 实机验收 r4：exact `.kl` 加载，OK、DPAD、HOME、BACK、Power 与 native repeat 全部通过。
+- [x] 确认 r4 Settings 唯一剩余语义问题：Android SETTINGS 176 无效果，MENU 82 可打开 Projectivy settings menu。
+- [x] 构建并限定验证 `m8b-rc-core-r5`：仅改 171 SETTINGS→MENU。
+- [ ] 刷入 r5，确认 exact `.kl` 仍加载，物理 Settings 打开 Projectivy settings menu，并快速回归 OK、DPAD、HOME、BACK、Power。
 
-## rc-core-r4 通过后
+## rc-core-r5 通过后
 
-- [ ] 单独决定 `KEYCODE_SETTINGS` 全局行为；不在 r4 同时修改 framework。
-- [ ] 在后续独立候选中删除已确认无运行依赖的 multi_ir/uinput legacy 工件；不在 r4 提前清理。
+- [ ] 在后续独立候选中删除已确认无运行依赖的 multi_ir/uinput legacy 工件；不在 r5 提前清理。
 - [ ] 保持 Mouse mode dropped，不重新引入 vendor mouse framework。
 
 ## 后续设备检查
