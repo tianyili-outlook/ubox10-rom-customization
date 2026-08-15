@@ -1,0 +1,53 @@
+{
+  "id": "m8b-audio-r1",
+  "parent_config_relative": "configs/candidates/m8b-rc-core-r5.json",
+  "repair": "Restore the exact Test8r2 flattened ARM32 com.android.vndk.v31 contract so the unchanged Apollo primary audio HAL can resolve libaudioroute.so through the VNDK namespace.",
+  "base_candidate_relative": "out/candidates/m8b-rc-core-r5/x12-m8b-rc-core-r5.img",
+  "base_candidate_size": 1007982592,
+  "base_candidate_sha256": "7B4D3E28D37CE242F92FF259BB43590EDF422630DA7B515D66E4DF1A000CFA98",
+  "source_super_size": 828183920,
+  "source_super_sha256": "18FCB90C15A86B1ED1B52C063C86F837BC6BDF166C6B53C44AC6B5B5FBFC57CC",
+  "logical_partitions": {
+    "system_a": {"size": 1651167232, "sha256": "ADF53C96702032D28351AE0C1E11618A17C6EBBC2E46E6E07B45C0810549C2A1"},
+    "vendor_a": {"size": 119066624, "sha256": "BB91A8B7ED4AC0145F434F89FD76865EB4311F234AA46D67C8373A7CD5B4929A"},
+    "product_a": {"size": 272629760, "sha256": "06B7425A3D97E7423BBEC6D431F549E7FED81397EB62D774522EA90F4E490C3C"},
+    "vendor_dlkm_a": {"size": 6680576, "sha256": "C589DC0B12E150469F179738F127F36F6321943577453A7DB335AB9E647B8FE5"}
+  },
+  "reference_vndk": {
+    "system_image_relative": "tmp/r13-analysis/test8-logical/system_a.img",
+    "system_image_size": 1651167232,
+    "system_image_sha256": "E83C2EA608B4A3781A6850C9564AFE855C8FA0074283D2467F9AADFD735F08F3",
+    "source_path": "/system/apex/com.android.vndk.current",
+    "destination_path": "/system/apex/com.android.vndk.current",
+    "runtime_name": "com.android.vndk.v31",
+    "entries": 145,
+    "regular_files": 141,
+    "regular_bytes": 17512825,
+    "apex_manifest_sha256": "4B4B240C316EBA192B815F3480E643945A02B135CE616126533E7CB750809EA3",
+    "apex_pubkey_sha256": "19D2131D80D4238098AF9969233AB821199F0CFD059D817BC01C028DDF03E2F1",
+    "vndkcore_sha256": "5F2BFB6E30BF8763E8913F6E88B2E03FD723FA03B7FA62E9C01827348FD9D542",
+    "libaudioroute": {
+      "path": "/system/apex/com.android.vndk.current/lib/libaudioroute.so",
+      "size": 11640,
+      "sha256": "BB5393CE70CD1A4AD9ED62814339CA3695788532242708B0D46DAED87D603623",
+      "needed": ["liblog.so", "libcutils.so", "libutils.so", "libexpat.so", "libtinyalsa.so", "libc++.so", "libc.so", "libm.so", "libdl.so"]
+    },
+    "test8_linkerconfig_relative": "docs/m8/research/current-device/linkerconfig-test8r2.txt",
+    "test8_linkerconfig_sha256": "1A3960BF5FBBE73C9918229212EDE2C119F9E0208EAD117C2A2F8B4209DA101A"
+  },
+  "aosp_omission": {
+    "board_config_path": "/home/tianyi/ubox10-aosp/device/ubox/ubox10/BoardConfig.mk",
+    "board_config_sha256": "D18477FC88319103252A0A7E9625AFB2080DB791EBB5B7169258DDA7EDD2ADDD",
+    "product_config_path": "/home/tianyi/ubox10-aosp/device/ubox/ubox10/ubox10.mk",
+    "product_config_sha256": "FA0D3B8EA1CA33817D98FC9776A909D2502383C07E3582BEE3453AD4C28111B2",
+    "missing_board_assignment": "BOARD_VNDK_VERSION := current",
+    "missing_product_module": "com.android.vndk.current"
+  },
+  "avb": {
+    "partition_size": 1651167232,
+    "salt": "6d38622d617564696f2d7231",
+    "rollback_index": 1644019200,
+    "rollback_index_location": 1,
+    "key_relative": "tools/testkey_rsa2048.pem"
+  }
+}

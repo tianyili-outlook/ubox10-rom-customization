@@ -60,4 +60,4 @@ ff4044→Linux `KEY_CONFIG`、其余 rc-map/keylayout、r4 Android 12 parser 兼
 
 r5 已确认 exact device `.kl` 继续加载；native rc-core/repeat、DPAD、OK、BACK、HOME、Volume、Power 以及物理 Settings→Projectivy menu 全部通过。Projectivy/basic UI、Wi-Fi/Internet/ADB、Ethernet、Bluetooth/HID gamepad、USB host/storage enumeration、H.264 与 HEVC Cedar hardware decode 也已验收。当前最高优先级故障转为 AudioFlinger 无 primary output；音频修复不回退或修改本候选已验收的遥控链。
 
-离线音频复盘确认 stock/Test8r2/r13/r5 使用同一 sunxi DT、DTBO 与 vendor_boot；Apollo HAL 静态表原生识别当前 `ahubhdmi`，因此不采用单独改 `audio_platform_info.xml` card name 的候选。当前最强差异是 legacy `audio_mixer_paths.xml` control 与 exact H616 codec/machine driver 不一致，但首次 `adev_open` 返回分支尚未取得，故本轮不构建音频候选。
+后续 clean service restart 已确认更早的首错：unchanged Apollo HAL 在进入 `adev_open` 前因 VNDK `libaudioroute.so` 缺失而 `dlopen` 失败。Test8r2 exact `/system/apex/com.android.vndk.current` 含该 ARM32 库，r5 没有任何 VNDK APEX。mixer control 与 ALSA topology 因而降级为第二层风险；下一候选 `m8b-audio-r1` 只恢复完整 exact Test8r2 VNDK 31 APEX，不回改本候选已验收内容。

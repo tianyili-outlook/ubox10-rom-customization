@@ -31,6 +31,19 @@ Updated: 2026-08-15
 
 强制回滚仍为 `m8a-initial-atv-r13`：`out/candidates/m8a-initial-atv-r13/x12-m8a-initial-atv-r13.img`，SHA-256 `1D367F7091A7BD6A0791B2CFE45E7AAB551E0312D8C68136548A4927354A8E06`。
 
+## Current audio candidate
+
+`m8b-audio-r1` 状态为 **READY TO FLASH — OFFLINE CHECKED**；尚未刷机，r5 仍是实机验收基线。
+
+| 项目 | 值 |
+|---|---|
+| 镜像 | `out/candidates/m8b-audio-r1/x12-m8b-audio-r1.img` |
+| 大小 / SHA-256 | 1025951744 bytes / `298DCA11DBDFDC81028869C01866411C634FC2C7B979EDA3FB0346BF7434DBDD` |
+| 唯一变量 | 把 Test8r2 exact flattened `/system/apex/com.android.vndk.current` 完整恢复到 r5 system |
+| runtime APEX 名 | `com.android.vndk.v31` |
+| payload 差异 | `system_a`、`super.fex`、`Vsuper.fex`、`vbmeta_system.fex`、`Vvbmeta_system.fex` |
+| 保持项 | boot/kernel/ramdisk、vendor_boot、vendor/product/vendor_dlkm、遥控、Projectivy、Power 均不变 |
+
 ## r5 device acceptance
 
 | 功能 | 结果 |
@@ -48,15 +61,13 @@ Updated: 2026-08-15
 
 ## Audio failure boundary
 
-- audioserver、`vendor.audio-hal`、audio/effect HIDL service 与 `/vendor/lib/hw/audio.primary.apollo.so` 均存在；`ro.board.platform=apollo`。
-- AudioFlinger 无 primary module/output，AudioPolicyManager 为 `0x0`，`initStreamVolume` 反复返回 `-19` (`ENODEV`)。
-- kernel ALSA 存在 `audiocodec:0`、`sndspdif:0`、`ahubhdmi:0`、`ahubi2s2:0`；不存在 `audiocodec:4/5`。
-- 当前 ALSA card 名由 exact `sun50iw9.dtsi` 的 `codec_mach`、`spdif_mach`、`ahub1_mach`、`ahub2_mach` 及 `snd_sunxi_mach.c` 生成；运行时 DT 与源码一致，`codec_mach` 明确为 playback-only。
-- stock 与 Test8r2 的 `sunxi.fex`、DTBO、vendor_boot 逐字节一致；r13/r5 继续保留同一 vendor_boot/DT。r13 stock kernel 与 r5 rebuilt kernel 的音频 Kconfig 相同，因此尚无确定性 DTS/Kconfig 差异可解释故障。
-- `audio_platform_info.xml` 虽写有 standalone `sndhdmi:0` 和组合路由 `audiocodec:4/5`，但 exact Apollo HAL 二进制的静态 card map 同时识别 `sndhdmi` 与 `ahubhdmi`；仅把 XML 的 card name 改成 `ahubhdmi` 已被证据否定为充分修复。
-- `/vendor/etc/audio_mixer_paths.xml` 使用 `AIF1IN0R Mux`、`DACR Mixer AIF1DA0R Switch`、`SPK_L Mux` 等 legacy controls；这些名称不存在于 exact H616 `snd_sun50iw9_codec.c`/`snd_sunxi_mach.c`。这是当前最强初始化合同差异，但现存 logcat 已丢失首次 `adev_open`/`audio_route_init` 返回行，尚不能确认是哪一个 control 或分支令 HAL open 失败。
-- 无音频 HDMI monitor 与支持 HDMI audio 的 TV 上故障一致，故 sink/EDID 缺少音频不是根因。
-- 本轮不构建音频候选。下一项最小取证是在明确授权的非持久运行时测试中同步抓取 logcat，并仅重启 `vendor.audio-hal`/audioserver，取得 `adev_open`、`audio_route_init`、missing mixer control 与最终 errno 的完整首错；不刷机、不改分区。
+- **CONFIRMED first fatal**：clean restart 日志显示 `vndksupport` 无法从 default namespace 加载 unchanged `/vendor/lib/hw/audio.primary.apollo.so`，直接原因是其 `DT_NEEDED libaudioroute.so` 不可解析。随后才出现 DevicesFactory `-19`、AudioFlinger 无 primary、AudioPolicy 无 primary output；HAL 尚未进入 `adev_open`。
+- stock 与 r5 Apollo HAL 均为 `6679E7C653D184EC34070F259104CA0FC394CB4DC67DE4BA60134A13B0093791`，排除 HAL 被替换。r5 的 system/vendor/product/APEX 无 `libaudioroute.so`。
+- Test8r2 `/system/apex/com.android.vndk.current/lib/libaudioroute.so` 为 ARM32，SHA-256 `BB5393CE70CD1A4AD9ED62814339CA3695788532242708B0D46DAED87D603623`；manifest runtime name 为 `com.android.vndk.v31`，`vndkcore.libraries.31.txt` 包含 `libaudioroute.so`，Test8 linkerconfig 将它由 default namespace 链接到 VNDK namespace。
+- 遗漏发生在 AOSP 输出阶段：`/home/tianyi/ubox10-aosp/device/ubox/ubox10/BoardConfig.mk` 没有 `BOARD_VNDK_VERSION := current`，`ubox10.mk` 也未纳入 `com.android.vndk.current`，AOSP `out/.../system/apex` 已无 VNDK APEX；`scripts/build-m8a-candidate.py` 只复制 system 并合并 system_ext，没有裁剪该 APEX。
+- r5 vendor 共 228 个唯一 `DT_NEEDED`；其中 55 个属于 Test8 VNDK 合同，r5 已有 54 个，唯一物理缺项为 `libaudioroute.so`。修复仍恢复完整 145-entry exact VNDK APEX，避免继续依赖 no-config fallback 或把单库任意放进 `/vendor/lib`。
+- r1 离线确认 Apollo HAL 与 `libaudioroute.so` 的全部传递依赖可解析；exact VNDK 子树逐项一致、SELinux metadata 保持，LP/AVB/e2fsck/SELinux/ELF/外层校验通过。
+- `audio_mixer_paths.xml` controls、`audio_platform_info.xml` 的 `sndhdmi`/`audiocodec:4/5` 与 ALSA topology 仅保留为 HAL 成功加载后的第二层假设，本候选未修改。
 
 ## Verified progress
 
@@ -229,7 +240,8 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - r13 是当前 GOLDEN BASELINE；Projectivy、provisioning、遥控和 Power sleep/wake/shutdown 均以实机 UART 为准。
 - M8B native rc-core 遥控迁移已在 r5 设备验收并关闭；Mouse mode intentionally dropped，legacy multi_ir 工件保留为 inert reference，后续仅在独立清理候选处理。
 - 当前 board、DT 与 runtime 证据识别为 H616。设备运行 64 位 kernel，但没有已证明可用的 AArch64 Android graphics userspace；本轮不扩展到 64 位 userspace。
+- `m8b-audio-r1` 只恢复 exact VNDK APEX；未修改 mixer、audio platform XML、DTS、machine driver 或已验收功能。
 
 ## Next action
 
-经用户另行授权后，执行一次非持久 audio service restart 并同步捕获完整 logcat，取得 Apollo HAL `adev_open`/`audio_route_init` 的首个 missing control 或最终 errno。只有该首错把根因锁定到单一、可逆变量时才构建一个 audio-focused 候选；不刷机、不写分区、不修改持久属性。
+经用户另行授权后刷写 `m8b-audio-r1`。先确认 `com.android.vndk.v31` active、`libaudioroute.so` 可见且旧 `dlopen ... libaudioroute.so not found` 消失，再检查 primary HAL/output 并播放已知 HEVC+AAC；若仍失败，只记录 HAL 成功加载后的新首错，不预改 mixer/ALSA topology。

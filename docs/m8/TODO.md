@@ -14,9 +14,11 @@
 
 - [x] 对齐 r5、r13、Test8r2/stock 的 kernel config、DT sound nodes、machine driver 与 Apollo HAL 静态 card map；确认 DT 未随 M8B 改变，HAL 可识别 `ahubhdmi`。
 - [x] 证伪“只把 `sndhdmi` 改为 `ahubhdmi` 即可恢复 primary output”；该结论不满足构建候选条件。
-- [ ] 在同步 logcat 下做一次非持久 `vendor.audio-hal`/audioserver restart，捕获首次 `adev_open`、`audio_route_init`、missing mixer control 与最终 errno。
-- [ ] 用该首错确认是 legacy `audio_mixer_paths.xml` control 合同、stock BSP 二进制差异或其他具体分支；不按 card name 猜测。
-- [ ] 若存在单变量高置信修复，只构建一个 audio-focused 候选并做限定离线验证；不刷机。
+- [x] clean restart 已取得首错：Apollo HAL 在 `adev_open` 前因 `libaudioroute.so` 缺失而 `dlopen` 失败。
+- [x] 确认 Test8r2 exact `com.android.vndk.v31` 提供 ARM32 `libaudioroute.so`，并定位到 ubox10 AOSP 产品未启用/纳入 VNDK APEX。
+- [x] 构建 `m8b-audio-r1`：仅恢复完整 exact Test8r2 VNDK APEX；离线依赖闭包、LP/AVB/e2fsck/SELinux/ELF/外层检查通过。
+- [ ] 取得单独刷写授权并首测 r1：确认 VNDK APEX active、旧缺库日志消失、primary HAL/output 创建、HEVC+AAC 开始播放。
+- [ ] 若仍失败，捕获 HAL 加载后的新首错，再判断 legacy mixer control/ALSA topology；不预先修改音频 XML、DTS 或 machine driver。
 
 ## 独立功能项
 

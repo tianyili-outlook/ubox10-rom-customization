@@ -3,9 +3,9 @@
 ## 当前状态
 
 - 当前设备验收基线：`out/candidates/m8b-rc-core-r5/x12-m8b-rc-core-r5.img`
-- 大小：1007982592 bytes
-- SHA-256：`7B4D3E28D37CE242F92FF259BB43590EDF422630DA7B515D66E4DF1A000CFA98`
-- 本轮仅允许只读音频取证，不刷机、不写分区、不修改持久设置。
+- 待授权首测：`out/candidates/m8b-audio-r1/x12-m8b-audio-r1.img`
+- 大小 / SHA-256：1025951744 bytes / `298DCA11DBDFDC81028869C01866411C634FC2C7B979EDA3FB0346BF7434DBDD`
+- 当前未刷机；物理刷写仍需单独明确授权。
 
 Wi-Fi ADB：
 
@@ -13,9 +13,18 @@ Wi-Fi ADB：
 C:\platform-tools\adb.exe -s 192.168.1.9:7896 shell <read-only-command>
 ```
 
-只在某条命令能区分具体音频假设时采集 `/proc/asound`、`/sys`、`getprop`、`lshal`、`dumpsys`、logcat 或 dmesg；不重复已确认的基础功能测试。
+刷写获批后，首轮只执行：
 
-下一项音频取证需另行授权非持久服务重启：先持续捕获完整 logcat，再仅重启 `vendor.audio-hal`/audioserver，记录 Apollo HAL `adev_open`、`audio_route_init`、首个 missing mixer control 与返回 errno。不得清数据、写分区或修改持久属性。
+```powershell
+C:\platform-tools\adb.exe -s 192.168.1.9:7896 shell getprop sys.boot_completed
+C:\platform-tools\adb.exe -s 192.168.1.9:7896 shell cmd apexservice list --active
+C:\platform-tools\adb.exe -s 192.168.1.9:7896 shell ls -l /apex/com.android.vndk.v31/lib/libaudioroute.so
+C:\platform-tools\adb.exe -s 192.168.1.9:7896 shell dumpsys media.audio_flinger
+C:\platform-tools\adb.exe -s 192.168.1.9:7896 shell dumpsys media.audio_policy
+C:\platform-tools\adb.exe -s 192.168.1.9:7896 logcat -d -b all
+```
+
+验收顺序：`com.android.vndk.v31` active；`libaudioroute.so` 可见；日志不再出现 `dlopen ... libaudioroute.so not found`；primary HAL/output 创建；已知 HEVC+AAC 不再停在 0:00。若出现新首错，保存完整日志后停止，不修改 mixer、audio platform XML、DTS 或 machine driver。
 
 ## 强制回滚
 
