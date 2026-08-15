@@ -1,28 +1,28 @@
 # UBOX10 M8
 
-M8 replaces the Android product layer with ARM32 Android 12 TV while retaining the stock boot, kernel, vendor, vendor_dlkm, TEE, graphics, media, DRM, wireless, and partition dependencies.
+UBOX10 H616/sun50iw9 的 Android TV 12 个人 ROM 项目。Android userspace 为纯 ARM32；M8B 使用 ARM64 Linux 5.4.125 重建 kernel 实现 native rc-core，同时保留 stock boot ramdisk、vendor_boot、vendor、vendor_dlkm、TEE、graphics、media、DRM、wireless 与分区合同。
 
-## Current state
+## 当前状态
 
-- The locked AOSP TV product and the r1-r6 candidate chain are complete offline.
-- r1-r5 were flashed and produced useful, recoverable failures.
-- `m8a-initial-atv-r6` is **READY TO FLASH**. It has not been tested on the device.
-- The next action is a PhoenixCard Product-mode r6 flash plus cold-boot UART capture. Physical flashing still requires explicit user authorization.
-- M8B/AArch64 remains parked: current device evidence proves a 64-bit kernel but only a 32-bit graphics/media userspace.
+- 当前设备验收基线：`m8b-rc-core-r5`。Projectivy、native rc-core 遥控、Wi-Fi、Ethernet、Bluetooth/HID、USB host/storage 枚举、H.264 与 HEVC 硬解通过。
+- 当前最高优先级：音频 primary output 失败。AudioFlinger 无 primary module，Apollo HAL 与 ALSA cards 均存在。
+- 已证伪仅把 `sndhdmi` 改成 `ahubhdmi` 的方案；Apollo HAL 原生识别两者。当前最强差异是 legacy `audio_mixer_paths.xml` controls 与 exact H616 codec/machine driver 不匹配，下一步先捕获 `adev_open` 的首次失败分支，不制作猜测型候选。
+- 独立待办：IME、exFAT、graphics artifacts、完整 resume recovery、DRM/Widevine、HDMI CEC、VP9 runtime。
+- 强制回滚：`m8a-initial-atv-r13`，SHA-256 `1D367F7091A7BD6A0791B2CFE45E7AAB551E0312D8C68136548A4927354A8E06`。
 
-Current artifact: `out/candidates/m8a-initial-atv-r6/x12-m8a-initial-atv-r6.img`, 996582400 bytes, SHA-256 `8796B4FC9ABA2D213B044043F979992CE9C5996425D52273A088A04EA3BE5D93`.
+当前镜像：`out/candidates/m8b-rc-core-r5/x12-m8b-rc-core-r5.img`，1007982592 bytes，SHA-256 `7B4D3E28D37CE242F92FF259BB43590EDF422630DA7B515D66E4DF1A000CFA98`。
 
-## Start here
+## 项目入口
 
-| Need | Source |
+| 内容 | 文档 |
 |---|---|
-| Progress, candidate history, current artifact | [M8 status](docs/m8/STATUS.md) |
-| Ordered remaining work | [M8 TODO](docs/m8/TODO.md) |
-| Build inputs, architecture, and r1-r6 chain | [Build guide](docs/BUILD.md) |
-| Flash, UART, and rollback procedure | [Device test guide](docs/DEVICE_TEST.md) |
-| Current r6 delta and checks | [r6 record](docs/m8/candidates/m8a-initial-atv-r6.md) |
-| Test8r2 hardware/runtime evidence | [Runtime baseline](docs/m8/research/current-device/runtime-baseline.md) |
+| 当前事实、候选历史、下一步 | [M8 状态](docs/m8/STATUS.md) |
+| 有序待办 | [M8 TODO](docs/m8/TODO.md) |
+| 架构、输入与 M8A/M8B 构建链 | [构建说明](docs/BUILD.md) |
+| 设备测试与回滚 | [设备测试](docs/DEVICE_TEST.md) |
+| 当前候选差异与检查 | [M8B rc-core-r5](docs/m8/candidates/m8b-rc-core-r5.md) |
+| Test8r2 硬件与运行时证据 | [运行时基线](docs/m8/research/current-device/runtime-baseline.md) |
 
-`configs/candidates/` and `scripts/build-m8a*.py` are the executable source of the candidate chain. `tests/` contains clean-clone unit checks plus artifact checks that activate when local ignored candidate outputs exist. Original firmware, candidate images, raw device logs, APKs, and extracted trees remain local and ignored.
+`configs/candidates/` 与 `scripts/build-m8a*.py`、`scripts/build-m8b*.py` 是候选构建来源；`tests/` 提供 clean-clone 与本地工件限定检查。原始固件、候选镜像、原始日志、APK 与解包树保留在本地 ignored 路径。
 
-M7 is frozen at the Git tag [`m7`](https://github.com/tianyili-outlook/ubox10-rom-customization/tree/m7); M7-only builders, experiments, and reports are intentionally not duplicated on this branch.
+M7 冻结于 Git tag [`m7`](https://github.com/tianyili-outlook/ubox10-rom-customization/tree/m7)，本分支不复制 M7 专用构建器和实验记录。

@@ -1,6 +1,6 @@
 # M8B rc-core-r5 candidate
 
-状态：**OFFLINE CHECKED — READY FOR FOCUSED DEVICE TEST**
+状态：**DEVICE ACCEPTED — AUDIO OPEN**
 
 直接基线：设备验收的 `m8b-rc-core-r4`，SHA-256 `44B8D1B4787EAF8CF601725D2630D8508CC139CCC2109BA27D07D9AF1FB0D571`。
 
@@ -55,3 +55,9 @@ ff4044→Linux `KEY_CONFIG`、其余 rc-map/keylayout、r4 Android 12 parser 兼
 `KeyLayoutFile: /system/usr/keylayout/Vendor_0001_Product_0001_Version_0100.kl`
 
 随后按物理 Settings，必须打开 Projectivy settings menu；再快速回归 OK、DPAD、HOME、BACK、Power。
+
+## 实机结果
+
+r5 已确认 exact device `.kl` 继续加载；native rc-core/repeat、DPAD、OK、BACK、HOME、Volume、Power 以及物理 Settings→Projectivy menu 全部通过。Projectivy/basic UI、Wi-Fi/Internet/ADB、Ethernet、Bluetooth/HID gamepad、USB host/storage enumeration、H.264 与 HEVC Cedar hardware decode 也已验收。当前最高优先级故障转为 AudioFlinger 无 primary output；音频修复不回退或修改本候选已验收的遥控链。
+
+离线音频复盘确认 stock/Test8r2/r13/r5 使用同一 sunxi DT、DTBO 与 vendor_boot；Apollo HAL 静态表原生识别当前 `ahubhdmi`，因此不采用单独改 `audio_platform_info.xml` card name 的候选。当前最强差异是 legacy `audio_mixer_paths.xml` control 与 exact H616 codec/machine driver 不一致，但首次 `adev_open` 返回分支尚未取得，故本轮不构建音频候选。

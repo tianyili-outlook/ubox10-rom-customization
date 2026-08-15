@@ -15,9 +15,9 @@ Updated: 2026-08-15
 | Power | 短按休眠、IR Power 唤醒、长按关机 PASS |
 | 证据 | `logs/device/20260813-r13/` 的三个 UART 记录 |
 
-## Active candidate
+## Accepted working baseline
 
-`m8b-rc-core-r5` 已从设备验收的 r4 构建并完成限定离线检查，状态为 **READY FOR FOCUSED DEVICE TEST**。本轮未刷机、未执行设备命令。
+`m8b-rc-core-r5` 已完成实机验收，状态为 **DEVICE ACCEPTED — AUDIO OPEN**。
 
 | 项目 | 值 |
 |---|---|
@@ -27,7 +27,36 @@ Updated: 2026-08-15
 | 唯一功能变量 | exact device keylayout 中 Linux 171 的 Android 语义由 `SETTINGS` 改为 `MENU` |
 | Mouse | intentionally dropped；ff4054 保持 inert |
 | payload 差异 | 相对 r4 仅 `system_a`、super/vbmeta_system 及其校验 companions；boot/kernel 原字节不变 |
-| 设备结果 | 待测试 |
+| 设备结果 | native rc-core/repeat、exact `.kl`、OK/DPAD/HOME/BACK/Volume/Power、Settings→Projectivy menu PASS |
+
+强制回滚仍为 `m8a-initial-atv-r13`：`out/candidates/m8a-initial-atv-r13/x12-m8a-initial-atv-r13.img`，SHA-256 `1D367F7091A7BD6A0791B2CFE45E7AAB551E0312D8C68136548A4927354A8E06`。
+
+## r5 device acceptance
+
+| 功能 | 结果 |
+|---|---|
+| Projectivy / basic UI | **PASS**；可用 TV UI 与一般导航正常 |
+| Native rc-core remote | **PASS**；DPAD、OK、BACK、HOME、Volume、Power、Settings→MENU 全部通过；`multi_ir` 保持 disabled |
+| Wi-Fi / network ADB | **PASS**；SSID、关联、Internet、Android DNS/connectivity 与 `192.168.1.9:7896` ADB 正常 |
+| Ethernet | **PASS**；eth0、Internet、ADB 正常 |
+| Bluetooth / HID | **PASS**；service、扫描、配对、iPhone bonding、gamepad UI 控制正常 |
+| USB host / storage | **PASS**；EHCI、枚举、Mass Storage/SCSI、block/partition、vold public volume 正常；exFAT 单独不支持 |
+| H.264 / HEVC | **PASS**；VLC 使用 Allwinner OMX AVC/HEVC decoder，Cedar/VPU 硬解流畅 |
+| Audio | **FAIL — HIGH**；AudioFlinger 无 primary output，带 AAC 的 HEVC 停在 0:00；无音频同视频正常 |
+
+开放功能项：无 IME；exFAT unsupported；选中态渐变白/灰噪点；启用 Wi-Fi 时偶发短暂撕裂/黑屏后恢复；完整 post-resume Wi-Fi/Bluetooth/network 恢复待测；DRM/Widevine、HDMI CEC、VP9 runtime 待验收。启动耗时/错误、thermal/CPU、graphics/rendering、残余 retry loop 和 legacy `multi_ir/uinput` 清理归入后续系统质量里程碑；不得在音频候选中混入。
+
+## Audio failure boundary
+
+- audioserver、`vendor.audio-hal`、audio/effect HIDL service 与 `/vendor/lib/hw/audio.primary.apollo.so` 均存在；`ro.board.platform=apollo`。
+- AudioFlinger 无 primary module/output，AudioPolicyManager 为 `0x0`，`initStreamVolume` 反复返回 `-19` (`ENODEV`)。
+- kernel ALSA 存在 `audiocodec:0`、`sndspdif:0`、`ahubhdmi:0`、`ahubi2s2:0`；不存在 `audiocodec:4/5`。
+- 当前 ALSA card 名由 exact `sun50iw9.dtsi` 的 `codec_mach`、`spdif_mach`、`ahub1_mach`、`ahub2_mach` 及 `snd_sunxi_mach.c` 生成；运行时 DT 与源码一致，`codec_mach` 明确为 playback-only。
+- stock 与 Test8r2 的 `sunxi.fex`、DTBO、vendor_boot 逐字节一致；r13/r5 继续保留同一 vendor_boot/DT。r13 stock kernel 与 r5 rebuilt kernel 的音频 Kconfig 相同，因此尚无确定性 DTS/Kconfig 差异可解释故障。
+- `audio_platform_info.xml` 虽写有 standalone `sndhdmi:0` 和组合路由 `audiocodec:4/5`，但 exact Apollo HAL 二进制的静态 card map 同时识别 `sndhdmi` 与 `ahubhdmi`；仅把 XML 的 card name 改成 `ahubhdmi` 已被证据否定为充分修复。
+- `/vendor/etc/audio_mixer_paths.xml` 使用 `AIF1IN0R Mux`、`DACR Mixer AIF1DA0R Switch`、`SPK_L Mux` 等 legacy controls；这些名称不存在于 exact H616 `snd_sun50iw9_codec.c`/`snd_sunxi_mach.c`。这是当前最强初始化合同差异，但现存 logcat 已丢失首次 `adev_open`/`audio_route_init` 返回行，尚不能确认是哪一个 control 或分支令 HAL open 失败。
+- 无音频 HDMI monitor 与支持 HDMI audio 的 TV 上故障一致，故 sink/EDID 缺少音频不是根因。
+- 本轮不构建音频候选。下一项最小取证是在明确授权的非持久运行时测试中同步抓取 logcat，并仅重启 `vendor.audio-hal`/audioserver，取得 `adev_open`、`audio_route_init`、missing mixer control 与最终 errno 的完整首错；不刷机、不改分区。
 
 ## Verified progress
 
@@ -52,7 +81,7 @@ Updated: 2026-08-15
 | M8B rc-core-r2 | **REPEAT LIFECYCLE PASS - KEYLAYOUT SELECTION FAIL** | native repeat/release、DPAD、HOME/BACK/Power 和物理 KEY_OK 已通过；Android 因设备标识不匹配而加载 `Generic.kl` | 安装 exact vendor/product/version keylayout |
 | M8B rc-core-r3 | **FAILED - EXACT FILE FOUND, PARSE REJECTED** | exact keylayout 路径、权限、SELinux 与 SHA 均正确，但 Android 12 parser 在 line 13 拒绝 legacy `WAKE_DROPPED`，EventHub 回退 `Generic.kl` | 完整转换全部不受支持的 label/flag |
 | M8B rc-core-r4 | **DEVICE ACCEPTED - SETTINGS SEMANTIC FAIL** | native rc-core/repeat、exact `.kl` 加载、OK/DPAD/HOME/BACK/Power 均通过；物理 Settings 产生 KEY_CONFIG 171→Android SETTINGS 176，但该 keyevent 在当前系统无效果 | 仅把 Linux 171 映射为已验证有效的 Android MENU 82 |
-| M8B rc-core-r5 | **OFFLINE CHECKED - DEVICE TEST PENDING** | r4 exact device `.kl` 仅改 171 SETTINGS→MENU；完整 parser 合同保持 | 先确认 exact `.kl` 仍加载，再测物理 Settings 与快速按键回归 |
+| M8B rc-core-r5 | **DEVICE ACCEPTED - AUDIO OPEN** | native rc-core/repeat、exact `.kl`、Settings→MENU 与全部基础遥控通过；Projectivy、网络、Bluetooth/HID、USB、AVC/HEVC 已验收 | 捕获 Apollo HAL `adev_open` 的首次返回分支，不做 XML card-name 猜测 |
 
 ## M8B native rc-core
 
@@ -198,15 +227,9 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - No physical action was performed during the 2026-08-02 repository cleanup.
 - r10 已在实机完成 framework boot；r9 Lights/Watchdog/llkd 方向保持关闭，不再修改。
 - r13 是当前 GOLDEN BASELINE；Projectivy、provisioning、遥控和 Power sleep/wake/shutdown 均以实机 UART 为准。
-- M8B 当前 active scope 仅为 native rc-core 遥控迁移；Mouse mode intentionally dropped，legacy multi_ir 工件在 rc-core-r3 保留为 inert reference。
+- M8B native rc-core 遥控迁移已在 r5 设备验收并关闭；Mouse mode intentionally dropped，legacy multi_ir 工件保留为 inert reference，后续仅在独立清理候选处理。
 - 当前 board、DT 与 runtime 证据识别为 H616。设备运行 64 位 kernel，但没有已证明可用的 AArch64 Android graphics userspace；本轮不扩展到 64 位 userspace。
 
-## M8B rc-core-r5 next action
+## Next action
 
-刷入 `x12-m8b-rc-core-r5.img` 后先执行：
-
-```sh
-dumpsys input | grep -A 50 -B 5 'sunxi-ir'
-```
-
-第一成功条件是 `KeyLayoutFile: /system/usr/keylayout/Vendor_0001_Product_0001_Version_0100.kl`。随后按物理 Settings，必须打开 Projectivy settings menu；再快速回归 OK、DPAD、HOME、BACK、Power。
+经用户另行授权后，执行一次非持久 audio service restart 并同步捕获完整 logcat，取得 Apollo HAL `adev_open`/`audio_route_init` 的首个 missing control 或最终 errno。只有该首错把根因锁定到单一、可逆变量时才构建一个 audio-focused 候选；不刷机、不写分区、不修改持久属性。

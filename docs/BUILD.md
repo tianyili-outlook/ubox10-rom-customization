@@ -25,9 +25,11 @@ Stock fstab and LP metadata have no `system_ext` logical partition. The build th
 | Stock container | `x12-1024.img`, 2018890752 bytes, SHA-256 `371A653604618E8B78786F279EA6F64E5D1028B430C9B41F330B08456A264065` |
 | Preferred rollback | Test8r2, 2005954560 bytes, SHA-256 `6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8` |
 
-The AOSP tree, stock image, extracted payloads, rollback image, and candidate outputs are local ignored inputs. A Git clone alone cannot rebuild r6.
+The AOSP tree, stock image, extracted payloads, rollback image, and candidate outputs are local ignored inputs. A Git clone alone cannot rebuild the current candidate chain.
 
 ## Candidate chain
+
+The original M8A r1-r13 chain established the bootable Android 12 TV product and remains preserved for provenance. The accepted working image is now the M8B native rc-core r5 derivative; its reproducible configs and builders are under `configs/candidates/m8b-rc-core-*` and `scripts/build-m8b-rc-core-*`.
 
 Run from the repository root on the verified Windows + WSL environment:
 
@@ -41,7 +43,7 @@ python scripts/build-m8a-r5-candidate.py
 python scripts/build-m8a-r6-candidate.py
 ```
 
-Each stage is intentionally retained because the next stage hash-locks and consumes its predecessor:
+The early r1-r6 stages are intentionally retained because each stage hash-locks and consumes its predecessor:
 
 | Stage | Change |
 |---|---|
@@ -53,6 +55,8 @@ Each stage is intentionally retained because the next stage hash-locks and consu
 | r6 | Restore stock interleaved A/B LP table order |
 
 Candidate configs under `configs/candidates/` are the machine-readable sizes, hashes, geometry, and predecessor contracts. Rebuilt ext4/super/container bytes are not guaranteed bit-for-bit reproducible; acceptance is based on locked inputs, structural checks, preservation audits, and the recorded final artifact hash.
+
+M8B r1-r5 preserves the ARM32 userspace and hardware-facing vendor stack while replacing the legacy `multi_ir → uinput` remote path with native kernel rc-core. r5 is device accepted. The next permitted candidate, if audio root cause is proven, must be a single-variable audio-focused derivative of r5; it must not include IME, exFAT, graphics, thermal, DRM, CEC or legacy-input cleanup.
 
 ## Checks
 

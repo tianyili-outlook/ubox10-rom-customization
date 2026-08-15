@@ -1,32 +1,34 @@
 # M8 TODO
 
-## 当前工作：M8B native rc-core
+## 已验收基线
 
-- [x] 将 `m8a-initial-atv-r13` 标记为实机验收通过的 GOLDEN BASELINE。
-- [x] 完成 Linux 5.4.125 `sunxi-rc-recv`、NEC、rc-core、rc-map 与 MSC-only 分支的 exact offline audit。
-- [x] 从 exact ff40 语义生成 48 项 native rc-map 和 device-specific `sunxi-ir.kl`；49 项已逐项审计，ff4054 Mouse intentionally inert。
-- [x] 禁用 `multi_ir` 自动运行，同时保留 legacy binary、rc、keylayout、libraries 作 inert rollback/reference。
-- [x] 构建并实机验证 `m8b-rc-core-r1`：native `sunxi-ir/event0 → EV_KEY` 架构成立；因 repeat frame 被误判为新按键而失败。
-- [x] 实机验证 `m8b-rc-core-r2`：repeat/release、DPAD、HOME/BACK/Power 和 native KEY_OK 通过；`multi_ir` 保持 disabled。
-- [x] 确认 r2 Android 实际加载 `Generic.kl`，未选择已存在的 `sunxi-ir.kl`。
-- [x] 构建并限定验证 `m8b-rc-core-r3`：仅新增 exact `Vendor_0001_Product_0001_Version_0100.kl`。
-- [x] 实机确认 r3 找到 exact 文件，但 Android 12 parser 拒绝 legacy `WAKE_DROPPED` 并回退 `Generic.kl`。
-- [x] 构建并限定验证 `m8b-rc-core-r4`：完整审计 46 条映射并转换全部不受支持的 label/flag。
-- [x] 实机验收 r4：exact `.kl` 加载，OK、DPAD、HOME、BACK、Power 与 native repeat 全部通过。
-- [x] 确认 r4 Settings 唯一剩余语义问题：Android SETTINGS 176 无效果，MENU 82 可打开 Projectivy settings menu。
-- [x] 构建并限定验证 `m8b-rc-core-r5`：仅改 171 SETTINGS→MENU。
-- [ ] 刷入 r5，确认 exact `.kl` 仍加载，物理 Settings 打开 Projectivy settings menu，并快速回归 OK、DPAD、HOME、BACK、Power。
+- [x] `m8b-rc-core-r5`：boot、Projectivy、native rc-core/repeat、exact `.kl`、DPAD/OK/BACK/HOME/Volume/Power/Settings→MENU。
+- [x] Wi-Fi、Internet、Android connectivity/DNS、Wi-Fi ADB `192.168.1.9:7896`。
+- [x] Ethernet、Internet、Ethernet ADB。
+- [x] Bluetooth service、扫描/配对、iPhone bonding、Bluetooth gamepad HID/UI 控制。
+- [x] USB host/EHCI/Mass Storage/SCSI/block/partition/vold public volume。
+- [x] H.264 与 HEVC 1080p Allwinner OMX/Cedar hardware decode。
+- [x] 保留 `m8a-initial-atv-r13` 与 stock/Test8r2 回滚；硬件事实保持 H616/sun50iw9。
 
-## rc-core-r5 通过后
+## 当前：音频 primary output — HIGH
 
-- [ ] 在后续独立候选中删除已确认无运行依赖的 multi_ir/uinput legacy 工件；不在 r5 提前清理。
-- [ ] 保持 Mouse mode dropped，不重新引入 vendor mouse framework。
+- [x] 对齐 r5、r13、Test8r2/stock 的 kernel config、DT sound nodes、machine driver 与 Apollo HAL 静态 card map；确认 DT 未随 M8B 改变，HAL 可识别 `ahubhdmi`。
+- [x] 证伪“只把 `sndhdmi` 改为 `ahubhdmi` 即可恢复 primary output”；该结论不满足构建候选条件。
+- [ ] 在同步 logcat 下做一次非持久 `vendor.audio-hal`/audioserver restart，捕获首次 `adev_open`、`audio_route_init`、missing mixer control 与最终 errno。
+- [ ] 用该首错确认是 legacy `audio_mixer_paths.xml` control 合同、stock BSP 二进制差异或其他具体分支；不按 card name 猜测。
+- [ ] 若存在单变量高置信修复，只构建一个 audio-focused 候选并做限定离线验证；不刷机。
 
-## 后续设备检查
+## 独立功能项
 
-- [ ] 检查 IME、Wi-Fi、Ethernet、Bluetooth、音视频、CEC、重启、冷启动和 r13/Test8r2 回滚。
-- [ ] 根据实测结果处理 Google TV Remote/Play、Netflix 和 Widevine。
+- [ ] 增加可用 TV soft IME；当前 `ime list -a` 与 default IME 均为空。
+- [ ] 增加 exFAT 支持；USB host/storage 已通过，当前仅 filesystem unsupported。
+- [ ] 复现并定位选中态渐变噪点及启用 Wi-Fi 时短暂撕裂/黑屏。
+- [ ] 完整验证 suspend/resume 后 Wi-Fi、Bluetooth 与网络恢复。
+- [ ] 验收 DRM/Widevine、HDMI CEC 与 VP9 runtime decode。
 
-## 暂停项
+## 后续系统质量里程碑
 
-- [ ] 仅在确认匹配本机板的 64 位 Mali/Gralloc/Mapper/HWC/Vulkan provider 后恢复 64 位 Android userspace 工作；当前硬件事实仍为 H616。
+- [ ] 限定分析 boot critical path、UART errors/retries、CPU governor/frequency、thermal/idle、graphics renderer/allocator/mapper/SF 与残余 audio retry loop。
+- [ ] 在独立候选中清理已证明无依赖的 legacy `multi_ir/uinput` 工件；不得在无依赖证明时删除 `/system/lib/libinput.so` 等通用库。
+- [ ] 保持 Mouse mode dropped；不重新引入 vendor mouse framework。
+- [ ] 仅在获得匹配本板 64 位 graphics/media userspace provider 后重启 AArch64 Android userspace 工作。

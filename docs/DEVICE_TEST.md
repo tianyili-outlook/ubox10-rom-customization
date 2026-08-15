@@ -1,40 +1,28 @@
-# r6 device test and rollback
+# M8 device test and rollback
 
-Physical flashing requires explicit user authorization. This guide does not authorize it.
+## 当前状态
 
-## Files
+- 当前设备验收基线：`out/candidates/m8b-rc-core-r5/x12-m8b-rc-core-r5.img`
+- 大小：1007982592 bytes
+- SHA-256：`7B4D3E28D37CE242F92FF259BB43590EDF422630DA7B515D66E4DF1A000CFA98`
+- 本轮仅允许只读音频取证，不刷机、不写分区、不修改持久设置。
 
-| Role | Path | Bytes | SHA-256 |
-|---|---|---:|---|
-| r6 candidate | `out/candidates/m8a-initial-atv-r6/x12-m8a-initial-atv-r6.img` | 996582400 | `8796B4FC9ABA2D213B044043F979992CE9C5996425D52273A088A04EA3BE5D93` |
-| Test8r2 rollback | `C:\Users\tiany\Documents\ubox10-rom改造\out\candidates\test8r2-restore-contacts-provider-r1\x12-test8r2-restore-contacts-provider.img` | 2005954560 | `6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8` |
-| Stock recovery | `C:\Users\tiany\Documents\ubox10-rom改造\x12-1024.img` | 2018890752 | `371A653604618E8B78786F279EA6F64E5D1028B430C9B41F330B08456A264065` |
-
-## Receive-only UART
-
-Connect with the box powered off:
-
-- J21 GND -> FT232RL GND
-- J21 TX -> FT232RL RXD
-- Leave J21 RX, adapter TXD, and all VCC/5V/3V3 pins disconnected.
-
-Enumerate the COM port, then arm capture from the repository root:
+Wi-Fi ADB：
 
 ```powershell
-[System.IO.Ports.SerialPort]::GetPortNames()
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/capture-uart-readonly.ps1 `
-  -PortName COM3 -BaudRate 115200 -DurationSeconds 900 `
-  -ReceiveOnlyWiringConfirmed
+C:\platform-tools\adb.exe -s 192.168.1.9:7896 shell <read-only-command>
 ```
 
-## One focused test
+只在某条命令能区分具体音频假设时采集 `/proc/asound`、`/sys`、`getprop`、`lshal`、`dumpsys`、logcat 或 dmesg；不重复已确认的基础功能测试。
 
-1. Verify the selected image size and SHA-256.
-2. In PhoenixCard 4.2.7, write the image to the TF card in **Product** mode.
-3. Power off the UBOX10, insert the card, arm UART, and power on.
-4. Wait for `CARD OK`; power off, remove the card, then cold boot while UART remains active.
-5. Record the earliest stable failure or the first Android/HDMI/ADB milestone in `docs/m8/STATUS.md` and the candidate record.
+下一项音频取证需另行授权非持久服务重启：先持续捕获完整 logcat，再仅重启 `vendor.audio-hal`/audioserver，记录 Apollo HAL `adev_open`、`audio_route_init`、首个 missing mixer control 与返回 errno。不得清数据、写分区或修改持久属性。
 
-## Rollback
+## 强制回滚
 
-If r6 fails, repeat the Product-mode procedure with Test8r2. If Test8r2 does not recover, repeat with stock `x12-1024.img`. Do not overwrite or rename either rollback source.
+| Role | Path | SHA-256 |
+|---|---|---|
+| r13 golden rollback | `out/candidates/m8a-initial-atv-r13/x12-m8a-initial-atv-r13.img` | `1D367F7091A7BD6A0791B2CFE45E7AAB551E0312D8C68136548A4927354A8E06` |
+| Test8r2 rollback | `C:\Users\tiany\Documents\ubox10-rom改造\out\candidates\test8r2-restore-contacts-provider-r1\x12-test8r2-restore-contacts-provider.img` | `6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8` |
+| Stock recovery | `C:\Users\tiany\Documents\ubox10-rom改造\x12-1024.img` | `371A653604618E8B78786F279EA6F64E5D1028B430C9B41F330B08456A264065` |
+
+Physical flashing requires a separate explicit user authorization. Never overwrite, rename or modify rollback sources.
