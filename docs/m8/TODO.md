@@ -17,7 +17,10 @@
 - [x] clean restart 已取得首错：Apollo HAL 在 `adev_open` 前因 `libaudioroute.so` 缺失而 `dlopen` 失败。
 - [x] 确认 Test8r2 exact `com.android.vndk.v31` 提供 ARM32 `libaudioroute.so`，并定位到 ubox10 AOSP 产品未启用/纳入 VNDK APEX。
 - [x] 构建 `m8b-audio-r1`：仅恢复完整 exact Test8r2 VNDK APEX；离线依赖闭包、LP/AVB/e2fsck/SELinux/ELF/外层检查通过。
-- [ ] 取得单独刷写授权并首测 r1：确认 VNDK APEX active、旧缺库日志消失、primary HAL/output 创建、HEVC+AAC 开始播放。
+- [x] r1 实机确认 exact VNDK APEX active、`libaudioroute.so` 存在，但 `ro.treble.enabled=false` 且运行时无 VNDK namespace / `default→vndk` link；根因收敛为不完整 AOSP Treble/VNDK 产品配置。
+- [x] 加入 `PRODUCT_SHIPPING_API_LEVEL := 31`、`BOARD_VNDK_VERSION := current` 和 `com.android.vndk.current` 产品规则；重建确认 Device/Product VNDK、Treble linker namespace、VINTF enforcement 和 `ro.treble.enabled=true`。
+- [x] 构建 `m8b-audio-r2`：以 r1 为基线，仅物化 `ro.treble.enabled=true`；精确 Android 12 linkerconfig 离线生成 vendor/VNDK namespace，`default→vndk` 包含 `libaudioroute.so`。
+- [ ] 取得单独刷写授权并首测 r2：确认运行时 Treble/VNDK namespace、旧缺库日志消失、primary HAL/output 创建、HEVC+AAC 开始播放。
 - [ ] 若仍失败，捕获 HAL 加载后的新首错，再判断 legacy mixer control/ALSA topology；不预先修改音频 XML、DTS 或 machine driver。
 
 ## 独立功能项

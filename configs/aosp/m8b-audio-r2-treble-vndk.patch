@@ -1,0 +1,18 @@
+diff --git a/device/ubox/ubox10/BoardConfig.mk b/device/ubox/ubox10/BoardConfig.mk
+--- a/device/ubox/ubox10/BoardConfig.mk
++++ b/device/ubox/ubox10/BoardConfig.mk
+@@ -6,0 +7,3 @@
++
++# Build the Android 12 vendor ABI contract used by the stock vendor image.
++BOARD_VNDK_VERSION := current
+diff --git a/device/ubox/ubox10/ubox10.mk b/device/ubox/ubox10/ubox10.mk
+--- a/device/ubox/ubox10/ubox10.mk
++++ b/device/ubox/ubox10/ubox10.mk
+@@ -4,0 +5,3 @@
++
++# The stock Android 12 vendor partition ships the VNDK 31 contract.
++PRODUCT_SHIPPING_API_LEVEL := 31
+@@ -25 +28,2 @@
+-    AwTvProvision
++    AwTvProvision \
++    com.android.vndk.current

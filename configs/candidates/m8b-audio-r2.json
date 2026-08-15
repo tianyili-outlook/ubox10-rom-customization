@@ -1,0 +1,77 @@
+{
+  "id": "m8b-audio-r2",
+  "parent_config_relative": "configs/candidates/m8b-audio-r1.json",
+  "repair": "Enable the Android 12 Treble/VNDK product contract so runtime linkerconfig creates the vendor VNDK namespace and exposes the existing exact Test8r2 libaudioroute.so to the unchanged Apollo audio HAL.",
+  "base_candidate_relative": "out/candidates/m8b-audio-r1/x12-m8b-audio-r1.img",
+  "base_candidate_size": 1025951744,
+  "base_candidate_sha256": "298DCA11DBDFDC81028869C01866411C634FC2C7B979EDA3FB0346BF7434DBDD",
+  "source_super_size": 846153208,
+  "source_super_sha256": "373608B36A0E0117FABF0EFC6B5AF4357E3E5B3B1C73319AAD94F3AEA7B1856F",
+  "logical_partitions": {
+    "system_a": {"size": 1651167232, "sha256": "E621B672A30EF1D04645AE3EB225AFEACF414969158A0D96D05C60C105283AFE"},
+    "vendor_a": {"size": 119066624, "sha256": "BB91A8B7ED4AC0145F434F89FD76865EB4311F234AA46D67C8373A7CD5B4929A"},
+    "product_a": {"size": 272629760, "sha256": "06B7425A3D97E7423BBEC6D431F549E7FED81397EB62D774522EA90F4E490C3C"},
+    "vendor_dlkm_a": {"size": 6680576, "sha256": "C589DC0B12E150469F179738F127F36F6321943577453A7DB335AB9E647B8FE5"}
+  },
+  "aosp_treble_contract": {
+    "source_patch_relative": "configs/aosp/m8b-audio-r2-treble-vndk.patch",
+    "source_patch_sha256": "803952426BF4A4DDFF853B1E06A180E37301AC47DE071686E65C96490C2F1538",
+    "source_patch_apply": "patch --fuzz=0 -p1",
+    "board_config_path": "/home/tianyi/ubox10-aosp/device/ubox/ubox10/BoardConfig.mk",
+    "board_config_sha256": "DCB6B7AC41DC0650EDA44D8A2844C94A7C7897331912192B4CB6B9F4ACE65451",
+    "product_config_path": "/home/tianyi/ubox10-aosp/device/ubox/ubox10/ubox10.mk",
+    "product_config_sha256": "7D2D8AC021FD2E4AF49F201C0C3827F5F9FCACB0FB02A5F67682EB5B4F2FB2A4",
+    "soong_variables_path": "/home/tianyi/ubox10-aosp/out/soong/soong.variables",
+    "soong_variables_sha256": "5557B57AE2B7527F4B97B48E361245D062E8433924B044F586F5AD82AB4C0D1A",
+    "system_image_path": "/home/tianyi/ubox10-aosp/out/target/product/ubox10/system.img",
+    "system_image_sha256": "97D8FB86F627AA66CCCE9756C6D99DFBFF9E17AEC6B8CC5432D9AFA6BA98C6A4",
+    "product_image_path": "/home/tianyi/ubox10-aosp/out/target/product/ubox10/product.img",
+    "product_image_sha256": "68FA34F20D7AED53D504B891CFE73F15C743F81068EAA0CA7D7AA435DBF2802A",
+    "system_ext_image_path": "/home/tianyi/ubox10-aosp/out/target/product/ubox10/system_ext.img",
+    "system_ext_image_sha256": "6D1D9FA2B5B768E041A3CC1C526B00C2E658E8DC7715018A254BA74063446642",
+    "system_build_prop_path": "/home/tianyi/ubox10-aosp/out/target/product/ubox10/system/build.prop",
+    "system_build_prop_sha256": "B6C2C6075217EB945E13424FA3C78700E7C739A2082CB9E8344B856242F2F1DA",
+    "system_linker_config_path": "/home/tianyi/ubox10-aosp/out/target/product/ubox10/system/etc/linker.config.pb",
+    "system_linker_config_sha256": "443418CECEC20E2B6BD3753D66267FB3AC5D3105E5F07875BF73F8FEA092F881",
+    "vndk_apex_path": "/home/tianyi/ubox10-aosp/out/target/product/ubox10/system/apex/com.android.vndk.current",
+    "expected": {
+      "DeviceVndkVersion": "current",
+      "ProductVndkVersion": "current",
+      "Treble_linker_namespaces": true,
+      "Enforce_vintf_manifest": true,
+      "Platform_vndk_version": "31",
+      "ro.treble.enabled": "true"
+    },
+    "build_logs": [
+      "tmp/audio-r2-analysis/aosp-systemimage-build.log",
+      "tmp/audio-r2-analysis/aosp-partition-images-build.log",
+      "tmp/audio-r2-analysis/aosp-check-vintf-all.log"
+    ]
+  },
+  "linkerconfig_validation": {
+    "tool_path": "/home/tianyi/ubox10-aosp/out/soong/.intermediates/system/linkerconfig/linkerconfig/linux_glibc_x86_64/linkerconfig",
+    "tool_sha256": "C58267FE6557005D845AF13F3772D0CB0EF9A53997D7A4E123AFFD474B169942",
+    "environment_source_path": "/home/tianyi/ubox10-aosp/system/linkerconfig/modules/environment.cc",
+    "environment_source_sha256": "3D99A05991A680EA401F9DB7EF7609DC010DE7E23D4F8BD3BFDDE30DE933F8C8",
+    "vendor_section_source_path": "/home/tianyi/ubox10-aosp/system/linkerconfig/contents/section/vendor.cc",
+    "vendor_section_source_sha256": "015EF35E07653D83B487C8BEA339F6A7BE725521896AD5EE5E0D33049FDFF9B7",
+    "vendor_default_source_path": "/home/tianyi/ubox10-aosp/system/linkerconfig/contents/namespace/vendordefault.cc",
+    "vendor_default_source_sha256": "E07A991BBE3C3805F858B4E5FA2054DA3080ACDBAF0CB5A1717AD5179BA0671A",
+    "vndk_namespace_source_path": "/home/tianyi/ubox10-aosp/system/linkerconfig/contents/namespace/vndk.cc",
+    "vndk_namespace_source_sha256": "E9129025612FEED1718773AD324758372AF7973560D84BDEC45D9EF33FEE6182"
+  },
+  "candidate_contract": {
+    "system_build_prop_before_sha256": "6D2B82096F4513853DE712304F4077984B0B4465EBCA530C4F98AAD9A00FC28D",
+    "system_linker_config_sha256": "40B9220194C4DE5CFA65899874FB7F085BEF4B4618BDD746FBE1169E10BFBFBD",
+    "changed_path": "/system/build.prop",
+    "old_line": "ro.treble.enabled=false",
+    "new_line": "ro.treble.enabled=true"
+  },
+  "avb": {
+    "partition_size": 1651167232,
+    "salt": "6d38622d617564696f2d7232",
+    "rollback_index": 1644019200,
+    "rollback_index_location": 1,
+    "key_relative": "tools/testkey_rsa2048.pem"
+  }
+}

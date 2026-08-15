@@ -1,6 +1,6 @@
 # M8 status
 
-Updated: 2026-08-15
+Updated: 2026-08-16
 
 ## Golden baseline
 
@@ -33,14 +33,15 @@ Updated: 2026-08-15
 
 ## Current audio candidate
 
-`m8b-audio-r1` 状态为 **READY TO FLASH — OFFLINE CHECKED**；尚未刷机，r5 仍是实机验收基线。
+`m8b-audio-r2` 状态为 **READY TO FLASH — OFFLINE CHECKED**；r1 已实机证明确切 VNDK APEX 存在但 Treble linker namespace 未启用，r5 仍是实机验收基线。
 
 | 项目 | 值 |
 |---|---|
-| 镜像 | `out/candidates/m8b-audio-r1/x12-m8b-audio-r1.img` |
-| 大小 / SHA-256 | 1025951744 bytes / `298DCA11DBDFDC81028869C01866411C634FC2C7B979EDA3FB0346BF7434DBDD` |
-| 唯一变量 | 把 Test8r2 exact flattened `/system/apex/com.android.vndk.current` 完整恢复到 r5 system |
-| runtime APEX 名 | `com.android.vndk.v31` |
+| 镜像 | `out/candidates/m8b-audio-r2/x12-m8b-audio-r2.img` |
+| 大小 / SHA-256 | 1025951744 bytes / `B39300CB3E335D75C9D61594CD94565D9C24FC92F467F9050CD1E604D87E9C2C` |
+| 直接基线 | `m8b-audio-r1` / `298DCA11DBDFDC81028869C01866411C634FC2C7B979EDA3FB0346BF7434DBDD` |
+| 唯一变量 | Android 12 产品级 Treble/VNDK 合同；候选中仅 `/system/build.prop` 的 `ro.treble.enabled=false → true` |
+| runtime 合同 | stock vendor `ro.vndk.version=31` + exact `com.android.vndk.v31`；生成 `[vendor]`、VNDK namespace 和 `default→vndk` 的 `libaudioroute.so` |
 | payload 差异 | `system_a`、`super.fex`、`Vsuper.fex`、`vbmeta_system.fex`、`Vvbmeta_system.fex` |
 | 保持项 | boot/kernel/ramdisk、vendor_boot、vendor/product/vendor_dlkm、遥控、Projectivy、Power 均不变 |
 
@@ -67,6 +68,10 @@ Updated: 2026-08-15
 - 遗漏发生在 AOSP 输出阶段：`/home/tianyi/ubox10-aosp/device/ubox/ubox10/BoardConfig.mk` 没有 `BOARD_VNDK_VERSION := current`，`ubox10.mk` 也未纳入 `com.android.vndk.current`，AOSP `out/.../system/apex` 已无 VNDK APEX；`scripts/build-m8a-candidate.py` 只复制 system 并合并 system_ext，没有裁剪该 APEX。
 - r5 vendor 共 228 个唯一 `DT_NEEDED`；其中 55 个属于 Test8 VNDK 合同，r5 已有 54 个，唯一物理缺项为 `libaudioroute.so`。修复仍恢复完整 145-entry exact VNDK APEX，避免继续依赖 no-config fallback 或把单库任意放进 `/vendor/lib`。
 - r1 离线确认 Apollo HAL 与 `libaudioroute.so` 的全部传递依赖可解析；exact VNDK 子树逐项一致、SELinux metadata 保持，LP/AVB/e2fsck/SELinux/ELF/外层校验通过。
+- r1 实机确认 `com.android.vndk.v31` active 且 `/apex/com.android.vndk.v31/lib/libaudioroute.so` 存在，但 Apollo HAL 仍报该库不可见。运行时 `/linkerconfig/ld.config.txt` 没有 VNDK namespace 或 `default→vndk` link；`ro.treble.enabled=false`、`ro.vndk.version=31`。因此 r1 的 payload 恢复有效，缺失的是产品级 Treble/VNDK 合同。
+- AOSP 根因已确认：原输出的 `DeviceVndkVersion`、`ProductVndkVersion` 为空，`Treble_linker_namespaces=false`、`Enforce_vintf_manifest=false`。源码产品缺少 `PRODUCT_SHIPPING_API_LEVEL := 31` 与 `BOARD_VNDK_VERSION := current`。
+- r2 源码修复加入上述两个产品合同值，并确保 `com.android.vndk.current` 纳入产品。重建后 `DeviceVndkVersion=current`、`ProductVndkVersion=current`、`Treble_linker_namespaces=true`、`Enforce_vintf_manifest=true`、`Platform_vndk_version=31`、`ro.treble.enabled=true`；`systemimage/productimage/systemextimage/check-vintf-all` 和 SELinux 构建通过。
+- r2 以 r1 为直接基线，仅把已验证生成属性 `ro.treble.enabled` 改为 `true`；r1 的 exact VNDK APEX、`system/etc/linker.config.pb`、vendor、boot/kernel 和全部已验收内容原字节不变。匹配 SP1A.210812.015 的 host linkerconfig 对 r2 system/vendor/product 输入离线生成 `[vendor]` 与 VNDK namespace，搜索 `/apex/com.android.vndk.v31/${LIB}`，且 `namespace.default.link.vndk.shared_libs` 包含 `libaudioroute.so`。未修补生成的 `ld.config.txt`，未向 `/vendor/lib` 复制库。
 - `audio_mixer_paths.xml` controls、`audio_platform_info.xml` 的 `sndhdmi`/`audiocodec:4/5` 与 ALSA topology 仅保留为 HAL 成功加载后的第二层假设，本候选未修改。
 
 ## Verified progress
@@ -93,6 +98,8 @@ Updated: 2026-08-15
 | M8B rc-core-r3 | **FAILED - EXACT FILE FOUND, PARSE REJECTED** | exact keylayout 路径、权限、SELinux 与 SHA 均正确，但 Android 12 parser 在 line 13 拒绝 legacy `WAKE_DROPPED`，EventHub 回退 `Generic.kl` | 完整转换全部不受支持的 label/flag |
 | M8B rc-core-r4 | **DEVICE ACCEPTED - SETTINGS SEMANTIC FAIL** | native rc-core/repeat、exact `.kl` 加载、OK/DPAD/HOME/BACK/Power 均通过；物理 Settings 产生 KEY_CONFIG 171→Android SETTINGS 176，但该 keyevent 在当前系统无效果 | 仅把 Linux 171 映射为已验证有效的 Android MENU 82 |
 | M8B rc-core-r5 | **DEVICE ACCEPTED - AUDIO OPEN** | native rc-core/repeat、exact `.kl`、Settings→MENU 与全部基础遥控通过；Projectivy、网络、Bluetooth/HID、USB、AVC/HEVC 已验收 | 捕获 Apollo HAL `adev_open` 的首次返回分支，不做 XML card-name 猜测 |
+| M8B audio-r1 | **FAILED - VNDK NAMESPACE DISABLED** | exact VNDK 31 APEX active、`libaudioroute.so` 存在，但 `ro.treble.enabled=false` 令 linkerconfig 使用 legacy 配置；无 VNDK namespace / `default→vndk` link | 启用正确 Android 12 产品级 Treble/VNDK 合同 |
+| M8B audio-r2 | **READY TO FLASH - OFFLINE CHECKED** | AOSP Treble/VNDK 重建通过；候选离线生成 vendor/VNDK namespace 并向 unchanged Apollo HAL 暴露现有 `libaudioroute.so` | 刷写后先验收运行时 linkerconfig，再检查 primary HAL/output |
 
 ## M8B native rc-core
 
@@ -240,8 +247,8 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - r13 是当前 GOLDEN BASELINE；Projectivy、provisioning、遥控和 Power sleep/wake/shutdown 均以实机 UART 为准。
 - M8B native rc-core 遥控迁移已在 r5 设备验收并关闭；Mouse mode intentionally dropped，legacy multi_ir 工件保留为 inert reference，后续仅在独立清理候选处理。
 - 当前 board、DT 与 runtime 证据识别为 H616。设备运行 64 位 kernel，但没有已证明可用的 AArch64 Android graphics userspace；本轮不扩展到 64 位 userspace。
-- `m8b-audio-r1` 只恢复 exact VNDK APEX；未修改 mixer、audio platform XML、DTS、machine driver 或已验收功能。
+- `m8b-audio-r2` 只启用产品级 Treble/VNDK 合同；未修改 VNDK payload、mixer、audio platform XML、DTS、machine driver 或已验收功能。
 
 ## Next action
 
-经用户另行授权后刷写 `m8b-audio-r1`。先确认 `com.android.vndk.v31` active、`libaudioroute.so` 可见且旧 `dlopen ... libaudioroute.so not found` 消失，再检查 primary HAL/output 并播放已知 HEVC+AAC；若仍失败，只记录 HAL 成功加载后的新首错，不预改 mixer/ALSA topology。
+经用户另行授权后刷写 `m8b-audio-r2`。先确认 `ro.treble.enabled=true`，再确认运行时 `/linkerconfig/ld.config.txt` 出现 `[vendor]`、VNDK search path 和包含 `libaudioroute.so` 的 `default→vndk` link；随后检查旧缺库日志、primary HAL/output，并播放已知 HEVC+AAC。若仍失败，只记录 HAL 成功加载后的新首错，不预改 mixer/ALSA topology。
