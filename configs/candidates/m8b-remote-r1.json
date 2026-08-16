@@ -1,0 +1,143 @@
+{
+  "id": "m8b-remote-r1",
+  "parent_config_relative": "configs/candidates/m8b-ime-r1.json",
+  "repair": "Add the device-proven Google Android TV Remote Service v2 receiver contract while reusing the accepted Android 12 AOSP TvRemoteProvider framework and preserving m8b-ime-r1.",
+  "base_candidate_relative": "out/candidates/m8b-ime-r1/x12-m8b-ime-r1.img",
+  "base_candidate_size": 1028208640,
+  "base_candidate_sha256": "B89612D5004BA3D8214F21E22E4BED7BFBA5B2F8FE441F9364315F851F1FE240",
+  "source_super_size": 848409756,
+  "source_super_sha256": "D32CCB2B85B0A869156D7389A51B1C56D33B3EBBBEA2FA7ED577E255CC460012",
+  "logical_partitions": {
+    "system_a": {"size": 1651167232, "sha256": "0ADDD79774E03839DD00229B2DD90939D6BD235B5B5B69B803F423AFB23640B2"},
+    "vendor_a": {"size": 119066624, "sha256": "BB91A8B7ED4AC0145F434F89FD76865EB4311F234AA46D67C8373A7CD5B4929A"},
+    "product_a": {"size": 272629760, "sha256": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974"},
+    "vendor_dlkm_a": {"size": 6680576, "sha256": "C589DC0B12E150469F179738F127F36F6321943577453A7DB335AB9E647B8FE5"}
+  },
+  "historical_remote_v2": {
+    "implementation_commit": "a8cd9629d4049161022099e6566024c28074a979",
+    "device_result_commit": "1e4fa199413df6f74fe24f7c5edde9bc69c34c0a",
+    "rro_path_fix_commit": "4d68b496c6bf240fc5279921e27e0f8239a523e5",
+    "device_result": "Test9r2 R2-REMOTE-PASS after granting only BLUETOOTH_CONNECT",
+    "ports": [6466, 6467],
+    "mdns_service": "_androidtvremote2._tcp",
+    "client": "official Google TV iOS application",
+    "proven_functions": ["discovery", "TLS pairing", "navigation", "phone keyboard text entry"]
+  },
+  "remote_provider": {
+    "module": "com.android.media.tv.remoteprovider",
+    "aosp_path": "/home/tianyi/ubox10-aosp/frameworks/base/media/lib/tvremote",
+    "frameworks_base_commit": "c53e71dc397de7486c9a8899f71598c3c3a18d44",
+    "android_bp_sha256": "DF9EA1A57D3DDA20C27718DA5039DA303540F0848E91C29E1AB6B29520550BC3",
+    "accepted_jar_path": "/system/framework/com.android.media.tv.remoteprovider.jar",
+    "accepted_jar_sha256": "CF2FC4A6878A1CC7576F6AF84D430C98D4485FFDA992D43A8AA03D9C696C2EBE",
+    "accepted_library_xml_path": "/system/etc/permissions/com.android.media.tv.remoteprovider.xml",
+    "accepted_library_xml_sha256": "B3C1D21187054FB7049BFF10B9DA1D38D8685E0C2583AB000129340E74885994",
+    "accepted_tv_features_path": "/system/etc/permissions/tv_core_hardware.xml",
+    "accepted_tv_features_sha256": "F013DC28DC32BAC5AFD32C3BDBE05DEFED1FC6D9CBB48CD1EDE21E4A138D1B02",
+    "accepted_framework_res_sha256": "9B690832FCFA339EEC1E474F7072980D5F3E23C878C71232D85AE25BA2ADB388"
+  },
+  "remote_service": {
+    "package": "com.google.android.tv.remote.service",
+    "version_code": 95855272,
+    "version_name": "5.2.473254133",
+    "min_sdk": 24,
+    "target_sdk": 33,
+    "donor_relative": "work/preinstall_apks/AndroidTvRemoteService-5.2.473254133.apk",
+    "donor_size": 3817484,
+    "donor_sha256": "9D1B5C5EF0E293F8ED17C26E8F62DE661ACC7F2DDC2AAA8EF23E4CABE430B973",
+    "signer_subject": "CN=atv_remote_service, OU=Android, O=Google Inc., L=Mountain View, ST=California, C=US",
+    "signer_certificate_sha256": "456EDBC33222D20FF158D42E9FAB0252DBE0514D6E1C39588D6B1982CC189137",
+    "native_libraries": 0,
+    "destination_apk": "/system/priv-app/AndroidTvRemoteService/AndroidTvRemoteService.apk",
+    "destination_privapp": "/system/etc/permissions/privapp-permissions-com.google.android.tv.remote.service.xml",
+    "destination_default_permissions": "/system/etc/default-permissions/default-permissions-com.google.android.tv.remote.service.xml",
+    "destination_rro": "/system_ext/overlay/UBOX10TvRemoteConfigOverlay.apk",
+    "rro_runtime_path": "/system/system_ext/overlay/UBOX10TvRemoteConfigOverlay.apk",
+    "rro_package": "com.ubox10.overlay.tvremote",
+    "rro_target": "android",
+    "rro_priority": 999,
+    "provider_config_resource": "config_tvRemoteServicePackage",
+    "provider_config_value": "com.google.android.tv.remote.service",
+    "requested_privileged_permissions": [
+      "android.permission.START_ACTIVITIES_FROM_BACKGROUND",
+      "android.permission.HDMI_CEC",
+      "android.permission.WRITE_SECURE_SETTINGS",
+      "android.permission.DUMP",
+      "android.permission.READ_LOGS",
+      "android.permission.CHANGE_COMPONENT_ENABLED_STATE",
+      "android.permission.LOCAL_MAC_ADDRESS",
+      "android.permission.TV_VIRTUAL_REMOTE_CONTROLLER",
+      "android.permission.CAPTURE_AUDIO_OUTPUT",
+      "android.permission.MODIFY_AUDIO_ROUTING",
+      "android.permission.UPDATE_APP_OPS_STATS",
+      "android.permission.MEDIA_CONTENT_CONTROL",
+      "android.permission.BLUETOOTH_PRIVILEGED",
+      "android.permission.READ_PRIVILEGED_PHONE_STATE",
+      "android.permission.MANAGE_USERS",
+      "android.permission.INTERACT_ACROSS_USERS"
+    ],
+    "default_runtime_permissions": ["android.permission.BLUETOOTH_CONNECT"],
+    "explicitly_not_default_granted": [
+      "android.permission.BLUETOOTH_SCAN",
+      "android.permission.BLUETOOTH_ADVERTISE"
+    ],
+    "signature_only_not_allowlisted": ["android.permission.INJECT_EVENTS"]
+  },
+  "integration": {
+    "patch_relative": "configs/aosp/m8b-remote-r1-integration.patch",
+    "patch_sha256": "000EA6A872DC55A2421560A80F6E858FC494264870C075E16E1ED6AF78660FD9",
+    "source_root_relative": "configs/aosp/m8b-remote-r1",
+    "source_files": {
+      "Android.bp": "0D1CE1821C05F1707EA1F5AF23BA4D5F9D2F2D6127D8EEB5EF125A0160FCD842",
+      "AndroidManifest.xml": "C7C709E12CAC689D0B907F80F157CEAAFA4BDA1FD00C671FB112D5A05C250F21",
+      "default-permissions/default-permissions-com.google.android.tv.remote.service.xml": "B28DCD3E92FD04E77ADE71F548A949828CBE5C731D608D5CED9F8BBE0955E563",
+      "permissions/privapp-permissions-com.google.android.tv.remote.service.xml": "E46CA371727DF823E07495BE5451EF2E2A1874A7C4E7FE82A41448F966FA23F2",
+      "res/values/config.xml": "842D39ACE93DA4FC997FECF16228F56C14C3ABC51A8743B134BC971D9A1898D5"
+    },
+    "install_script_relative": "scripts/install-m8b-remote-r1.sh",
+    "install_script_sha256": "2D5623AAA6FA53B3775C4DA3D06E626965583C9FA9EBD26F30426D220BF36C31",
+    "aosp_product_config_path": "/home/tianyi/ubox10-aosp/device/ubox/ubox10/ubox10.mk",
+    "aosp_product_config_sha256": "3888E127A487D672E5A5623AAACA2992D66EED074E18010D2DEBEE6A645FA076",
+    "aosp_remote_root": "/home/tianyi/ubox10-aosp/device/ubox/ubox10/remote",
+    "aosp_outputs": {
+      "/home/tianyi/ubox10-aosp/out/target/product/ubox10/system/priv-app/AndroidTvRemoteService/AndroidTvRemoteService.apk": {"size": 3817484, "sha256": "9D1B5C5EF0E293F8ED17C26E8F62DE661ACC7F2DDC2AAA8EF23E4CABE430B973"},
+      "/home/tianyi/ubox10-aosp/out/target/product/ubox10/system/etc/permissions/privapp-permissions-com.google.android.tv.remote.service.xml": {"size": 1417, "sha256": "E46CA371727DF823E07495BE5451EF2E2A1874A7C4E7FE82A41448F966FA23F2"},
+      "/home/tianyi/ubox10-aosp/out/target/product/ubox10/system/etc/default-permissions/default-permissions-com.google.android.tv.remote.service.xml": {"size": 227, "sha256": "B28DCD3E92FD04E77ADE71F548A949828CBE5C731D608D5CED9F8BBE0955E563"},
+      "/home/tianyi/ubox10-aosp/out/target/product/ubox10/system_ext/overlay/UBOX10TvRemoteConfigOverlay.apk": {"size": 8542, "sha256": "71D60AA7A38B86269E16D42DF61DBF8FB661D42ACE14929DB7CF0571DDC314A8"}
+    }
+  },
+  "apk_tools": {
+    "aapt2_relative": "work/remote-service-migration/toolchain/build-tools31/android-12/aapt2.exe",
+    "aapt2_sha256": "943C537CE9B4B6BBDC688B35605E916A72B7EC67B517116902CC0F33D3AEE2F5",
+    "apksigner_relative": "work/remote-service-migration/toolchain/build-tools31/android-12/lib/apksigner.jar",
+    "apksigner_sha256": "F02104500B5D997E9A521C9901F1DE3BF529CFBC3734FA0F760EAED2C47C5E6E",
+    "java_relative": "work/remote-service-migration/toolchain/jdk17/jdk-17.0.20+8/bin/java.exe",
+    "java_sha256": "5B463CAD4FCD8E4C655CC1C6F45A3B2EBB002ADAC94EBAD2FDAA4F43E2AEE211"
+  },
+  "play_regression_guard": {
+    "baseline_play_gms_state": "No Play Store or GMS app directories in accepted system/product inventory",
+    "forbidden_paths": [
+      "/system/app/Phonesky",
+      "/system/priv-app/Phonesky",
+      "/system/priv-app/PrebuiltGmsCore",
+      "/product/app/Phonesky",
+      "/product/priv-app/Phonesky",
+      "/product/priv-app/PrebuiltGmsCore"
+    ],
+    "feature_file_must_remain_exact": "/system/etc/permissions/tv_core_hardware.xml",
+    "system_and_product_properties_must_remain_exact": true
+  },
+  "avb": {
+    "partition_size": 1651167232,
+    "salt": "6d38622d72656d6f74652d7231",
+    "rollback_index": 1644019200,
+    "rollback_index_location": 1,
+    "key_relative": "tools/testkey_rsa2048.pem"
+  },
+  "container": {
+    "total_entries": 50,
+    "preserved_entries": 46,
+    "replacements": ["super.fex", "vbmeta_system.fex"],
+    "companions": ["Vsuper.fex", "Vvbmeta_system.fex"]
+  }
+}

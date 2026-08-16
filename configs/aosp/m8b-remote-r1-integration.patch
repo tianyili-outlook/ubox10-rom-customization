@@ -1,0 +1,13 @@
+diff --git a/device/ubox/ubox10/ubox10.mk b/device/ubox/ubox10/ubox10.mk
+--- a/device/ubox/ubox10/ubox10.mk
++++ b/device/ubox/ubox10/ubox10.mk
+@@ -28,5 +28,9 @@ PRODUCT_PROPERTY_OVERRIDES += \
+ # Initial product package inclusions
+ PRODUCT_PACKAGES += \
+     AwTvProvision \
++    AndroidTvRemoteService \
+     LeanbackIME \
++    UBOX10TvRemoteConfigOverlay \
++    default-permissions-com.google.android.tv.remote.service \
++    privapp-permissions-com.google.android.tv.remote.service \
+     com.android.vndk.current

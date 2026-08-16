@@ -29,7 +29,7 @@ The AOSP tree, stock image, extracted payloads, rollback image, and candidate ou
 
 ## Candidate chain
 
-The original M8A r1-r13 chain established the bootable Android 12 TV product and remains preserved for provenance. `m8b-audio-r2` is the current device-accepted baseline. The current offline candidate is `m8b-ime-r1`, which adds only the source-built AOSP TV LeanbackIME product module.
+The original M8A r1-r13 chain established the bootable Android 12 TV product and remains preserved for provenance. `m8b-ime-r1` is the current device-accepted baseline (**IME PASS**, inheriting **AUDIO PASS**). The current offline candidate is `m8b-remote-r1`, status **READY TO FLASH**.
 
 Run from the repository root on the verified Windows + WSL environment:
 
@@ -67,7 +67,24 @@ For the local input milestone, apply `configs/aosp/m8b-ime-r1-leanback-ime.patch
 python scripts/build-m8b-ime-r1-candidate.py
 ```
 
-LeanbackIME declares itself default in its standard input-method metadata, so Android 12 can enable/select it when no prior IME exists; fresh-data/reboot persistence remains a physical-device gate. The following `m8b-remote-r1` remains separate and will reuse the proven Test9r2 TvRemoteProvider/RRO/Google Remote Service chain. No Remote Service or proprietary APK is part of `m8b-ime-r1`.
+LeanbackIME declares itself default in its standard input-method metadata, so Android 12 can enable/select it when no prior IME exists. Fresh-data automatic selection and physical TV use passed; separate reboot persistence was not exercised and was accepted as non-blocking. No Remote Service or proprietary APK is part of `m8b-ime-r1`.
+
+For `m8b-remote-r1`, copy the tracked text sources in `configs/aosp/m8b-remote-r1/` to `/home/tianyi/ubox10-aosp/device/ubox/ubox10/remote/`, place the ignored donor `work/preinstall_apks/AndroidTvRemoteService-5.2.473254133.apk` there as `AndroidTvRemoteService.apk`, and apply `configs/aosp/m8b-remote-r1-integration.patch` after the LeanbackIME patch. The donor must be exactly 3817484 bytes with SHA-256 `9D1B5C5EF0E293F8ED17C26E8F62DE661ACC7F2DDC2AAA8EF23E4CABE430B973`; it is never committed or redistributed. Then run from the locked AOSP tree:
+
+```bash
+source build/envsetup.sh
+lunch ubox10-userdebug
+m systemimage -j4
+m systemextimage -j4
+```
+
+The inherited ATV product already supplies `com.android.media.tv.remoteprovider`, its shared-library XML, the TvRemoteProvider framework bridge and television/leanback features. The new normal modules add only the presigned privileged donor, its exact privapp allowlist, a CONNECT-only default-permissions file, and the source-built system_ext static RRO. `scripts/build-m8b-remote-r1-candidate.py` hash-locks those outputs, verifies donor signature/manifest/services/library and RRO resources, and installs the four generated files into a staging copy of accepted `m8b-ime-r1` system. It rejects every unrelated filesystem change and requires product/LeanbackIME, vendor and vendor_dlkm to remain exact. Build with:
+
+```powershell
+python scripts/build-m8b-remote-r1-candidate.py
+```
+
+The result is `out/candidates/m8b-remote-r1/x12-m8b-remote-r1.img`, 1031723008 bytes, SHA-256 `F3B09E5565AC4ED4E5EE326D392622E7B036A8519B8444B966E77CC4751B814A`. Only logical `system_a` changes; the outer replacements are `super.fex` and `vbmeta_system.fex` plus their generated V companions. The candidate is not device accepted until the explicit physical sequence in `docs/DEVICE_TEST.md` passes.
 
 ## Checks
 

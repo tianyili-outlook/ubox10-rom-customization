@@ -33,8 +33,10 @@
 - [ ] **延期至现场：遥控器 Settings/Menu 物理复验与语义分离。** 既有 r5 证据为两键均打开 Projectivy menu；目标为 Menu→Projectivy menu、Settings→Android system Settings。不得远程修改当前 input stack。
 - [x] 选择并可逆实机证明 AOSP `LeanbackIME`：InputMethodManager discovery/enable/default、DPAD focus、DPAD_CENTER 输入 `ty`、BACK dismissal/reopen 与无 crash/retry 均通过；测试后恢复 accepted device 的空 IME 状态。
 - [x] 构建 `m8b-ime-r1`：标准 product module 集成，product AVB/LP/outer preservation 通过；system/vendor/vendor_dlkm 与 accepted product properties 原字节保持。
-- [ ] **延期至现场：**刷入 `m8b-ime-r1` 后验证 fresh-data 首启自动 enable/default、reboot persistence、物理遥控器与 1920×1080 电视观感；当前候选仅 **OFFLINE CHECKED / DEVICE PERSISTENCE PENDING**。
-- [ ] 下一独立里程碑 `m8b-remote-r1`：按 Test9r2 proven Remote v2 链恢复 official Google TV iOS Remote + phone keyboard；不得导入 Play/GMS regression 或与 `m8b-ime-r1` 合并。
+- [x] `m8b-ime-r1` 物理设备验收：fresh-data 首启自动 enable/default，Wi-Fi 密码输入、物理 DPAD/OK/BACK、文字输入与 1920×1080 TV 观感通过；状态 **DEVICE ACCEPTED / IME PASS**。
+- [x] 单独 reboot persistence 未另行执行；用户以 fresh-data 自动 enable/default 与实际物理使用接受为非阻塞，不声明该子项 PASS。
+- [x] 构建独立 `m8b-remote-r1`：复用 accepted AOSP TvRemoteProvider，加入 hash-locked Google donor、system_ext RRO、exact privapp policy 与 CONNECT-only default grant；system_a/AVB/LP/outer 检查通过，product/LeanbackIME、vendor/vendor_dlkm 与 boot 保持。
+- [ ] **等待单独明确刷机授权：**按 `docs/DEVICE_TEST.md` 验收 Remote Service、6466/6467、`_androidtvremote2._tcp`、官方 Google TV iPhone discovery/pair/navigation/phone text、LeanbackIME coexistence、reboot persistence 与 Play 状态。
 - [ ] 增加 exFAT 支持；USB host/storage 已通过，当前仅 filesystem unsupported。
 - [ ] 复现并定位选中态渐变噪点及启用 Wi-Fi 时短暂撕裂/黑屏。
 - [ ] **延期至现场：**完整验证 suspend/resume 后 Wi-Fi、Bluetooth、网络与 ADB 恢复。

@@ -1,8 +1,8 @@
 # M8B ime-r1 candidate
 
-状态：**OFFLINE CHECKED / LIVE APK PASS / DEVICE PERSISTENCE PENDING**。
+状态：**DEVICE ACCEPTED / IME PASS**。
 
-设备验收基线仍是 `m8b-audio-r2`（**DEVICE ACCEPTED / AUDIO PASS**）；本候选未刷入远程设备。
+直接基线为 `m8b-audio-r2`（**DEVICE ACCEPTED / AUDIO PASS**）；本候选现已刷入并完成物理设备验收。
 
 ## 选择与实机可用性
 
@@ -10,7 +10,7 @@
 
 可逆 userdata 试验已通过：APK 被 InputMethodManager 发现、正常 enable/set 为 default，AOSP `EditTextVariations` 的真实 EditText 获得焦点并显示该 IME。DPAD_CENTER 输入 `t`，DPAD_RIGHT 将键盘焦点移至 `y`，再次 DPAD_CENTER 后 UI hierarchy 精确读回 `ty`；BACK 隐藏，重新聚焦后可再次显示。IME 与 probe PID 在试验前后未变，无 exit-info 或 crash/retry loop。普通 `KEYCODE_ENTER` 在该 multiline EditText 执行 editor action，而不是选择当前软键；验收选择键路径为设备已接受的 DPAD_CENTER，不将 ENTER 行为夸大为通过。测试后两个 APK 均卸载，IME list/default 恢复为空，设备仍在线且 `sys.boot_completed=1`。
 
-1920×1080 截图与焦点移动可远程确认窗口布局和 focus ring；无人现场，因此不声明物理画面观感。
+后续物理设备验收确认 fresh-data 首启正常进入 Projectivy，物理遥控与 Wi-Fi 正常；Wi-Fi 密码 EditText 无任何 ADB enable/set 即自动显示 LeanbackIME。`ime list -a`、`enabled_input_methods` 与 `default_input_method` 均为 `com.android.inputmethod.leanback/.service.LeanbackImeService`，物理 DPAD focus/OK 选键、文字输入、BACK dismissal 与 1920×1080 电视观感均通过。
 
 拒绝项：stock/Test8r2 `LatinIME` 是约 18.5 MB 的普通手机 AOSP 键盘，没有 TV D-pad focus provenance；仅因可构建不足以证明可用。锁定 AOSP 已有合适 TV 模块，因此不引入外部第三方 APK或额外维护依赖。
 
@@ -24,7 +24,7 @@
 
 AOSP 当前 Treble source contract 会额外生成与 accepted product 不同的 `build.prop`；packager 明确恢复 accepted `m8b-audio-r2` product property 文件原字节，避免把无关 runtime property 变化混入 IME 候选。`system_a`、`vendor_a`、`vendor_dlkm_a` 哈希不变，boot/kernel/vendor_boot、`vbmeta_system` 与其余外层 payload 均保持；payload delta 仅 `product_a`、`super.fex`、`Vsuper.fex`。product AVB、accepted system/vbmeta AVB、LP 重解包与 IMAGEWTY preservation/verify 均通过。
 
-LeanbackIME 的 `input-method` metadata 为 `android:isDefault=true`；Android 12 在没有 enabled/default IME 时会选择 default-enabled IME。因此候选按标准首次启动流程设计为无需 ADB enable/set。受禁止 reboot/flash 约束，fresh-data 首启、reboot persistence 和物理遥控器最终观感仍待现场验证。
+LeanbackIME 的 `input-method` metadata 为 `android:isDefault=true`；Android 12 在没有 enabled/default IME 时会选择 default-enabled IME。fresh-data 首启已证明无需 ADB enable/set。用户没有另行执行单独 reboot persistence，并以 fresh-data 自动选择和实际物理使用接受该子项为非阻塞；本文不声明 reboot persistence PASS。
 
 ## 工件
 
@@ -35,8 +35,8 @@ LeanbackIME 的 `input-method` metadata 为 `android:isDefault=true`；Android 1
 | `super.img` | 848409756 | `D32CCB2B85B0A869156D7389A51B1C56D33B3EBBBEA2FA7ED577E255CC460012` |
 | source-built `LeanbackIME.apk` | 376800 | `4CF1AD0D5CA5514F59BAE9467981E7FDEB56692932208A15E9286166ECE73075` |
 
-## 下一输入里程碑
+## Independent Remote candidate
 
-`m8b-remote-r1` 独立于本候选：保留 Test9r2 已证明的 AOSP `com.android.media.tv.remoteprovider`、system_ext 扫描路径中的 provider RRO、Google-original Android TV Remote Service donor、privapp allowlist/provider whitelist、6466/6467、mDNS、iPhone Google TV app discovery/pairing/navigation/phone keyboard，以及缺失 default `BLUETOOTH_CONNECT` grant 是首个 deterministic blocker、只授予 CONNECT 即完成链的事实。不得导入 Test9r2 全量或 Play/GMS 变化；当时 Play Store `AccessRestrictedActivity` regression 未证明由 Remote Service 引起。该服务未加入 `m8b-ime-r1`。
+`m8b-remote-r1` 已作为独立候选构建为 **READY TO FLASH**：保留 Test9r2 已证明的 AOSP `com.android.media.tv.remoteprovider`、system_ext 扫描路径中的 provider RRO、Google-original Android TV Remote Service donor、privapp allowlist/provider whitelist、6466/6467、mDNS、iPhone Google TV app discovery/pairing/navigation/phone keyboard，以及缺失 default `BLUETOOTH_CONNECT` grant 是首个 deterministic blocker、只授予 CONNECT 即完成链的事实。它未导入 Test9r2 全量或 Play/GMS 变化；当时 Play Store `AccessRestrictedActivity` regression 未证明由 Remote Service 引起。该服务仍不属于本 `m8b-ime-r1` 镜像。
 
 证据：`docs/m8/device-tests/20260816-m8b-ime-r1/`。

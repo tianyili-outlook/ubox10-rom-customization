@@ -1,0 +1,51 @@
+package {
+    default_applicable_licenses: ["ubox10_remote_service_proprietary_license"],
+}
+
+license {
+    name: "ubox10_remote_service_proprietary_license",
+    visibility: [":__subpackages__"],
+    license_kinds: ["legacy_proprietary"],
+}
+
+android_app_import {
+    name: "AndroidTvRemoteService",
+    apk: "AndroidTvRemoteService.apk",
+    presigned: true,
+    privileged: true,
+    required: [
+        "default-permissions-com.google.android.tv.remote.service",
+        "privapp-permissions-com.google.android.tv.remote.service",
+    ],
+    uses_libs: ["com.android.media.tv.remoteprovider"],
+    optional_uses_libs: [
+        "androidx.window.extensions",
+        "androidx.window.sidecar",
+        "com.android.libraries.tv.tvsystem",
+    ],
+    dex_preopt: {
+        enabled: false,
+    },
+}
+
+prebuilt_etc {
+    name: "privapp-permissions-com.google.android.tv.remote.service",
+    src: "permissions/privapp-permissions-com.google.android.tv.remote.service.xml",
+    filename_from_src: true,
+    sub_dir: "permissions",
+}
+
+prebuilt_etc {
+    name: "default-permissions-com.google.android.tv.remote.service",
+    src: "default-permissions/default-permissions-com.google.android.tv.remote.service.xml",
+    filename_from_src: true,
+    sub_dir: "default-permissions",
+}
+
+runtime_resource_overlay {
+    name: "UBOX10TvRemoteConfigOverlay",
+    certificate: "platform",
+    resource_dirs: ["res"],
+    system_ext_specific: true,
+    sdk_version: "current",
+}
