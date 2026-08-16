@@ -33,9 +33,9 @@ Updated: 2026-08-16
 
 强制回滚仍为 `m8a-initial-atv-r13`：`out/candidates/m8a-initial-atv-r13/x12-m8a-initial-atv-r13.img`，SHA-256 `1D367F7091A7BD6A0791B2CFE45E7AAB551E0312D8C68136548A4927354A8E06`。
 
-## Accepted working baseline
+## Accepted IME milestone
 
-`m8b-ime-r1` 已完成物理设备验收，状态为 **DEVICE ACCEPTED / IME PASS**，并成为当前运行基线。
+`m8b-ime-r1` 已完成物理设备验收，状态为 **DEVICE ACCEPTED / IME PASS**，现由直接后继 `m8b-remote-r1` 继承。
 
 | 项目 | 值 |
 |---|---|
@@ -48,9 +48,9 @@ Updated: 2026-08-16
 | reboot persistence | 未单独执行；fresh-data 自动 enable/default 与实际物理使用已满足本里程碑，接受为非阻塞，不声明 reboot persistence PASS |
 | 证据 | `docs/m8/device-tests/20260816-m8b-ime-r1/` |
 
-## Current Remote v2 candidate
+## Current accepted working baseline
 
-`m8b-remote-r1` 状态为 **READY TO FLASH**；直接基线为已验收 `m8b-ime-r1`，本轮未刷机。
+`m8b-remote-r1` 已完成物理设备验收，状态为 **DEVICE ACCEPTED / REMOTE PASS**，并成为当前运行基线；它继承 **AUDIO PASS** 与 **IME PASS**。
 
 | 项目 | 值 |
 |---|---|
@@ -61,12 +61,18 @@ Updated: 2026-08-16
 | Bluetooth | 仅 default grant `BLUETOOTH_CONNECT`；未 default grant SCAN/ADVERTISE；未伪授予 signature-only `INJECT_EVENTS` |
 | payload | logical 仅 `system_a`；外层 `super.fex`/`vbmeta_system.fex` 与两个 V companion 更新；`product_a`/LeanbackIME、vendor/vendor_dlkm、boot/kernel/vendor_boot 与其余外层 payload 保持 |
 | proven provenance | Test9r2 已实机证明 6466/6467、`_androidtvremote2._tcp`、official Google TV iPhone discovery/TLS pair/navigation/phone text；本候选把当时唯一 deterministic blocker CONNECT 纳入首次启动默认授权 |
-| Play guard | accepted M8B 无 Play/GMS app；候选未加入 Play/GMS、未改 feature identity 或 system/product properties，因此未导入 Test9r2 全量/`AccessRestrictedActivity` 变量；实机仍复核当前 Play 状态 |
+| runtime | `sys.boot_completed=1`；Remote Service 5.2.473254133 运行，CONNECT 为 `granted=true` + `GRANTED_BY_DEFAULT`，无需手工 grant；TCP `*:6466`/`*:6467` 监听；system_ext RRO 存在且 framework lookup 精确返回 Remote Service package |
+| physical acceptance | Projectivy、物理遥控、Wi-Fi、Bluetooth、LeanbackIME 无基础回归；official Google TV iPhone discovery/pair、DPAD、BACK、HOME、Volume±、Mute 与真实 EditText phone keyboard text PASS |
+| IME coexistence | 手机 Remote text-input mode 活跃时系统提示 `Use the keyboard on your mobile device` 并把输入交给手机；物理遥控导航仍工作。接受为 Android TV Remote session ownership，不视为 LeanbackIME 回归 |
+| persistence | 未单独执行 reboot-persistence；无具体失败迹象，本里程碑接受为非阻塞，不声明独立 reboot PASS |
+| Play guard | 当前实机 `com.android.vending`、`com.google.android.gms`、`com.google.android.gsf` 均不存在；候选未加入 Play/GMS、未改 feature identity 或 system/product properties，因此没有可执行的 Play runtime regression 测试，也未导入 Test9r2 `AccessRestrictedActivity` 变量 |
+| observation | LeanbackIME boot 后首次调用明显慢于后续调用，偶尔需按 OK 两三次；仅列低优先级可用性调查，尚未确认 defect 或 root cause |
 | offline checks | AOSP `systemimage`/`systemextimage`、donor v2/v3 signature、manifest/services/library、privapp/default grant、RRO target/resource、exact filesystem diff、四分区 e2fsck、AVB、LP、IMAGEWTY、14 项 focused tests 与全量 91 tests（3 fixture skip）PASS |
+| 证据 | `docs/m8/device-tests/20260816-m8b-remote-r1/` |
 
-详细差异与下一轮物理验收见 `docs/m8/candidates/m8b-remote-r1.md` 与 `docs/DEVICE_TEST.md`。刷机仍需单独明确授权。
+详细实现、验收与回归边界见 `docs/m8/candidates/m8b-remote-r1.md`、`docs/m8/device-tests/20260816-m8b-remote-r1/` 与 `docs/DEVICE_TEST.md`。
 
-## Current audio candidate
+## Accepted audio milestone
 
 `m8b-audio-r2` 状态为 **DEVICE ACCEPTED / AUDIO PASS**；r1 已实机证明确切 VNDK APEX 存在但 Treble linker namespace 未启用，r2 已在设备上闭合该合同。
 
@@ -101,7 +107,7 @@ Updated: 2026-08-16
 | H.264 / HEVC | **PASS**；VLC 使用 Allwinner OMX AVC/HEVC decoder，Cedar/VPU 硬解流畅 |
 | Audio | **FAIL — HIGH**；AudioFlinger 无 primary output，带 AAC 的 HEVC 停在 0:00；无音频同视频正常 |
 
-开放功能项：`m8b-remote-r1` 等待单独刷机授权和物理验收；exFAT unsupported；选中态渐变白/灰噪点；启用 Wi-Fi 时偶发短暂撕裂/黑屏后恢复；完整 post-resume Wi-Fi/Bluetooth/network 恢复、HDMI CEC 与 Settings/Menu 物理复验。VP9 runtime 已关闭；DRM 已收敛为可操作 Widevine L3、无 HDCP/secure decoder 要求，仍未验证受保护内容或 Netflix/Disney+/其他商业服务认证/播放。
+开放功能项：Settings/Menu 语义分离、exFAT unsupported、选中态渐变白/灰噪点、启用 Wi-Fi 时偶发短暂撕裂/黑屏后恢复、完整 post-resume Wi-Fi/Bluetooth/network 恢复、HDMI CEC 与 LeanbackIME cold-start latency。VP9 runtime 已关闭；DRM 已收敛为可操作 Widevine L3、无 HDCP/secure decoder 要求，仍未验证受保护内容或 Netflix/Disney+/其他商业服务认证/播放。
 
 ## Audio failure boundary
 
@@ -144,7 +150,7 @@ Updated: 2026-08-16
 | M8B audio-r1 | **FAILED - VNDK NAMESPACE DISABLED** | exact VNDK 31 APEX active、`libaudioroute.so` 存在，但 `ro.treble.enabled=false` 令 linkerconfig 使用 legacy 配置；无 VNDK namespace / `default→vndk` link | 启用正确 Android 12 产品级 Treble/VNDK 合同 |
 | M8B audio-r2 | **DEVICE ACCEPTED - AUDIO PASS** | 运行时 Treble/VNDK 合同、Apollo/AudioFlinger/ALSA HDMI、VLC HEVC+AAC HDMI 音频通过；后续 ADB-only 验证 VP9 Allwinner/Cedar 硬解与 Widevine 16.1.0 L3 | 保持 accepted baseline；物理画面、商业 DRM 服务、CEC、resume 与 Settings/Menu 复验延期 |
 | M8B ime-r1 | **DEVICE ACCEPTED - IME PASS** | fresh-data 自动 enable/default LeanbackIME；物理 DPAD/OK/BACK、文字输入与 1920×1080 TV 观感通过 | 作为 Remote v2 直接验收基线；单独 reboot persistence 未执行并接受为非阻塞 |
-| M8B remote-r1 | **READY TO FLASH** | minimal Remote v2 contract 离线闭合；system-only delta，CONNECT-only default grant，accepted provider/IME/Play identity 保持 | 获得单独明确授权后执行 physical Remote/phone-text/reboot/Play regression plan |
+| M8B remote-r1 | **DEVICE ACCEPTED - REMOTE PASS** | Projectivy/基础回归、CONNECT 默认授权、6466/6467、RRO lookup、official Google TV iPhone discovery/pair/navigation/volume 与真实 EditText phone text PASS；IME session ownership 行为接受 | 保持当前 accepted baseline；reboot persistence 未单独执行且不声明 PASS |
 
 ## M8B native rc-core
 
@@ -295,7 +301,8 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - `m8b-audio-r2` 只启用产品级 Treble/VNDK 合同；未修改 VNDK payload、mixer、audio platform XML、DTS、machine driver 或已验收功能，现已设备验收为 AUDIO PASS。
 - 2026-08-16 ADB-only 补验未刷机、未重启且未修改 ROM/device properties：VP9 为 Allwinner OMX/Cedar hardware-runtime PASS；Widevine 为可操作 L3，HDCP `NONE`，无 secure decoder 要求。物理画面/逐帧质量与商业服务认证或播放仍未证明。
 - 遥控器 Menu 与 Settings 当前均打开 Projectivy menu。两键语义分离为独立延期项，不回改已验收的 rc-core、keylayout 选择或其他按键行为。
+- 当前用户在设备现场，后续可按具体里程碑进行物理交互、重启、suspend/resume、HDMI 观察与恢复；不再以 remote-only/remote-safe 作为一般规划前提。任何新候选刷写仍需该候选的明确授权。
 
 ## Next action
 
-保持 `m8b-ime-r1` 为当前 **DEVICE ACCEPTED / IME PASS** 基线。`m8b-remote-r1` 已离线闭合为 **READY TO FLASH**；下一步仅在单独明确授权后刷入，并执行 official Google TV iOS Remote discovery/pair/navigation/phone text、LeanbackIME coexistence、reboot persistence 与 Play regression plan。HDMI CEC、完整 suspend/resume recovery、Settings/Menu 语义分离、graphics 画面关联、thermal soak 及商业 DRM 播放仍开放。
+保持 `m8b-remote-r1` 为当前 **DEVICE ACCEPTED / REMOTE PASS** 基线（继承 **AUDIO PASS / IME PASS**）。下一里程碑建议为 Settings/Menu 物理键语义分离：用户价值直接、变量可限定在按键语义层、现场可立即观察和回滚，且无需触碰已验收 kernel/rc-core 生命周期。其后依次为完整 suspend/resume recovery、graphics 现场关联、HDMI CEC、CPU/thermal soak、exFAT、商业 DRM、LeanbackIME cold-start latency、SELinux enforcement-readiness 与 legacy multi_ir/uinput 清理。

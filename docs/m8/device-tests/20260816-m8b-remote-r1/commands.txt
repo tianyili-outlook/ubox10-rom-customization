@@ -1,0 +1,16 @@
+# Read-only runtime confirmation; physical app/remote observations were supplied by the user.
+C:\platform-tools\adb.exe -s 192.168.1.8:7896 get-state
+C:\platform-tools\adb.exe -s 192.168.1.8:7896 shell getprop sys.boot_completed
+C:\platform-tools\adb.exe -s 192.168.1.8:7896 shell pm path com.google.android.tv.remote.service
+C:\platform-tools\adb.exe -s 192.168.1.8:7896 shell dumpsys package com.google.android.tv.remote.service
+C:\platform-tools\adb.exe -s 192.168.1.8:7896 shell pidof com.google.android.tv.remote.service
+C:\platform-tools\adb.exe -s 192.168.1.8:7896 shell ss -lnt
+C:\platform-tools\adb.exe -s 192.168.1.8:7896 shell pm path com.ubox10.overlay.tvremote
+C:\platform-tools\adb.exe -s 192.168.1.8:7896 shell cmd overlay lookup android android:string/config_tvRemoteServicePackage
+C:\platform-tools\adb.exe -s 192.168.1.8:7896 shell pm path com.android.inputmethod.leanback
+C:\platform-tools\adb.exe -s 192.168.1.8:7896 shell ime list -a
+C:\platform-tools\adb.exe -s 192.168.1.8:7896 shell settings get secure enabled_input_methods
+C:\platform-tools\adb.exe -s 192.168.1.8:7896 shell settings get secure default_input_method
+C:\platform-tools\adb.exe -s 192.168.1.8:7896 shell pm path com.android.vending
+C:\platform-tools\adb.exe -s 192.168.1.8:7896 shell pm path com.google.android.gms
+C:\platform-tools\adb.exe -s 192.168.1.8:7896 shell pm path com.google.android.gsf

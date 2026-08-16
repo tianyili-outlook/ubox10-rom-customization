@@ -29,7 +29,7 @@ The AOSP tree, stock image, extracted payloads, rollback image, and candidate ou
 
 ## Candidate chain
 
-The original M8A r1-r13 chain established the bootable Android 12 TV product and remains preserved for provenance. `m8b-ime-r1` is the current device-accepted baseline (**IME PASS**, inheriting **AUDIO PASS**). The current offline candidate is `m8b-remote-r1`, status **READY TO FLASH**.
+The original M8A r1-r13 chain established the bootable Android 12 TV product and remains preserved for provenance. `m8b-remote-r1` is the current device-accepted baseline (**REMOTE PASS**, inheriting **IME PASS / AUDIO PASS**); its direct predecessor is accepted `m8b-ime-r1`. This acceptance closure does not change the build architecture.
 
 Run from the repository root on the verified Windows + WSL environment:
 

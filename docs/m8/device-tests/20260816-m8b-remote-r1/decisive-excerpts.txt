@@ -1,0 +1,35 @@
+device
+sys.boot_completed=1
+
+Remote Service:
+  package:/system/priv-app/AndroidTvRemoteService/AndroidTvRemoteService.apk
+  versionCode=95855272 minSdk=24 targetSdk=33
+  versionName=5.2.473254133
+  android.permission.BLUETOOTH_CONNECT: granted=true
+  flags=[ GRANTED_BY_DEFAULT|USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]
+  pid=1060
+
+Listeners:
+  LISTEN 0 50 *:6466 *:*
+  LISTEN 0 1  *:6467 *:*
+
+RRO/effective resource:
+  package:/system_ext/overlay/UBOX10TvRemoteConfigOverlay.apk
+  android:string/config_tvRemoteServicePackage=com.google.android.tv.remote.service
+
+Local IME:
+  package:/product/app/LeanbackIME/LeanbackIME.apk
+  inventory=com.android.inputmethod.leanback/.service.LeanbackImeService
+  enabled_input_methods=com.android.inputmethod.leanback/.service.LeanbackImeService
+  default_input_method=com.android.inputmethod.leanback/.service.LeanbackImeService
+
+Play/GMS runtime:
+  com.android.vending=absent
+  com.google.android.gms=absent
+  com.google.android.gsf=absent
+
+User-observed physical result:
+  Projectivy/basic remote/Wi-Fi/Bluetooth/LeanbackIME regression PASS
+  official Google TV iPhone discovery/pair PASS
+  phone DPAD/BACK/HOME/Volume+/Volume-/Mute PASS
+  phone keyboard text into a real TV EditText PASS

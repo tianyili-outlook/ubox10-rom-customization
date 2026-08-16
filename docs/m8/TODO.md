@@ -30,25 +30,31 @@
 
 ## 独立功能项
 
-- [ ] **延期至现场：遥控器 Settings/Menu 物理复验与语义分离。** 既有 r5 证据为两键均打开 Projectivy menu；目标为 Menu→Projectivy menu、Settings→Android system Settings。不得远程修改当前 input stack。
 - [x] 选择并可逆实机证明 AOSP `LeanbackIME`：InputMethodManager discovery/enable/default、DPAD focus、DPAD_CENTER 输入 `ty`、BACK dismissal/reopen 与无 crash/retry 均通过；测试后恢复 accepted device 的空 IME 状态。
 - [x] 构建 `m8b-ime-r1`：标准 product module 集成，product AVB/LP/outer preservation 通过；system/vendor/vendor_dlkm 与 accepted product properties 原字节保持。
 - [x] `m8b-ime-r1` 物理设备验收：fresh-data 首启自动 enable/default，Wi-Fi 密码输入、物理 DPAD/OK/BACK、文字输入与 1920×1080 TV 观感通过；状态 **DEVICE ACCEPTED / IME PASS**。
 - [x] 单独 reboot persistence 未另行执行；用户以 fresh-data 自动 enable/default 与实际物理使用接受为非阻塞，不声明该子项 PASS。
 - [x] 构建独立 `m8b-remote-r1`：复用 accepted AOSP TvRemoteProvider，加入 hash-locked Google donor、system_ext RRO、exact privapp policy 与 CONNECT-only default grant；system_a/AVB/LP/outer 检查通过，product/LeanbackIME、vendor/vendor_dlkm 与 boot 保持。
-- [ ] **等待单独明确刷机授权：**按 `docs/DEVICE_TEST.md` 验收 Remote Service、6466/6467、`_androidtvremote2._tcp`、官方 Google TV iPhone discovery/pair/navigation/phone text、LeanbackIME coexistence、reboot persistence 与 Play 状态。
-- [ ] 增加 exFAT 支持；USB host/storage 已通过，当前仅 filesystem unsupported。
-- [ ] 复现并定位选中态渐变噪点及启用 Wi-Fi 时短暂撕裂/黑屏。
-- [ ] **延期至现场：**完整验证 suspend/resume 后 Wi-Fi、Bluetooth、网络与 ADB 恢复。
-- [ ] **延期至现场：**HDMI CEC 实机交互。
-- [ ] **延期至物理画面/服务账号：**Widevine 受保护内容和目标商业流媒体实际播放/认证；当前只证明 L3 plugin operational，不声称 Netflix、Disney+ 或其他服务认证。
+- [x] `m8b-remote-r1` 物理设备验收：Projectivy/基础回归、Remote Service、CONNECT `GRANTED_BY_DEFAULT`、6466/6467、RRO lookup、official Google TV iPhone discovery/pair、DPAD/BACK/HOME/Volume/Mute 与真实 EditText phone text 均通过；状态 **DEVICE ACCEPTED / REMOTE PASS**。
+- [x] paired mobile Remote 占用 text-input session 时提示 `Use the keyboard on your mobile device`；物理遥控导航保持，接受为 Android TV 行为而非 LeanbackIME regression。
+- [x] Remote r1 reboot persistence 未单独执行且不声明 PASS；无具体失败迹象，本里程碑接受为非阻塞。当前实机无 Play Store/GMS/GSF，因此没有可执行的 Play runtime regression test。
 
-## 后续系统质量里程碑
+## 剩余路线（按优先级）
+
+1. [ ] **Settings/Menu 物理键语义分离（推荐下一里程碑）：**先现场确认两键 raw scan/keyevent 与 UI 结果；目标 Menu→Projectivy menu、Settings→Android Settings。限定按键语义变量，不回改已验收 kernel/rc-core repeat、其他 keylayout 或输入栈。
+2. [ ] **完整 suspend/resume recovery：**现场验证 HDMI、Wi-Fi、Bluetooth、网络与 ADB 恢复；这是核心可靠性门，但跨电源/无线/显示边界，须以首个确定失败收敛。
+3. [ ] **graphics 现场关联：**复现并区分选中态渐变噪点、启用 Wi-Fi 时短暂撕裂/黑屏，以及 Projectivy/HWUI 99.74% jank telemetry；当前不声称物理 artifact 与 telemetry 已建立因果。
+4. [ ] **HDMI CEC：**现场验证 TV/盒子双向控制与已知 permissive CEC AVC 的功能相关性；不先做策略清日志。
+5. [ ] **CPU/thermal policy + physical soak：**调查低负载 1.512 GHz 与 ThermalService `HAL Ready=false`，记录温度/频率/负载和是否实际 throttling；不在线盲改 governor。
+6. [ ] **exFAT：**USB host/storage 已通过，仅 filesystem unsupported；作为独立可回滚候选，避免扩大到 USB stack。
+7. [ ] **商业 DRM 播放：**仅在目标服务和凭据可用时验证 Widevine L3 protected playback；不得把 plugin operational 等同于 Netflix/Disney+/其他认证。
+8. [ ] **LeanbackIME cold-start latency（低优先级观察）：**用同一真实 EditText 控制 cold/warm invocation，采集 InputMethodManager、process start、window visibility 与 OK event timing；当前不确认 defect/root cause，也不修改 IME。
+9. [ ] **SELinux enforcement-readiness：**已有 CEC extcon、system_suspend wakeup sysfs、audio HAL uevent socket active-path gaps；保持独立、功能驱动，不为清日志直接切 enforcing。
+10. [ ] **legacy multi_ir/uinput cleanup：**仅在独立候选中删除已证明无依赖工件；不得删除 `/system/lib/libinput.so` 等通用库，优先级最低。
+
+## 已知非里程碑项
 
 - [x] 完成限定只读 system-quality audit：无 P0；stability、retry loop、audio residual、SELinux、CPU/thermal/idle、graphics 与 memory 证据见 `docs/m8/device-tests/20260816-m8b-system-quality-audit/`。
-- [ ] **P1 / medium confidence：**隔离调查低负载下 CPU 五次样本均为 1.512 GHz 且 ThermalService `HAL Ready=false`；active governor 因权限未读到。不得在线改 governor；候选需现场 thermal soak。
-- [ ] **P1 / 先现场关联：**Projectivy/HWUI 99.74% jank telemetry 与 `FrameCompleted/GpuCompleted=INT64_MAX`；当前只证明 frame-metrics 异常，不声称已复现物理画面卡顿/噪点。
 - [ ] **P2 / 默认不修：**Wi-Fi HAL link-layer statistics 每约 3 秒返回 `ERROR_UNKNOWN`；网络 ADB 稳定且 Wi-Fi 进程未重启。
-- [ ] 在独立候选中清理已证明无依赖的 legacy `multi_ir/uinput` 工件；不得在无依赖证明时删除 `/system/lib/libinput.so` 等通用库。
 - [ ] 保持 Mouse mode dropped；不重新引入 vendor mouse framework。
 - [ ] 仅在获得匹配本板 64 位 graphics/media userspace provider 后重启 AArch64 Android userspace 工作。

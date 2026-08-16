@@ -1,6 +1,6 @@
 # M8B remote-r1 candidate
 
-状态：**READY TO FLASH**。本轮未刷机；任何设备测试仍需单独明确授权。
+状态：**DEVICE ACCEPTED / REMOTE PASS**。该镜像现为设备运行和后续 M8B 工作的 accepted baseline，继承 **AUDIO PASS** 与 **IME PASS**。
 
 直接基线为 `m8b-ime-r1`（**DEVICE ACCEPTED / IME PASS**，继承 **AUDIO PASS**）。目标输入架构保持为物理 rc-core 遥控、local AOSP LeanbackIME、official Google TV iOS Remote/phone keyboard 三者共存。
 
@@ -42,10 +42,16 @@ Google-original donor 为 `com.google.android.tv.remote.service` 5.2.473254133�
 
 logical delta 仅 `system_a`。`product_a`（含 accepted LeanbackIME）保持 SHA-256 `6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974`，`vendor_a` 与 `vendor_dlkm_a` 也原字节不变。外层仅替换 `super.fex`、`vbmeta_system.fex` 并生成各自 V companion；其余 46 项，包括 boot/kernel、vendor_boot、top-level vbmeta、DTBO、metadata 与 media_data，均由 preservation audit 确认为 preserved。
 
-Test9r2 的 bulk system cleanup、Play/GMS/launcher/feature changes 和 `AccessRestrictedActivity` 变量均未导入。当前 accepted M8B system/product inventory 无 Play Store/GMS app；本候选不添加这些包，不改 `tv_core_hardware.xml`、framework-res 或 build properties，因此没有离线证据表明重现了历史 Play regression。刷机后仍按回归计划复核实际 Play 状态，不把“未引入变量”等同于 runtime PASS。
+Test9r2 的 bulk system cleanup、Play/GMS/launcher/feature changes 和 `AccessRestrictedActivity` 变量均未导入。当前 accepted M8B system/product inventory 无 Play Store/GMS app；本候选不添加这些包，不改 `tv_core_hardware.xml`、framework-res 或 build properties，因此没有离线证据表明重现了历史 Play regression。当前实机再次确认 Play Store/GMS/GSF 均不存在，故没有可执行的 Play runtime regression test；“未引入变量”不等同于 Play runtime PASS。
 
-## Offline checks and next gate
+## Offline checks and device acceptance
 
 AOSP `systemimage`/`systemextimage`、donor signature/manifest/services/library、privapp coverage、CONNECT-only default grant、RRO target/resource、exact filesystem diff、SELinux file labels、四 logical partition e2fsck、system/vbmeta AVB、LP re-unpack、IMAGEWTY verify、SHA256SUMS、14 项 focused tests 与全量 91 tests（3 个 expected fixture skip）均通过。
 
-下一步是在单独明确刷机授权后执行 `docs/DEVICE_TEST.md` 的 physical sequence：boot/Projectivy/物理遥控、Wi-Fi/Bluetooth、LeanbackIME regression、service/provider/RRO、6466/6467、mDNS、iPhone discovery/pair/navigation/BACK/HOME、真实 EditText phone text、local IME coexistence、reboot persistence 与 Play 状态。通过前不得标记 DEVICE ACCEPTED。
+用户随后刷入本候选并完成现场验收：正常进入 Projectivy；物理遥控、Wi-Fi、Bluetooth 与 LeanbackIME 无基础回归。只读 ADB 确认 `sys.boot_completed=1`，Remote Service 5.2.473254133 位于预期 system priv-app，`BLUETOOTH_CONNECT` 为 `granted=true` 且带 `GRANTED_BY_DEFAULT`，无需手工 `pm grant`；进程运行，TCP `*:6466`/`*:6467` 监听。RRO 位于 `/system_ext/overlay/UBOX10TvRemoteConfigOverlay.apk`，framework resource lookup 精确返回 `com.google.android.tv.remote.service`。
+
+official Google TV iPhone app 的 discovery、pairing、DPAD、BACK、HOME、Volume+、Volume-、Mute 与 phone keyboard 向真实 TV EditText 写入均现场 PASS，闭合 Test9r2 Remote v2 功能。手机 Remote text-input mode 活跃时系统显示 `Use the keyboard on your mobile device` 并把文字输入交给手机；物理遥控导航保持正常。这是接受的 Android TV input-session ownership，不要求 LeanbackIME 同时显示，也不视为 IME regression。
+
+单独 reboot persistence 未执行；现有 fresh install/default grant、自动服务运行和完整现场使用没有给出具体失败理由，故作为非阻塞接受，但不声明 reboot-persistence PASS。实机没有 `com.android.vending`、`com.google.android.gms` 或 `com.google.android.gsf`，因此不存在可执行的 Play runtime regression test；本候选仍只证明未导入历史 Test9r2 Play/GMS 变量。
+
+另记录一个独立、非阻塞观察：boot 后 LeanbackIME 首次调用明显慢于后续调用，偶尔需要按 OK 两三次才出现。当前不确认 defect 或 root cause，也不修改 IME；后续只用受控真实 EditText 比较 cold/warm invocation timing。验收证据见 `docs/m8/device-tests/20260816-m8b-remote-r1/`。
