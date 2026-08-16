@@ -1,0 +1,58 @@
+{
+  "id": "m8b-ime-r1",
+  "parent_config_relative": "configs/candidates/m8b-audio-r2.json",
+  "repair": "Add the source-built Android TV LeanbackIME through the normal product package mechanism while preserving the accepted m8b-audio-r2 runtime properties and all non-product logical partitions.",
+  "base_candidate_relative": "out/candidates/m8b-audio-r2/x12-m8b-audio-r2.img",
+  "base_candidate_size": 1025951744,
+  "base_candidate_sha256": "B39300CB3E335D75C9D61594CD94565D9C24FC92F467F9050CD1E604D87E9C2C",
+  "source_super_size": 846153236,
+  "source_super_sha256": "F25708E0DC7E57903F3FF93A18E4EDF2A7BC11CC2E5BAF29044E6F5F9AB00D69",
+  "logical_partitions": {
+    "system_a": {"size": 1651167232, "sha256": "0ADDD79774E03839DD00229B2DD90939D6BD235B5B5B69B803F423AFB23640B2"},
+    "vendor_a": {"size": 119066624, "sha256": "BB91A8B7ED4AC0145F434F89FD76865EB4311F234AA46D67C8373A7CD5B4929A"},
+    "product_a": {"size": 272629760, "sha256": "06B7425A3D97E7423BBEC6D431F549E7FED81397EB62D774522EA90F4E490C3C"},
+    "vendor_dlkm_a": {"size": 6680576, "sha256": "C589DC0B12E150469F179738F127F36F6321943577453A7DB335AB9E647B8FE5"}
+  },
+  "ime": {
+    "module": "LeanbackIME",
+    "package": "com.android.inputmethod.leanback",
+    "service": "com.android.inputmethod.leanback.service.LeanbackImeService",
+    "source_path": "/home/tianyi/ubox10-aosp/packages/inputmethods/LeanbackIME",
+    "source_commit": "40b72d02ed2af7d1696cd8903682dcfcd963323c",
+    "source_url": "https://android.googlesource.com/platform/packages/inputmethods/LeanbackIME",
+    "integration_patch_relative": "configs/aosp/m8b-ime-r1-leanback-ime.patch",
+    "integration_patch_sha256": "B275BE273E361F47F9DC86FB1F2BD29AC57B6DB3D13FE602A407C0411F6D6EFC",
+    "product_config_path": "/home/tianyi/ubox10-aosp/device/ubox/ubox10/ubox10.mk",
+    "product_config_sha256": "34A182559379DF8B34BB046B633D41F77140B8E621CCA215FECFF514FECB6D7B",
+    "product_image_path": "/home/tianyi/ubox10-aosp/out/target/product/ubox10/product.img",
+    "product_image_size": 76054640,
+    "product_image_sha256": "62012B798264ED81C2FA5857336AB3B8FB96B3AEC461603DE4963C0986CB3859",
+    "apk_path": "/home/tianyi/ubox10-aosp/out/target/product/ubox10/product/app/LeanbackIME/LeanbackIME.apk",
+    "apk_size": 376800,
+    "apk_sha256": "4CF1AD0D5CA5514F59BAE9467981E7FDEB56692932208A15E9286166ECE73075",
+    "version_code": 100,
+    "version_name": "1.00-aosp",
+    "compile_sdk": 31,
+    "min_sdk": 31,
+    "target_sdk": 23,
+    "native_libraries": 0
+  },
+  "product_avb": {
+    "partition_size": 272629760,
+    "salt": "6d38622d696d652d7231",
+    "key_relative": "tools/testkey_rsa2048.pem"
+  },
+  "super_layout": {
+    "device_size": 3221225472,
+    "metadata_size": 65536,
+    "slots": 3,
+    "alignment": 1048576,
+    "group_size": 3212836864
+  },
+  "container": {
+    "total_entries": 50,
+    "preserved_entries": 48,
+    "replacements": ["super.fex"],
+    "companions": ["Vsuper.fex"]
+  }
+}

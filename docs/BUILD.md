@@ -29,7 +29,7 @@ The AOSP tree, stock image, extracted payloads, rollback image, and candidate ou
 
 ## Candidate chain
 
-The original M8A r1-r13 chain established the bootable Android 12 TV product and remains preserved for provenance. M8B native rc-core r5 is the device-accepted baseline. The current offline candidate is `m8b-audio-r1`, which restores only the exact Test8r2 flattened VNDK 31 APEX required by the unchanged stock vendor stack.
+The original M8A r1-r13 chain established the bootable Android 12 TV product and remains preserved for provenance. `m8b-audio-r2` is the current device-accepted baseline. The current offline candidate is `m8b-ime-r1`, which adds only the source-built AOSP TV LeanbackIME product module.
 
 Run from the repository root on the verified Windows + WSL environment:
 
@@ -60,6 +60,14 @@ Candidate configs under `configs/candidates/` are the machine-readable sizes, ha
 M8B r1-r5 preserves the ARM32 userspace and hardware-facing vendor stack while replacing the legacy `multi_ir → uinput` remote path with native kernel rc-core. r5 is device accepted.
 
 The ubox10 AOSP source product omitted `BOARD_VNDK_VERSION := current` and did not include `com.android.vndk.current`; the original AOSP `system` output therefore lacked the VNDK APEX before M8 assembly. `m8b-audio-r1` uses `configs/candidates/m8b-audio-r1.json`, `scripts/build-m8b-audio-r1-candidate.py`, and `scripts/import-m8-test8r2-vndk-apex.sh` to copy the hash-locked Test8r2 `/system/apex/com.android.vndk.current` subtree into an r5 system staging copy with metadata intact. It does not modify vendor, boot, audio XML, DTS or the accepted input stack.
+
+For the local input milestone, apply `configs/aosp/m8b-ime-r1-leanback-ime.patch` to the locked AOSP tree and run `m LeanbackIME -j4` plus `m productimage -j4`. `scripts/build-m8b-ime-r1-candidate.py` consumes the locked AOSP product/APK and accepted `m8b-audio-r2`, preserves the accepted product `build.prop`, verifies that the filesystem delta is only `/app/LeanbackIME/**`, `/app` link count and the attributable NOTICE update, signs product AVB, rebuilds the same LP geometry, and rejects any system/vendor/vendor_dlkm change. Build with:
+
+```powershell
+python scripts/build-m8b-ime-r1-candidate.py
+```
+
+LeanbackIME declares itself default in its standard input-method metadata, so Android 12 can enable/select it when no prior IME exists; fresh-data/reboot persistence remains a physical-device gate. The following `m8b-remote-r1` remains separate and will reuse the proven Test9r2 TvRemoteProvider/RRO/Google Remote Service chain. No Remote Service or proprietary APK is part of `m8b-ime-r1`.
 
 ## Checks
 

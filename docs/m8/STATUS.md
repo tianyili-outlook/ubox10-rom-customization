@@ -33,6 +33,22 @@ Updated: 2026-08-16
 
 强制回滚仍为 `m8a-initial-atv-r13`：`out/candidates/m8a-initial-atv-r13/x12-m8a-initial-atv-r13.img`，SHA-256 `1D367F7091A7BD6A0791B2CFE45E7AAB551E0312D8C68136548A4927354A8E06`。
 
+## Current input candidate
+
+`m8b-ime-r1` 状态为 **OFFLINE CHECKED / LIVE APK PASS / DEVICE PERSISTENCE PENDING**；在线设备仍运行并保持 `m8b-audio-r2` accepted baseline。
+
+| 项目 | 值 |
+|---|---|
+| 选择 | Android 12 AOSP `LeanbackIME`；`com.android.inputmethod.leanback/.service.LeanbackImeService`；source commit `40b72d02ed2af7d1696cd8903682dcfcd963323c` |
+| live proof | 可逆安装后 IME discovery/enable/default PASS；真实 EditText 中 DPAD_CENTER 输入 `t`、DPAD_RIGHT 移焦、DPAD_CENTER 输入 `y`，UI hierarchy 精确读回 `ty`；BACK dismissal/reopen PASS；无 crash/retry |
+| 镜像 | `out/candidates/m8b-ime-r1/x12-m8b-ime-r1.img`，1028208640 bytes，SHA-256 `B89612D5004BA3D8214F21E22E4BED7BFBA5B2F8FE441F9364315F851F1FE240` |
+| 集成 | 标准 `PRODUCT_PACKAGES += LeanbackIME`；最终 product 差异为 `/app/LeanbackIME/**` 与 attributable NOTICE，accepted product properties 保持 |
+| payload | 仅 `product_a`、`super.fex`、`Vsuper.fex`；system/vendor/vendor_dlkm、boot/kernel/vendor_boot、audio/graphics/DRM/rc-core/keylayout/SELinux 与其余外层 payload 不变 |
+| pending | 未刷机/重启；fresh-data 自动 enable/default、reboot persistence、物理遥控器/电视观感待现场 |
+| 证据 | `docs/m8/device-tests/20260816-m8b-ime-r1/` |
+
+后续 `m8b-remote-r1` 保留 Test9r2 proven Remote v2 架构：AOSP `com.android.media.tv.remoteprovider`、system_ext provider RRO、Google-original Remote Service donor、privapp/provider allowlist、6466/6467、mDNS、official iPhone Google TV app discovery/pair/navigation/phone text，以及 default `BLUETOOTH_CONNECT` grant 为首个 deterministic blocker 的证据。不得导入 Test9r2 全量/Play regression，且 Remote Service 未加入 `m8b-ime-r1`。
+
 ## Current audio candidate
 
 `m8b-audio-r2` 状态为 **DEVICE ACCEPTED / AUDIO PASS**；r1 已实机证明确切 VNDK APEX 存在但 Treble linker namespace 未启用，r2 已在设备上闭合该合同。
@@ -68,7 +84,7 @@ Updated: 2026-08-16
 | H.264 / HEVC | **PASS**；VLC 使用 Allwinner OMX AVC/HEVC decoder，Cedar/VPU 硬解流畅 |
 | Audio | **FAIL — HIGH**；AudioFlinger 无 primary output，带 AAC 的 HEVC 停在 0:00；无音频同视频正常 |
 
-开放功能项：无 IME；exFAT unsupported；选中态渐变白/灰噪点；启用 Wi-Fi 时偶发短暂撕裂/黑屏后恢复；完整 post-resume Wi-Fi/Bluetooth/network 恢复、HDMI CEC 与 Settings/Menu 物理复验等待现场访问。VP9 runtime 已远程关闭；DRM 已收敛为可操作 Widevine L3、无 HDCP/secure decoder 要求，仍未验证物理画面、受保护内容或 Netflix/Disney+/其他商业服务认证/播放。启动耗时/错误、thermal/CPU、graphics/rendering、残余 retry loop 和 legacy `multi_ir/uinput` 清理归入后续系统质量里程碑；不得在音频候选中混入。
+开放功能项：`m8b-ime-r1` fresh-boot/persistence 待现场，随后为独立 `m8b-remote-r1`；exFAT unsupported；选中态渐变白/灰噪点；启用 Wi-Fi 时偶发短暂撕裂/黑屏后恢复；完整 post-resume Wi-Fi/Bluetooth/network 恢复、HDMI CEC 与 Settings/Menu 物理复验等待现场访问。VP9 runtime 已远程关闭；DRM 已收敛为可操作 Widevine L3、无 HDCP/secure decoder 要求，仍未验证物理画面、受保护内容或 Netflix/Disney+/其他商业服务认证/播放。
 
 ## Audio failure boundary
 
@@ -263,4 +279,4 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 
 ## Next action
 
-保持 `m8b-audio-r2` 为当前设备验收基线。系统质量只读审计已完成且无 P0；下一项远程安全开发优先增加 TV soft IME。HDMI CEC、完整 suspend/resume recovery、Settings/Menu 物理复验、graphics 画面关联、thermal soak 及商业 DRM 播放等待现场访问，不得冒险中断网络 ADB。
+保持 `m8b-audio-r2` 为当前设备验收基线。LeanbackIME live proof 与 `m8b-ime-r1` offline candidate 已完成；下一项远程安全开发是独立 `m8b-remote-r1`，复用 Test9r2 已证明的 official Google TV iOS Remote/text-input 链且不混入 Play/GMS。IME fresh-boot persistence、HDMI CEC、完整 suspend/resume recovery、Settings/Menu 物理复验、graphics 画面关联、thermal soak 及商业 DRM 播放等待现场访问。

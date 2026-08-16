@@ -1,0 +1,7 @@
+diff --git a/device/ubox/ubox10/ubox10.mk b/device/ubox/ubox10/ubox10.mk
+--- a/device/ubox/ubox10/ubox10.mk
++++ b/device/ubox/ubox10/ubox10.mk
+@@ -28,2 +28,3 @@ PRODUCT_PACKAGES += \
+     AwTvProvision \
++    LeanbackIME \
+     com.android.vndk.current

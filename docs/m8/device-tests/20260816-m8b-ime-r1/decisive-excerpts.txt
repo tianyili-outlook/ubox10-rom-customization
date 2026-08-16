@@ -1,0 +1,65 @@
+SOURCE / APK
+  module: LeanbackIME
+  source commit: 40b72d02ed2af7d1696cd8903682dcfcd963323c
+  source URL: https://android.googlesource.com/platform/packages/inputmethods/LeanbackIME
+  package: com.android.inputmethod.leanback
+  service: com.android.inputmethod.leanback.service.LeanbackImeService
+  versionCode/versionName: 100 / 1.00-aosp
+  compile/min/target SDK: 31 / 31 / 23
+  native libraries: none (pure Java; ARM32-compatible)
+  APK: 376800 bytes
+  APK SHA-256: 4CF1AD0D5CA5514F59BAE9467981E7FDEB56692932208A15E9286166ECE73075
+
+INPUT METHOD REGISTRATION
+  baseline ime list -a: empty
+  enabled/default: null / empty
+  installed ime component:
+    com.android.inputmethod.leanback/.service.LeanbackImeService
+  ime enable: Input method ... now enabled for user #0
+  ime set: Input method ... selected for user #0
+  dumpsys input_method while shown:
+    mCurMethodId=com.android.inputmethod.leanback/.service.LeanbackImeService
+    mInputShown=true
+    mIsInputViewShown=true
+    served package=com.android.inputmethod.tools.edittextvariations
+
+EXACT TEXT ENTRY
+  DPAD_CENTER (KEYCODE 23) on the initially focused key:
+    resource-id=com.android.inputmethod.tools.edittextvariations:id/text_multi_lines_none
+    class=android.widget.EditText focused=true text="t"
+  DPAD_RIGHT moved the visible keyboard focus ring from t to y.
+  DPAD_CENTER selected the new key:
+    resource-id=com.android.inputmethod.tools.edittextvariations:id/text_multi_lines_none
+    class=android.widget.EditText focused=true text="ty"
+  KEYCODE_ENTER (66) on this multiline field invoked its editor action rather than selecting y; key selection PASS is DPAD_CENTER.
+  BACK:
+    mInputShown=false
+  DPAD_UP to the first EditText then DPAD_CENTER:
+    mInputShown=true; expected IME and served EditText restored
+  IME PID 6375 and probe PID 6396 unchanged across the entry sequence.
+  dumpsys activity exit-info com.android.inputmethod.leanback: no records
+
+LOCAL VISUAL ARTIFACT HASHES (ignored, not committed)
+  m8-ime-shown.png (1920x1080): 06CE9A23A209979BF3E24B99598904DBF450F3823A7E9D9B27ADECEB2A87AF99
+  m8-ime-focus-right.png (1920x1080): E556D6A9D99665C205312185D608CE1F10EA8D4CE489860169DE87903D123AEA
+  These prove remote window/focus state only, not physical-screen visual quality.
+
+CLEANUP / BASELINE RESTORATION
+  uninstall probe: Success
+  uninstall LeanbackIME: Success
+  state=device; sys.boot_completed=1
+  ime list -a: empty
+  enabled_input_methods=null; default_input_method=empty
+  both temporary packages absent
+
+OFFLINE CANDIDATE
+  status: OFFLINE CHECKED / DEVICE PERSISTENCE PENDING
+  firmware: out/candidates/m8b-ime-r1/x12-m8b-ime-r1.img
+  size: 1028208640
+  SHA-256: B89612D5004BA3D8214F21E22E4BED7BFBA5B2F8FE441F9364315F851F1FE240
+  product_a SHA-256: 6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974
+  changed product paths: /app/LeanbackIME/**, /app nlink, /etc/NOTICE.xml.gz
+  accepted product /etc/build.prop: exact
+  system_a/vendor_a/vendor_dlkm_a: exact accepted hashes
+  outer delta: super.fex + Vsuper.fex only
+  product AVB, accepted system/vbmeta AVB, LP re-unpack, IMAGEWTY verify: PASS
