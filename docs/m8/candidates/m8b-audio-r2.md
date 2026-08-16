@@ -40,5 +40,7 @@ r1 实机已确认 `com.android.vndk.v31` active 且 `libaudioroute.so` 存在�
 - unchanged Apollo HAL 到达 `adev_open`；AudioFlinger 加载 primary audio interface 并建立 primary output。
 - ALSA 识别 `ahubhdmi` 为 card 3 / `AUDIO_HDMI`；kernel 报告 `HDMI Audio Enable Successfully`。
 - VLC 播放已知 HEVC+AAC 正常，时间线推进且 HDMI TV 音频确认工作。
+- ADB-only VP9 补验为 **HARDWARE-RUNTIME PASS**：verified `V_VP9` 资产由 VLC 交给 `OMX.allwinner.video.decoder.vp9`，Cedar `CreateVideoDecoder`，远程位置推进后到达 EOF，无 fatal codec/VPU failure。
+- MediaDrm 补验可打开 Google Widevine CDM 16.1.0，`securityLevel=L3`，connected/max HDCP 均为 `NONE`；AVC/HEVC/VP9 均不要求 secure decoder，未发现 secure codec 名称。
 
-验收期间仍观察到 legacy missing mixer controls、`nano_input_open -3`/input path 与 permissive SELinux AVC。它们不阻塞当前 primary HDMI playback，仅作为后续清理或调查项，不改变 r2 的 **AUDIO PASS** 结论。
+验收期间仍观察到 legacy missing mixer controls、`nano_input_open -3`/input path 与 permissive SELinux AVC。它们不阻塞当前 primary HDMI playback，仅作为后续清理或调查项，不改变 r2 的 **AUDIO PASS** 结论。远程 VP9 证据不声称物理画质或逐帧正确性；Widevine L3 不等同于 L1、secure playback 或 Netflix/Disney+/其他商业服务认证与实际播放。

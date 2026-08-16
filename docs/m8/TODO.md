@@ -9,6 +9,8 @@
 - [x] USB host/EHCI/Mass Storage/SCSI/block/partition/vold public volume。
 - [x] H.264 与 HEVC 1080p Allwinner OMX/Cedar hardware decode。
 - [x] `m8b-audio-r2`：Treble/VNDK runtime 合同、Apollo HAL、AudioFlinger primary output、ALSA HDMI 与 VLC HEVC+AAC HDMI TV 音频。
+- [x] VP9 hardware runtime：VLC 使用 `OMX.allwinner.video.decoder.vp9` / Cedar；已验证 VP9 资产、远程播放位置推进、EOF 与无 fatal codec/VPU failure。
+- [x] DRM/Widevine 设备状态：MediaDrm 可打开 Google Widevine 16.1.0，L3，HDCP `NONE`；AVC/HEVC/VP9 不要求 secure decoder。该项不代表 L1、secure playback 或商业服务认证。
 - [x] 保留 `m8a-initial-atv-r13` 与 stock/Test8r2 回滚；硬件事实保持 H616/sun50iw9。
 
 ## 音频 primary output — DEVICE ACCEPTED / AUDIO PASS
@@ -28,12 +30,13 @@
 
 ## 独立功能项
 
-- [ ] **延期：遥控器 Settings/Menu 语义分离。** 当前物理 Menu 与 Settings 两键均打开 Projectivy menu；目标为 Menu→Projectivy menu、Settings→Android system Settings。该项独立于已验收的 rc-core/audio，不修改当前 input stack；未来实现必须保持 DPAD/OK/BACK/HOME/Volume/Power/Menu 行为不回归。
+- [ ] **延期至现场：遥控器 Settings/Menu 物理复验与语义分离。** 既有 r5 证据为两键均打开 Projectivy menu；目标为 Menu→Projectivy menu、Settings→Android system Settings。不得远程修改当前 input stack。
 - [ ] 增加可用 TV soft IME；当前 `ime list -a` 与 default IME 均为空。
 - [ ] 增加 exFAT 支持；USB host/storage 已通过，当前仅 filesystem unsupported。
 - [ ] 复现并定位选中态渐变噪点及启用 Wi-Fi 时短暂撕裂/黑屏。
-- [ ] 完整验证 suspend/resume 后 Wi-Fi、Bluetooth 与网络恢复。
-- [ ] 验收 DRM/Widevine、HDMI CEC 与 VP9 runtime decode。
+- [ ] **延期至现场：**完整验证 suspend/resume 后 Wi-Fi、Bluetooth、网络与 ADB 恢复。
+- [ ] **延期至现场：**HDMI CEC 实机交互。
+- [ ] **延期至物理画面/服务账号：**Widevine 受保护内容和目标商业流媒体实际播放/认证；当前只证明 L3 plugin operational，不声称 Netflix、Disney+ 或其他服务认证。
 
 ## 后续系统质量里程碑
 

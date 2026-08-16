@@ -1,0 +1,29 @@
+Host/device identity
+  C:\platform-tools\adb.exe devices -l
+  C:\platform-tools\adb.exe -s 192.168.1.8:7896 shell getprop ro.build.fingerprint
+  C:\platform-tools\adb.exe -s 192.168.1.8:7896 shell getprop sys.boot_completed
+
+Codec declarations and runtime inventory
+  adb -s 192.168.1.8:7896 shell "find /vendor/etc /odm/etc /system/etc -maxdepth 3 -type f -iname '*media*codec*.xml' -print"
+  adb -s 192.168.1.8:7896 shell "grep -i -A12 -B4 vp9 /vendor/etc/media_codecs.xml /vendor/etc/media_codecs_performance.xml"
+  adb -s 192.168.1.8:7896 shell dumpsys media.player
+
+Asset verification and playback
+  Get-FileHash -Algorithm SHA256 generated-vp9-15s.webm
+  vlc --intf dummy --no-video --play-and-exit --verbose=2 generated-vp9-15s.webm
+  adb -s 192.168.1.8:7896 push generated-vp9-15s.webm /sdcard/Download/m8-vp9-acceptance-15s.webm
+  adb -s 192.168.1.8:7896 shell am start -W -a android.intent.action.VIEW -d file:///sdcard/Download/m8-vp9-acceptance-15s.webm -t video/webm -n org.videolan.vlc/.StartActivity --ez from_start true
+  adb -s 192.168.1.8:7896 shell logcat -d -v threadtime -t 3000
+  adb -s 192.168.1.8:7896 shell uiautomator dump /sdcard/Download/m8-vp9-ui.xml
+
+DRM/Widevine
+  adb -s 192.168.1.8:7896 shell "getprop | grep -i -E 'drm|widevine|hdcp|secure'"
+  adb -s 192.168.1.8:7896 shell "lshal | grep -i drm; ps -A | grep drm; service list | grep -i drm"
+  adb -s 192.168.1.8:7896 shell cat /vendor/etc/vintf/manifest/manifest_android.hardware.drm@1.4-service.widevine.xml
+  adb -s 192.168.1.8:7896 shell cat /vendor/etc/init/android.hardware.drm@1.4-service-lazy.widevine.rc
+  pwsh -File scripts/run-m8-drm-probe.ps1 -Device 192.168.1.8:7896 -ProbeTimeoutSeconds 45
+
+Safety confirmation after tests
+  adb -s 192.168.1.8:7896 get-state
+  adb -s 192.168.1.8:7896 shell getprop sys.boot_completed
+  adb -s 192.168.1.8:7896 shell pm list packages | grep com.ubox10.m8.drmprobe

@@ -1,0 +1,52 @@
+Static framework/plugin evidence
+  drm.service.enabled=true
+  init.svc.drm=running
+  init.svc.mediadrm=running
+  drmserver process running
+  /vendor/etc/vintf/manifest/manifest_android.hardware.drm@1.4-service.widevine.xml declares:
+    android.hardware.drm@1.4::IDrmFactory/widevine
+    android.hardware.drm@1.4::ICryptoFactory/widevine
+  /vendor/bin/hw/android.hardware.drm@1.4-service-lazy.widevine present
+  /vendor/lib/mediadrm/libwvdrmengine.so present
+  /vendor/lib/mediadrm/libdrmclearkeyplugin.so present
+
+Probe command
+  pwsh -File scripts/run-m8-drm-probe.ps1 -Device 192.168.1.8:7896 -ProbeTimeoutSeconds 45
+
+MediaDrm API result
+  schema=ubox10.m8-drm-probe/v1
+  widevine.supported=true
+  widevine.opened=true
+  widevine.vendor=Google
+  widevine.version=16.1.0
+  widevine.description=Widevine CDM
+  widevine.algorithms=AES/CBC/NoPadding,HmacSHA256
+  widevine.securityLevel=L3
+  widevine.systemIdPresent=true
+  widevine.connectedHdcp=NONE
+  widevine.maxHdcp=NONE
+  widevine.openSessions=0
+  widevine.maxSessions=16
+  widevine.schemeSupports.video/mp4=true
+  widevine.schemeSupports.video/webm=true
+  widevine.schemeSupports.audio/mp4=true
+  widevine.requiresSecureDecoder.video/avc=false
+  widevine.requiresSecureDecoder.video/hevc=false
+  widevine.requiresSecureDecoder.video/x-vnd.on2.vp9=false
+  clearkey.supported=true
+  clearkey.opened=true
+  clearkey.vendor=Google
+  clearkey.version=1.2
+  clearkey.description=ClearKey CDM
+  clearkey.connectedHdcp=NONE
+  clearkey.maxHdcp=NO_DIGITAL_OUTPUT
+  clearkey.requiresSecureDecoder.video/avc=false
+  clearkey.requiresSecureDecoder.video/hevc=false
+  clearkey.requiresSecureDecoder.video/x-vnd.on2.vp9=false
+  complete=true
+
+Interpretation boundary
+  a) DRM framework/plugin present: YES (Widevine and ClearKey factories/plugins).
+  b) Widevine operational/security level: YES, Widevine opens at L3.
+  c) Secure playback capability: NOT PROVEN; this L3 instance reports no secure-decoder requirement, HDCP NONE, and codec inventory exposes no secure codec component name.
+  d) Commercial streaming certification/playback: NOT TESTED and not implied by Widevine presence.

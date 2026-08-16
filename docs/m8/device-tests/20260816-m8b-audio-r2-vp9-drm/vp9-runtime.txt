@@ -1,0 +1,47 @@
+VP9 capability inventory
+
+/vendor/etc/media_codecs.xml declares:
+  OMX.allwinner.video.decoder.vp9, video/x-vnd.on2.vp9
+  size 32x32-4096x2160, bitrate 1-2000000, adaptive-playback
+
+dumpsys media.player reports:
+  Decoder "OMX.allwinner.video.decoder.vp9"
+    vendor=1, software-only=0, hw-accelerated=1, owner=default, rank=256
+    profile/levels: []
+    size-range=32x32-4096x2160
+  Decoder "c2.android.vp9.decoder" (alias OMX.google.vp9.decoder)
+    vendor=0, software-only=1, hw-accelerated=0, owner=codec2::software, rank=512
+    profile/levels: 0/5, 2/5, 2HDR/5, 2HDRPlus/5
+    size-range=2x2-1280x1280
+
+The Allwinner component does not publish a VP9 profile/level list. Runtime OMX queries also returned BadParameter for ParamVideoProfileLevelQuerySupported, so no hardware profile/level is claimed.
+
+Decisive test asset
+  Host-generated from checksum-verified samplefile.com 15-second fixture using installed VLC:
+    Source URL: https://samplefile.com/samples/download/video/webm/webm_15s_sample_file_455KB.webm/
+    Source SHA-256: 47D922E6B86EBE1384657E411C2459C1FCD2B50469830E6035C68201ACF2B2F6
+    vlc --intf dummy --no-audio <source> --sout "#transcode{vcodec=VP90,vb=600,scale=1}:std{access=file,mux=webm,dst=<asset>}" vlc://quit
+  File: generated-vp9-15s.webm
+  Size: 350967 bytes
+  SHA-256: 4D65D78262158A5A776B46DCD8EC12BAC248494FBA62BF80AB04B348C519F4F7
+  Host VLC verification: Duration=13763 ms, Track CodecId=V_VP9, 640x480.
+  Device path: /sdcard/Download/m8-vp9-acceptance-15s.webm
+
+Playback command
+  adb -s 192.168.1.8:7896 shell am start -W -a android.intent.action.VIEW -d file:///sdcard/Download/m8-vp9-acceptance-15s.webm -t video/webm -n org.videolan.vlc/.StartActivity --ez from_start true
+
+Position evidence
+  VLC accessibility UI snapshots reported player_overlay_time 0:03 / length 0:13 and, in a later controlled playback snapshot, 0:05 / length 0:13 with content-desc "5 seconds out of 13 seconds" and control content-desc "Pause".
+  The final clean run reached EOF; no visual-quality or frame-perfect conclusion is drawn.
+
+Decisive logcat excerpt from final run
+  08-16 04:40:57.975 VLC: Track CodecId=V_VP9
+  08-16 04:40:57.989 VLC: using OMX.allwinner.video.decoder.vp9
+  08-16 04:40:59.031 OMXStore: makeComponentInstance(OMX.allwinner.video.decoder.vp9)
+  08-16 04:41:00.052 VLC: MediaCodec via NDK opened
+  08-16 04:41:00.070 cedarc: CreateVideoDecoder
+  08-16 04:41:14.242 VLC: input: EOF reached
+  08-16 04:41:16.003 cedarc: Unloading the dynamic library for OMX.allwinner.video.decoder.vp9
+  08-16 04:41:16.011 VLC: MediaCodec via NDK closed
+
+No FATAL EXCEPTION, fatal signal, fatal decoder, or VPU error matched the bounded final-run excerpt. Non-fatal vendor OMX capability-query errors and end-of-stream teardown warnings were not treated as frame-quality proof or as a fatal decode failure.

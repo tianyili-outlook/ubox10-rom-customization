@@ -27,6 +27,8 @@ Updated: 2026-08-16
 | 音频合同 | `ro.treble.enabled=true`、`ro.vndk.version=31`、active `com.android.vndk.v31`，运行时 `default→vndk` 暴露 `libaudioroute.so` |
 | 设备结果 | Apollo HAL 到达 `adev_open`；AudioFlinger 加载 primary interface 并建立 primary output；ALSA 识别 `ahubhdmi` 为 card 3 / `AUDIO_HDMI` |
 | 媒体实测 | VLC 播放已知 HEVC+AAC 正常，时间线推进，HDMI TV 有声；kernel 报告 `HDMI Audio Enable Successfully` |
+| VP9 runtime | **HARDWARE-RUNTIME PASS**；VLC 通过 `OMX.allwinner.video.decoder.vp9` / Cedar 播放已验证 VP9，远程时间位置推进并到达 EOF；未声称画质或逐帧正确性 |
+| DRM / Widevine | framework/plugin **PRESENT AND OPERATIONAL**；Google Widevine CDM 16.1.0 可打开，`securityLevel=L3`，HDCP connected/max 均为 `NONE`，AVC/HEVC/VP9 均不要求 secure decoder；不构成 L1、secure playback 或商业服务认证 |
 | 已继承通过 | Projectivy、native rc-core/repeat、exact `.kl`、DPAD/OK/BACK/HOME/Volume/Power/Menu 及 r5 既有功能 |
 
 强制回滚仍为 `m8a-initial-atv-r13`：`out/candidates/m8a-initial-atv-r13/x12-m8a-initial-atv-r13.img`，SHA-256 `1D367F7091A7BD6A0791B2CFE45E7AAB551E0312D8C68136548A4927354A8E06`。
@@ -60,7 +62,7 @@ Updated: 2026-08-16
 | H.264 / HEVC | **PASS**；VLC 使用 Allwinner OMX AVC/HEVC decoder，Cedar/VPU 硬解流畅 |
 | Audio | **FAIL — HIGH**；AudioFlinger 无 primary output，带 AAC 的 HEVC 停在 0:00；无音频同视频正常 |
 
-开放功能项：无 IME；exFAT unsupported；选中态渐变白/灰噪点；启用 Wi-Fi 时偶发短暂撕裂/黑屏后恢复；完整 post-resume Wi-Fi/Bluetooth/network 恢复待测；DRM/Widevine、HDMI CEC、VP9 runtime 待验收。启动耗时/错误、thermal/CPU、graphics/rendering、残余 retry loop 和 legacy `multi_ir/uinput` 清理归入后续系统质量里程碑；不得在音频候选中混入。
+开放功能项：无 IME；exFAT unsupported；选中态渐变白/灰噪点；启用 Wi-Fi 时偶发短暂撕裂/黑屏后恢复；完整 post-resume Wi-Fi/Bluetooth/network 恢复、HDMI CEC 与 Settings/Menu 物理复验等待现场访问。VP9 runtime 已远程关闭；DRM 已收敛为可操作 Widevine L3、无 HDCP/secure decoder 要求，仍未验证物理画面、受保护内容或 Netflix/Disney+/其他商业服务认证/播放。启动耗时/错误、thermal/CPU、graphics/rendering、残余 retry loop 和 legacy `multi_ir/uinput` 清理归入后续系统质量里程碑；不得在音频候选中混入。
 
 ## Audio failure boundary
 
@@ -101,7 +103,7 @@ Updated: 2026-08-16
 | M8B rc-core-r4 | **DEVICE ACCEPTED - SETTINGS SEMANTIC FAIL** | native rc-core/repeat、exact `.kl` 加载、OK/DPAD/HOME/BACK/Power 均通过；物理 Settings 产生 KEY_CONFIG 171→Android SETTINGS 176，但该 keyevent 在当前系统无效果 | 仅把 Linux 171 映射为已验证有效的 Android MENU 82 |
 | M8B rc-core-r5 | **DEVICE ACCEPTED - AUDIO OPEN** | native rc-core/repeat、exact `.kl`、Settings→MENU 与全部基础遥控通过；Projectivy、网络、Bluetooth/HID、USB、AVC/HEVC 已验收 | 捕获 Apollo HAL `adev_open` 的首次返回分支，不做 XML card-name 猜测 |
 | M8B audio-r1 | **FAILED - VNDK NAMESPACE DISABLED** | exact VNDK 31 APEX active、`libaudioroute.so` 存在，但 `ro.treble.enabled=false` 令 linkerconfig 使用 legacy 配置；无 VNDK namespace / `default→vndk` link | 启用正确 Android 12 产品级 Treble/VNDK 合同 |
-| M8B audio-r2 | **DEVICE ACCEPTED - AUDIO PASS** | 运行时 Treble/VNDK 合同成立；Apollo HAL、AudioFlinger primary output、ALSA HDMI 与 VLC HEVC+AAC HDMI TV 音频全部通过 | 音频主阻塞关闭；非阻塞 warning 独立清理 |
+| M8B audio-r2 | **DEVICE ACCEPTED - AUDIO PASS** | 运行时 Treble/VNDK 合同、Apollo/AudioFlinger/ALSA HDMI、VLC HEVC+AAC HDMI 音频通过；后续 ADB-only 验证 VP9 Allwinner/Cedar 硬解与 Widevine 16.1.0 L3 | 保持 accepted baseline；物理画面、商业 DRM 服务、CEC、resume 与 Settings/Menu 复验延期 |
 
 ## M8B native rc-core
 
@@ -250,8 +252,9 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - M8B native rc-core 遥控迁移已在 r5 设备验收并关闭；Mouse mode intentionally dropped，legacy multi_ir 工件保留为 inert reference，后续仅在独立清理候选处理。
 - 当前 board、DT 与 runtime 证据识别为 H616。设备运行 64 位 kernel，但没有已证明可用的 AArch64 Android graphics userspace；本轮不扩展到 64 位 userspace。
 - `m8b-audio-r2` 只启用产品级 Treble/VNDK 合同；未修改 VNDK payload、mixer、audio platform XML、DTS、machine driver 或已验收功能，现已设备验收为 AUDIO PASS。
+- 2026-08-16 ADB-only 补验未刷机、未重启且未修改 ROM/device properties：VP9 为 Allwinner OMX/Cedar hardware-runtime PASS；Widevine 为可操作 L3，HDCP `NONE`，无 secure decoder 要求。物理画面/逐帧质量与商业服务认证或播放仍未证明。
 - 遥控器 Menu 与 Settings 当前均打开 Projectivy menu。两键语义分离为独立延期项，不回改已验收的 rc-core、keylayout 选择或其他按键行为。
 
 ## Next action
 
-保持 `m8b-audio-r2` 为当前设备验收基线。后续工作单独处理非阻塞音频 warning，或设计 Menu→Projectivy menu、Settings→Android system Settings 的独立遥控/UI 语义候选；不得影响已通过的 DPAD/OK/BACK/HOME/Volume/Power/Menu。
+保持 `m8b-audio-r2` 为当前设备验收基线。下一项远程安全工作优先做只读 boot/runtime error 与 retry-loop 限定采样；HDMI CEC、完整 suspend/resume recovery、Settings/Menu 物理复验及商业 DRM 播放等待现场访问，不得冒险中断网络 ADB。

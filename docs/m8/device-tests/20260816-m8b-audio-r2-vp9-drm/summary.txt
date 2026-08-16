@@ -1,0 +1,21 @@
+Baseline: m8b-audio-r2 (DEVICE ACCEPTED / AUDIO PASS)
+Endpoint: 192.168.1.8:7896
+Build fingerprint: Unblocktech/ubox10/ubox10:12/SP1A.211105.004/eng.tianyi.20260801.011154:userdebug/test-keys
+Test date: 2026-08-16
+
+Safety boundary
+- ADB only; no flash, reboot, suspend, power action, network/ADB change, property change, ROM change, or speculative fix.
+- VLC was already installed. The test-only MediaDrm probe was installed temporarily and removed by the checked-in runner.
+- Endpoint remained device-ready and sys.boot_completed remained 1 after testing.
+
+Conclusions
+- VP9: HARDWARE-RUNTIME PASS with OMX.allwinner.video.decoder.vp9 and Cedar.
+- Widevine: framework/plugin present and operational; Google Widevine CDM 16.1.0, securityLevel L3.
+- HDCP connected/max: NONE. AVC, HEVC, and VP9 do not require a secure decoder on this L3 plugin.
+- No secure codec component name is published in dumpsys media.player.
+- Not verified: physical picture/frame accuracy, protected-content playback, L1/secure-video path, or any commercial streaming certification/playback.
+
+Deferred until physical access
+- HDMI CEC.
+- Full suspend/resume recovery including Wi-Fi, Bluetooth, network, and ADB.
+- Settings/Menu physical-key revalidation.

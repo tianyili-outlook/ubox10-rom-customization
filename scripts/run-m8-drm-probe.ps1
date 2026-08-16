@@ -1,7 +1,9 @@
 [CmdletBinding()]
 param(
-    [string]$Device = "192.168.1.5:7896",
-    [string]$OutputFile
+    [string]$Device = "192.168.1.8:7896",
+    [string]$OutputFile,
+    [ValidateRange(5, 120)]
+    [int]$ProbeTimeoutSeconds = 45
 )
 
 $ErrorActionPreference = "Stop"
@@ -131,13 +133,20 @@ try {
         throw "DRM probe activity failed with exit code $LASTEXITCODE"
     }
 
-    $rawLog = & $adb -s $Device logcat -d -v raw -s "M8DrmProbe:I" "*:S"
     $prefix = "$runId "
-    $result = @(
-        $rawLog |
-            Where-Object { $_.StartsWith($prefix) } |
-            ForEach-Object { $_.Substring($prefix.Length) }
-    )
+    $deadline = [DateTime]::UtcNow.AddSeconds($ProbeTimeoutSeconds)
+    do {
+        $rawLog = & $adb -s $Device logcat -d -v raw -s "M8DrmProbe:I" "*:S"
+        $result = @(
+            $rawLog |
+                Where-Object { $_.StartsWith($prefix) } |
+                ForEach-Object { $_.Substring($prefix.Length) }
+        )
+        if ($result -contains "complete=true") {
+            break
+        }
+        Start-Sleep -Milliseconds 500
+    } while ([DateTime]::UtcNow -lt $deadline)
     if ($result -notcontains "complete=true") {
         throw "DRM probe did not emit a complete result"
     }
