@@ -1,6 +1,6 @@
 # M8B audio-r2 candidate
 
-状态：**READY TO FLASH — OFFLINE CHECKED**。本轮未刷机。
+状态：**DEVICE ACCEPTED / AUDIO PASS**。
 
 直接基线：`m8b-audio-r1`，SHA-256 `298DCA11DBDFDC81028869C01866411C634FC2C7B979EDA3FB0346BF7434DBDD`。
 
@@ -32,19 +32,13 @@ r1 实机已确认 `com.android.vndk.v31` active 且 `libaudioroute.so` 存在�
 - payload 差异仅 `system_a`、`super.fex`、`Vsuper.fex`、`vbmeta_system.fex`、`Vvbmeta_system.fex`。
 - LP、AVB、四分区 e2fsck、split SELinux、ELF、IMAGEWTY 外层校验、focused tests 与 `git diff --check` 通过。
 
-## 首测命令
+## 设备验收
 
-刷写需另行授权。刷写并启动完成后执行：
+- `sys.boot_completed=1`。
+- `ro.treble.enabled=true`、`ro.vndk.version=31`，`com.android.vndk.v31` active。
+- 运行时 VNDK namespace 与 `default→vndk` link 包含 `libaudioroute.so`。
+- unchanged Apollo HAL 到达 `adev_open`；AudioFlinger 加载 primary audio interface 并建立 primary output。
+- ALSA 识别 `ahubhdmi` 为 card 3 / `AUDIO_HDMI`；kernel 报告 `HDMI Audio Enable Successfully`。
+- VLC 播放已知 HEVC+AAC 正常，时间线推进且 HDMI TV 音频确认工作。
 
-```powershell
-C:\platform-tools\adb.exe -s 192.168.1.9:7896 shell getprop ro.treble.enabled
-C:\platform-tools\adb.exe -s 192.168.1.9:7896 shell getprop ro.vndk.version
-C:\platform-tools\adb.exe -s 192.168.1.9:7896 shell "grep -n '^\[vendor\]$' /linkerconfig/ld.config.txt"
-C:\platform-tools\adb.exe -s 192.168.1.9:7896 shell "grep 'namespace.vndk.search.paths.*com.android.vndk.v31' /linkerconfig/ld.config.txt"
-C:\platform-tools\adb.exe -s 192.168.1.9:7896 shell "grep 'namespace.default.link.vndk.shared_libs' /linkerconfig/ld.config.txt | grep -w libaudioroute.so"
-C:\platform-tools\adb.exe -s 192.168.1.9:7896 shell "logcat -b all -d | grep -E 'libaudioroute|audio.primary.apollo|DevicesFactory|AudioFlinger|AudioPolicy'"
-C:\platform-tools\adb.exe -s 192.168.1.9:7896 shell dumpsys media.audio_flinger
-C:\platform-tools\adb.exe -s 192.168.1.9:7896 shell dumpsys media.audio_policy
-```
-
-预期前两项分别为 `true`、`31`；运行时配置包含 vendor/VNDK link；不再出现 `libaudioroute.so not found`；primary output 存在。最后播放已知 HEVC+AAC，确认视频不再停在 0:00。若出现 HAL 加载后的新首错，保存完整日志并停止，不预改 mixer/ALSA topology。
+验收期间仍观察到 legacy missing mixer controls、`nano_input_open -3`/input path 与 permissive SELinux AVC。它们不阻塞当前 primary HDMI playback，仅作为后续清理或调查项，不改变 r2 的 **AUDIO PASS** 结论。

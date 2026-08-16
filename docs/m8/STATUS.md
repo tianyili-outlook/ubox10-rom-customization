@@ -17,23 +17,23 @@ Updated: 2026-08-16
 
 ## Accepted working baseline
 
-`m8b-rc-core-r5` 已完成实机验收，状态为 **DEVICE ACCEPTED — AUDIO OPEN**。
+`m8b-audio-r2` 已完成实机验收，状态为 **DEVICE ACCEPTED / AUDIO PASS**。
 
 | 项目 | 值 |
 |---|---|
-| 镜像 | `out/candidates/m8b-rc-core-r5/x12-m8b-rc-core-r5.img` |
-| 大小 | 1007982592 bytes |
-| SHA-256 | `7B4D3E28D37CE242F92FF259BB43590EDF422630DA7B515D66E4DF1A000CFA98` |
-| 唯一功能变量 | exact device keylayout 中 Linux 171 的 Android 语义由 `SETTINGS` 改为 `MENU` |
-| Mouse | intentionally dropped；ff4054 保持 inert |
-| payload 差异 | 相对 r4 仅 `system_a`、super/vbmeta_system 及其校验 companions；boot/kernel 原字节不变 |
-| 设备结果 | native rc-core/repeat、exact `.kl`、OK/DPAD/HOME/BACK/Volume/Power、Settings→Projectivy menu PASS |
+| 镜像 | `out/candidates/m8b-audio-r2/x12-m8b-audio-r2.img` |
+| 大小 | 1025951744 bytes |
+| SHA-256 | `B39300CB3E335D75C9D61594CD94565D9C24FC92F467F9050CD1E604D87E9C2C` |
+| 音频合同 | `ro.treble.enabled=true`、`ro.vndk.version=31`、active `com.android.vndk.v31`，运行时 `default→vndk` 暴露 `libaudioroute.so` |
+| 设备结果 | Apollo HAL 到达 `adev_open`；AudioFlinger 加载 primary interface 并建立 primary output；ALSA 识别 `ahubhdmi` 为 card 3 / `AUDIO_HDMI` |
+| 媒体实测 | VLC 播放已知 HEVC+AAC 正常，时间线推进，HDMI TV 有声；kernel 报告 `HDMI Audio Enable Successfully` |
+| 已继承通过 | Projectivy、native rc-core/repeat、exact `.kl`、DPAD/OK/BACK/HOME/Volume/Power/Menu 及 r5 既有功能 |
 
 强制回滚仍为 `m8a-initial-atv-r13`：`out/candidates/m8a-initial-atv-r13/x12-m8a-initial-atv-r13.img`，SHA-256 `1D367F7091A7BD6A0791B2CFE45E7AAB551E0312D8C68136548A4927354A8E06`。
 
 ## Current audio candidate
 
-`m8b-audio-r2` 状态为 **READY TO FLASH — OFFLINE CHECKED**；r1 已实机证明确切 VNDK APEX 存在但 Treble linker namespace 未启用，r5 仍是实机验收基线。
+`m8b-audio-r2` 状态为 **DEVICE ACCEPTED / AUDIO PASS**；r1 已实机证明确切 VNDK APEX 存在但 Treble linker namespace 未启用，r2 已在设备上闭合该合同。
 
 | 项目 | 值 |
 |---|---|
@@ -44,6 +44,8 @@ Updated: 2026-08-16
 | runtime 合同 | stock vendor `ro.vndk.version=31` + exact `com.android.vndk.v31`；生成 `[vendor]`、VNDK namespace 和 `default→vndk` 的 `libaudioroute.so` |
 | payload 差异 | `system_a`、`super.fex`、`Vsuper.fex`、`vbmeta_system.fex`、`Vvbmeta_system.fex` |
 | 保持项 | boot/kernel/ramdisk、vendor_boot、vendor/product/vendor_dlkm、遥控、Projectivy、Power 均不变 |
+
+实机同时确认 `sys.boot_completed=1`。legacy missing mixer controls、`nano_input_open -3`/input path 与 permissive SELinux AVC 未阻塞 primary HDMI playback，仅保留为后续清理或调查项。
 
 ## r5 device acceptance
 
@@ -99,7 +101,7 @@ Updated: 2026-08-16
 | M8B rc-core-r4 | **DEVICE ACCEPTED - SETTINGS SEMANTIC FAIL** | native rc-core/repeat、exact `.kl` 加载、OK/DPAD/HOME/BACK/Power 均通过；物理 Settings 产生 KEY_CONFIG 171→Android SETTINGS 176，但该 keyevent 在当前系统无效果 | 仅把 Linux 171 映射为已验证有效的 Android MENU 82 |
 | M8B rc-core-r5 | **DEVICE ACCEPTED - AUDIO OPEN** | native rc-core/repeat、exact `.kl`、Settings→MENU 与全部基础遥控通过；Projectivy、网络、Bluetooth/HID、USB、AVC/HEVC 已验收 | 捕获 Apollo HAL `adev_open` 的首次返回分支，不做 XML card-name 猜测 |
 | M8B audio-r1 | **FAILED - VNDK NAMESPACE DISABLED** | exact VNDK 31 APEX active、`libaudioroute.so` 存在，但 `ro.treble.enabled=false` 令 linkerconfig 使用 legacy 配置；无 VNDK namespace / `default→vndk` link | 启用正确 Android 12 产品级 Treble/VNDK 合同 |
-| M8B audio-r2 | **READY TO FLASH - OFFLINE CHECKED** | AOSP Treble/VNDK 重建通过；候选离线生成 vendor/VNDK namespace 并向 unchanged Apollo HAL 暴露现有 `libaudioroute.so` | 刷写后先验收运行时 linkerconfig，再检查 primary HAL/output |
+| M8B audio-r2 | **DEVICE ACCEPTED - AUDIO PASS** | 运行时 Treble/VNDK 合同成立；Apollo HAL、AudioFlinger primary output、ALSA HDMI 与 VLC HEVC+AAC HDMI TV 音频全部通过 | 音频主阻塞关闭；非阻塞 warning 独立清理 |
 
 ## M8B native rc-core
 
@@ -247,8 +249,9 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - r13 是当前 GOLDEN BASELINE；Projectivy、provisioning、遥控和 Power sleep/wake/shutdown 均以实机 UART 为准。
 - M8B native rc-core 遥控迁移已在 r5 设备验收并关闭；Mouse mode intentionally dropped，legacy multi_ir 工件保留为 inert reference，后续仅在独立清理候选处理。
 - 当前 board、DT 与 runtime 证据识别为 H616。设备运行 64 位 kernel，但没有已证明可用的 AArch64 Android graphics userspace；本轮不扩展到 64 位 userspace。
-- `m8b-audio-r2` 只启用产品级 Treble/VNDK 合同；未修改 VNDK payload、mixer、audio platform XML、DTS、machine driver 或已验收功能。
+- `m8b-audio-r2` 只启用产品级 Treble/VNDK 合同；未修改 VNDK payload、mixer、audio platform XML、DTS、machine driver 或已验收功能，现已设备验收为 AUDIO PASS。
+- 遥控器 Menu 与 Settings 当前均打开 Projectivy menu。两键语义分离为独立延期项，不回改已验收的 rc-core、keylayout 选择或其他按键行为。
 
 ## Next action
 
-经用户另行授权后刷写 `m8b-audio-r2`。先确认 `ro.treble.enabled=true`，再确认运行时 `/linkerconfig/ld.config.txt` 出现 `[vendor]`、VNDK search path 和包含 `libaudioroute.so` 的 `default→vndk` link；随后检查旧缺库日志、primary HAL/output，并播放已知 HEVC+AAC。若仍失败，只记录 HAL 成功加载后的新首错，不预改 mixer/ALSA topology。
+保持 `m8b-audio-r2` 为当前设备验收基线。后续工作单独处理非阻塞音频 warning，或设计 Menu→Projectivy menu、Settings→Android system Settings 的独立遥控/UI 语义候选；不得影响已通过的 DPAD/OK/BACK/HOME/Volume/Power/Menu。
