@@ -24,9 +24,9 @@
 - [x] 加入 `PRODUCT_SHIPPING_API_LEVEL := 31`、`BOARD_VNDK_VERSION := current` 和 `com.android.vndk.current` 产品规则；重建确认 Device/Product VNDK、Treble linker namespace、VINTF enforcement 和 `ro.treble.enabled=true`。
 - [x] 构建 `m8b-audio-r2`：以 r1 为基线，仅物化 `ro.treble.enabled=true`；精确 Android 12 linkerconfig 离线生成 vendor/VNDK namespace，`default→vndk` 包含 `libaudioroute.so`。
 - [x] r2 实机确认 `sys.boot_completed=1`、Treble/VNDK namespace 与 `default→vndk` 合同成立、Apollo HAL 到达 `adev_open`、primary output 创建、`ahubhdmi` card 3 / `AUDIO_HDMI` 工作，VLC HEVC+AAC HDMI TV 音频通过。
-- [ ] 后续独立清理 legacy missing mixer controls；不纳入已验收 r2 的修复范围。
-- [ ] 后续独立调查 `nano_input_open -3`/input path；当前不阻塞 HDMI primary output。
-- [ ] 后续独立收敛 permissive SELinux AVC；当前仅记录，不在音频验收收尾中修改策略。
+- [x] system-quality audit 将 legacy missing mixer controls 定为 **P2 boot-only/inert noise**；当前保留日志窗口与 62 秒样本均为 0，不为清日志修改已验收 audio stack。
+- [ ] **INFO / 等待明确 input 用例或现场：**`nano_input_open -3` 当前保留日志窗口与 62 秒样本均为 0；input capture 未测试，不声明 PASS/FAIL，且不阻塞 HDMI primary output。
+- [ ] **P1 / 独立候选且现场验收后：**收敛 permissive SELinux active-path AVC；已分组为 CEC extcon、system_suspend wakeup sysfs 与 audio HAL uevent socket。不得直接修改当前 accepted device policy。
 
 ## 独立功能项
 
@@ -40,7 +40,10 @@
 
 ## 后续系统质量里程碑
 
-- [ ] 限定分析 boot critical path、UART errors/retries、CPU governor/frequency、thermal/idle、graphics renderer/allocator/mapper/SF 与残余 audio retry loop。
+- [x] 完成限定只读 system-quality audit：无 P0；stability、retry loop、audio residual、SELinux、CPU/thermal/idle、graphics 与 memory 证据见 `docs/m8/device-tests/20260816-m8b-system-quality-audit/`。
+- [ ] **P1 / medium confidence：**隔离调查低负载下 CPU 五次样本均为 1.512 GHz 且 ThermalService `HAL Ready=false`；active governor 因权限未读到。不得在线改 governor；候选需现场 thermal soak。
+- [ ] **P1 / 先现场关联：**Projectivy/HWUI 99.74% jank telemetry 与 `FrameCompleted/GpuCompleted=INT64_MAX`；当前只证明 frame-metrics 异常，不声称已复现物理画面卡顿/噪点。
+- [ ] **P2 / 默认不修：**Wi-Fi HAL link-layer statistics 每约 3 秒返回 `ERROR_UNKNOWN`；网络 ADB 稳定且 Wi-Fi 进程未重启。
 - [ ] 在独立候选中清理已证明无依赖的 legacy `multi_ir/uinput` 工件；不得在无依赖证明时删除 `/system/lib/libinput.so` 等通用库。
 - [ ] 保持 Mouse mode dropped；不重新引入 vendor mouse framework。
 - [ ] 仅在获得匹配本板 64 位 graphics/media userspace provider 后重启 AArch64 Android userspace 工作。

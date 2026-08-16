@@ -49,6 +49,12 @@ Updated: 2026-08-16
 
 实机同时确认 `sys.boot_completed=1`。legacy missing mixer controls、`nano_input_open -3`/input path 与 permissive SELinux AVC 未阻塞 primary HDMI playback，仅保留为后续清理或调查项。
 
+## 2026-08-16 M8B system-quality audit
+
+以在线 `m8b-audio-r2` 做限定、只读 ADB 审计，未清 log、重启、停止进程、修改设置/属性或改变设备。结论为 **无 P0；accepted baseline 不变**。两次快照间 core Android/media/graphics/Wi-Fi PID 保持，保留日志与 62 秒窗口均无 crash、ANR、watchdog、fatal signal、binder/service-manager failure 或 service/process restart；内存、zram、LMKD、primary audio 与 graphics HAL/service 均健康。
+
+当前 backlog：P1 为 permissive SELinux 的 CEC/suspend/audio active-path policy gaps、Projectivy/HWUI 无效 frame-completion 时间戳导致 99.74% jank telemetry，以及 medium-confidence 的 CPU 长驻 1.512 GHz / ThermalService `HAL Ready=false` policy-observability 问题；均未证明当前普通播放不稳定。P2 为每约 3 秒一次的 Wi-Fi link-layer statistics failure、Projectivy Billing unbind warning 与 boot-only legacy mixer noise。`nano_input_open -3` 在保留的 23153 行及 62 秒窗口均为 0 次，故仅保留 input function 未验证，不把它声明为当前 loop 或已证明 defect。完整证据见 `docs/m8/device-tests/20260816-m8b-system-quality-audit/`。
+
 ## r5 device acceptance
 
 | 功能 | 结果 |
@@ -257,4 +263,4 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 
 ## Next action
 
-保持 `m8b-audio-r2` 为当前设备验收基线。下一项远程安全工作优先做只读 boot/runtime error 与 retry-loop 限定采样；HDMI CEC、完整 suspend/resume recovery、Settings/Menu 物理复验及商业 DRM 播放等待现场访问，不得冒险中断网络 ADB。
+保持 `m8b-audio-r2` 为当前设备验收基线。系统质量只读审计已完成且无 P0；下一项远程安全开发优先增加 TV soft IME。HDMI CEC、完整 suspend/resume recovery、Settings/Menu 物理复验、graphics 画面关联、thermal soak 及商业 DRM 播放等待现场访问，不得冒险中断网络 ADB。

@@ -1,0 +1,39 @@
+# All commands used the project-local tools/platform-tools/adb.exe and serial 192.168.1.8:7896.
+
+# Identity, time and process comparison
+adb shell 'getprop ro.build.fingerprint; getprop sys.boot_completed; getenforce; cat /proc/uptime; ps -A -o USER,PID,PPID,NAME,ELAPSED,RSS; top -b -n 1'
+adb shell 'date; cat /proc/uptime; ps -A -o PID,PPID,NAME,ELAPSED,RSS; top -b -n 1'
+
+# Stability and bounded 62-second comparison (logcat was never cleared)
+adb shell dumpsys activity exit-info
+adb shell dumpsys dropbox --print
+adb shell 'ls -la /data/tombstones; ls -la /data/anr'
+adb logcat -d -b all -v threadtime -T '08-16 07:59:02.000'
+
+# Audio and SELinux
+adb shell dumpsys media.audio_flinger
+adb shell dumpsys media.audio_policy
+adb shell lshal
+adb logcat -d -b all -v threadtime -t 25000
+
+# CPU, thermal and idle
+adb shell 'cat /proc/loadavg; cat /sys/devices/system/cpu/online; ls -la /sys/devices/system/cpu/cpufreq/policy0'
+adb shell 'cat /sys/devices/system/cpu/cpufreq/policy0/{scaling_driver,scaling_available_governors,scaling_cur_freq,scaling_min_freq,cpuinfo_min_freq,cpuinfo_max_freq}'
+adb shell 'for i in 1 2 3 4 5; do cat /sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq; sleep 2; done'
+adb shell 'for z in /sys/class/thermal/thermal_zone*; do cat $z/type; cat $z/temp; done'
+adb shell 'for c in /sys/class/thermal/cooling_device*; do cat $c/type; cat $c/cur_state; done'
+adb shell 'for s in /sys/devices/system/cpu/cpu0/cpuidle/state*; do cat $s/name; cat $s/usage; cat $s/time; done'
+adb shell dumpsys thermalservice
+adb shell dumpsys cpuinfo
+
+# Graphics and display
+adb shell 'lshal | grep -E -i "graphics|allocator|mapper|composer"'
+adb shell dumpsys SurfaceFlinger
+adb shell dumpsys display
+adb shell dumpsys gfxinfo com.spocky.projengmenu
+
+# Memory
+adb shell 'cat /proc/meminfo; cat /proc/swaps; cat /sys/block/zram0/{disksize,mm_stat,comp_algorithm}'
+adb shell 'grep -E "^(pgscan|pgsteal|pswp|oom_kill|compact_fail)" /proc/vmstat'
+adb shell dumpsys activity lmk
+adb shell dumpsys meminfo
