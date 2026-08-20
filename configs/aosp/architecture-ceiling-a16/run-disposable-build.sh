@@ -15,23 +15,27 @@ ceiling_mount_dir=${CEILING_MOUNT_DIR:-/mnt/wsl/ubox10-a16-out-volume}
 ceiling_out_relative=out-ceiling
 ceiling_out_dir=${ceiling_aosp_root}/${ceiling_out_relative}
 ceiling_swap_size=${CEILING_SWAP_SIZE:-7G}
+ceiling_use_output_swap=${CEILING_USE_OUTPUT_SWAP:-0}
 ceiling_swap_file=${ceiling_mount_dir}/.ceiling-build.swap
 ceiling_legacy_overflow_swap=${ceiling_mount_dir}/.ceiling-graph-overflow.swap
 ceiling_soong_gomemlimit=${CEILING_SOONG_GOMEMLIMIT:-6GiB}
 ceiling_cpuset=${CEILING_CPUSET:-0-7}
 ceiling_cgroup=${CEILING_CGROUP:-/sys/fs/cgroup/ubox10-a16-build}
-ceiling_memory_high=${CEILING_MEMORY_HIGH:-9728M}
-ceiling_memory_max=${CEILING_MEMORY_MAX:-10G}
+ceiling_memory_high=${CEILING_MEMORY_HIGH:-10G}
+ceiling_memory_max=${CEILING_MEMORY_MAX:-10752M}
 ceiling_memory_swap_max=${CEILING_MEMORY_SWAP_MAX:-7G}
+ceiling_resource_sample_interval=${CEILING_RESOURCE_SAMPLE_INTERVAL:-10}
 
 case ${ceiling_variant} in
     arm32)
         ceiling_product=ubox10_ceiling_arm
         ceiling_log=${ceiling_aosp_root}/out-study/logs/prototype-a-arm32-systemimage.log
+        ceiling_resource_log=${ceiling_aosp_root}/out-study/logs/prototype-a-arm32-systemimage-resources.tsv
         ;;
     mixed)
         ceiling_product=ubox10_ceiling_arm64
         ceiling_log=${ceiling_aosp_root}/out-study/logs/prototype-b-mixed-systemimage.log
+        ceiling_resource_log=${ceiling_aosp_root}/out-study/logs/prototype-b-mixed-systemimage-resources.tsv
         ;;
     *)
         echo "usage: $0 {arm32|mixed} [jobs]" >&2
@@ -41,6 +45,11 @@ esac
 
 if ! [[ ${ceiling_jobs} =~ ^[1-9][0-9]*$ ]]; then
     echo "error: jobs must be a positive integer" >&2
+    exit 2
+fi
+
+if [[ ${ceiling_use_output_swap} != 0 && ${ceiling_use_output_swap} != 1 ]]; then
+    echo "error: CEILING_USE_OUTPUT_SWAP must be 0 or 1" >&2
     exit 2
 fi
 
@@ -73,8 +82,20 @@ fi
 
 mkdir -p "${ceiling_mount_dir}" "$(dirname "${ceiling_log}")"
 
+ceiling_resource_sampler_pid=
+
+ceiling_stop_resource_sampler() {
+    if [[ -n ${ceiling_resource_sampler_pid} ]] &&
+       kill -0 "${ceiling_resource_sampler_pid}" 2>/dev/null; then
+        kill "${ceiling_resource_sampler_pid}" 2>/dev/null || true
+        wait "${ceiling_resource_sampler_pid}" 2>/dev/null || true
+    fi
+    ceiling_resource_sampler_pid=
+}
+
 ceiling_cleanup() {
     set +e
+    ceiling_stop_resource_sampler
     if swapon --show=NAME --noheadings | grep -Fxq "${ceiling_swap_file}"; then
         swapoff "${ceiling_swap_file}"
     fi
@@ -132,7 +153,9 @@ if [[ ! -e ${ceiling_swap_file} ]]; then
     chmod 0600 "${ceiling_swap_file}"
     mkswap -L UBOX10_A16_BUILD_SWAP "${ceiling_swap_file}" >/dev/null
 fi
-swapon -p 100 "${ceiling_swap_file}"
+if [[ ${ceiling_use_output_swap} == 1 ]]; then
+    swapon -p 100 "${ceiling_swap_file}"
+fi
 
 mount --bind "${ceiling_mount_dir}" "${ceiling_out_dir}"
 
@@ -145,6 +168,41 @@ echo "${ceiling_memory_high}" > "${ceiling_cgroup}/memory.high"
 echo "${ceiling_memory_max}" > "${ceiling_cgroup}/memory.max"
 echo "${ceiling_memory_swap_max}" > "${ceiling_cgroup}/memory.swap.max"
 echo 1 > "${ceiling_cgroup}/memory.oom.group"
+
+ceiling_build_start_epoch=$(date +%s)
+printf '%s\n' \
+    $'epoch\tmemory_current\tmemory_peak\tswap_current\tswap_peak\tcpu_usage_usec\tcpu_user_usec\tcpu_system_usec\tpressure_some_avg10\tpressure_some_total\tpressure_full_avg10\tpressure_full_total\thigh_events\tmax_events\toom_events\tgraph_ninja_bytes' \
+    > "${ceiling_resource_log}"
+(
+    while [[ -d ${ceiling_cgroup} ]]; do
+        ceiling_sample_epoch=$(date +%s)
+        ceiling_memory_current=$(<"${ceiling_cgroup}/memory.current")
+        ceiling_memory_peak=$(<"${ceiling_cgroup}/memory.peak")
+        ceiling_swap_current=$(<"${ceiling_cgroup}/memory.swap.current")
+        ceiling_swap_peak=$(<"${ceiling_cgroup}/memory.swap.peak")
+        ceiling_cpu_usage=$(awk '$1 == "usage_usec" { print $2 }' "${ceiling_cgroup}/cpu.stat")
+        ceiling_cpu_user=$(awk '$1 == "user_usec" { print $2 }' "${ceiling_cgroup}/cpu.stat")
+        ceiling_cpu_system=$(awk '$1 == "system_usec" { print $2 }' "${ceiling_cgroup}/cpu.stat")
+        ceiling_pressure_some_avg10=$(awk '$1 == "some" { sub("avg10=", "", $2); print $2 }' "${ceiling_cgroup}/memory.pressure")
+        ceiling_pressure_some_total=$(awk '$1 == "some" { sub("total=", "", $5); print $5 }' "${ceiling_cgroup}/memory.pressure")
+        ceiling_pressure_full_avg10=$(awk '$1 == "full" { sub("avg10=", "", $2); print $2 }' "${ceiling_cgroup}/memory.pressure")
+        ceiling_pressure_full_total=$(awk '$1 == "full" { sub("total=", "", $5); print $5 }' "${ceiling_cgroup}/memory.pressure")
+        ceiling_high_events=$(awk '$1 == "high" { print $2 }' "${ceiling_cgroup}/memory.events")
+        ceiling_max_events=$(awk '$1 == "max" { print $2 }' "${ceiling_cgroup}/memory.events")
+        ceiling_oom_events=$(awk '$1 == "oom" { print $2 }' "${ceiling_cgroup}/memory.events")
+        ceiling_graph_bytes=$(stat -c '%s' \
+            "${ceiling_out_dir}/soong/build.${ceiling_product}.ninja" 2>/dev/null || echo 0)
+        printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+            "${ceiling_sample_epoch}" "${ceiling_memory_current}" "${ceiling_memory_peak}" \
+            "${ceiling_swap_current}" "${ceiling_swap_peak}" "${ceiling_cpu_usage}" \
+            "${ceiling_cpu_user}" "${ceiling_cpu_system}" "${ceiling_pressure_some_avg10}" \
+            "${ceiling_pressure_some_total}" "${ceiling_pressure_full_avg10}" \
+            "${ceiling_pressure_full_total}" "${ceiling_high_events}" "${ceiling_max_events}" \
+            "${ceiling_oom_events}" "${ceiling_graph_bytes}"
+        sleep "${ceiling_resource_sample_interval}"
+    done
+) >> "${ceiling_resource_log}" &
+ceiling_resource_sampler_pid=$!
 
 ceiling_build_status=0
 (
@@ -170,5 +228,29 @@ ceiling_build_status=0
             m -j"${CEILING_JOBS}" systemimage 2>&1 | tee "${CEILING_LOG}"
         '
 ) || ceiling_build_status=$?
+
+ceiling_stop_resource_sampler
+ceiling_build_end_epoch=$(date +%s)
+ceiling_graph_epoch=$(awk -F '\t' 'NR > 1 && $16 > 0 { print $1; exit }' "${ceiling_resource_log}")
+{
+    printf 'build_status=%s\n' "${ceiling_build_status}"
+    printf 'build_start_epoch=%s\n' "${ceiling_build_start_epoch}"
+    printf 'build_end_epoch=%s\n' "${ceiling_build_end_epoch}"
+    printf 'build_wall_seconds=%s\n' "$((ceiling_build_end_epoch - ceiling_build_start_epoch))"
+    printf 'graph_epoch=%s\n' "${ceiling_graph_epoch}"
+    if [[ -n ${ceiling_graph_epoch} ]]; then
+        printf 'graph_wall_seconds=%s\n' "$((ceiling_graph_epoch - ceiling_build_start_epoch))"
+    fi
+    printf 'memory_high=%s\n' "$(<"${ceiling_cgroup}/memory.high")"
+    printf 'memory_max=%s\n' "$(<"${ceiling_cgroup}/memory.max")"
+    printf 'output_swap_enabled=%s\n' "${ceiling_use_output_swap}"
+    printf 'memory_peak=%s\n' "$(<"${ceiling_cgroup}/memory.peak")"
+    printf 'swap_peak=%s\n' "$(<"${ceiling_cgroup}/memory.swap.peak")"
+    awk '{ printf "cpu_%s=%s\n", $1, $2 }' "${ceiling_cgroup}/cpu.stat"
+    awk '{ printf "memory_event_%s=%s\n", $1, $2 }' "${ceiling_cgroup}/memory.events"
+    sed 's/^/memory_pressure_/' "${ceiling_cgroup}/memory.pressure"
+} > "${ceiling_resource_log%.tsv}.summary"
+chown "${ceiling_owner}:${ceiling_group}" \
+    "${ceiling_resource_log}" "${ceiling_resource_log%.tsv}.summary"
 
 exit ${ceiling_build_status}

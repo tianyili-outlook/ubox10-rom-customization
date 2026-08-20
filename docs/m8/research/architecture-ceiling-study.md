@@ -1,6 +1,6 @@
 # UBOX10 Architecture Ceiling Study
 
-Study date: 2026-08-17
+Study date: 2026-08-17; build evidence updated: 2026-08-21
 
 Study branch/base: `codex/m8-architecture-ceiling` / `c30c8d0bbbcab5667a9aeaaf9cbfadbdf168d401`
 
@@ -309,7 +309,7 @@ official `android-16.0.0_r4` tag / `BP4A.251205.006`; the retained pinned manife
 `out-study/provenance/android-16.0.0_r4-pinned-manifest.xml`, SHA-256
 `4e8beb5d1b590dff3d631b1dbb957138dbda4e608a3183c625683da4bc84918f`. The large output
 container is the fixed-size, labeled ext4 image
-`D:\ubox10-ceiling-study-storage\a16-out.ext4`. None of these paths is in Git.
+`E:\ubox10-ceiling-study-storage\a16-out.ext4`. None of these paths is in Git.
 
 Prototype A is a minimal Android 16 TV GSI-style ARM32 product. It inherits the official ATV
 GSI base, uses the generic ARM board, models an Android 12/API-31 field upgrade, retains only
@@ -320,44 +320,59 @@ provides AArch64 primary plus ARM32 secondary ABI and `core_64_bit.mk` selects
 
 ### Recorded build result
 
-**INCOMPLETE — HOST-LIMITED; no target image exists.** Prototype A product discovery,
-release-config/dumpvars processing and Soong host bootstrap succeeded far enough to compile
-and invoke `soong_build`. Three bounded observations followed:
+**INCOMPLETE — PRODUCT GRAPH CLOSED; TARGET BUILD USER-STOPPED; no target image exists.**
+Prototype A product discovery, release-config/dumpvars processing, Soong host bootstrap and
+the complete product Ninja graph now succeed. The bounded observations are:
 
 1. An absolute `OUT_DIR` exposed an Android 16 `test_package` path-classification failure in
    `continuous_native_tests`. Exporting the same directory as relative `out-ceiling` removed
    that mechanical host-path error without changing target code.
 2. A memory-constrained graph-generation attempt ended in a Go-runtime `SIGBUS`; this is a
    host resource failure, not a UBOX target ABI, VINTF, kernel or graphics result.
-3. The corrected relative-path retry rebuilt the Soong host tool and spent approximately
-   three hours in Android.bp graph analysis. It was terminated with the foreground execution
-   session before a product Ninja graph was emitted. The ext4 image is clean, but
-   `/soong/build.ubox10_ceiling_arm.ninja`, the product output directory and `system.img` are
-   absent.
+3. The previous 9728 MiB `memory.high` run was stopped after 4,965 seconds with only
+   2,335 seconds of cgroup CPU, 10,202,091,520-byte RAM peak, 4,150,779,904-byte swap peak,
+   severe memory pressure and no graph. It remained a host-resource result.
+4. Raising `memory.high` to 10 GiB and `memory.max` to 10752 MiB reduced early paging, but
+   high-priority swap inside the removable E: image still produced a deterministic late-stage
+   I/O stall. That run was stopped after 3,280 seconds with 2,935 seconds CPU and a
+   3,835,879,424-byte swap peak; no max or OOM event occurred.
+5. Keeping the same RAM limits while preferring WSL's host-backed swap completed the graph.
+   The final `soong/build.ubox10_ceiling_arm.ninja` is 357,271,614 bytes, SHA-256
+   `e51e518d18add7033c15269b7879064daa0431d6b7e2f264917839e7d34c4b9d`. Full graph
+   generation took approximately 3,071 seconds wall and 7,828 seconds cgroup CPU. RAM peaked
+   at 10,751,721,472 bytes and swap at the 7,516,192,768-byte cgroup limit; memory max and
+   OOM events stayed zero.
+6. The generated graph entered the real `systemimage` Ninja build. A bounded `-j4` retry
+   reached action 452 of 122,523, but target output on the removable E: loop showed blocked
+   `folio_wait` tasks, 75% CPU idle and 25% I/O wait. The user then stopped the work. The
+   resulting BoringSSL/Python `FAILED` lines are cancellation fallout, not reproducible
+   compiler or product errors.
 
-The surviving partial log is
-`/home/tianyi/ubox10-a16-ceiling/out-study/logs/prototype-a-arm32-systemimage.log`, 37,699
-bytes, SHA-256 `66ed74362f6bf7f6cbe190d1811c07c7d54a1c32a7797e348d9a8f1315617b6d`.
-The Study build helper was then tightened to a fixed ext4 output, cgroup memory/swap limits,
-relative `OUT_DIR`, a forwarded Go memory limit and a restricted CPU set. Its final resource
-profile is syntax-checked but was not executed. The user explicitly directed that no further
-disposable Android 16 build be run before this report was completed.
+Raw logs and 10-second cgroup samples are retained under the ignored
+`work/architecture-ceiling/build-logs/2026-08-2*` directories. The wrapper now records wall,
+CPU, memory/swap peaks, pressure and cgroup events automatically. C/D/E cleanup also removed
+only reproducible outputs: a redundant 36,507,222,016-byte D: output image, 8,172,238,284
+bytes of accepted-image extraction products and 1,813,374,760 bytes of obsolete r7 candidate
+outputs. WSL cache cleanup plus TRIM/compact reduced its VHDX from 368,420,323,328 to
+277,052,653,568 bytes. The protected production worktree, Android 12 reference tree, Android
+16 source and donor tree were not modified.
 
 Prototype B was not built. Static evidence makes the mixed architecture credible, but lawful
 availability and A16 closure of the required AArch64 Mali/mapper provider remain unresolved;
-the explicit no-build direction independently ends the prototype budget here.
+Gate 2 remains closed until Prototype A produces and passes offline validation of
+`system.img`.
 
-There is therefore no prototype image path, image size or image SHA-256, and no artifact is
-flashable. This outcome neither proves nor disproves Android 16 bootability on the UBOX10; it
-does prove that the checked-in minimal products reach the official A16 build machinery and
-that this 16 GiB host cannot complete full Soong graph generation reliably under the bounded
-foreground setup used in the Study. More host time/memory or a persistent bounded build is
-required before target-level failures can be observed.
+There is still no prototype image path, image size or image SHA-256, and no artifact is
+flashable. This outcome neither proves nor disproves Android 16 bootability on the UBOX10. It
+does close the former Soong-graph host gate and proves that the unchanged Prototype A reaches
+real target Ninja actions. The next host boundary is output-store random I/O: resume the
+preserved graph and intermediates from fast internal storage before interpreting any target
+failure.
 
 ## 11. Static boot-readiness analysis
 
-The furthest offline-proven point is **pre-image product configuration and Soong host-tool
-bootstrap**. No Android boot stage is proven because no `system.img` exists. The table keeps
+The furthest offline-proven point is **complete product Ninja graph plus target action
+452/122523**. No Android boot stage is proven because no `system.img` exists. The table keeps
 artifact/packaging blockers separate from structural architecture blockers.
 
 | Area | Status | Evidence and boundary |

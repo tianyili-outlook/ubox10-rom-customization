@@ -14,13 +14,18 @@ are not flashable firmware. Every output is a DISPOSABLE ARCHITECTURE PROTOTYPE.
 host. Run it as the WSL root user so one process can mount a pre-created ext4
 loop image over `out-ceiling`, build as the owner of the AOSP tree, and unmount
 on exit. The wrapper accepts only `arm32` or `mixed`, defaults to one build job,
-builds only `systemimage`, and gives a 7 GiB swapfile inside that bounded image
-priority over WSL's host-backed swap. The build subprocess runs in a transient
-cgroup with 9.5 GiB `memory.high`, 10 GiB `memory.max`, and 7 GiB
+and builds only `systemimage`. The build subprocess runs in a transient cgroup
+with 10 GiB `memory.high`, 10752 MiB `memory.max`, and 7 GiB
 `memory.swap.max`, and defaults to CPUs 0-7 so Soong graph generation cannot
 fan out across the entire host. This bounds host memory and paging pressure.
-Its paths can be overridden with `CEILING_AOSP_ROOT`, `CEILING_OUT_IMAGE`,
-`CEILING_MOUNT_DIR`, and `CEILING_CPUSET`.
+
+The bounded image retains a 7 GiB fallback swapfile, but it is not activated by
+default. Measurement on the removable E: host showed that high-priority output-image
+swap caused severe late-graph I/O stalls. The default therefore uses WSL's host-backed
+swap within the same 7 GiB cgroup limit; set `CEILING_USE_OUTPUT_SWAP=1` only for a
+host where the output image is on suitably fast storage. Paths and limits can be
+overridden with `CEILING_AOSP_ROOT`, `CEILING_OUT_IMAGE`, `CEILING_MOUNT_DIR`,
+`CEILING_CPUSET`, and the `CEILING_MEMORY_*` variables.
 
 The wrapper deliberately exports `OUT_DIR=out-ceiling` relative to the AOSP
 root while mounting that same directory by absolute path. Android 16's Soong
@@ -34,9 +39,15 @@ Android 16 tree. It forwards `SOONG_GOMEMLIMIT` only to the cleared
 host-build accommodation and does not change target artifacts or Android
 runtime behavior.
 
-Study outcome on 2026-08-17: Prototype A reached product discovery and Soong
-host bootstrap, then entered Android.bp graph analysis, but no product Ninja
-graph or `system.img` completed. The final CPU/swap profile above is syntax-checked but
-was not rerun after the user directed that no further disposable build occur.
-Prototype B remains configuration only. These files must not be described as a
-successful build or a flashable image.
+The wrapper records 10-second cgroup samples beside the build log and emits a
+summary containing wall time, CPU time, memory/swap peaks, pressure and cgroup
+events. This is host evidence only and does not alter target inputs.
+
+Study outcome on 2026-08-21: Prototype A completed the Soong product Ninja graph.
+`build.ubox10_ceiling_arm.ninja` is 357,271,614 bytes with SHA-256
+`e51e518d18add7033c15269b7879064daa0431d6b7e2f264917839e7d34c4b9d`.
+The target Ninja build then reached action 452 of 122,523 before the user stopped
+the work. No genuine target/product error and no `system.img` were produced; the
+reported final failures are cancellation fallout. Prototype B remains
+configuration only. These files must not be described as a successful image
+build or flashable firmware.

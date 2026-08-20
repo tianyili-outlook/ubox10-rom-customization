@@ -1,6 +1,6 @@
 # M8 status
 
-Updated: 2026-08-20
+Updated: 2026-08-21
 
 ## Golden baseline
 
@@ -77,6 +77,8 @@ Updated: 2026-08-20
 活跃架构开发转移到 `codex/m8-architecture-ceiling` 的 Android 16 路线；决策依据为该分支的 `docs/m8/research/architecture-ceiling-study.md`。推荐目标是 **Android 16 for TV mixed AArch64-primary / ARM32-secondary（CONDITIONAL GO）**：保留 H616 AArch64 5.4 kernel、accepted vendor/vendor_dlkm 与可进程隔离的 ARM32 media/audio/wireless/DRM 服务，只为 AArch64 同进程需求引入 hash-pinned matched Mali/mapper/gralloc provider。
 
 架构研究已经找到强匹配 provider 证据：同 lineage donor 的 ARM32 Mali 与 accepted UBOX 文件完全一致，并提供 paired AArch64 Mali 与 multilib mapper/gralloc source。该证据把“缺少匹配 graphics provider”从结构性阻塞收敛为 exact-board build/runtime gate；media 不要求先取得全套 AArch64 provider，可继续保留 ARM32 Allwinner OMX/Cedar 服务并通过进程边界复用。Android 16 尚未生成可刷镜像，exact-board boot、A16 linker/VINTF/AVB/SELinux closure 与 graphics runtime 仍须在架构分支验证。
+
+2026-08-21 Gate 1 主机进展：未修改 Prototype A、ARM32 产品定义或 `systemimage` 目标的情况下，Soong 已生成完整 `ubox10_ceiling_arm` Ninja graph（357,271,614 bytes，SHA-256 `e51e518d18add7033c15269b7879064daa0431d6b7e2f264917839e7d34c4b9d`），并进入真实 target Ninja，用户停止时到达 452/122523。graph 完整写出约用 3,071 秒 wall / 7,828 秒 cgroup CPU；RAM 峰值 10,751,721,472 bytes，swap 峰值 7,516,192,768 bytes，memory max/OOM 均为 0。慢 E: removable loop 已确认为 target I/O 主机边界；取消产生的 BoringSSL/Python `FAILED` 不是产品编译错误。当前仍无 `system.img`，Gate 1 未关闭，Gate 2 未启动。
 
 ## Accepted audio milestone
 
@@ -311,4 +313,4 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 
 ## Next action
 
-冻结 `m8b-remote-r1` 为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，保持其精确镜像、hash、候选记录、设备证据和 `m8a-initial-atv-r13` golden rollback 不变。当前不执行新的 M8B feature/P1/P2 工作；活跃开发在 `codex/m8-architecture-ceiling` 按 Android 16 mixed AArch64/ARM32 conditional-GO 路线继续。本分支不启动 Android 16 实现。
+冻结 `m8b-remote-r1` 为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，保持其精确镜像、hash、候选记录、设备证据和 `m8a-initial-atv-r13` golden rollback 不变。当前不执行新的 M8B feature/P1/P2 工作。下次恢复 `codex/m8-architecture-ceiling` 时，先把 E: 中已保留的 ext4 graph/intermediates 安全复制到快速内部存储并离线校验，再继续同一 Prototype A ARM32 `systemimage`；出现真实可复现产品错误前不调整架构。Gate 2 继续等待 Gate 1 的离线 `system.img` closure。

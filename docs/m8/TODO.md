@@ -2,7 +2,19 @@
 
 ## Freeze decision
 
-`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为 Android 16 架构工作的稳定回退与功能对照。当前不再实施 Android 12 M8B feature、P1/P2 修复或清理；以下未完成项全部 **DEFERRED pending Android 16 architecture outcome**。活跃架构开发转移到 `codex/m8-architecture-ceiling`，本分支不启动 Android 16 实现。
+`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为 Android 16 架构工作的稳定回退与功能对照。当前不再实施 Android 12 M8B feature、P1/P2 修复或清理；以下未完成项全部 **DEFERRED pending Android 16 architecture outcome**。活跃架构开发位于 `codex/m8-architecture-ceiling`。
+
+## Android 16 Gate 1 — Prototype A ARM32
+
+- [x] 保持 Prototype A、ARM32 产品定义、relative `OUT_DIR`、VNDK 31 与 `systemimage` 目标不变。
+- [x] 将 host profile 收敛为 10 GiB `memory.high`、10752 MiB `memory.max`、7 GiB `memory.swap.max`、6 GiB `SOONG_GOMEMLIMIT`、CPU 0-7，并加入 10 秒 cgroup resource evidence。
+- [x] 清理 C/D/E 可重建产物和 WSL cache；compact 后 WSL VHDX 从 368,420,323,328 缩到 277,052,653,568 bytes；生产 worktree、A12/A16 源码、donors 与设备未修改。
+- [x] 完成 `ubox10_ceiling_arm` product Ninja graph：357,271,614 bytes，SHA-256 `e51e518d18add7033c15269b7879064daa0431d6b7e2f264917839e7d34c4b9d`。
+- [x] 进入真实 target Ninja；用户停止时到达 452/122523。取消产生的 action failures 不作为产品错误。
+- [ ] 把 E: 保留的 `a16-out.ext4` 安全复制到快速内部存储，复制后校验 ext4、graph hash 与已有 intermediates；本轮 D: 不完整副本已删除。
+- [ ] 从已保存 graph/intermediates 继续 Prototype A ARM32 `systemimage`，捕获首个真实、可复现的产品错误或产出 `system.img`。
+- [ ] 对完成的 `system.img` 做 filesystem、ABI/property、APEX/VNDK 31、VINTF/FCM、linker namespace、SELinux、dynamic partition、hash/reproducibility 离线 closure。
+- [ ] Gate 1 离线 closure 前不启动 mixed `zygote64_32` Gate 2，也不刷写设备。
 
 ## 已验收基线
 
