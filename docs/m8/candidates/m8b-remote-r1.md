@@ -1,6 +1,6 @@
 # M8B remote-r1 candidate
 
-状态：**DEVICE ACCEPTED / REMOTE PASS**。该镜像现为设备运行和后续 M8B 工作的 accepted baseline，继承 **AUDIO PASS** 与 **IME PASS**。
+状态：**FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，继承 **AUDIO PASS / IME PASS / REMOTE PASS**。该镜像作为 Android 16 架构工作的稳定日用回退与功能对照；不再继续 M8B feature、P1/P2 修复或清理。
 
 直接基线为 `m8b-ime-r1`（**DEVICE ACCEPTED / IME PASS**，继承 **AUDIO PASS**）。目标输入架构保持为物理 rc-core 遥控、local AOSP LeanbackIME、official Google TV iOS Remote/phone keyboard 三者共存。
 

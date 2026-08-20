@@ -1,5 +1,9 @@
 # M8 TODO
 
+## Freeze decision
+
+`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为 Android 16 架构工作的稳定回退与功能对照。当前不再实施 Android 12 M8B feature、P1/P2 修复或清理；以下未完成项全部 **DEFERRED pending Android 16 architecture outcome**。活跃架构开发转移到 `codex/m8-architecture-ceiling`，本分支不启动 Android 16 实现。
+
 ## 已验收基线
 
 - [x] `m8b-rc-core-r5`：boot、Projectivy、native rc-core/repeat、exact `.kl`、DPAD/OK/BACK/HOME/Volume/Power/Settings→MENU。
@@ -25,8 +29,8 @@
 - [x] 构建 `m8b-audio-r2`：以 r1 为基线，仅物化 `ro.treble.enabled=true`；精确 Android 12 linkerconfig 离线生成 vendor/VNDK namespace，`default→vndk` 包含 `libaudioroute.so`。
 - [x] r2 实机确认 `sys.boot_completed=1`、Treble/VNDK namespace 与 `default→vndk` 合同成立、Apollo HAL 到达 `adev_open`、primary output 创建、`ahubhdmi` card 3 / `AUDIO_HDMI` 工作，VLC HEVC+AAC HDMI TV 音频通过。
 - [x] system-quality audit 将 legacy missing mixer controls 定为 **P2 boot-only/inert noise**；当前保留日志窗口与 62 秒样本均为 0，不为清日志修改已验收 audio stack。
-- [ ] **INFO / 等待明确 input 用例或现场：**`nano_input_open -3` 当前保留日志窗口与 62 秒样本均为 0；input capture 未测试，不声明 PASS/FAIL，且不阻塞 HDMI primary output。
-- [ ] **P1 / 独立候选且现场验收后：**收敛 permissive SELinux active-path AVC；已分组为 CEC extcon、system_suspend wakeup sysfs 与 audio HAL uevent socket。不得直接修改当前 accepted device policy。
+- [ ] **DEFERRED pending Android 16 architecture outcome / INFO：**`nano_input_open -3` 当前保留日志窗口与 62 秒样本均为 0；input capture 未测试，不声明 PASS/FAIL，且不阻塞 HDMI primary output。
+- [ ] **DEFERRED pending Android 16 architecture outcome / P1：**permissive SELinux active-path AVC 已分组为 CEC extcon、system_suspend wakeup sysfs 与 audio HAL uevent socket；不修改 frozen Android 12 policy。
 
 ## 独立功能项
 
@@ -39,22 +43,22 @@
 - [x] paired mobile Remote 占用 text-input session 时提示 `Use the keyboard on your mobile device`；物理遥控导航保持，接受为 Android TV 行为而非 LeanbackIME regression。
 - [x] Remote r1 reboot persistence 未单独执行且不声明 PASS；无具体失败迹象，本里程碑接受为非阻塞。当前实机无 Play Store/GMS/GSF，因此没有可执行的 Play runtime regression test。
 
-## 剩余路线（按优先级）
+## Deferred Android 12 backlog
 
-1. [ ] **Settings/Menu 物理键语义分离（推荐下一里程碑）：**先现场确认两键 raw scan/keyevent 与 UI 结果；目标 Menu→Projectivy menu、Settings→Android Settings。限定按键语义变量，不回改已验收 kernel/rc-core repeat、其他 keylayout 或输入栈。
-2. [ ] **完整 suspend/resume recovery：**现场验证 HDMI、Wi-Fi、Bluetooth、网络与 ADB 恢复；这是核心可靠性门，但跨电源/无线/显示边界，须以首个确定失败收敛。
-3. [ ] **graphics 现场关联：**复现并区分选中态渐变噪点、启用 Wi-Fi 时短暂撕裂/黑屏，以及 Projectivy/HWUI 99.74% jank telemetry；当前不声称物理 artifact 与 telemetry 已建立因果。
-4. [ ] **HDMI CEC：**现场验证 TV/盒子双向控制与已知 permissive CEC AVC 的功能相关性；不先做策略清日志。
-5. [ ] **CPU/thermal policy + physical soak：**调查低负载 1.512 GHz 与 ThermalService `HAL Ready=false`，记录温度/频率/负载和是否实际 throttling；不在线盲改 governor。
-6. [ ] **exFAT：**USB host/storage 已通过，仅 filesystem unsupported；作为独立可回滚候选，避免扩大到 USB stack。
-7. [ ] **商业 DRM 播放：**仅在目标服务和凭据可用时验证 Widevine L3 protected playback；不得把 plugin operational 等同于 Netflix/Disney+/其他认证。
-8. [ ] **LeanbackIME cold-start latency（低优先级观察）：**用同一真实 EditText 控制 cold/warm invocation，采集 InputMethodManager、process start、window visibility 与 OK event timing；当前不确认 defect/root cause，也不修改 IME。
-9. [ ] **SELinux enforcement-readiness：**已有 CEC extcon、system_suspend wakeup sysfs、audio HAL uevent socket active-path gaps；保持独立、功能驱动，不为清日志直接切 enforcing。
-10. [ ] **legacy multi_ir/uinput cleanup：**仅在独立候选中删除已证明无依赖工件；不得删除 `/system/lib/libinput.so` 等通用库，优先级最低。
+- [ ] **DEFERRED — Settings/Menu semantics：**目标仍为 Menu→Projectivy menu、Settings→Android Settings；不回改 frozen kernel/rc-core/keylayout。
+- [ ] **DEFERRED — suspend/resume recovery：**HDMI、Wi-Fi、Bluetooth、网络、ADB 与 mobile Remote 恢复未完成。
+- [ ] **DEFERRED — graphics artifacts：**选中态渐变噪点、Wi-Fi 相关短暂撕裂/黑屏与 HWUI telemetry 尚未建立因果。
+- [ ] **DEFERRED — HDMI CEC：**TV/盒子双向控制与已知 CEC AVC 的功能相关性未验收。
+- [ ] **DEFERRED — CPU/thermal soak：**低负载 1.512 GHz、ThermalService `HAL Ready=false` 与实际 throttling 未完成现场关联。
+- [ ] **DEFERRED — exFAT：**USB host/storage 已通过，Android 12 filesystem support 不再单独开发。
+- [ ] **DEFERRED — commercial DRM playback：**Widevine L3 protected playback 与目标服务认证/播放未验证；不把 plugin operational 等同于认证。
+- [ ] **DEFERRED — LeanbackIME cold-start latency：**cold/warm invocation timing 尚未受控测量，不确认 defect/root cause。
+- [ ] **DEFERRED — SELinux enforcement-readiness：**不为清日志修改 frozen Android 12 policy。
+- [ ] **DEFERRED — legacy multi_ir/uinput cleanup：**保留 inert reference；不在 frozen baseline 删除通用或历史恢复工件。
 
 ## 已知非里程碑项
 
 - [x] 完成限定只读 system-quality audit：无 P0；stability、retry loop、audio residual、SELinux、CPU/thermal/idle、graphics 与 memory 证据见 `docs/m8/device-tests/20260816-m8b-system-quality-audit/`。
-- [ ] **P2 / 默认不修：**Wi-Fi HAL link-layer statistics 每约 3 秒返回 `ERROR_UNKNOWN`；网络 ADB 稳定且 Wi-Fi 进程未重启。
-- [ ] 保持 Mouse mode dropped；不重新引入 vendor mouse framework。
-- [ ] 仅在获得匹配本板 64 位 graphics/media userspace provider 后重启 AArch64 Android userspace 工作。
+- [ ] **DEFERRED / P2 / 不修：**Wi-Fi HAL link-layer statistics 每约 3 秒返回 `ERROR_UNKNOWN`；网络 ADB 稳定且 Wi-Fi 进程未重启。
+- [x] 保持 Mouse mode dropped；不重新引入 vendor mouse framework。
+- [x] architecture-ceiling study 已找到强匹配 paired AArch64 Mali 与 multilib mapper/gralloc provider 证据；ARM32 OMX/Cedar media 可进程隔离复用。Android 16 mixed AArch64/ARM32 为 **CONDITIONAL GO**，其 build/runtime gates 转到 `codex/m8-architecture-ceiling`，不在本 Android 12 分支执行。

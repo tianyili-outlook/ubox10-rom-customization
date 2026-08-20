@@ -16,7 +16,7 @@ M8 的 North Star 是把这台设备建设成一台连贯、可靠、可维护�
 
 ### 2. ARM64-capable Android userspace
 
-长期目标是从 ARM32 Android userspace 走向真正可用的 ARM64-capable 环境；在合适时可采用 `zygote64_32` 等 64/32 混合架构，为必须保留的 32-bit HAL、服务和应用提供兼容性。迁移前必须先取得与 H616/sun50iw9 匹配且可信的 64-bit graphics/media/userspace provider 路径。
+长期目标是从 ARM32 Android userspace 走向真正可用的 ARM64-capable 环境；在合适时可采用 `zygote64_32` 等 64/32 混合架构，为必须保留的 32-bit HAL、服务和应用提供兼容性。AArch64 同进程 graphics/mapper provider 必须与 H616/sun50iw9 栈匹配并经过 exact-board 验证；media、audio、wireless、DRM 等可进程隔离的成熟 ARM32 服务不要求为了架构纯粹性改写为 64-bit。
 
 64-bit 的目标不是“framework 能启动”，而是现代 64-bit Android TV 应用可稳定运行，且 graphics、media、audio、DRM、networking、Bluetooth、input 与其他成熟功能没有不可接受的回归。在达到现有成熟基线前，64-bit 工作应作为隔离的架构里程碑或实验分支。
 

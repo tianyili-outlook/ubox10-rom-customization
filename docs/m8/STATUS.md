@@ -1,6 +1,6 @@
 # M8 status
 
-Updated: 2026-08-16
+Updated: 2026-08-20
 
 ## Golden baseline
 
@@ -48,9 +48,9 @@ Updated: 2026-08-16
 | reboot persistence | 未单独执行；fresh-data 自动 enable/default 与实际物理使用已满足本里程碑，接受为非阻塞，不声明 reboot persistence PASS |
 | 证据 | `docs/m8/device-tests/20260816-m8b-ime-r1/` |
 
-## Current accepted working baseline
+## Frozen Android 12 working baseline
 
-`m8b-remote-r1` 已完成物理设备验收，状态为 **DEVICE ACCEPTED / REMOTE PASS**，并成为当前运行基线；它继承 **AUDIO PASS** 与 **IME PASS**。
+`m8b-remote-r1` 已正式冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**；它继承 **AUDIO PASS / IME PASS / REMOTE PASS**，作为 Android 16 架构工作的稳定日用回退与功能对照。除非 Android 16 架构结论明确要求回到 Android 12，本分支不再继续 M8B 功能开发、P1/P2 修复或清理工作。
 
 | 项目 | 值 |
 |---|---|
@@ -72,6 +72,12 @@ Updated: 2026-08-16
 
 详细实现、验收与回归边界见 `docs/m8/candidates/m8b-remote-r1.md`、`docs/m8/device-tests/20260816-m8b-remote-r1/` 与 `docs/DEVICE_TEST.md`。
 
+## Active architecture transition
+
+活跃架构开发转移到 `codex/m8-architecture-ceiling` 的 Android 16 路线；决策依据为该分支的 `docs/m8/research/architecture-ceiling-study.md`。推荐目标是 **Android 16 for TV mixed AArch64-primary / ARM32-secondary（CONDITIONAL GO）**：保留 H616 AArch64 5.4 kernel、accepted vendor/vendor_dlkm 与可进程隔离的 ARM32 media/audio/wireless/DRM 服务，只为 AArch64 同进程需求引入 hash-pinned matched Mali/mapper/gralloc provider。
+
+架构研究已经找到强匹配 provider 证据：同 lineage donor 的 ARM32 Mali 与 accepted UBOX 文件完全一致，并提供 paired AArch64 Mali 与 multilib mapper/gralloc source。该证据把“缺少匹配 graphics provider”从结构性阻塞收敛为 exact-board build/runtime gate；media 不要求先取得全套 AArch64 provider，可继续保留 ARM32 Allwinner OMX/Cedar 服务并通过进程边界复用。Android 16 尚未生成可刷镜像，exact-board boot、A16 linker/VINTF/AVB/SELinux closure 与 graphics runtime 仍须在架构分支验证。
+
 ## Accepted audio milestone
 
 `m8b-audio-r2` 状态为 **DEVICE ACCEPTED / AUDIO PASS**；r1 已实机证明确切 VNDK APEX 存在但 Treble linker namespace 未启用，r2 已在设备上闭合该合同。
@@ -86,13 +92,13 @@ Updated: 2026-08-16
 | payload 差异 | `system_a`、`super.fex`、`Vsuper.fex`、`vbmeta_system.fex`、`Vvbmeta_system.fex` |
 | 保持项 | boot/kernel/ramdisk、vendor_boot、vendor/product/vendor_dlkm、遥控、Projectivy、Power 均不变 |
 
-实机同时确认 `sys.boot_completed=1`。legacy missing mixer controls、`nano_input_open -3`/input path 与 permissive SELinux AVC 未阻塞 primary HDMI playback，仅保留为后续清理或调查项。
+实机同时确认 `sys.boot_completed=1`。legacy missing mixer controls、`nano_input_open -3`/input path 与 permissive SELinux AVC 未阻塞 primary HDMI playback；证据保留，Android 12 清理/调查现已随 M8B freeze 延期。
 
 ## 2026-08-16 M8B system-quality audit
 
 以在线 `m8b-audio-r2` 做限定、只读 ADB 审计，未清 log、重启、停止进程、修改设置/属性或改变设备。结论为 **无 P0；accepted baseline 不变**。两次快照间 core Android/media/graphics/Wi-Fi PID 保持，保留日志与 62 秒窗口均无 crash、ANR、watchdog、fatal signal、binder/service-manager failure 或 service/process restart；内存、zram、LMKD、primary audio 与 graphics HAL/service 均健康。
 
-当前 backlog：P1 为 permissive SELinux 的 CEC/suspend/audio active-path policy gaps、Projectivy/HWUI 无效 frame-completion 时间戳导致 99.74% jank telemetry，以及 medium-confidence 的 CPU 长驻 1.512 GHz / ThermalService `HAL Ready=false` policy-observability 问题；均未证明当前普通播放不稳定。P2 为每约 3 秒一次的 Wi-Fi link-layer statistics failure、Projectivy Billing unbind warning 与 boot-only legacy mixer noise。`nano_input_open -3` 在保留的 23153 行及 62 秒窗口均为 0 次，故仅保留 input function 未验证，不把它声明为当前 loop 或已证明 defect。完整证据见 `docs/m8/device-tests/20260816-m8b-system-quality-audit/`。
+审计当时的分类：P1 为 permissive SELinux 的 CEC/suspend/audio active-path policy gaps、Projectivy/HWUI 无效 frame-completion 时间戳导致 99.74% jank telemetry，以及 medium-confidence 的 CPU 长驻 1.512 GHz / ThermalService `HAL Ready=false` policy-observability 问题；均未证明当前普通播放不稳定。P2 为每约 3 秒一次的 Wi-Fi link-layer statistics failure、Projectivy Billing unbind warning 与 boot-only legacy mixer noise。`nano_input_open -3` 在保留的 23153 行及 62 秒窗口均为 0 次，故仅保留 input function 未验证，不把它声明为当前 loop 或已证明 defect。这些 Android 12 P1/P2 项现均 deferred，不再是 active backlog；完整证据见 `docs/m8/device-tests/20260816-m8b-system-quality-audit/`。
 
 ## r5 device acceptance
 
@@ -107,7 +113,7 @@ Updated: 2026-08-16
 | H.264 / HEVC | **PASS**；VLC 使用 Allwinner OMX AVC/HEVC decoder，Cedar/VPU 硬解流畅 |
 | Audio | **FAIL — HIGH**；AudioFlinger 无 primary output，带 AAC 的 HEVC 停在 0:00；无音频同视频正常 |
 
-开放功能项：Settings/Menu 语义分离、exFAT unsupported、选中态渐变白/灰噪点、启用 Wi-Fi 时偶发短暂撕裂/黑屏后恢复、完整 post-resume Wi-Fi/Bluetooth/network 恢复、HDMI CEC 与 LeanbackIME cold-start latency。VP9 runtime 已关闭；DRM 已收敛为可操作 Widevine L3、无 HDCP/secure decoder 要求，仍未验证受保护内容或 Netflix/Disney+/其他商业服务认证/播放。
+Android 12 未完成项包括 Settings/Menu 语义分离、exFAT、graphics artifacts、完整 post-resume recovery、HDMI CEC、CPU/thermal soak、LeanbackIME cold-start latency、SELinux enforcement-readiness、commercial DRM playback 与 legacy cleanup；全部 **DEFERRED pending Android 16 architecture outcome**，不再作为当前 M8B 执行优先级。VP9 runtime 已关闭；DRM 仍只证明可操作 Widevine L3、HDCP `NONE`、无 secure decoder 要求，不声称商业服务认证或播放。
 
 ## Audio failure boundary
 
@@ -150,7 +156,7 @@ Updated: 2026-08-16
 | M8B audio-r1 | **FAILED - VNDK NAMESPACE DISABLED** | exact VNDK 31 APEX active、`libaudioroute.so` 存在，但 `ro.treble.enabled=false` 令 linkerconfig 使用 legacy 配置；无 VNDK namespace / `default→vndk` link | 启用正确 Android 12 产品级 Treble/VNDK 合同 |
 | M8B audio-r2 | **DEVICE ACCEPTED - AUDIO PASS** | 运行时 Treble/VNDK 合同、Apollo/AudioFlinger/ALSA HDMI、VLC HEVC+AAC HDMI 音频通过；后续 ADB-only 验证 VP9 Allwinner/Cedar 硬解与 Widevine 16.1.0 L3 | 保持 accepted baseline；物理画面、商业 DRM 服务、CEC、resume 与 Settings/Menu 复验延期 |
 | M8B ime-r1 | **DEVICE ACCEPTED - IME PASS** | fresh-data 自动 enable/default LeanbackIME；物理 DPAD/OK/BACK、文字输入与 1920×1080 TV 观感通过 | 作为 Remote v2 直接验收基线；单独 reboot persistence 未执行并接受为非阻塞 |
-| M8B remote-r1 | **DEVICE ACCEPTED - REMOTE PASS** | Projectivy/基础回归、CONNECT 默认授权、6466/6467、RRO lookup、official Google TV iPhone discovery/pair/navigation/volume 与真实 EditText phone text PASS；IME session ownership 行为接受 | 保持当前 accepted baseline；reboot persistence 未单独执行且不声明 PASS |
+| M8B remote-r1 | **FROZEN / DEVICE-ACCEPTED ANDROID 12 BASELINE** | Projectivy/基础回归、CONNECT 默认授权、6466/6467、RRO lookup、official Google TV iPhone discovery/pair/navigation/volume 与真实 EditText phone text PASS；继承 AUDIO/IME PASS | 作为 Android 16 架构工作的日用回退和功能对照；不再继续 M8B feature/P1/P2 development |
 
 ## M8B native rc-core
 
@@ -296,8 +302,8 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - No physical action was performed during the 2026-08-02 repository cleanup.
 - r10 已在实机完成 framework boot；r9 Lights/Watchdog/llkd 方向保持关闭，不再修改。
 - r13 是当前 GOLDEN BASELINE；Projectivy、provisioning、遥控和 Power sleep/wake/shutdown 均以实机 UART 为准。
-- M8B native rc-core 遥控迁移已在 r5 设备验收并关闭；Mouse mode intentionally dropped，legacy multi_ir 工件保留为 inert reference，后续仅在独立清理候选处理。
-- 当前 board、DT 与 runtime 证据识别为 H616。设备运行 64 位 kernel，但没有已证明可用的 AArch64 Android graphics userspace；本轮不扩展到 64 位 userspace。
+- M8B native rc-core 遥控迁移已在 r5 设备验收并关闭；Mouse mode intentionally dropped，legacy multi_ir 工件保留为 inert reference，其 Android 12 清理已随 freeze 延期。
+- 当前 board、DT 与 runtime 证据识别为 H616。architecture-ceiling study 已找到强匹配 paired AArch64 Mali 与 multilib mapper/gralloc provider 证据；exact-board A16 build/runtime 尚未证明。ARM32 OMX/Cedar media 可继续进程隔离复用，不再把“等待完整匹配 graphics/media provider”作为启动 AArch64 架构工作的前提。
 - `m8b-audio-r2` 只启用产品级 Treble/VNDK 合同；未修改 VNDK payload、mixer、audio platform XML、DTS、machine driver 或已验收功能，现已设备验收为 AUDIO PASS。
 - 2026-08-16 ADB-only 补验未刷机、未重启且未修改 ROM/device properties：VP9 为 Allwinner OMX/Cedar hardware-runtime PASS；Widevine 为可操作 L3，HDCP `NONE`，无 secure decoder 要求。物理画面/逐帧质量与商业服务认证或播放仍未证明。
 - 遥控器 Menu 与 Settings 当前均打开 Projectivy menu。两键语义分离为独立延期项，不回改已验收的 rc-core、keylayout 选择或其他按键行为。
@@ -305,4 +311,4 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 
 ## Next action
 
-保持 `m8b-remote-r1` 为当前 **DEVICE ACCEPTED / REMOTE PASS** 基线（继承 **AUDIO PASS / IME PASS**）。下一里程碑建议为 Settings/Menu 物理键语义分离：用户价值直接、变量可限定在按键语义层、现场可立即观察和回滚，且无需触碰已验收 kernel/rc-core 生命周期。其后依次为完整 suspend/resume recovery、graphics 现场关联、HDMI CEC、CPU/thermal soak、exFAT、商业 DRM、LeanbackIME cold-start latency、SELinux enforcement-readiness 与 legacy multi_ir/uinput 清理。
+冻结 `m8b-remote-r1` 为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，保持其精确镜像、hash、候选记录、设备证据和 `m8a-initial-atv-r13` golden rollback 不变。当前不执行新的 M8B feature/P1/P2 工作；活跃开发在 `codex/m8-architecture-ceiling` 按 Android 16 mixed AArch64/ARM32 conditional-GO 路线继续。本分支不启动 Android 16 实现。
