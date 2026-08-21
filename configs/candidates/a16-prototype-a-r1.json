@@ -1,0 +1,69 @@
+{
+  "id": "a16-prototype-a-r1",
+  "purpose": "One rollback-controlled Android 16 ARM32 exact-board candidate for UART-first authorization; not authorized for flash by construction alone.",
+  "accepted_outer": {
+    "size": 1031723008,
+    "sha256": "F3B09E5565AC4ED4E5EE326D392622E7B036A8519B8444B966E77CC4751B814A"
+  },
+  "gate1_system": {
+    "relative_to_aosp": "out-ceiling/target/product/generic/system.img",
+    "size": 946765824,
+    "sha256": "FD349F1D8073DFEB71E2CEA28915F1C755FA54E3EBA85616FCAA279063F3EDBE"
+  },
+  "accepted_super": {
+    "sparse_relative": "outer/super.fex",
+    "sparse_size": 851924428,
+    "sparse_sha256": "6374231FECBA80294D0BEDB97F265068C88C193788E1048FD0894B5C854398B2",
+    "raw_relative": "super.raw.img",
+    "raw_size": 3221225472,
+    "raw_sha256": "15E3A52E5C8BB4CC8B7495361C8421A42936343D271730964F54C929BE73219A",
+    "system_a_physical_offset": 1048576,
+    "metadata_slots": 3,
+    "metadata_version": "10.2",
+    "header_flags": "virtual_ab_device",
+    "group": "sb_a",
+    "group_maximum_size": 3212836864
+  },
+  "logical_partitions": {
+    "system_a": {"size": 1651167232, "sha256": "5992972F35EAFEB722C482A83D5B555F023DEAEA45EABFA282AB3379C8C3056B"},
+    "vendor_a": {"size": 119066624, "sha256": "BB91A8B7ED4AC0145F434F89FD76865EB4311F234AA46D67C8373A7CD5B4929A"},
+    "product_a": {"size": 272629760, "sha256": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974"},
+    "vendor_dlkm_a": {"size": 6680576, "sha256": "C589DC0B12E150469F179738F127F36F6321943577453A7DB335AB9E647B8FE5"}
+  },
+  "preserved_outer_payloads": {
+    "boot.fex": {"size": 67108864, "sha256": "0A9473513B309BA3168242500658F35D96EC40B49CA91E33C1068861F8756678"},
+    "vendor_boot.fex": {"size": 33554432, "sha256": "AAF77E65F6D882754015C7963E7A3D533282E1BCFA76F35220DB9FCAF4ED7E72"},
+    "vbmeta.fex": {"size": 4096, "sha256": "888229653FF0FD701C97CA7C0BBAFC0042AF7C63D7F671BF5F7162349D283F17"}
+  },
+  "integration": {
+    "device_matrix_relative": "configs/aosp/architecture-ceiling-a16/device/ubox/ceiling/compatibility_matrix.xml",
+    "device_matrix_sha256": "C21AD73999305E6F8258DB806EB3CFE3652C1D8D9F01B9E6FD6CEA64094CDDB8",
+    "sepolicy_patch_relative": "configs/aosp/architecture-ceiling-a16/patches/0002-sepolicy-defer-fuseblk-label-to-api31-vendor.patch",
+    "sepolicy_patch_sha256": "09903FCD713A12E828EF2C351C9CF84BEF869E86E5A0FD5E4CC701A5410DAFAF",
+    "removed_generated_cil_rule": "(genfscon fuseblk \"/\" (u object_r fuseblk ((s0) (s0))))",
+    "retained_vendor_cil_rule": "(genfscon fuseblk / (u object_r vfat ((s0) (s0))))"
+  },
+  "avb": {
+    "partition_size": 1651167232,
+    "salt": "6131362d70726f746f747970652d612d7231",
+    "rollback_index": 1644019200,
+    "rollback_index_location": 1,
+    "key_relative": "tools/testkey_rsa2048.pem",
+    "key_sha256": "F1D5765A2BDFB92FB08AEE021107C7AC1A7A3F590DAFD853771C85375EF0FBD7",
+    "algorithm": "SHA256_RSA2048",
+    "fec": "none"
+  },
+  "container": {
+    "total_entries": 50,
+    "preserved_entries": 46,
+    "replacements": ["super.fex", "vbmeta_system.fex"],
+    "companions": ["Vsuper.fex", "Vvbmeta_system.fex"]
+  },
+  "known_vintf_exception": {
+    "kernel_version": "5.4.125",
+    "kernel_fcm": 6,
+    "actual": "CONFIG_NFS_FS=y",
+    "required": "CONFIG_NFS_FS=n",
+    "classification": "Inherited BSP conformance deviation also present against the device-accepted Android 12 FCM 6 matrix; not represented as a pass."
+  }
+}

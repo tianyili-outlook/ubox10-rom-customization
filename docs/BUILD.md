@@ -102,7 +102,23 @@ lunch ubox10_ceiling_arm-bp4a-userdebug
 m -j8 systemimage
 ```
 
-`OUT_DIR` must remain the relative value `out-ceiling`. On the verified 62.8 GiB GCP host, do not use the WSL cgroup/taskset/swap wrapper or apply the legacy `SOONG_GOMEMLIMIT` patch. The successful run produced only `out-ceiling/target/product/generic/system.img`; it did not build boot, vendor, product, system_ext, super, userdata or an Allwinner outer image. The exact result and offline evidence are in `docs/m8/STATUS.md` and `docs/m8/research/architecture-ceiling-study.md`. Exact-device integration remains a separate candidate step requiring the ignored accepted logical/boot/outer assets and a fresh preservation audit.
+`OUT_DIR` must remain the relative value `out-ceiling`. On the verified 62.8 GiB GCP host, do not use the WSL cgroup/taskset/swap wrapper or apply the legacy `SOONG_GOMEMLIMIT` patch. The successful run produced only `out-ceiling/target/product/generic/system.img`; it did not build boot, vendor, product, system_ext, super, userdata or an Allwinner outer image. The exact result and offline evidence are in `docs/m8/STATUS.md` and `docs/m8/research/architecture-ceiling-study.md`. Exact-device integration is the separate, completed candidate step below; it does not alter or rerun Gate 1.
+
+## Android 16 Prototype A exact-board candidate
+
+Do not rebuild accepted Gate 1. On the GCP host, the candidate builder consumes its exact hash-locked `system.img`, the verified accepted inputs under `/work/ubox10-a16-prototype-a-inputs/verified/m8b-remote-r1/`, and the read-only accepted outer image `/work/ubox10-a16-prototype-a-inputs/incoming/x12-m8b-remote-r1.img`. The input and output contracts are in `configs/candidates/a16-prototype-a-r1.json`.
+
+From the repository root, with no existing final candidate directory, the retained construction command is:
+
+```bash
+python3 scripts/build-a16-prototype-a-r1-candidate.py --keep-failed
+```
+
+For long execution, wrap that command in a detached tmux session and redirect stdout/stderr plus an explicit exit-status file under `/work/build-logs/`; do not depend on the frontend connection. The builder performs no ADB, fastboot, PhoenixCard, FEL or other physical action. It refuses to overwrite an existing final candidate, verifies every accepted input before writing staging, and leaves the accepted outer image unchanged.
+
+The builder materializes exactly two tracked compatibility inputs in a copy of Gate 1 system: the two-HAL device matrix and the one-rule SELinux patch. It preserves filesystem metadata, signs system/vbmeta_system with the established project test key and rollback index/location, inserts system into the exact accepted LP extent, validates all protected logical hashes, and repacks the accepted IMAGEWTY container with 46/50 payloads preserved. Full exact VINTF is accepted by the audit harness only when its terminal error is the single recorded inherited `CONFIG_NFS_FS=y` deviation; any additional config or HAL error fails closed.
+
+The verified result is `out/candidates/a16-prototype-a-r1/x12-a16-prototype-a-r1.img`, 1,261,038,592 bytes, SHA-256 `A034C8193236C93746E5962CB3E7F26A1D56CEC1435D5AD9D95F653B60BEBD83`. It is an offline-checked candidate, not flash authorization. See `docs/m8/candidates/a16-prototype-a-r1.md` for the exact preservation and runtime boundary.
 
 ## Checks
 

@@ -55,6 +55,23 @@ actions. `system.img` is 946,765,824 bytes with SHA-256
 `fd349f1d8073dfeb71e2cea28915f1c755fa54e3eba85616fcaa279063f3edbe`.
 It passed the focused filesystem, AVB, ARM32 ABI, APEX/VNDK 31, system-side
 VINTF, linkerconfig and SELinux offline checks recorded in the active M8 status
-and Architecture Ceiling Study. It is still a standalone research system image,
-not a UBOX10-integrated or flashable firmware. Prototype B remains
-configuration only.
+and Architecture Ceiling Study. That accepted Gate 1 artifact remains unchanged
+and was not rebuilt.
+
+The subsequent exact-board audit found two bounded source integrations. The
+Prototype A product now includes `device/ubox/ceiling/compatibility_matrix.xml`,
+which declares only the two display HALs exposed by the accepted vendor. Apply
+`patches/0002-sepolicy-defer-fuseblk-label-to-api31-vendor.patch` to an exact clean
+A16 sepolicy tree for a future integrated source rebuild; it removes the one
+platform `fuseblk /` genfscon that conflicts with the retained API-31 vendor
+rule. The accepted Gate 1 output was instead consumed hash-locked by
+`scripts/build-a16-prototype-a-r1-candidate.py`, which materializes those same
+two changes in a staging image and rejects any other filesystem delta.
+
+`a16-prototype-a-r1` completed exact system/vendor/product checks, LP/AVB/outer
+preservation and split SELinux/linker/ELF closure. Full VINTF deliberately
+remains exit 65 only for the inherited `CONFIG_NFS_FS=y` versus FCM-6 `n`
+deviation that also exists against the device-accepted Android 12 matrix; it is
+not reported as a pass. The candidate is eligible only for requesting one
+UART-first authorization. No device action was performed, Gate 2 is closed,
+and Prototype B remains configuration only.

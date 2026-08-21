@@ -82,7 +82,28 @@ Updated: 2026-08-21
 
 唯一产物 `/work/src/ubox10-a16-ceiling/out-ceiling/target/product/generic/system.img` 为 946,765,824 bytes，SHA-256 `FD349F1D8073DFEB71E2CEA28915F1C755FA54E3EBA85616FCAA279063F3EDBE`。Raw ext4 `e2fsck -fn` clean；AVB SHA256_RSA2048 footer 与 system hashtree verify；staging 有 2,277 regular files、256 symlinks、997 个 ARM32 userspace ELF，另 7 个 ELF64 均为 Linux BPF object 而非 AArch64 userspace。36 个 installed APEX 全部可解析；`/system_ext/apex/com.android.vndk.v31.apex` 为 17,743,872 bytes / SHA-256 `FB94B4E2BA84BDEFDDFAF59729FDAE87B0195D2EEFD972FD69235DD7A12D705E`，含 ARM32 `libaudioroute.so` 与 v31 lists。A16 host linkerconfig 对实际 system/VNDK 生成 `[vendor]`、`/apex/com.android.vndk.v31/${LIB}` 和 `default→vndk` 的 `libaudioroute.so`；system-side `checkvintf --check-one` PASS，FCM 6 matrix 包含 5.4 kernel 分支；SELinux xattr、31.0 mapping 与 compiled policy 存在。只生成 `system.img`，未生成 boot/vendor/product/system_ext/super/userdata、IMAGEWTY 或可刷固件。
 
-Gate 1 只证明 A16 ARM32 product 可以完整构建并在离线结构上满足预期；**不证明** UBOX10 boot、exact accepted vendor/product VINTF match、device AVB/LP integration、`apexd`/zygote/system_server/graphics/media/audio/wireless/DRM runtime 或 Gate 2。当前 GCP VM 没有 ignored 的 accepted logical/boot/outer images，故 exact pairing 尚不能运行。A16 VNDK 31 的 `libaudioroute.so` 也不是 accepted A12 文件的原字节（11,620 bytes / `9750F1...A2` vs 11,640 bytes / `BB5393...623`）；官方 v31 ABI/build 与 linker closure 通过，但 exact vendor runtime 仍需实机验证。
+Gate 1 本身只证明 A16 ARM32 product 可以完整构建并在离线结构上满足预期；**不证明** UBOX10 boot、`apexd`/zygote/system_server/graphics/media/audio/wireless/DRM runtime 或 Gate 2。A16 VNDK 31 的 `libaudioroute.so` 也不是 accepted A12 文件的原字节（11,620 bytes / `9750F1...A2` vs 11,640 bytes / `BB5393...623`）；官方 v31 ABI/build 与 linker closure 通过，但 exact Apollo runtime 仍需实机验证。
+
+### Android 16 Prototype A exact-board candidate
+
+2026-08-21 已完成 accepted exact-board 离线集成，结论为 **OFFLINE CHECKED CANDIDATE / ELIGIBLE FOR ONE UART-FIRST AUTHORIZATION**；这不是刷写授权，Gate 2 仍为 **CLOSED**，且未执行任何物理设备动作。
+
+输入在 GCP 逐项校验：`m8b-remote-r1` 外层镜像为 1,031,723,008 bytes / SHA-256 `F3B09E5565AC4ED4E5EE326D392622E7B036A8519B8444B966E77CC4751B814A`；Test8r2 rollback 为 2,005,954,560 bytes / `6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8`。Accepted super、system/vendor/product/vendor_dlkm、boot、vendor_boot、vbmeta 与 Gate 1 system 均由 size/SHA-256 锁定；原始输入保持只读且构建前后 hash 一致。
+
+初始 exact VINTF 审计发现三项真实差异：accepted vendor 暴露的 `vendor.display.config@1.0` 和 `vendor.display.output@2` 未在 A16 device matrix 中声明，以及实际 5.4.125 kernel 的 `CONFIG_NFS_FS=y` 与 FCM 6 要求的 `n` 不同。前两项用仅包含这两个 exact HAL 的 device matrix 闭合。NFS 项也存在于 device-accepted Android 12 FCM 6 对同一 kernel 的检查中，因此分类为继承 BSP conformance deviation；**完整 VINTF 仍返回 65 / INCOMPATIBLE，未声称 PASS**。把 kernel config 反事实改为 `n` 后 full check PASS，证明没有第二项剩余 VINTF 差异。
+
+Exact split SELinux 的首错是 A16 platform 与 accepted API-31 vendor 对同一 `fuseblk /` 的冲突 `genfscon`；候选只移除 platform duplicate，保留 device-accepted vendor 的 `vfat` label，随后 exact `secilc` PASS。A16 linkerconfig 对 exact system/vendor/product/VNDK 31 生成 vendor namespace 和 `libaudioroute.so` link；1,769 个 ELF 的 class/name 级闭包无未解析项，且没有 AArch64 userspace ELF。四个 logical ext4 clean。官方 LP 工具确认 3 个相同 metadata slots、10.2/`virtual_ab_device`、原 3,221,225,472-byte super 与 1,651,167,232-byte system allocation；Gate 1 image 原始 headroom 为 704,401,408 bytes。候选 system 正好使用原 allocation，vendor/product/vendor_dlkm 与全部 B slot 原字节保持。
+
+| 工件 | 大小 | SHA-256 |
+|---|---:|---|
+| `out/candidates/a16-prototype-a-r1/x12-a16-prototype-a-r1.img` | 1261038592 | `A034C8193236C93746E5962CB3E7F26A1D56CEC1435D5AD9D95F653B60BEBD83` |
+| `system_a.img` | 1651167232 | `24CF6C9109CFDBBC8DB3A068E73EB5CD090440F58540AE6D62B8B667DB7DA2B5` |
+| `super.fex` | 1081240172 | `DA043A276B28533E41FF17A7425604F1C79F68B2AA572260329EDC80E32F94D6` |
+| `vbmeta_system.fex` | 1472 | `91C587E32CCA577F31770F6EE462FFE7F20594BCA6D4F84EB641C019440A21B1` |
+
+候选 system 相对 accepted Gate 1 filesystem 的语义差异严格只有 `/system/etc/vintf/compatibility_matrix.device.xml` 与 `/system/etc/selinux/plat_sepolicy.cil`，文件 owner/mode/SELinux xattr 保持。System hashtree 与 `vbmeta_system` 使用既有项目 test key，rollback index `1644019200` / location 1 保持并通过 chain/standalone AVB verify；顶层 `vbmeta.fex` 原字节保留。外层 50 项中 46 项原字节保留，只替换 `super.fex`、`vbmeta_system.fex` 并重算两个 V companion；boot/kernel、vendor_boot、DTBO、TEE、metadata、media_data 与其他 rollback/recovery 依赖均未改。IMAGEWTY 12 个 payload checksum、SHA256SUMS、focused tests 与全量 70 tests（25 个缺少 ignored 历史 fixture 的 expected skip）PASS。
+
+最终 detached candidate pass 用时 130 秒；`/work` free space 约从 184 GiB 到 181 GiB，可用内存约 60–61 GiB，无 swap。完整 intake/extraction/audit/build logs 保留在 GCP ignored 路径 `/work/build-logs/ubox10-a16-prototype-a/20260821T150330Z/`，未进入 Git。结论是该候选在离线证据范围内足够一致、变更受限且 rollback-ready，可以提交一次**另行明确授权**的 UART-first ARM32 exact-board boot；离线结果不证明 bootability、运行时 HAL 或 enforcing SELinux。精确候选记录见 `docs/m8/candidates/a16-prototype-a-r1.md`。
 
 ## Accepted audio milestone
 
@@ -309,7 +330,7 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - r10 已在实机完成 framework boot；r9 Lights/Watchdog/llkd 方向保持关闭，不再修改。
 - r13 是当前 GOLDEN BASELINE；Projectivy、provisioning、遥控和 Power sleep/wake/shutdown 均以实机 UART 为准。
 - M8B native rc-core 遥控迁移已在 r5 设备验收并关闭；Mouse mode intentionally dropped，legacy multi_ir 工件保留为 inert reference，其 Android 12 清理已随 freeze 延期。
-- 当前 board、DT 与 runtime 证据识别为 H616。architecture-ceiling study 已找到强匹配 paired AArch64 Mali 与 multilib mapper/gralloc provider 证据；A16 ARM32 `systemimage` 已离线完成，但 exact-board runtime 尚未证明。ARM32 OMX/Cedar media 可继续进程隔离复用，不再把“等待完整匹配 graphics/media provider”作为启动 AArch64 架构工作的前提。
+- 当前 board、DT 与 runtime 证据识别为 H616。architecture-ceiling study 已找到强匹配 paired AArch64 Mali 与 multilib mapper/gralloc provider 证据；A16 ARM32 `systemimage` 与 exact-board offline candidate 已完成，但 runtime 尚未证明。ARM32 OMX/Cedar media 可继续进程隔离复用，不再把“等待完整匹配 graphics/media provider”作为启动 AArch64 架构工作的前提。
 - `m8b-audio-r2` 只启用产品级 Treble/VNDK 合同；未修改 VNDK payload、mixer、audio platform XML、DTS、machine driver 或已验收功能，现已设备验收为 AUDIO PASS。
 - 2026-08-16 ADB-only 补验未刷机、未重启且未修改 ROM/device properties：VP9 为 Allwinner OMX/Cedar hardware-runtime PASS；Widevine 为可操作 L3，HDCP `NONE`，无 secure decoder 要求。物理画面/逐帧质量与商业服务认证或播放仍未证明。
 - 遥控器 Menu 与 Settings 当前均打开 Projectivy menu。两键语义分离为独立延期项，不回改已验收的 rc-core、keylayout 选择或其他按键行为。
@@ -317,4 +338,4 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 
 ## Next action
 
-冻结 `m8b-remote-r1` 为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，保持其精确镜像、hash、候选记录、设备证据和 `m8a-initial-atv-r13` golden rollback 不变。下一步先把 exact accepted logical/boot/outer rollback assets 复制到 GCP 并校验既有 hash，再把 Gate 1 `system.img` 与 accepted vendor/product 做完整 VINTF/linker/SELinux/partition-fit/LP/AVB/outer preservation closure。只有该离线候选通过并取得明确刷写授权后，才执行一次 UART-first Prototype A ARM32 exact-board boot；先证明 first-stage→`apexd`→`zygote32`→`system_server`→ARM32 SurfaceFlinger/accepted HWC。此隔离实验是判断 Android 16 可用性的最高信息下一步；Gate 2/mixed build 在结果前保持关闭。
+保持 `m8b-remote-r1` 与 Test8r2 rollback 不变。当前唯一下一动作是等待用户对 `a16-prototype-a-r1` 的一次明确刷写授权，然后在 UART 已连接、rollback 已就绪的条件下执行一次 ARM32 exact-board boot；依次证明或捕获 first-stage→`apexd`→`zygote32`→`system_server`→ARM32 SurfaceFlinger/accepted HWC 的首个可复现结果。授权前不操作物理设备、不启动 Prototype B；Gate 2 在该隔离实验结果前保持关闭。

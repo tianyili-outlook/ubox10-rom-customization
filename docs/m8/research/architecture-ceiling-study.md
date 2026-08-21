@@ -363,9 +363,9 @@ Focused offline closure established:
    inputs. The generated configuration has 1,155 lines and SHA-256
    `64543f7254c0acff3cb3738f83ab270c21dda4bf4f9ae6cebdad4fa3234c8de7`.
 5. A16 `checkvintf --check-one` accepted the system manifest/matrix set. The framework
-   contains level-6 matrices and 5.4 kernel branches. A full device compatibility result is
-   deliberately not claimed because this GCP VM does not contain the ignored accepted
-   vendor/product images and their exact VINTF fragments.
+   contains level-6 matrices and 5.4 kernel branches. At the Gate-1 checkpoint the accepted
+   vendor/product inputs were not yet present, so full compatibility was deliberately deferred
+   to the subsequent exact-board audit below.
 6. SELinux xattrs on init, the linker, platform policy and VNDK APEX are present; compiled
    platform policy and 31.0 mapping/compat files exist. No boot, vendor, product, system_ext,
    super or userdata image, Allwinner outer container or flashable firmware was built.
@@ -377,34 +377,89 @@ Android 12 file: 11,620 bytes / SHA-256
 Its SONAME, direct dependency set, v31 membership, ABI build checks and generated namespace
 closure are correct; exact Apollo runtime behavior remains a device gate.
 
-This closes Gate 1 as an Android 16 ARM32 product/build/composition result. It does not prove
-first-stage handoff, exact accepted vendor/product VINTF compatibility, device AVB/LP fit,
-`apexd`, zygote, system_server, graphics, media, audio, wireless or DRM runtime. Prototype B
-was not built. The highest-information next experiment is an exact-device Prototype A ARM32
-integration and rollback-controlled boot: it isolates A16 framework/kernel/vendor viability
-before adding mixed-mode graphics. Preparing that candidate first requires transferring and
-hash-verifying the accepted logical/boot/outer assets on GCP; flashing requires separate
-explicit authorization.
+This closes Gate 1 as an Android 16 ARM32 product/build/composition result. Gate 1 by itself
+does not prove first-stage handoff, exact accepted vendor/product compatibility, device
+AVB/LP integration, `apexd`, zygote, system_server, graphics, media, audio, wireless or DRM
+runtime. Prototype B was not built.
+
+### Exact-board offline integration
+
+The exact accepted inputs were subsequently transferred to GCP and verified before use. The
+accepted `m8b-remote-r1` outer image is 1,031,723,008 bytes / SHA-256
+`f3b09e5565ac4ed4e5ee326d392622e7b036a8519b8444b966e77cc4751b814a`; the retained
+Test8r2 rollback image is 2,005,954,560 bytes /
+`6a52f3388e9abf6afa8a701cfd7198fe6c0090f16531f6e3bd3949e760892ec8`. Exact extraction
+reproduced the accepted system, vendor, product and vendor_dlkm hashes, the 3,221,225,472-byte
+raw super, and the accepted boot, vendor_boot, vbmeta_system and top-level vbmeta payloads.
+Inputs remained read-only and the accepted outer hash was unchanged after construction.
+
+The first full exact VINTF run identified three concrete differences. The accepted vendor
+manifest exposes `vendor.display.config@1.0::IDisplayConfig/default` and
+`vendor.display.output.IDisplayOutputManager/default (@2)`, neither of which was declared in
+the generic A16 device matrix. A bounded matrix fragment now declares exactly those two HALs.
+The only remaining VINTF incompatibility is the actual 5.4.125 kernel's `CONFIG_NFS_FS=y`
+against FCM-6's required `n`. The device-accepted Android 12 framework matrix also rejects the
+same kernel for this same setting, and changing only the captured config to `n` makes the A16
+full exact check pass. It is therefore an inherited BSP conformance deviation, not evidence of
+a new A16 binary mismatch. It remains explicitly recorded as exit 65 / `INCOMPATIBLE`; this
+study does **not** call full VINTF a pass.
+
+The first exact split-SELinux compile failure was one duplicate `genfscon` ownership rule:
+A16 platform labels `fuseblk /` as `fuseblk`, while the accepted API-31 vendor policy labels
+the identical filesystem/path as `vfat`. Removing only the platform duplicate retains the
+device-accepted vendor label and makes the complete A16 platform/system_ext plus accepted
+vendor policy compile. Exact linkerconfig then generates the vendor/VNDK-31 namespace and
+the `libaudioroute.so` link. A combined inventory finds 1,769 ELF objects, no AArch64
+userspace ELF, and zero unresolved ELF32/ELF64 names. These are offline closure results, not
+runtime library-loading or SELinux-enforcement proof.
+
+Official LP tools confirm three identical metadata slots, metadata 10.2,
+`virtual_ab_device`, the original 3,221,225,472-byte super and a 1,651,167,232-byte system
+allocation. The Gate-1 image had 704,401,408 bytes of allocation headroom. The exact candidate
+uses the existing allocation and preserves vendor, product, vendor_dlkm and all empty B-slot
+bytes. System/vbmeta_system SHA256_RSA2048 verification passes with the project test key,
+rollback index 1644019200 at location 1 is preserved, and the accepted top-level vbmeta is
+unchanged. The outer audit preserves 46 of 50 payload entries; only super and vbmeta_system
+are replaced and their two V checksum companions regenerated. Boot/kernel, vendor_boot,
+DTBO, TEE, metadata, media_data and every other outer payload remain byte-identical.
+
+The resulting single candidate is
+`out/candidates/a16-prototype-a-r1/x12-a16-prototype-a-r1.img`, 1,261,038,592 bytes,
+SHA-256 `a034c8193236c93746e5962cb3e7f26a1d56cec1435d5ad9d95f653b60bebd83`. Its
+`system_a.img` is 1,651,167,232 bytes /
+`24cf6c9109cfdbbc8db3a068e73eb5cd090440f58540ae6d62b8b667db7da2b5`; its filesystem
+semantic delta from the accepted Gate-1 output is exactly the device matrix and platform CIL
+files above, with ownership, mode and SELinux xattrs preserved. Ext4, SHA256SUMS, AVB, LP,
+IMAGEWTY, exact compatibility checks, focused tests and all 70 repository tests pass (25
+expected skips for absent ignored historical fixtures). The final detached construction took
+130 seconds, used no swap, and left about 181 GiB free on `/work`.
+
+This evidence raises Prototype A from a standalone system image to an **OFFLINE CHECKED
+CANDIDATE eligible for one separately authorized UART-first boot**. It does not prove physical
+bootability, `apexd`, zygote/system_server, graphics, media, audio, wireless, DRM, or enforcing
+SELinux behavior. No physical device action was performed, flash is not authorized by this
+result, Gate 2 remains closed, and Prototype B remains untouched. The highest-information
+next experiment is one rollback-controlled Prototype A boot with UART capture.
 
 ## 11. Static boot-readiness analysis
 
-The furthest offline-proven point is **a complete ARM32 Android 16 `system.img` plus focused
-offline composition checks**. No Android boot stage is proven because the image has not been
-paired with the exact accepted device partitions or executed on the UBOX10. The table keeps
-artifact/packaging blockers separate from structural architecture blockers.
+The furthest offline-proven point is **one hash-locked ARM32 Android 16 exact-board candidate
+paired with the accepted partitions and outer container**. No Android boot stage is proven
+because the candidate has not executed on the UBOX10. The table keeps offline packaging
+closure separate from runtime architecture evidence.
 
 | Area | Status | Evidence and boundary |
 |---|---|---|
 | 1. Boot/kernel contract | **LIKELY** | The accepted AArch64 5.4 kernel has ARM32 compat, Binder/binderfs and the relevant Android facilities, while A16 officially retains FCM 6. No A16 init binary has executed on it. |
 | 2. First-stage init | **UNKNOWN UNTIL BOOT** | The GSI shape deliberately reuses the accepted boot/vendor_boot first-stage path. The new ARM32 init is present, but its handoff from the accepted first stage is unexecuted. |
-| 3. First-stage mount | **LIKELY** | The accepted first-stage fstab and A/B LP geometry are proven, and a GSI-style system replacement preserves them. Exact offline pairing still requires the ignored accepted logical images. |
-| 4. AVB | **PARTIAL** | The standalone image's test-key AVB footer and hashtree verify. Device vbmeta integration and the accepted trust chain were not assembled; mixed mode will additionally change vendor-owned `ro.zygote`. |
-| 5. Dynamic partitions | **LIKELY; FIT OPEN** | The accepted system/vendor/product/vendor_dlkm LP layout is proven and the A16 GSI uses dynamic sizing, but exact LP fit and a combined super were not checked without the accepted payloads. |
+| 3. First-stage mount | **OFFLINE COHERENT; RUNTIME OPEN** | Exact accepted first-stage fstab, A/B LP geometry, offsets and all non-system logical bytes are preserved in the candidate. Mount and handoff remain unexecuted. |
+| 4. AVB | **OFFLINE CHECKED; RUNTIME OPEN** | Candidate system hashtree and vbmeta_system chain verify with the established project key; rollback index/location and accepted top-level vbmeta are preserved. Boot-time verification is unexecuted; mixed mode would additionally change vendor-owned `ro.zygote`. |
+| 5. Dynamic partitions | **OFFLINE CHECKED** | Official tools verify all three metadata slots, exact 10.2/virtual-A/B topology and the 1,651,167,232-byte system allocation; vendor/product/vendor_dlkm remain byte-identical. Runtime mapping is open. |
 | 6. `apexd` | **OFFLINE CHECKED; RUNTIME OPEN** | All 36 installed APEX containers parse, including the ARM32 runtime and VNDK 31 payload. Activation on the device remains unexecuted. |
 | 7. `servicemanager` | **UNKNOWN UNTIL BOOT** | The built binary is ARM32 and Binder capability is proven on 5.4; the A16 runtime contract is unexercised. |
 | 8. `hwservicemanager` | **UNKNOWN UNTIL BOOT** | The built binary and current HIDL services are ARM32 and FCM 6 is supported; registration on A16 is not. |
-| 9. VINTF | **PARTIAL** | A16 `checkvintf --check-one` accepts the built system manifest/matrix set, which includes FCM 6 and 5.4 kernel branches. Exact system/product/vendor/device compatibility was not checked because the accepted ignored images are absent from GCP. |
-| 10. Linker namespaces | **PARTIAL** | Linkerconfig generated the ARM32 system/VNDK 31 vendor namespace and `libaudioroute.so` exposure from the actual outputs. Exact retained-vendor dependencies and runtime remain open; mixed mode additionally requires the AArch64 graphics SP-HAL/mapper closure. |
+| 9. VINTF | **EXACT CHECKED; INHERITED EXCEPTION** | Exact system/product/vendor/device checks leave only `CONFIG_NFS_FS=y` versus FCM-6 `n`, the same deviation already present against the device-accepted A12 matrix. The two accepted display HALs are declared. Full check remains exit 65, not PASS. |
+| 10. Linker namespaces | **OFFLINE CHECKED; RUNTIME OPEN** | Exact linkerconfig generates the ARM32 vendor/VNDK-31 namespace and `libaudioroute.so` exposure; 1,769-ELF name-level closure has zero unresolved names. Runtime loading is open; mixed mode additionally requires AArch64 graphics SP-HAL/mapper closure. |
 | 11. Zygote | **LIKELY** for A; **KNOWN BLOCKER** for mixed packaging | Accepted vendor selects `zygote32`, matching Prototype A. A16 `core_64_bit.mk` selects `zygote64_32`, but the retained vendor property must be changed for Prototype B. |
 | 12. `system_server` | **UNKNOWN UNTIL BOOT** | No A16 zygote or framework process has executed. |
 | 13. SurfaceFlinger | **LIKELY** for A; provider-gated for mixed | ARM32 can in principle load the accepted ARM32 Mali/mapper. AArch64 SurfaceFlinger requires the matched AArch64 in-process provider. |
@@ -416,10 +471,10 @@ artifact/packaging blockers separate from structural architecture blockers.
 | 19. Input | **UNKNOWN UNTIL BOOT** | Kernel rc-core/input evidence transfers, but A16 framework, keylayout and TV-policy integration are absent. |
 | 20. DRM | **UNKNOWN UNTIL BOOT** | The 32-bit L3 service is process-isolatable; A16 MediaDrm/HIDL compatibility and playback are untested. No higher security claim is made. |
 
-A flash-gate package was not prepared. The standalone prototype has an exact hash, but the
-accepted device partitions and rollback container are not present on GCP for safe pairing.
-After exact integration checks and candidate audit, one Prototype A physical boot remains the
-smallest decisive test; it still requires separate explicit authorization.
+One exact flash-format package has been prepared and audited, but **preparation is not flash
+authorization**. The accepted and Test8r2 rollback images are hash-verified on GCP, no device
+action has occurred, and Gate 2 is closed. One separately authorized, UART-first Prototype A
+boot is now the smallest decisive test.
 
 ## 12. Target A/B/C/D comparison
 
@@ -557,8 +612,8 @@ display, audio, wireless and DRM integration without a complete provider. It has
 of better Netflix capability and may lose the current 4K/audio path. The modern hybrid captures
 the application/framework benefit of ARM64 without paying that subsystem-rewrite cost.
 
-**Overall confidence: MEDIUM.** The Android 16 ARM32 image and offline composition gate are
-complete, but exact-board boot and the mixed graphics-provider gates remain.
+**Overall confidence: MEDIUM.** The Android 16 ARM32 build and exact-board offline integration
+are complete; the first physical boot and mixed graphics-provider gates remain.
 
 ## 15. Go / No-Go decisions and remaining decisive gates
 
@@ -575,30 +630,27 @@ complete, but exact-board boot and the mixed graphics-provider gates remain.
 | >1080p media target | **PLAUSIBLE** | Physical 4K60 output and 4K codec declarations exist; sustained physical 4K decode is not proven |
 | Netflix above current basic/L3 class | **STRUCTURALLY BLOCKED** | L3, HDCP NONE, no secure decoder/protected path; service certification remains an additional gate |
 
-### Remaining decisive gates (maximum five)
+### Remaining decisive gates (maximum four)
 
-1. Transfer and hash-verify the exact accepted logical/boot/outer images and rollback assets on
-   GCP; run exact VINTF, linker, SELinux, LP-fit, AVB and outer-container preservation checks,
-   then audit one Prototype A ARM32 candidate.
-2. With separate authorization, perform one rollback-controlled Prototype A physical boot and
+1. With separate authorization, perform one rollback-controlled Prototype A physical boot and
    prove first-stage mount through `apexd`, `zygote32`, `system_server`, SurfaceFlinger and the
    retained ARM32 graphics stack. This decides the A16 framework/kernel/vendor base before
    mixed-mode work begins.
-3. If Prototype A passes, establish lawful, reproducible availability of the paired AArch64
+2. If Prototype A passes, establish lawful, reproducible availability of the paired AArch64
    Mali and multilib mapper/gralloc provider, then complete its A16 DT_NEEDED/linker closure and
    mixed image.
-4. With separate authorization, boot the mixed candidate and prove AArch64 GLES/SurfaceFlinger
+3. With separate authorization, boot the mixed candidate and prove AArch64 GLES/SurfaceFlinger
    plus retained 32-bit HWC/media/audio/Wi-Fi/Bluetooth/input/DRM service parity.
-5. Prove sustained physical 4K30 HEVC/VP9, A/V sync and thermal behavior before calling 4K30
+4. Prove sustained physical 4K30 HEVC/VP9, A/V sync and thermal behavior before calling 4K30
    accepted; failure keeps the architecture but lowers the media target to 1080p-class.
 
 ## 16. Direct route to the target
 
-1. **Freeze the accepted baseline and provider contract:** keep `m8b-remote-r1` rollback,
+1. **Completed — freeze the accepted baseline and provider contract:** keep `m8b-remote-r1` rollback,
    exact hashes, hardware evidence and donor/provider rights/hash manifest.
-2. **Exact ARM32 integration:** pair the completed Prototype A system image with the accepted
+2. **Completed — exact ARM32 integration:** pair the completed Prototype A system image with the accepted
    partitions, close VINTF/linker/SELinux/AVB/LP checks and audit one rollback-safe candidate.
-3. **Authorized ARM32 boot proof:** capture UART/ADB milestones through framework and retained
+3. **Current — authorized ARM32 boot proof:** capture UART/ADB milestones through framework and retained
    hardware services; stop on the first reproducible failure and roll back.
 4. **Conditional mixed proof:** only after the ARM32 base passes, build the minimal
    `zygote64_32` product with the lawful paired graphics provider, close its offline checks and

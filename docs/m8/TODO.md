@@ -11,9 +11,10 @@
 - [x] 完成全部 123,197 个 target actions；`system.img` 为 946,765,824 bytes，SHA-256 `FD349F1D8073DFEB71E2CEA28915F1C755FA54E3EBA85616FCAA279063F3EDBE`。
 - [x] 完成 Gate 1 离线 closure：ext4/e2fsck、AVB footer/hashtree、ARM32 ABI/property、36 个 APEX、VNDK 31、system-side VINTF、A16 linkerconfig、SELinux xattr/mapping 与 output-scope 均符合 Prototype A 预期。
 - [x] 确认本 Gate 只生成 standalone `system.img`；未生成 boot/vendor/product/system_ext/super/userdata image，未组装 IMAGEWTY 或可刷固件，未修改设备。
-- [ ] 把 exact accepted `m8b-remote-r1` 的 system/vendor/product/vendor_dlkm、boot/vendor_boot 与外层 rollback 资产复制到 GCP 并逐项校验既有 size/SHA-256；当前 VM 不具备这些 ignored 大文件。
-- [ ] 用 exact accepted vendor/product 对 A16 system 运行完整 `checkvintf`、linker/ELF、SELinux、partition-fit、LP/AVB/outer preservation closure，并只在全部通过后形成一个可回滚 Prototype A ARM32 候选。
-- [ ] 取得该候选的明确刷写授权后，做一次 UART-first exact-board boot；首要里程碑为 first-stage mount → `apexd` → `zygote32` → `system_server` → ARM32 SurfaceFlinger/accepted HWC。Gate 2 在这个隔离实验结果前不启动。
+- [x] 已把 exact accepted `m8b-remote-r1` 外层镜像和 Test8r2 rollback 复制到 GCP 并 hash-verify；accepted logical、boot/vendor_boot、super/LP 与 AVB payload 已提取并逐项锁定，原始输入保持只读。
+- [x] 已完成 exact VINTF、linker/ELF、SELinux、partition-fit、LP/AVB 与 outer preservation closure：两个 accepted display HAL 已加入 device matrix；split SELinux 的单一 duplicate `fuseblk` rule 已做 bounded fix；linker/ELF/SELinux/LP/AVB/outer PASS。Full VINTF 仍准确记录唯一继承偏差 `CONFIG_NFS_FS=y`（FCM 6 要求 `n`），未声明 PASS。
+- [x] 已形成且审核唯一 `a16-prototype-a-r1`：外层 1,261,038,592 bytes / SHA-256 `A034C8193236C93746E5962CB3E7F26A1D56CEC1435D5AD9D95F653B60BEBD83`；system 语义差异仅 device matrix 与 platform duplicate genfscon；46/50 外层 payload、boot/kernel/vendor/product/vendor_dlkm/top-level vbmeta 保持。状态为 **OFFLINE CHECKED CANDIDATE**，Gate 2 **CLOSED**。
+- [ ] **当前唯一下一动作：**用户另行明确授权后，准备 UART 与 Test8r2 rollback，做一次 rollback-controlled UART-first exact-board boot；按 first-stage mount → `apexd` → `zygote32` → `system_server` → ARM32 SurfaceFlinger/accepted HWC 捕获首个可复现失败。授权前不刷写、不启动 Prototype B；该一次 ARM32 boot 结果决定是否开放 Gate 2。
 
 ## 已验收基线
 

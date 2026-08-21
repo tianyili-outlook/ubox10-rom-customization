@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: UBOX10 Research <noreply@example.invalid>
+Date: Fri, 21 Aug 2026 15:00:00 +0000
+Subject: [PATCH] sepolicy: defer fuseblk root label to API 31 vendor
+
+The accepted UBOX API-31 vendor policy owns the fuseblk root genfscon and
+labels it vfat. Android 16's platform rule labels the identical filesystem and
+path fuseblk, so secilc rejects the split policy before init can load it.
+
+Remove the platform duplicate for this exact-board prototype. The retained
+vendor rule then supplies the same label used by the device-accepted Android
+12 baseline. This is a Prototype A compatibility patch, not a platform-wide
+policy recommendation.
+---
+ private/genfs_contexts | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/private/genfs_contexts b/private/genfs_contexts
+--- a/private/genfs_contexts
++++ b/private/genfs_contexts
+@@ -335,7 +335,6 @@
+ genfscon exfat / u:object_r:exfat:s0
+ genfscon debugfs / u:object_r:debugfs:s0
+ genfscon fuse / u:object_r:fuse:s0
+-genfscon fuseblk / u:object_r:fuseblk:s0
+ genfscon configfs / u:object_r:configfs:s0
+ genfscon sdcardfs / u:object_r:sdcardfs:s0
+ genfscon esdfs / u:object_r:sdcardfs:s0
+-- 
+2.43.0
