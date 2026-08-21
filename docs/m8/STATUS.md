@@ -76,9 +76,13 @@ Updated: 2026-08-21
 
 活跃架构开发转移到 `codex/m8-architecture-ceiling` 的 Android 16 路线；决策依据为该分支的 `docs/m8/research/architecture-ceiling-study.md`。推荐目标是 **Android 16 for TV mixed AArch64-primary / ARM32-secondary（CONDITIONAL GO）**：保留 H616 AArch64 5.4 kernel、accepted vendor/vendor_dlkm 与可进程隔离的 ARM32 media/audio/wireless/DRM 服务，只为 AArch64 同进程需求引入 hash-pinned matched Mali/mapper/gralloc provider。
 
-架构研究已经找到强匹配 provider 证据：同 lineage donor 的 ARM32 Mali 与 accepted UBOX 文件完全一致，并提供 paired AArch64 Mali 与 multilib mapper/gralloc source。该证据把“缺少匹配 graphics provider”从结构性阻塞收敛为 exact-board build/runtime gate；media 不要求先取得全套 AArch64 provider，可继续保留 ARM32 Allwinner OMX/Cedar 服务并通过进程边界复用。Android 16 尚未生成可刷镜像，exact-board boot、A16 linker/VINTF/AVB/SELinux closure 与 graphics runtime 仍须在架构分支验证。
+架构研究已经找到强匹配 provider 证据：同 lineage donor 的 ARM32 Mali 与 accepted UBOX 文件完全一致，并提供 paired AArch64 Mali 与 multilib mapper/gralloc source。该证据把“缺少匹配 graphics provider”从结构性阻塞收敛为 exact-board build/runtime gate；media 不要求先取得全套 AArch64 provider，可继续保留 ARM32 Allwinner OMX/Cedar 服务并通过进程边界复用。
 
-2026-08-21 Gate 1 主机进展：未修改 Prototype A、ARM32 产品定义或 `systemimage` 目标的情况下，Soong 已生成完整 `ubox10_ceiling_arm` Ninja graph（357,271,614 bytes，SHA-256 `e51e518d18add7033c15269b7879064daa0431d6b7e2f264917839e7d34c4b9d`），并进入真实 target Ninja，用户停止时到达 452/122523。graph 完整写出约用 3,071 秒 wall / 7,828 秒 cgroup CPU；RAM 峰值 10,751,721,472 bytes，swap 峰值 7,516,192,768 bytes，memory max/OOM 均为 0。慢 E: removable loop 已确认为 target I/O 主机边界；取消产生的 BoringSSL/Python `FAILED` 不是产品编译错误。当前仍无 `system.img`，Gate 1 未关闭，Gate 2 未启动。
+2026-08-21 Android 16 Gate 1 状态为 **OFFLINE CHECKED / SUCCESS**。Source 为 exact `android-16.0.0_r4` / `BP4A.251205.006`，manifest commit `15128c9e27cfa599c48d294babd39286ee8f1426`，pinned manifest SHA-256 `4E8BEB5D1B590DFF3D631B1DBB957138DBDA4E608A3183C625683DA4BC84918F`；Prototype A 为 `ubox10_ceiling_arm-bp4a-userdebug`、ARMv7-A NEON、无 secondary arch、shipping API 31、extra VNDK 31、pKVM off。GCP native Ubuntu 24.04 / ext4 / 8 vCPU / 62.8 GiB RAM / no swap 上使用 relative `OUT_DIR=out-ceiling`、`BUILD_NUMBER=DISPOSABLE_CEILING_R4`、unset `SOONG_GOMEMLIMIT GOMEMLIMIT` 和 `m -j8 systemimage`，123,197/123,197 actions 成功，wall 30,314 秒（8:25:14）。最低 available RAM 12,295,132 KiB；swap I/O 为 0；平均 CPU user/system 约 88.05%/9.48%、I/O wait 0.05%；`/work` 最低 free 231,671,357,440 bytes。完整 raw log 仅保留在 GCP ignored 路径，未进入 Git。
+
+唯一产物 `/work/src/ubox10-a16-ceiling/out-ceiling/target/product/generic/system.img` 为 946,765,824 bytes，SHA-256 `FD349F1D8073DFEB71E2CEA28915F1C755FA54E3EBA85616FCAA279063F3EDBE`。Raw ext4 `e2fsck -fn` clean；AVB SHA256_RSA2048 footer 与 system hashtree verify；staging 有 2,277 regular files、256 symlinks、997 个 ARM32 userspace ELF，另 7 个 ELF64 均为 Linux BPF object 而非 AArch64 userspace。36 个 installed APEX 全部可解析；`/system_ext/apex/com.android.vndk.v31.apex` 为 17,743,872 bytes / SHA-256 `FB94B4E2BA84BDEFDDFAF59729FDAE87B0195D2EEFD972FD69235DD7A12D705E`，含 ARM32 `libaudioroute.so` 与 v31 lists。A16 host linkerconfig 对实际 system/VNDK 生成 `[vendor]`、`/apex/com.android.vndk.v31/${LIB}` 和 `default→vndk` 的 `libaudioroute.so`；system-side `checkvintf --check-one` PASS，FCM 6 matrix 包含 5.4 kernel 分支；SELinux xattr、31.0 mapping 与 compiled policy 存在。只生成 `system.img`，未生成 boot/vendor/product/system_ext/super/userdata、IMAGEWTY 或可刷固件。
+
+Gate 1 只证明 A16 ARM32 product 可以完整构建并在离线结构上满足预期；**不证明** UBOX10 boot、exact accepted vendor/product VINTF match、device AVB/LP integration、`apexd`/zygote/system_server/graphics/media/audio/wireless/DRM runtime 或 Gate 2。当前 GCP VM 没有 ignored 的 accepted logical/boot/outer images，故 exact pairing 尚不能运行。A16 VNDK 31 的 `libaudioroute.so` 也不是 accepted A12 文件的原字节（11,620 bytes / `9750F1...A2` vs 11,640 bytes / `BB5393...623`）；官方 v31 ABI/build 与 linker closure 通过，但 exact vendor runtime 仍需实机验证。
 
 ## Accepted audio milestone
 
@@ -305,7 +309,7 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - r10 已在实机完成 framework boot；r9 Lights/Watchdog/llkd 方向保持关闭，不再修改。
 - r13 是当前 GOLDEN BASELINE；Projectivy、provisioning、遥控和 Power sleep/wake/shutdown 均以实机 UART 为准。
 - M8B native rc-core 遥控迁移已在 r5 设备验收并关闭；Mouse mode intentionally dropped，legacy multi_ir 工件保留为 inert reference，其 Android 12 清理已随 freeze 延期。
-- 当前 board、DT 与 runtime 证据识别为 H616。architecture-ceiling study 已找到强匹配 paired AArch64 Mali 与 multilib mapper/gralloc provider 证据；exact-board A16 build/runtime 尚未证明。ARM32 OMX/Cedar media 可继续进程隔离复用，不再把“等待完整匹配 graphics/media provider”作为启动 AArch64 架构工作的前提。
+- 当前 board、DT 与 runtime 证据识别为 H616。architecture-ceiling study 已找到强匹配 paired AArch64 Mali 与 multilib mapper/gralloc provider 证据；A16 ARM32 `systemimage` 已离线完成，但 exact-board runtime 尚未证明。ARM32 OMX/Cedar media 可继续进程隔离复用，不再把“等待完整匹配 graphics/media provider”作为启动 AArch64 架构工作的前提。
 - `m8b-audio-r2` 只启用产品级 Treble/VNDK 合同；未修改 VNDK payload、mixer、audio platform XML、DTS、machine driver 或已验收功能，现已设备验收为 AUDIO PASS。
 - 2026-08-16 ADB-only 补验未刷机、未重启且未修改 ROM/device properties：VP9 为 Allwinner OMX/Cedar hardware-runtime PASS；Widevine 为可操作 L3，HDCP `NONE`，无 secure decoder 要求。物理画面/逐帧质量与商业服务认证或播放仍未证明。
 - 遥控器 Menu 与 Settings 当前均打开 Projectivy menu。两键语义分离为独立延期项，不回改已验收的 rc-core、keylayout 选择或其他按键行为。
@@ -313,4 +317,4 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 
 ## Next action
 
-冻结 `m8b-remote-r1` 为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，保持其精确镜像、hash、候选记录、设备证据和 `m8a-initial-atv-r13` golden rollback 不变。当前不执行新的 M8B feature/P1/P2 工作。下次恢复 `codex/m8-architecture-ceiling` 时，先把 E: 中已保留的 ext4 graph/intermediates 安全复制到快速内部存储并离线校验，再继续同一 Prototype A ARM32 `systemimage`；出现真实可复现产品错误前不调整架构。Gate 2 继续等待 Gate 1 的离线 `system.img` closure。
+冻结 `m8b-remote-r1` 为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，保持其精确镜像、hash、候选记录、设备证据和 `m8a-initial-atv-r13` golden rollback 不变。下一步先把 exact accepted logical/boot/outer rollback assets 复制到 GCP 并校验既有 hash，再把 Gate 1 `system.img` 与 accepted vendor/product 做完整 VINTF/linker/SELinux/partition-fit/LP/AVB/outer preservation closure。只有该离线候选通过并取得明确刷写授权后，才执行一次 UART-first Prototype A ARM32 exact-board boot；先证明 first-stage→`apexd`→`zygote32`→`system_server`→ARM32 SurfaceFlinger/accepted HWC。此隔离实验是判断 Android 16 可用性的最高信息下一步；Gate 2/mixed build 在结果前保持关闭。

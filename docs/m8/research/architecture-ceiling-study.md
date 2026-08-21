@@ -304,12 +304,14 @@ invest in key extraction, leaked provisioning, app patches, spoofing or HDCP byp
 
 ## 10. Android 16 disposable prototype evidence
 
-The isolated source tree is `/home/tianyi/ubox10-a16-ceiling`. Its source baseline is the
-official `android-16.0.0_r4` tag / `BP4A.251205.006`; the retained pinned manifest is
-`out-study/provenance/android-16.0.0_r4-pinned-manifest.xml`, SHA-256
-`4e8beb5d1b590dff3d631b1dbb957138dbda4e608a3183c625683da4bc84918f`. The large output
-container is the fixed-size, labeled ext4 image
-`E:\ubox10-ceiling-study-storage\a16-out.ext4`. None of these paths is in Git.
+The authoritative native source tree is `/work/src/ubox10-a16-ceiling`. Its source baseline
+is the official `android-16.0.0_r4` tag / `BP4A.251205.006`, manifest commit
+`15128c9e27cfa599c48d294babd39286ee8f1426`. Regenerating the pinned manifest from all
+1,011 clean repo projects produced SHA-256
+`4e8beb5d1b590dff3d631b1dbb957138dbda4e608a3183c625683da4bc84918f`.
+The copied Prototype A definitions matched the tracked files byte-for-byte and the old
+`SOONG_GOMEMLIMIT` patch was absent. Earlier WSL/output-loop observations remain historical
+host evidence; they are not part of the successful native build.
 
 Prototype A is a minimal Android 16 TV GSI-style ARM32 product. It inherits the official ATV
 GSI base, uses the generic ARM board, models an Android 12/API-31 field upgrade, retains only
@@ -320,73 +322,89 @@ provides AArch64 primary plus ARM32 secondary ABI and `core_64_bit.mk` selects
 
 ### Recorded build result
 
-**INCOMPLETE — PRODUCT GRAPH CLOSED; TARGET BUILD USER-STOPPED; no target image exists.**
-Prototype A product discovery, release-config/dumpvars processing, Soong host bootstrap and
-the complete product Ninja graph now succeed. The bounded observations are:
+**OFFLINE CHECKED / SUCCESS — complete Prototype A `system.img`; no device integration or
+runtime claim.** The native GCP host was Ubuntu 24.04 on ext4 with 8 vCPU, approximately
+62.8 GiB usable RAM and no swap. The exact build environment was relative
+`OUT_DIR=out-ceiling`, `BUILD_NUMBER=DISPOSABLE_CEILING_R4`, unset `SOONG_GOMEMLIMIT` and
+`GOMEMLIMIT`, lunch `ubox10_ceiling_arm-bp4a-userdebug`, then `m -j8 systemimage`. No cgroup,
+taskset, swap, WSL wrapper or Soong patch was used.
 
-1. An absolute `OUT_DIR` exposed an Android 16 `test_package` path-classification failure in
-   `continuous_native_tests`. Exporting the same directory as relative `out-ceiling` removed
-   that mechanical host-path error without changing target code.
-2. A memory-constrained graph-generation attempt ended in a Go-runtime `SIGBUS`; this is a
-   host resource failure, not a UBOX target ABI, VINTF, kernel or graphics result.
-3. The previous 9728 MiB `memory.high` run was stopped after 4,965 seconds with only
-   2,335 seconds of cgroup CPU, 10,202,091,520-byte RAM peak, 4,150,779,904-byte swap peak,
-   severe memory pressure and no graph. It remained a host-resource result.
-4. Raising `memory.high` to 10 GiB and `memory.max` to 10752 MiB reduced early paging, but
-   high-priority swap inside the removable E: image still produced a deterministic late-stage
-   I/O stall. That run was stopped after 3,280 seconds with 2,935 seconds CPU and a
-   3,835,879,424-byte swap peak; no max or OOM event occurred.
-5. Keeping the same RAM limits while preferring WSL's host-backed swap completed the graph.
-   The final `soong/build.ubox10_ceiling_arm.ninja` is 357,271,614 bytes, SHA-256
-   `e51e518d18add7033c15269b7879064daa0431d6b7e2f264917839e7d34c4b9d`. Full graph
-   generation took approximately 3,071 seconds wall and 7,828 seconds cgroup CPU. RAM peaked
-   at 10,751,721,472 bytes and swap at the 7,516,192,768-byte cgroup limit; memory max and
-   OOM events stayed zero.
-6. The generated graph entered the real `systemimage` Ninja build. A bounded `-j4` retry
-   reached action 452 of 122,523, but target output on the removable E: loop showed blocked
-   `folio_wait` tasks, 75% CPU idle and 25% I/O wait. The user then stopped the work. The
-   resulting BoringSSL/Python `FAILED` lines are cancellation fallout, not reproducible
-   compiler or product errors.
+The build returned status 0 after all 123,197 actions and 30,314 seconds wall time
+(8:25:14). Whole-log inspection found no `FAILED:`, Ninja stop, OOM, no-space or I/O failure.
+The nsjail fallback and inherited TV-GSI debug-policy messages were non-blocking warnings.
+Available RAM never fell below 12,295,132 KiB; swap I/O stayed zero. `vmstat` averaged
+88.05% user CPU, 9.48% system CPU, 0.93% idle, 0.05% I/O wait and 1.35% steal. `/work` free
+space never fell below 231,671,357,440 bytes. The complete log and 30-second resource samples
+remain outside Git under
+`/work/build-logs/ubox10-a16-gate1/20260821T035000Z/`.
 
-Raw logs and 10-second cgroup samples are retained under the ignored
-`work/architecture-ceiling/build-logs/2026-08-2*` directories. The wrapper now records wall,
-CPU, memory/swap peaks, pressure and cgroup events automatically. C/D/E cleanup also removed
-only reproducible outputs: a redundant 36,507,222,016-byte D: output image, 8,172,238,284
-bytes of accepted-image extraction products and 1,813,374,760 bytes of obsolete r7 candidate
-outputs. WSL cache cleanup plus TRIM/compact reduced its VHDX from 368,420,323,328 to
-277,052,653,568 bytes. The protected production worktree, Android 12 reference tree, Android
-16 source and donor tree were not modified.
+The only top-level image is
+`/work/src/ubox10-a16-ceiling/out-ceiling/target/product/generic/system.img`,
+946,765,824 bytes, SHA-256
+`fd349f1d8073dfeb71e2cea28915f1c755fa54e3eba85616fcaa279063f3edbe`.
+Focused offline closure established:
 
-Prototype B was not built. Static evidence makes the mixed architecture credible, but lawful
-availability and A16 closure of the required AArch64 Mali/mapper provider remain unresolved;
-Gate 2 remains closed until Prototype A produces and passes offline validation of
-`system.img`.
+1. The image is raw ext4, `e2fsck -fn` clean. Its embedded SHA256_RSA2048 AVB footer and
+   system hashtree verify. This is the AOSP test-key standalone image, not the UBOX device
+   AVB chain.
+2. The staging filesystem has 2,277 regular files and 256 symlinks. It contains 997 ARM32
+   userspace ELF files; the only seven ELF64 objects are `Machine: Linux BPF`, not AArch64
+   userspace. `init`, the bootstrap linker, app_process32, SurfaceFlinger and servicemanager
+   are ARM32; linker64, app_process64 and lib64 are absent. The runtime APEX likewise has an
+   ARM32 linker/libc and no lib64 payload.
+3. All 36 installed APEX containers parse. The VNDK payload is correctly installed at
+   `/system_ext/apex/com.android.vndk.v31.apex`, 17,743,872 bytes, SHA-256
+   `fb94b4e2ba84bdefddfaf59729fdae87b0195d2eefd972fd69235dd7a12d705e`.
+   Its manifest name is `com.android.vndk.v31`; its 144 listed entries include the v31
+   LLNDK/VNDK lists and ARM32 `libaudioroute.so`.
+4. The A16 host linkerconfig built incrementally from the same tree generated a vendor
+   section, VNDK search path `/apex/com.android.vndk.v31/${LIB}`, and
+   `default` to `vndk` exposure of `libaudioroute.so` from the actual built system/VNDK
+   inputs. The generated configuration has 1,155 lines and SHA-256
+   `64543f7254c0acff3cb3738f83ab270c21dda4bf4f9ae6cebdad4fa3234c8de7`.
+5. A16 `checkvintf --check-one` accepted the system manifest/matrix set. The framework
+   contains level-6 matrices and 5.4 kernel branches. A full device compatibility result is
+   deliberately not claimed because this GCP VM does not contain the ignored accepted
+   vendor/product images and their exact VINTF fragments.
+6. SELinux xattrs on init, the linker, platform policy and VNDK APEX are present; compiled
+   platform policy and 31.0 mapping/compat files exist. No boot, vendor, product, system_ext,
+   super or userdata image, Allwinner outer container or flashable firmware was built.
 
-There is still no prototype image path, image size or image SHA-256, and no artifact is
-flashable. This outcome neither proves nor disproves Android 16 bootability on the UBOX10. It
-does close the former Soong-graph host gate and proves that the unchanged Prototype A reaches
-real target Ninja actions. The next host boundary is output-store random I/O: resume the
-preserved graph and intermediates from fast internal storage before interpreting any target
-failure.
+The A16 VNDK 31 `libaudioroute.so` is ABI-versioned but not byte-identical to the accepted
+Android 12 file: 11,620 bytes / SHA-256
+`9750f133e24a4b889a3bc4f2aeacd120d48a4a764705a6ef8a340f29e7d5a6a2` versus 11,640 bytes /
+`bb5393ce70cd1a4ad9ed62814339ca3695788532242708b0d46daed87d603623`.
+Its SONAME, direct dependency set, v31 membership, ABI build checks and generated namespace
+closure are correct; exact Apollo runtime behavior remains a device gate.
+
+This closes Gate 1 as an Android 16 ARM32 product/build/composition result. It does not prove
+first-stage handoff, exact accepted vendor/product VINTF compatibility, device AVB/LP fit,
+`apexd`, zygote, system_server, graphics, media, audio, wireless or DRM runtime. Prototype B
+was not built. The highest-information next experiment is an exact-device Prototype A ARM32
+integration and rollback-controlled boot: it isolates A16 framework/kernel/vendor viability
+before adding mixed-mode graphics. Preparing that candidate first requires transferring and
+hash-verifying the accepted logical/boot/outer assets on GCP; flashing requires separate
+explicit authorization.
 
 ## 11. Static boot-readiness analysis
 
-The furthest offline-proven point is **complete product Ninja graph plus target action
-452/122523**. No Android boot stage is proven because no `system.img` exists. The table keeps
+The furthest offline-proven point is **a complete ARM32 Android 16 `system.img` plus focused
+offline composition checks**. No Android boot stage is proven because the image has not been
+paired with the exact accepted device partitions or executed on the UBOX10. The table keeps
 artifact/packaging blockers separate from structural architecture blockers.
 
 | Area | Status | Evidence and boundary |
 |---|---|---|
 | 1. Boot/kernel contract | **LIKELY** | The accepted AArch64 5.4 kernel has ARM32 compat, Binder/binderfs and the relevant Android facilities, while A16 officially retains FCM 6. No A16 init binary has executed on it. |
-| 2. First-stage init | **UNKNOWN UNTIL BOOT** | The GSI shape deliberately reuses the accepted boot/vendor_boot first-stage path. No A16 system image exists to test its userspace handoff. |
-| 3. First-stage mount | **LIKELY** | The accepted first-stage fstab and A/B LP geometry are proven, and a GSI-style system replacement preserves them. No A16 system image was available for offline pairing. |
-| 4. AVB | **KNOWN BLOCKER** for this output | No A16 image was assembled or signed. Mixed mode also changes vendor-owned `ro.zygote` and therefore requires a regenerated, verified AVB chain. |
-| 5. Dynamic partitions | **LIKELY** | The accepted system/vendor/product/vendor_dlkm LP layout is proven and the A16 GSI uses dynamic sizing, but no combined A16 super was assembled. |
-| 6. `apexd` | **UNKNOWN UNTIL BOOT** | Official A16 APEX composition is available in source; no product image or runtime exists. |
-| 7. `servicemanager` | **UNKNOWN UNTIL BOOT** | Binder capability is proven on 5.4; the A16 binary/runtime contract is unexercised. |
-| 8. `hwservicemanager` | **UNKNOWN UNTIL BOOT** | Current ARM32 HIDL services and FCM 6 are proven; A16 registration is not. |
-| 9. VINTF | **LIKELY** | A16 officially supports target FCM 6 and the current device manifest uses 6. Exact system/product/device matrix matching was not generated. |
-| 10. Linker namespaces | **UNKNOWN UNTIL BOOT** | VNDK 31 retention is configured, but even the offline generated namespace closure is absent. Mixed mode additionally requires the AArch64 graphics SP-HAL/mapper closure. |
+| 2. First-stage init | **UNKNOWN UNTIL BOOT** | The GSI shape deliberately reuses the accepted boot/vendor_boot first-stage path. The new ARM32 init is present, but its handoff from the accepted first stage is unexecuted. |
+| 3. First-stage mount | **LIKELY** | The accepted first-stage fstab and A/B LP geometry are proven, and a GSI-style system replacement preserves them. Exact offline pairing still requires the ignored accepted logical images. |
+| 4. AVB | **PARTIAL** | The standalone image's test-key AVB footer and hashtree verify. Device vbmeta integration and the accepted trust chain were not assembled; mixed mode will additionally change vendor-owned `ro.zygote`. |
+| 5. Dynamic partitions | **LIKELY; FIT OPEN** | The accepted system/vendor/product/vendor_dlkm LP layout is proven and the A16 GSI uses dynamic sizing, but exact LP fit and a combined super were not checked without the accepted payloads. |
+| 6. `apexd` | **OFFLINE CHECKED; RUNTIME OPEN** | All 36 installed APEX containers parse, including the ARM32 runtime and VNDK 31 payload. Activation on the device remains unexecuted. |
+| 7. `servicemanager` | **UNKNOWN UNTIL BOOT** | The built binary is ARM32 and Binder capability is proven on 5.4; the A16 runtime contract is unexercised. |
+| 8. `hwservicemanager` | **UNKNOWN UNTIL BOOT** | The built binary and current HIDL services are ARM32 and FCM 6 is supported; registration on A16 is not. |
+| 9. VINTF | **PARTIAL** | A16 `checkvintf --check-one` accepts the built system manifest/matrix set, which includes FCM 6 and 5.4 kernel branches. Exact system/product/vendor/device compatibility was not checked because the accepted ignored images are absent from GCP. |
+| 10. Linker namespaces | **PARTIAL** | Linkerconfig generated the ARM32 system/VNDK 31 vendor namespace and `libaudioroute.so` exposure from the actual outputs. Exact retained-vendor dependencies and runtime remain open; mixed mode additionally requires the AArch64 graphics SP-HAL/mapper closure. |
 | 11. Zygote | **LIKELY** for A; **KNOWN BLOCKER** for mixed packaging | Accepted vendor selects `zygote32`, matching Prototype A. A16 `core_64_bit.mk` selects `zygote64_32`, but the retained vendor property must be changed for Prototype B. |
 | 12. `system_server` | **UNKNOWN UNTIL BOOT** | No A16 zygote or framework process has executed. |
 | 13. SurfaceFlinger | **LIKELY** for A; provider-gated for mixed | ARM32 can in principle load the accepted ARM32 Mali/mapper. AArch64 SurfaceFlinger requires the matched AArch64 in-process provider. |
@@ -398,9 +416,10 @@ artifact/packaging blockers separate from structural architecture blockers.
 | 19. Input | **UNKNOWN UNTIL BOOT** | Kernel rc-core/input evidence transfers, but A16 framework, keylayout and TV-policy integration are absent. |
 | 20. DRM | **UNKNOWN UNTIL BOOT** | The 32-bit L3 service is process-isolatable; A16 MediaDrm/HIDL compatibility and playback are untested. No higher security claim is made. |
 
-A flash-gate package was not prepared: without an exact prototype image and SHA-256 there is
-nothing safe to flash. After a successful offline image/integration pass, one physical boot
-remains the smallest decisive test, but it still requires separate explicit authorization.
+A flash-gate package was not prepared. The standalone prototype has an exact hash, but the
+accepted device partitions and rollback container are not present on GCP for safe pairing.
+After exact integration checks and candidate audit, one Prototype A physical boot remains the
+smallest decisive test; it still requires separate explicit authorization.
 
 ## 12. Target A/B/C/D comparison
 
@@ -436,7 +455,7 @@ the preferred formal target. D is dominated on engineering economics.
 |---|---|---|---|---|---|
 | Target A — Mature Legacy | **PROVEN now** | Accepted stability and hardware completeness | API 31 age and no 64-bit native apps; security/platform life is short | Low | Keep as rollback/reference, not final investment ceiling |
 | Target B — Modern Framework / Legacy Architecture | **HIGH** if A16 ARM32 boots | Maximum vendor reuse and no new graphics provider | Still excludes 64-bit-only native apps and invites another later architecture migration | Medium | Fallback architecture, not primary |
-| Target C — Modern Hybrid | **MEDIUM** | API 36 plus AArch64 apps while preserving working 32-bit HALs/kernel | Paired ARM64 graphics SP-HAL/mapper must close and run on exact H616; A16 image build is incomplete | Medium-high but bounded | **Recommended final target; conditional GO** |
+| Target C — Modern Hybrid | **MEDIUM** | API 36 plus AArch64 apps while preserving working 32-bit HALs/kernel | Paired ARM64 graphics SP-HAL/mapper must close and run on exact H616; the A16 ARM32 base is built but unbooted | Medium-high but bounded | **Recommended final target; conditional GO** |
 | Target D — Full Modern Port | **LOW** | Clean contemporary architecture in theory | No complete H616 5.10+ graphics/media/display/DRM provider; becomes multiple subsystem rewrites | Extreme | **NO-GO** |
 
 ## 13. Reuse versus rewrite map
@@ -538,8 +557,8 @@ display, audio, wireless and DRM integration without a complete provider. It has
 of better Netflix capability and may lose the current 4K/audio path. The modern hybrid captures
 the application/framework benefit of ARM64 without paying that subsystem-rewrite cost.
 
-**Overall confidence: MEDIUM.** The decision is evidence-backed and the blocker set is small,
-but no Android 16 image completed and the exact-board boot/provider gates remain.
+**Overall confidence: MEDIUM.** The Android 16 ARM32 image and offline composition gate are
+complete, but exact-board boot and the mixed graphics-provider gates remain.
 
 ## 15. Go / No-Go decisions and remaining decisive gates
 
@@ -548,7 +567,7 @@ but no Android 16 image completed and the exact-board boot/provider gates remain
 | Question | Decision | Reason |
 |---|---|---|
 | Recommended modern Android target | **CONDITIONAL GO — Android 16 for TV** | Best TV/API life and FCM-6 support; exact-board boot remains |
-| Android 16 specifically | **CONDITIONAL GO** | Official stable TV/source target; Prototype A build and exact-board boot remain open |
+| Android 16 specifically | **CONDITIONAL GO** | Official stable TV/source target; Prototype A builds and closes offline, while exact-board boot remains open |
 | Mixed ARM64/ARM32 userspace | **CONDITIONAL GO** | Exact paired Mali provider exists; mapper/gralloc and runtime still gate |
 | Full ARM64 userspace | **NO-GO** | Would convert/replace working proprietary service stack for little user value |
 | Kernel 5.4 as final architecture | **CONDITIONAL GO** | Technically credible for upgraded FCM 6; outside current ACK support and must pass A16 runtime |
@@ -558,15 +577,18 @@ but no Android 16 image completed and the exact-board boot/provider gates remain
 
 ### Remaining decisive gates (maximum five)
 
-1. Complete Prototype A `systemimage` in an adequately resourced, persistent build and prove
-   its APEX, VINTF, linker, SELinux and image composition offline; the current host-limited
-   attempt did not reach target analysis.
-2. Establish lawful, reproducible availability of the exact paired AArch64 Mali and multilib
-   mapper/gralloc provider, then complete its A16 DT_NEEDED/linker closure and mixed image.
-3. With separate authorization, perform one rollback-controlled physical boot and prove
-   first-stage mount through `apexd`, `zygote64_32`, `system_server`, AArch64 GLES,
-   SurfaceFlinger and retained 32-bit SUNXI HWC; failure selects Target B, not a graphics rewrite.
-4. Prove retained 32-bit media/audio/Wi-Fi/Bluetooth/input/DRM services reach functional parity.
+1. Transfer and hash-verify the exact accepted logical/boot/outer images and rollback assets on
+   GCP; run exact VINTF, linker, SELinux, LP-fit, AVB and outer-container preservation checks,
+   then audit one Prototype A ARM32 candidate.
+2. With separate authorization, perform one rollback-controlled Prototype A physical boot and
+   prove first-stage mount through `apexd`, `zygote32`, `system_server`, SurfaceFlinger and the
+   retained ARM32 graphics stack. This decides the A16 framework/kernel/vendor base before
+   mixed-mode work begins.
+3. If Prototype A passes, establish lawful, reproducible availability of the paired AArch64
+   Mali and multilib mapper/gralloc provider, then complete its A16 DT_NEEDED/linker closure and
+   mixed image.
+4. With separate authorization, boot the mixed candidate and prove AArch64 GLES/SurfaceFlinger
+   plus retained 32-bit HWC/media/audio/Wi-Fi/Bluetooth/input/DRM service parity.
 5. Prove sustained physical 4K30 HEVC/VP9, A/V sync and thermal behavior before calling 4K30
    accepted; failure keeps the architecture but lowers the media target to 1080p-class.
 
@@ -574,13 +596,13 @@ but no Android 16 image completed and the exact-board boot/provider gates remain
 
 1. **Freeze the accepted baseline and provider contract:** keep `m8b-remote-r1` rollback,
    exact hashes, hardware evidence and donor/provider rights/hash manifest.
-2. **Architecture proof:** complete the ARM32 A16 isolation image, then the minimal
-   `zygote64_32` product with VNDK 31/FCM 6, paired graphics provider and offline
-   VINTF/linker/AVB/LP validation.
-3. **One authorized flash-gate boot:** capture UART/ADB milestones; stop on first reproducible
-   failure and roll back rather than broad-porting.
-4. **Minimum viable parity:** retain and validate the 32-bit hardware services, TV home/input,
-   network/Bluetooth, HDMI audio, hardware media and legitimate L3 DRM.
+2. **Exact ARM32 integration:** pair the completed Prototype A system image with the accepted
+   partitions, close VINTF/linker/SELinux/AVB/LP checks and audit one rollback-safe candidate.
+3. **Authorized ARM32 boot proof:** capture UART/ADB milestones through framework and retained
+   hardware services; stop on the first reproducible failure and roll back.
+4. **Conditional mixed proof:** only after the ARM32 base passes, build the minimal
+   `zygote64_32` product with the lawful paired graphics provider, close its offline checks and
+   perform a separately authorized boot/parity test.
 5. **Final acceptance:** sustained daily-use regression, 4K30-or-1080p evidence-led media
    ceiling, recovery rehearsal and a hash-locked accepted architecture image.
 

@@ -86,6 +86,24 @@ python scripts/build-m8b-remote-r1-candidate.py
 
 The result is `out/candidates/m8b-remote-r1/x12-m8b-remote-r1.img`, 1031723008 bytes, SHA-256 `F3B09E5565AC4ED4E5EE326D392622E7B036A8519B8444B966E77CC4751B814A`. Only logical `system_a` changes; the outer replacements are `super.fex` and `vbmeta_system.fex` plus their generated V companions. The candidate is not device accepted until the explicit physical sequence in `docs/DEVICE_TEST.md` passes.
 
+## Android 16 Architecture Ceiling Gate 1
+
+Prototype A is a standalone ARM32 Android 16 TV system-image experiment, not an M8 candidate or firmware package. Its locked source is `android-16.0.0_r4` / `BP4A.251205.006`, manifest commit `15128c9e27cfa599c48d294babd39286ee8f1426`, pinned manifest SHA-256 `4E8BEB5D1B590DFF3D631B1DBB957138DBDA4E608A3183C625683DA4BC84918F`. Copy `configs/aosp/architecture-ceiling-a16/device/ubox/ceiling/` into the same path in the clean AOSP tree and verify it byte-for-byte before building.
+
+The verified native-Linux procedure is:
+
+```bash
+cd /work/src/ubox10-a16-ceiling
+export OUT_DIR=out-ceiling
+export BUILD_NUMBER=DISPOSABLE_CEILING_R4
+unset SOONG_GOMEMLIMIT GOMEMLIMIT
+source build/envsetup.sh
+lunch ubox10_ceiling_arm-bp4a-userdebug
+m -j8 systemimage
+```
+
+`OUT_DIR` must remain the relative value `out-ceiling`. On the verified 62.8 GiB GCP host, do not use the WSL cgroup/taskset/swap wrapper or apply the legacy `SOONG_GOMEMLIMIT` patch. The successful run produced only `out-ceiling/target/product/generic/system.img`; it did not build boot, vendor, product, system_ext, super, userdata or an Allwinner outer image. The exact result and offline evidence are in `docs/m8/STATUS.md` and `docs/m8/research/architecture-ceiling-study.md`. Exact-device integration remains a separate candidate step requiring the ignored accepted logical/boot/outer assets and a fresh preservation audit.
+
 ## Checks
 
 ```powershell

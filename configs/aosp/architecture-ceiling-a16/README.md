@@ -10,8 +10,14 @@ identify the device as an Android 12 field upgrade, and build no boot, vendor,
 super, userdata, or pKVM image. They contain no Allwinner or donor binaries and
 are not flashable firmware. Every output is a DISPOSABLE ARCHITECTURE PROTOTYPE.
 
-`run-disposable-build.sh` is an optional low-disk build wrapper for the Study
-host. Run it as the WSL root user so one process can mount a pre-created ext4
+Prototype A was verified on native Ubuntu 24.04 with 62.8 GiB RAM by exporting
+relative `OUT_DIR=out-ceiling`, setting `BUILD_NUMBER=DISPOSABLE_CEILING_R4`,
+unsetting `SOONG_GOMEMLIMIT GOMEMLIMIT`, selecting
+`ubox10_ceiling_arm-bp4a-userdebug`, and running `m -j8 systemimage`. The exact
+procedure is recorded in `docs/BUILD.md`.
+
+`run-disposable-build.sh` is the retained optional low-disk wrapper for the
+original WSL Study host. Run it as the WSL root user so one process can mount a pre-created ext4
 loop image over `out-ceiling`, build as the owner of the AOSP tree, and unmount
 on exit. The wrapper accepts only `arm32` or `mixed`, defaults to one build job,
 and builds only `systemimage`. The build subprocess runs in a transient cgroup
@@ -32,22 +38,23 @@ root while mounting that same directory by absolute path. Android 16's Soong
 `test_package` host-output exclusion recognizes an `out...`-relative path but
 misclassifies the equivalent absolute path as a source outside the module.
 
-The Study host has less memory than Android 16's documented build minimum.
-Apply `patches/0001-soong-forward-gomemlimit.patch` once to the disposable
-Android 16 tree. It forwards `SOONG_GOMEMLIMIT` only to the cleared
+The original WSL Study host has less memory than Android 16's documented build
+minimum. On that host only, apply
+`patches/0001-soong-forward-gomemlimit.patch` once to the disposable Android 16
+tree. It forwards `SOONG_GOMEMLIMIT` only to the cleared
 `soong_build` environment; the wrapper defaults that limit to 6 GiB. This is a
 host-build accommodation and does not change target artifacts or Android
-runtime behavior.
+runtime behavior. Do not apply it on the verified 62.8 GiB native GCP host.
 
 The wrapper records 10-second cgroup samples beside the build log and emits a
 summary containing wall time, CPU time, memory/swap peaks, pressure and cgroup
 events. This is host evidence only and does not alter target inputs.
 
-Study outcome on 2026-08-21: Prototype A completed the Soong product Ninja graph.
-`build.ubox10_ceiling_arm.ninja` is 357,271,614 bytes with SHA-256
-`e51e518d18add7033c15269b7879064daa0431d6b7e2f264917839e7d34c4b9d`.
-The target Ninja build then reached action 452 of 122,523 before the user stopped
-the work. No genuine target/product error and no `system.img` were produced; the
-reported final failures are cancellation fallout. Prototype B remains
-configuration only. These files must not be described as a successful image
-build or flashable firmware.
+Study outcome on 2026-08-21: native GCP Prototype A completed all 123,197 target
+actions. `system.img` is 946,765,824 bytes with SHA-256
+`fd349f1d8073dfeb71e2cea28915f1c755fa54e3eba85616fcaa279063f3edbe`.
+It passed the focused filesystem, AVB, ARM32 ABI, APEX/VNDK 31, system-side
+VINTF, linkerconfig and SELinux offline checks recorded in the active M8 status
+and Architecture Ceiling Study. It is still a standalone research system image,
+not a UBOX10-integrated or flashable firmware. Prototype B remains
+configuration only.

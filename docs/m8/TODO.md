@@ -7,14 +7,13 @@
 ## Android 16 Gate 1 — Prototype A ARM32
 
 - [x] 保持 Prototype A、ARM32 产品定义、relative `OUT_DIR`、VNDK 31 与 `systemimage` 目标不变。
-- [x] 将 host profile 收敛为 10 GiB `memory.high`、10752 MiB `memory.max`、7 GiB `memory.swap.max`、6 GiB `SOONG_GOMEMLIMIT`、CPU 0-7，并加入 10 秒 cgroup resource evidence。
-- [x] 清理 C/D/E 可重建产物和 WSL cache；compact 后 WSL VHDX 从 368,420,323,328 缩到 277,052,653,568 bytes；生产 worktree、A12/A16 源码、donors 与设备未修改。
-- [x] 完成 `ubox10_ceiling_arm` product Ninja graph：357,271,614 bytes，SHA-256 `e51e518d18add7033c15269b7879064daa0431d6b7e2f264917839e7d34c4b9d`。
-- [x] 进入真实 target Ninja；用户停止时到达 452/122523。取消产生的 action failures 不作为产品错误。
-- [ ] 把 E: 保留的 `a16-out.ext4` 安全复制到快速内部存储，复制后校验 ext4、graph hash 与已有 intermediates；本轮 D: 不完整副本已删除。
-- [ ] 从已保存 graph/intermediates 继续 Prototype A ARM32 `systemimage`，捕获首个真实、可复现的产品错误或产出 `system.img`。
-- [ ] 对完成的 `system.img` 做 filesystem、ABI/property、APEX/VNDK 31、VINTF/FCM、linker namespace、SELinux、dynamic partition、hash/reproducibility 离线 closure。
-- [ ] Gate 1 离线 closure 前不启动 mixed `zygote64_32` Gate 2，也不刷写设备。
+- [x] 在 native GCP Ubuntu 24.04 / ext4 / 8 vCPU / 62.8 GiB RAM / no-swap 主机完成 `m -j8 systemimage`；未使用 cgroup、taskset、WSL wrapper 或 `SOONG_GOMEMLIMIT` patch。
+- [x] 完成全部 123,197 个 target actions；`system.img` 为 946,765,824 bytes，SHA-256 `FD349F1D8073DFEB71E2CEA28915F1C755FA54E3EBA85616FCAA279063F3EDBE`。
+- [x] 完成 Gate 1 离线 closure：ext4/e2fsck、AVB footer/hashtree、ARM32 ABI/property、36 个 APEX、VNDK 31、system-side VINTF、A16 linkerconfig、SELinux xattr/mapping 与 output-scope 均符合 Prototype A 预期。
+- [x] 确认本 Gate 只生成 standalone `system.img`；未生成 boot/vendor/product/system_ext/super/userdata image，未组装 IMAGEWTY 或可刷固件，未修改设备。
+- [ ] 把 exact accepted `m8b-remote-r1` 的 system/vendor/product/vendor_dlkm、boot/vendor_boot 与外层 rollback 资产复制到 GCP 并逐项校验既有 size/SHA-256；当前 VM 不具备这些 ignored 大文件。
+- [ ] 用 exact accepted vendor/product 对 A16 system 运行完整 `checkvintf`、linker/ELF、SELinux、partition-fit、LP/AVB/outer preservation closure，并只在全部通过后形成一个可回滚 Prototype A ARM32 候选。
+- [ ] 取得该候选的明确刷写授权后，做一次 UART-first exact-board boot；首要里程碑为 first-stage mount → `apexd` → `zygote32` → `system_server` → ARM32 SurfaceFlinger/accepted HWC。Gate 2 在这个隔离实验结果前不启动。
 
 ## 已验收基线
 
