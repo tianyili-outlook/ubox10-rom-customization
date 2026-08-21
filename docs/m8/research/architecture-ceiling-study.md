@@ -19,8 +19,9 @@ The best architecture worth formally developing is **Android 16 for TV, mixed AR
 userspace, `zygote64_32`, the existing Allwinner 5.4 kernel and hardware-facing vendor stack,
 plus only the minimum matched ARM64 graphics client provider and bounded vendor
 zygote/AVB metadata changes**. This remains a candidate end architecture, but the current
-decision is **HOLD before Prototype B**: the ARM32 base reproducibly fails at the Android 16
-bootstrap APEX boundary, and the internal apexd error must be exposed before mixed-mode work.
+decision is **HOLD before Prototype B**: r1 reproducibly fails before ueventd/apexd exec because
+the retained kernel cannot establish A16's required cgroup hierarchy. The minimal boot-only r2
+is offline checked, but must advance that runtime boundary before mixed-mode work.
 
 This is a modern hybrid, not a full port. Framework, `system_server`, SurfaceFlinger, and
 eligible apps become AArch64; legacy Allwinner media, audio, HWC/composer, DRM, Wi-Fi,
@@ -440,7 +441,7 @@ CANDIDATE eligible for one separately authorized UART-first boot**. That authori
 subsequently granted and consumed by the physical result below. Gate 2 remains closed and
 Prototype B remains untouched.
 
-### Gate 2 r1 physical result and bootstrap APEX boundary
+### Gate 2 r1 physical result and superseding pre-exec cgroup boundary
 
 The PhoenixCard capture `logs/20260822-a-r1/uart-putty.log` is 44,206 bytes, SHA-256
 `c4823f59f09fa2ed60e5f35251641b0b0e9abfafef1318f065dafbed901e4d0c`. All 13 download
@@ -454,7 +455,14 @@ kernel starts and six complete failure cycles. Every complete cycle reaches the 
 second-stage init cgroup setup, then 10.03 seconds later enters the failure reboot path and
 ends with `reboot: Restarting system with command 'bootloader,bootstrap-apexd-failed'`.
 The seventh capture stops after the same cgroup point. This repeatability rules out a one-off
-write, power or transient boot observation; it does not reveal the apexd-internal error.
+write, power or transient boot observation. That original capture did not reveal the internal
+service-start error, but the later devkmsg diagnostic below does.
+
+The diagnostic capture `logs/20260822-a-r1-devkmsg/boot-devkmsg-on.log` is 35,625 bytes,
+SHA-256 `e3ef999e109b837c5dbb3390e110ec80ad3d9defe02f0b0caf581c46c4c2a517`.
+`printk.devkmsg=on` was appended only to the U-Boot RAM environment after `run setargs_mmc`,
+was read back in `bootargs` before `run boot_normal`, and was not persisted. Its first cycle
+exposes the actual failure sequence at 5.204791–5.313805 seconds.
 
 The exact first reproducible runtime boundary is therefore:
 
@@ -463,10 +471,14 @@ The exact first reproducible runtime boundary is therefore:
 2. `/system` is usable because its `secilc` executes, while the exact vendor and system_ext
    CIL inputs are consumed and the split policy compilation succeeds;
 3. SELinux setup completes sufficiently to enter Android 16 second-stage init and `early-init`;
-4. init invokes `apexd-bootstrap`, that service exits unsuccessfully, and its declared
-   `reboot_on_failure reboot,bootloader,bootstrap-apexd-failed` action runs.
+4. A16 `CgroupSetup()` fails its required v1 blkio mount before creating the cgroup-v2
+   `apps` and `system` subhierarchies;
+5. init forks ueventd PID 163 and apexd-bootstrap PID 164, but parent-side process-group setup
+   fails for both and the children fatal-exit before `execv()`;
+6. the declared `reboot_on_failure reboot,bootloader,bootstrap-apexd-failed` action then runs.
 
-No capture proves that a bootstrap APEX mounted. `servicemanager`, `zygote32`,
+Neither ueventd nor apexd is executed, so bootstrap APEX activation is not attempted. No
+capture proves that a bootstrap APEX mounted. `servicemanager`, `zygote32`,
 `system_server`, SurfaceFlinger and HWC/composer do not appear and were not reached. The kernel
 command line selects SELinux permissive, so successful split-policy loading is not enforcing
 compatibility proof.
@@ -481,16 +493,15 @@ The four conspicuous messages have distinct control-flow meanings:
   `early-init`; the compiler returns success and second-stage init executes. The warning is not
   the bootstrap failure.
 - `cgroup1: Unknown subsys name 'blkio'` matches the exact kernel's disabled
-  `CONFIG_BLK_CGROUP`. It is a real later process-management compatibility risk, but the present
-  evidence does not connect it to apexd activation.
+  `CONFIG_BLK_CGROUP` and is the first causal error. It makes the required blkio mount return
+  `EINVAL`; the following missing `/sys/fs/cgroup/system/uid_0` is its direct consequence.
 - retries for `/dev/block/by-name/misc` begin only after init has selected the
   `bootstrap-apexd-failed` bootloader reboot. They prevent persistence of the bootloader message
   but neither select nor cause the failure.
 
-The A16 `apexd.rc` and `apexd` source establish what the missing diagnostic must contain:
-`apexd --bootstrap` scans preinstalled APEXes, reserves loop/device-mapper resources and
-activates the bootstrap set, logging its actual activation error to the kernel logger before
-returning nonzero. The exact build uses the legacy two-namespace bootstrap path
+The earlier APEX audit remains useful negative evidence but is no longer the root-cause path:
+had `apexd --bootstrap` executed, it would scan preinstalled APEXes, reserve loop/device-mapper
+resources and activate the bootstrap set. The exact build uses the legacy two-namespace path
 (`RELEASE_APEX_MOUNT_BEFORE_DATA` false) and requires five bootstrap containers: i18n, runtime,
 tzdata, virt and VNDK 31. All five are uncompressed APEXes, parse with the exact
 `host_apex_verifier`, and contain clean 4 KiB-block ext4 payloads. Their on-image sizes and
@@ -510,28 +521,78 @@ device nodes, coldboot, a particular loop/DM ioctl, namespace mount, AVB verific
 SELinux operation succeeds at runtime. Unlike r1, the accepted Android 12 image uses flattened
 APEX directories, so the accepted baseline did not exercise this container activation path.
 
-The capture has no apexd line other than init's final reboot reason—not even apexd's first
-`Started` message from `main()`. The exact kernel limits each userspace `/dev/kmsg` file
-descriptor to ten messages per five seconds by default, and prior M8 evidence demonstrated
-that it can hide later init lifecycle messages. Because a newly executed apexd would open its
-own logger FD, the limiter alone does not prove why every apexd line is absent; failure before
-`main()`/logger setup or inability to open kmsg remains possible. This supports the smallest
-diagnostic, not a root-cause claim: keep r1 system/APEX/vendor/product/LP and accepted
-kernel/ramdisk unchanged, append only the supported `printk.devkmsg=on` boot argument, and—if
-separately authorized—capture exactly one UART cycle. This removes the known rate limit and
-should expose additional init service-exit data and any otherwise suppressed apexd messages.
-Only if it still emits no internal line should a later diagnostic add `console` to
-`apexd-bootstrap` to catch pre-logger dynamic-linker stderr.
+The A16 source trace explains why no apexd line exists. In exact r4,
+`system/core/init/init.cpp:647-654,1205-1207` queues `SetupCgroupsAction` before `early-init`.
+`system/core/libprocessgroup/setup/cgroup_map_write.cpp:272-314` loads system/API/vendor
+descriptors and returns false at lines 293-295 as soon as a required controller setup fails;
+its later `CreateV2SubHierarchy(.../apps)` and `.../system` calls at lines 299-310 never run.
+`system/core/init/service.cpp:551-581,734-745` shows that `Service::Start()` forks and makes each
+child wait on a FIFO while the parent calls `createProcessGroup(0, pid, false)`. The flag-aware
+UID mapping selects `/sys/fs/cgroup/system/uid_0`; mkdir fails in
+`system/core/libprocessgroup/processgroup.cpp:685-719`, so the parent writes
+`kActivatingCgroupsFailed`. The child logs `Service '<name>' failed to start due to a fatal
+error` and exits before task profiles, credentials/capabilities and `ExpandArgsAndExecv()`.
+The missing `pid_163`/`pid_164/cgroup.procs` lines are cleanup cascade, not independent causes.
 
-The present classification is **reproducible exact-board bootstrap APEX integration blocker,
-root cause not yet exposed**. It is neither a bounded-fix conclusion nor an architecture-level
-no-go. No r2 is justified, no further flash is authorized, and rollback inputs remain
-unchanged.
+The effective A16 `/system/etc/cgroups.json` (SHA-256
+`ab2ed667ff45958843fb0c6ee953a5512def0ae87470c4358aa9576a6a4b2e22`) requires v1
+blkio, cpu and cpuset; none is optional. Its cgroup-v2 root is `/sys/fs/cgroup`, freezer is
+required, and memory is `NeedsActivation` but optional. `/system/etc/task_profiles.json`
+(`f230763e7676dfb39397c2d909def41ddd59d73ff7b334718b885ce24095bf21`) uses all of these,
+including blkio membership profiles. With first API level 31, the loaders would overlay
+`cgroups_31.json` and `task_profiles_31.json`, then vendor files, but both API-specific system
+files and exact accepted `/vendor/etc/cgroups.json` plus `/vendor/etc/task_profiles.json` are
+absent. The accepted A12 system files (hashes
+`8898401625cc4bd524a024104c9277382e03926b32ee5bec1ad548d1cf8a2e1f` and
+`ab6afdd8975620300781d283344af6acf036145c73311353d2da54522f39f933`) also require
+blkio/cpu/cpuset; A12 additionally described optional v1 memory. There is no hidden vendor
+override that could make the A16 required mounts optional.
+
+The retained exact kernel config has `CONFIG_CGROUPS=y`, `CONFIG_CGROUP_SCHED=y`,
+`CONFIG_CGROUP_CPUACCT=y`, `CONFIG_CGROUP_FREEZER=y` and `CONFIG_CGROUP_BPF=y`, but both
+`CONFIG_BLK_CGROUP` and `CONFIG_CPUSETS` are disabled; `CONFIG_MEMCG` is also disabled. The
+exact 5.4 source implements Android's required cpuset `noprefix,cpuset_v2_mode` mount options.
+Enabling BLK_CGROUP alone is insufficient because the next required cpuset mount would fail.
+The source-proven minimum is `CONFIG_BLK_CGROUP=y` plus `CONFIG_CPUSETS=y`, with Kconfig adding
+`CONFIG_PROC_PID_CPUSET=y`; generic blkio membership does not require enabling a throttling or
+I/O-cost policy. MEMCG remains out of the bounded delta because the effective A16 memory-v2
+descriptor is explicitly optional.
+
+The complete relevant kernel-config comparison is:
+
+| Capability | retained r1 | r2 | A16 role in this exact product |
+|---|---:|---:|---|
+| `CONFIG_CGROUPS` | y | y | fundamental v1/v2 hierarchy support |
+| `CONFIG_BLK_CGROUP` | n | y | required v1 `blkio`; first r1 failure |
+| `CONFIG_CGROUP_SCHED` / `FAIR_GROUP_SCHED` | y / y | y / y | required v1 `cpu` mount and memberships |
+| `CONFIG_CPUSETS` / `PROC_PID_CPUSET` | n / absent | y / y | required v1 `cpuset` and Android mount behavior; next r1 blocker |
+| `CONFIG_CGROUP_CPUACCT` | y | y | retained Android CPU-accounting contract |
+| `CONFIG_CGROUP_FREEZER` | y | y | required controller on the declared cgroup-v2 root |
+| `CONFIG_MEMCG` | n | n | declared v2 `NeedsActivation`, but explicitly optional |
+| `CONFIG_CGROUP_BPF` / `BPF` / `BPF_SYSCALL` | y / y / y | y / y / y | retained v2/BPF attachment capability |
+| `CONFIG_CGROUP_PIDS`, `CGROUP_DEVICE`, `CGROUP_PERF` | n / n / n | n / n / n | not declared by the effective A16 cgroups/task-profile set |
+| `CONFIG_CGROUP_NET_PRIO`, `CGROUP_NET_CLASSID` | n / n | n / n | not declared by the effective set |
+
+The generic cgroup-v2 mount itself is provided by `CONFIG_CGROUPS`; this 5.4 tree has no
+separate `CONFIG_CGROUP_V2` switch. The declared v2 controllers are freezer plus optional
+memory, so r2 supplies every required v2 controller without pretending that absent optional
+MEMCG is enabled.
+
+The build flag is consistent: exact
+`out-ceiling/soong/soong.ubox10_ceiling_arm.variables:970` sets
+`cgroup_v2_sys_app_isolation=true`. `system/core/libprocessgroup/Android.bp:18-26,86` applies
+the corresponding `libprocessgroup_build_flags_cc` to path selection/process-group creation,
+and `system/core/libprocessgroup/setup/Android.bp:21-43` applies the same default to early
+hierarchy creation. The present classification is therefore **bounded
+retained-kernel cgroup integration defect before apexd exec**, not an APEX activation failure
+and not an architecture-level no-go. One boot-only r2 with the minimum config delta was
+justified and has been constructed offline; no further physical action is authorized and
+rollback inputs remain unchanged.
 
 ## 11. Boot-readiness analysis after r1
 
-The furthest runtime-proven point is **Android 16 second-stage init immediately before the
-failed bootstrap APEX activation**. The table keeps packaging evidence, runtime proof and
+The furthest runtime-proven point is **Android 16 second-stage init at required cgroup
+initialization, before ueventd or apexd exec**. The table keeps packaging evidence, runtime proof and
 unreached stages separate.
 
 | Area | Status | Evidence and boundary |
@@ -541,11 +602,11 @@ unreached stages separate.
 | 3. First-stage mount | **PROVEN FOR CURRENT BOUNDARY** | `/system` executes A16 secilc; vendor and system_ext policy inputs are consumed. Direct metadata mount details are not all printed and are not overclaimed. |
 | 4. AVB | **RUNTIME ACCEPTED TO INIT** | The candidate passes the boot chain far enough to execute the verified system; mixed mode would still change vendor-owned `ro.zygote`. |
 | 5. Dynamic partitions | **RUNTIME PROVEN TO SYSTEM HANDOFF** | LP mapping and current system handoff succeed; the missing separate system_ext update is a tolerated fallback to the system-root symlink. |
-| 6. `apexd` | **REPRODUCIBLE FAILURE BOUNDARY** | Init invokes bootstrap apexd and its failure action repeats. No internal apexd error or successful bootstrap APEX activation is captured. |
+| 6. `apexd` | **NOT EXEC'D** | Init forks the service child, but parent-side `createProcessGroup()` fails and the child exits before `ExpandArgsAndExecv()`; APEX activation is not attempted. |
 | 7. `servicemanager` | **NOT REACHED** | It starts after bootstrap activation; it is absent from all cycles. |
 | 8. `hwservicemanager` | **NOT REACHED** | No registration appears before bootstrap apexd selects the reboot path. |
 | 9. VINTF | **EXACT CHECKED; INHERITED EXCEPTION** | Exact system/product/vendor/device checks leave only `CONFIG_NFS_FS=y` versus FCM-6 `n`, the same deviation already present against the device-accepted A12 matrix. The two accepted display HALs are declared. Full check remains exit 65, not PASS. |
-| 10. Linker namespaces | **OFFLINE CHECKED; BOOTSTRAP RUNTIME OPEN** | Exact linkerconfig generates ARM32 vendor/VNDK-31 closure. The early secilc warning predates linkerconfig creation and is non-fatal; bootstrap linker operation inside apexd is not visible. |
+| 10. Linker namespaces | **OFFLINE CHECKED; RUNTIME NOT REACHED** | Exact linkerconfig generates ARM32 vendor/VNDK-31 closure. The early secilc warning predates linkerconfig creation and is non-fatal; apexd never execs. |
 | 11. Zygote | **NOT REACHED** for A; **KNOWN BLOCKER** for mixed packaging | Accepted vendor selects `zygote32`, matching Prototype A, but r1 fails before zygote. Prototype B would additionally require the retained vendor property change. |
 | 12. `system_server` | **NOT REACHED** | No A16 zygote or framework process starts. |
 | 13. SurfaceFlinger | **NOT REACHED** | r1 stops before servicemanager/zygote; the prior ARM32 provider likelihood is not runtime proof. |
@@ -557,10 +618,34 @@ unreached stages separate.
 | 19. Input | **NOT REACHED AT FRAMEWORK LEVEL** | Kernel/UART evidence transfers, but A16 input framework and TV policy never start. |
 | 20. DRM | **NOT REACHED** | The 32-bit L3 service is process-isolatable, but A16 MediaDrm/HIDL compatibility and playback are unexercised. No higher security claim is made. |
 
-The one r1 authorization has been consumed and produced the bootstrap failure above. Gate 2
-is closed. A diagnostic boot variant may be prepared offline, but no second physical action is
-authorized; a separately authorized one-cycle `printk.devkmsg=on` capture is now the smallest
-decisive test.
+The one r1 authorization has been consumed and the RAM-only devkmsg diagnostic has established
+the pre-exec cgroup root cause above. Gate 2 is closed. The smallest next experiment is the one
+offline boot-only r2 described above; it has now been constructed and audited without a physical
+action.
+
+### Prototype A r2 offline result
+
+The one r2 candidate changes only the retained kernel and its boot/Vboot outer payloads. Its
+effective config delta is `CONFIG_BLK_CGROUP=y`, `CONFIG_CPUSETS=y` and Kconfig-generated
+`CONFIG_PROC_PID_CPUSET=y`; MEMCG and the newly visible blkio throttling/IOLATENCY/IOCOST
+policies remain disabled. Kernel source is pinned to Orange Pi commit
+`9ab7a758149d3c9b721878a0c18b3f9c5d6c93e6` and built with AOSP `clang-r416183b1`.
+The r1 system/APEX/super/LP, accepted vendor_boot/ramdisk, vendor/product/vendor_dlkm,
+vbmeta/vbmeta_system and all other 48/50 outer payloads are byte-identical.
+
+The final IMAGEWTY image is 1,261,038,592 bytes, SHA-256
+`114df8677cd6984eb1431377723edf61c80acf26c15d8770bae47dcfe7d1b6d0`; boot is
+67,108,864 bytes / `4f0db0070e294dea93319f4b21335e6725dbb7b70066e7c1e6bf55cfeb09c10c`,
+and kernel is 23,232,520 bytes /
+`5d7d7f84a8e3cbcc4a4af78a9eb4decac846e62ba4c681e85b438b69b196ebf3`.
+Boot AVB, IMAGEWTY, ext4, cgroup-contract and SHA checks pass. Full exact VINTF still returns
+65 only for the inherited `CONFIG_NFS_FS=y` versus FCM-6 `n`; the cgroup delta adds no new
+incompatibility. Linker/ELF, split SELinux, APEX and LP evidence transfers only because the
+containing partitions were proven byte-identical.
+
+This is the smallest evidence-backed correction and is coherent enough to request a separate
+authorization for one UART-first ARM32 exact-board boot. It is not physical boot evidence,
+does not close Gate 2, and does not authorize Prototype B.
 
 ## 12. Target A/B/C/D comparison
 
@@ -698,9 +783,11 @@ display, audio, wireless and DRM integration without a complete provider. It has
 of better Netflix capability and may lose the current 4K/audio path. The modern hybrid captures
 the application/framework benefit of ARM64 without paying that subsystem-rewrite cost.
 
-**Overall confidence: LOW-MEDIUM.** The Android 16 ARM32 build/offline integration and runtime
-boundary are strong evidence, but the bootstrap APEX internal error is missing. The end-state
-hybrid remains plausible; starting Prototype B before closing this base would not be justified.
+**Overall confidence: MEDIUM.** The Android 16 ARM32 build/offline integration, r1 pre-exec
+cgroup trace and bounded r2 correction are strong evidence. Runtime still has not proved the
+corrected cgroup hierarchy, apexd execution or any later framework/graphics stage. The
+end-state hybrid remains plausible; starting Prototype B before closing this base would not be
+justified.
 
 ## 15. Go / No-Go decisions and remaining decisive gates
 
@@ -708,8 +795,8 @@ hybrid remains plausible; starting Prototype B before closing this base would no
 
 | Question | Decision | Reason |
 |---|---|---|
-| Recommended modern Android target | **HOLD — Android 16 for TV remains preferred if APEX base closes** | r1 reaches A16 init but fails before bootstrap APEX activation |
-| Android 16 specifically | **HOLD AT BOOTSTRAP DIAGNOSTIC** | Build/offline closure passes; exact-board apexd failure is reproducible but not internally explained |
+| Recommended modern Android target | **HOLD — Android 16 for TV remains preferred if r2 runtime advances** | r1 reaches A16 init; pre-exec cgroup root cause is bounded and r2 is offline checked |
+| Android 16 specifically | **HOLD FOR ONE R2 PHYSICAL AUTHORIZATION** | r2 closes the source-proven kernel config defect offline; cgroup setup, apexd exec and later stages remain untested |
 | Mixed ARM64/ARM32 userspace | **CLOSED PENDING PROTOTYPE A** | Exact paired Mali provider exists, but the common A16 ARM32 bootstrap base has not passed |
 | Full ARM64 userspace | **NO-GO** | Would convert/replace working proprietary service stack for little user value |
 | Kernel 5.4 as final architecture | **CONDITIONAL GO** | Technically credible for upgraded FCM 6; outside current ACK support and must pass A16 runtime |
@@ -719,10 +806,9 @@ hybrid remains plausible; starting Prototype B before closing this base would no
 
 ### Remaining decisive gates (maximum four)
 
-1. Prepare offline a diagnostic-only r1 boot variant whose sole runtime variable is
-   `printk.devkmsg=on`; with separate authorization, capture one cycle and identify apexd's
-   first internal loop/DM/mount/verification/namespace error. Build r2 only after that evidence
-   establishes a bounded fix.
+1. With separate explicit authorization, boot exactly `a16-prototype-a-r2` once UART-first,
+   append `printk.devkmsg=on` in U-Boot RAM only, and prove required cgroup mounts,
+   `/sys/fs/cgroup/system`, ueventd/apexd exec and the next first runtime boundary.
 2. If Prototype A passes, establish lawful, reproducible availability of the paired AArch64
    Mali and multilib mapper/gralloc provider, then complete its A16 DT_NEEDED/linker closure and
    mixed image.
@@ -737,9 +823,9 @@ hybrid remains plausible; starting Prototype B before closing this base would no
    exact hashes, hardware evidence and donor/provider rights/hash manifest.
 2. **Completed — exact ARM32 integration:** pair the completed Prototype A system image with the accepted
    partitions, close VINTF/linker/SELinux/AVB/LP checks and audit one rollback-safe candidate.
-3. **Current — bootstrap APEX root-cause diagnostic:** r1 proved kernel through A16 second-stage
-   init but failed at `apexd-bootstrap`; prepare the one-variable devkmsg diagnostic and wait for
-   separate one-cycle physical authorization before any further flash.
+3. **Current — corrected ARM32 base runtime proof:** the RAM-only devkmsg diagnostic proved r1
+   fails before ueventd/apexd exec, and the minimal boot-only r2 is offline checked. Wait for
+   separate one-cycle r2 physical authorization; no flash is currently authorized.
 4. **Conditional mixed proof:** only after the ARM32 base passes, build the minimal
    `zygote64_32` product with the lawful paired graphics provider, close its offline checks and
    perform a separately authorized boot/parity test.

@@ -14,11 +14,12 @@
 - [x] 已把 exact accepted `m8b-remote-r1` 外层镜像和 Test8r2 rollback 复制到 GCP 并 hash-verify；accepted logical、boot/vendor_boot、super/LP 与 AVB payload 已提取并逐项锁定，原始输入保持只读。
 - [x] 已完成 exact VINTF、linker/ELF、SELinux、partition-fit、LP/AVB 与 outer preservation closure：两个 accepted display HAL 已加入 device matrix；split SELinux 的单一 duplicate `fuseblk` rule 已做 bounded fix；linker/ELF/SELinux/LP/AVB/outer PASS。Full VINTF 仍准确记录唯一继承偏差 `CONFIG_NFS_FS=y`（FCM 6 要求 `n`），未声明 PASS。
 - [x] 已形成且审核唯一 `a16-prototype-a-r1`：外层 1,261,038,592 bytes / SHA-256 `A034C8193236C93746E5962CB3E7F26A1D56CEC1435D5AD9D95F653B60BEBD83`；system 语义差异仅 device matrix 与 platform duplicate genfscon；46/50 外层 payload、boot/kernel/vendor/product/vendor_dlkm/top-level vbmeta 保持。
-- [x] 用户另行明确授权并完成一次 r1 PhoenixCard 刷写/启动；刷写 checksum 与 `CARD OK` PASS。7 次 kernel start / 6 个完整周期稳定到达 A16 second-stage init 和 `apexd-bootstrap`，随后以 `bootstrap-apexd-failed` 重启。
-- [x] 完成首错边界分类：kernel、first-stage init、system/vendor/system_ext policy 可读、split SELinux 与 A16 second-stage init 已证明；bootstrap APEX activation 未证明；servicemanager、zygote32、system_server、SurfaceFlinger、HWC 未到达。Gate 2 继续 **CLOSED**。
-- [x] 将 logical-partition、early secilc linkerconfig、blkio 与 missing misc 消息分别分类为 non-fatal fallback、pre-linkerconfig warning、独立 kernel compatibility risk、reboot-path secondary noise；均没有证据是 apexd 首错。
-- [x] 复核五个 bootstrap APEX、apexd/linker、exact 5.4 loop/DM/verity/ext4/namespaces/SELinux/crypto 能力；未发现静态损坏或缺失能力。现有 UART 没有保存 apexd 内部错误；exact kernel 的 `/dev/kmsg` userspace 限流是可消除的日志缺口，但不能据此断言 apexd 已进入 `main()`。根因仍未建立，不能构建 r2，也不能升级为 architecture-level blocker。
-- [ ] **当前唯一下一动作：**离线准备并审计 diagnostic-only boot variant，只在 r1 accepted boot cmdline 追加 `printk.devkmsg=on`，其余 system/APEX/LP/vendor/kernel/ramdisk 不变；然后等待新的单独明确授权，仅采一个 UART boot 周期以取得 apexd 的第一条内部失败。仍无输出时才考虑给 `apexd-bootstrap` 增加 `console`。未授权前不刷写、不启动 Prototype B；不把 diagnostic variant 命名为 r2。
+- [x] 用户另行明确授权并完成一次 r1 PhoenixCard 刷写/启动；刷写 checksum 与 `CARD OK` PASS。7 次 kernel start / 6 个完整周期稳定到达 A16 second-stage init，随后以 `bootstrap-apexd-failed` 重启。
+- [x] RAM-only `printk.devkmsg=on` 诊断取得首错：required blkio mount 因 `CONFIG_BLK_CGROUP=n` 返回 `EINVAL`，`CgroupSetup()` 在创建 `/sys/fs/cgroup/system` 前退出；ueventd 与 apexd-bootstrap 被 fork，但 child 在 `ExpandArgsAndExecv()` 前 fatal exit。APEX activation 未尝试；servicemanager、zygote32、system_server、SurfaceFlinger、HWC 未到达。
+- [x] 完成 exact A16 init/libprocessgroup 控制流、system/API31/vendor cgroup/task-profile、Soong flag 与 retained 5.4 config 审计。除 BLK_CGROUP 外，`CONFIG_CPUSETS=n` 也是下一个 required blocker；最小 delta 为 BLK_CGROUP + CPUSETS + Kconfig 自动 PROC_PID_CPUSET，optional memory-v2 不要求本轮启用 MEMCG。
+- [x] 更新消息分类：blkio 为首个 causal blocker；missing pid cgroup.procs 为 cascade；logical-partition 与 early secilc linkerconfig 为 non-fatal early path；missing misc 为 reboot-path secondary noise。r1 是 bounded retained-kernel integration defect，不是 apexd 内部失败或 architecture-level blocker。
+- [x] 构建并离线审核唯一 `a16-prototype-a-r2`：外层 1,261,038,592 bytes / SHA-256 `114DF8677CD6984EB1431377723EDF61C80ACF26C15D8770BAE47DCFE7D1B6D0`；只改变 kernel/boot/Vboot，r1 system/APEX/LP/vendor/vendor_boot/AVB 与其余 48/50 payload 保持。AVB/IMAGEWTY/ext4/cgroup/SHA PASS；full VINTF 仍只有继承的 NFS 例外，没有新增 incompatibility。
+- [ ] **当前唯一下一动作：**等待对 `a16-prototype-a-r2` 的一次单独明确授权；若获得授权，只做一次 UART-first ARM32 exact-board boot，并用 U-Boot RAM-only `printk.devkmsg=on` 验证 required cgroup mount、system hierarchy、ueventd/apexd exec 与下一条首错。当前不刷写、不启动 Prototype B；Gate 2 保持 **CLOSED**。
 
 ## 已验收基线
 

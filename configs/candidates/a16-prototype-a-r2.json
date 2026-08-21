@@ -1,0 +1,92 @@
+{
+  "id": "a16-prototype-a-r2",
+  "purpose": "One offline-only Prototype A candidate that preserves r1 userspace and adds the minimum proven cgroup controllers to the accepted H616 5.4.125 kernel; not authorized for flash or boot.",
+  "base_candidate": {
+    "relative": "out/candidates/a16-prototype-a-r1/x12-a16-prototype-a-r1.img",
+    "size": 1261038592,
+    "sha256": "A034C8193236C93746E5962CB3E7F26A1D56CEC1435D5AD9D95F653B60BEBD83"
+  },
+  "base_boot": {
+    "size": 67108864,
+    "sha256": "0A9473513B309BA3168242500658F35D96EC40B49CA91E33C1068861F8756678",
+    "kernel_size": 23029768,
+    "kernel_sha256": "FE23BEEAE10389EA13575CA266AF45797F22BCF9BDBA7037AF6F7A8B3148C5E2",
+    "ramdisk_size": 12752798,
+    "ramdisk_sha256": "BE091606E285405F9FF018AE4E4BB286A380682280E72DD056B4FEB1F120A328",
+    "header_version": 3,
+    "os_version": "12.0.0",
+    "os_patch_level": "2022-02",
+    "cmdline": "console=ttyS0,115200n8 ignore_loglevel",
+    "avb_partition_name": "boot",
+    "avb_partition_size": 67108864,
+    "avb_salt": "c52f504c468b5668e4a5e443f424a3dc26800dc95881d9562cb7cc56594b04f6",
+    "boot_fingerprint": "Unblocktech/apollo_p1/apollo-p1:12/SP1A.211105.004/hush10241757:userdebug/test-keys",
+    "boot_os_version_prop": "12"
+  },
+  "kernel": {
+    "source_url": "https://github.com/orangepi-xunlong/linux-orangepi.git",
+    "source_commit": "9ab7a758149d3c9b721878a0c18b3f9c5d6c93e6",
+    "base_config_path": "/work/build-logs/ubox10-a16-prototype-a/20260821T150330Z/inventory/kernel.config",
+    "base_config_sha256": "9D3DF7457F0921E1E5983ADB2DBD36A89042CE70BB28EBFEADA7FD5E633D677C",
+    "repeat_patch_relative": "configs/candidates/m8b-rc-core-r2/rc-main-repeat.patch",
+    "repeat_patch_sha256": "70A316DA67274FC2ED2584CCC090DC4282E6D740FFA04EE3C3B47DA2CD266549",
+    "keymap_relative": "configs/candidates/m8b-rc-core-r1/ff40-map.json",
+    "keymap_sha256": "474C2F842E71D45282740603E3B13150242A8E0DAC9718373222CD0251C62D7F",
+    "required_delta": {
+      "CONFIG_BLK_CGROUP": "y",
+      "CONFIG_CPUSETS": "y",
+      "CONFIG_PROC_PID_CPUSET": "y"
+    },
+    "required_preserved": {
+      "CONFIG_CGROUPS": "y",
+      "CONFIG_CGROUP_SCHED": "y",
+      "CONFIG_CGROUP_CPUACCT": "y",
+      "CONFIG_CGROUP_FREEZER": "y",
+      "CONFIG_CGROUP_BPF": "y",
+      "CONFIG_MEMCG": "n"
+    },
+    "toolchain_branch": "android12-release",
+    "toolchain_url": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86",
+    "toolchain_commit": "3f17560d9bd078537f29294c2bcf80b591821a09",
+    "toolchain_revision": "clang-r416183b1",
+    "host_dependency": {
+      "package": "libssl-dev",
+      "version": "3.0.13-0ubuntu3.12",
+      "deb_sha256": "9A5CF7BC8E876EF4498DDF0180B6FAFE0E52C2A8DA2F06F8BC78C2A6FC92EC58",
+      "runtime_package": "libssl3t64",
+      "runtime_version": "3.0.13-0ubuntu3.12",
+      "libcrypto_so3_sha256": "1451ACEEC262C3338052FA77542EB971D4BA311C6BF12D9AA70D0B56ACA942F9"
+    },
+    "host_bc": {
+      "package": "bc",
+      "version": "1.07.1-3ubuntu4",
+      "deb_sha256": "CB85D5929476088533B3C5E1DB2DE5AB4593A69FA54243710F762197DBAEA60D"
+    }
+  },
+  "preserved_payloads": {
+    "super.fex": {"size": 1081240172, "sha256": "DA043A276B28533E41FF17A7425604F1C79F68B2AA572260329EDC80E32F94D6"},
+    "vbmeta_system.fex": {"size": 1472, "sha256": "91C587E32CCA577F31770F6EE462FFE7F20594BCA6D4F84EB641C019440A21B1"},
+    "vendor_boot.fex": {"size": 33554432, "sha256": "AAF77E65F6D882754015C7963E7A3D533282E1BCFA76F35220DB9FCAF4ED7E72"},
+    "vbmeta.fex": {"size": 4096, "sha256": "888229653FF0FD701C97CA7C0BBAFC0042AF7C63D7F671BF5F7162349D283F17"}
+  },
+  "system_cgroups": {
+    "cgroups_sha256": "AB2ED667FF45958843FB0C6EE953A5512DEF0AE87470C4358AA9576A6A4B2E22",
+    "task_profiles_sha256": "F230763E7676DFB39397C2D909DEF41DDD59D73FF7B334718B885CE24095BF21",
+    "first_api_level": 31,
+    "api31_overrides_present": false,
+    "vendor_overrides_present": false,
+    "cgroup_v2_sys_app_isolation": true
+  },
+  "container": {
+    "total_entries": 50,
+    "preserved_entries": 48,
+    "replacements": ["boot.fex"],
+    "companions": ["Vboot.fex"]
+  },
+  "known_vintf_exception": {
+    "kernel_version": "5.4.125",
+    "actual": "CONFIG_NFS_FS=y",
+    "required": "CONFIG_NFS_FS=n",
+    "classification": "Inherited BSP conformance deviation; the r2 cgroup delta must introduce no additional VINTF incompatibility."
+  }
+}

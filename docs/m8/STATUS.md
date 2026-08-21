@@ -74,7 +74,7 @@ Updated: 2026-08-22
 
 ## Active architecture transition
 
-活跃架构开发转移到 `codex/m8-architecture-ceiling` 的 Android 16 路线；决策依据为该分支的 `docs/m8/research/architecture-ceiling-study.md`。长期推荐目标仍是 Android 16 for TV mixed AArch64-primary / ARM32-secondary，但 **Prototype A 运行时基础尚未成立，Prototype B 不得启动**：先解释并解决当前 ARM32 bootstrap APEX 边界，才可重新评估 mixed 路线。
+活跃架构开发转移到 `codex/m8-architecture-ceiling` 的 Android 16 路线；决策依据为该分支的 `docs/m8/research/architecture-ceiling-study.md`。长期推荐目标仍是 Android 16 for TV mixed AArch64-primary / ARM32-secondary，但 **Prototype A 运行时基础尚未成立，Prototype B 不得启动**：r1 已定位为 `apexd` 执行前的 retained-kernel cgroup 缺项，最小 boot-only r2 已离线闭合；下一步只能在另行明确授权后验证这一个修复。
 
 架构研究已经找到强匹配 provider 证据：同 lineage donor 的 ARM32 Mali 与 accepted UBOX 文件完全一致，并提供 paired AArch64 Mali 与 multilib mapper/gralloc source。该证据把“缺少匹配 graphics provider”从结构性阻塞收敛为 exact-board build/runtime gate；media 不要求先取得全套 AArch64 provider，可继续保留 ARM32 Allwinner OMX/Cedar 服务并通过进程边界复用。
 
@@ -105,22 +105,28 @@ Exact split SELinux 的首错是 A16 platform 与 accepted API-31 vendor 对同�
 
 最终 detached candidate pass 用时 130 秒；`/work` free space 约从 184 GiB 到 181 GiB，可用内存约 60–61 GiB，无 swap。完整 intake/extraction/audit/build logs 保留在 GCP ignored 路径 `/work/build-logs/ubox10-a16-prototype-a/20260821T150330Z/`，未进入 Git。精确候选记录见 `docs/m8/candidates/a16-prototype-a-r1.md`。
 
-### Android 16 Prototype A r1 physical result
+### Android 16 Prototype A r1 physical result and r2 offline correction
 
-状态：**PHYSICAL FAIL — BOOTSTRAP APEXD BOUNDARY / ROOT CAUSE NOT YET EXPOSED**。PhoenixCard 写入日志 `logs/20260822-a-r1/uart-putty.log` 为 44,206 bytes / SHA-256 `C4823F59F09FA2ED60E5F35251641B0B0E9ABFAFEF1318F065DAFBED901E4D0C`；13 个 download parts、26 个 MBR parts、payload checksum 与最终 `CARD OK` 全部成功。旧 primary GPT fallback 与 alignment 提示发生在重写前且不阻塞，不能解释运行时重启。
+r1 状态为 **PHYSICAL FAIL — PRE-EXEC CGROUP INITIALIZATION / NOT ACCEPTED**。PhoenixCard 日志 `logs/20260822-a-r1/uart-putty.log`（44,206 bytes / `C4823F59F09FA2ED60E5F35251641B0B0E9ABFAFEF1318F065DAFBED901E4D0C`）确认写入成功；原 UART 日志 `logs/20260822-a-r1/boot.log`（78,275 bytes / `18BF7217AFA25CAB2B7443B17A801D8825932FA4EB15ADCFC87D6FE1C3F46C7F`）记录 7 次 kernel start、6 个完整重启周期。RAM-only `printk.devkmsg=on` 诊断日志 `logs/20260822-a-r1-devkmsg/boot-devkmsg-on.log` 为 35,625 bytes / SHA-256 `E3EF999E109B837C5DBB3390E110EC80AD3D9DEFE02F0B0CAF581C46C4C2A517`；该参数在 `run boot_normal` 前从 bootargs 回读确认，未写入 boot image 或持久 U-Boot 环境。
 
-运行日志 `logs/20260822-a-r1/boot.log` 为 78,275 bytes / SHA-256 `18BF7217AFA25CAB2B7443B17A801D8825932FA4EB15ADCFC87D6FE1C3F46C7F`。它包含 7 次 kernel start、6 个完整重启周期；每个完整周期都到达 Android 16 second-stage init/cgroup setup，随后约 10.03 秒进入 `reboot,bootloader,bootstrap-apexd-failed`，第 7 次记录在相同位置后截断。精确已证明边界为：accepted 5.4.125 kernel → accepted first-stage init/LP mapping → system/vendor/system_ext policy inputs可读 → split SELinux policy compile/load → A16 second-stage init/early-init → `exec_start apexd-bootstrap` 失败退出。`servicemanager`、`zygote32`、`system_server`、SurfaceFlinger 与 HWC 均未到达；没有证据证明任一 bootstrap APEX 已激活。kernel cmdline 为 SELinux permissive，因此也不声称 enforcing compatibility。
+诊断把首个可重复边界精确提前到 Android 16 cgroup setup。5.204791 秒的 `cgroup1: Unknown subsys name 'blkio'` 令 required blkio mount 返回 `EINVAL`，`CgroupSetup()` 在创建 cgroup-v2 `apps`/`system` 子层级之前返回。Init 随后 fork PID 163/164，但 parent 的 `createProcessGroup(0, pid, false)` 无法创建 `/sys/fs/cgroup/system/uid_0`，通过 FIFO 返回 `kActivatingCgroupsFailed`；child 在 task profiles、credentials/caps 与 `ExpandArgsAndExecv()` 之前 fatal exit。因此 `ueventd` 与 `apexd-bootstrap` **均未 exec，bootstrap APEX activation 没有被尝试**。Kernel、first-stage init、LP/system handoff、split SELinux compile/load 与 second-stage init 已证明；servicemanager、zygote32、system_server、SurfaceFlinger、HWC 均未到达。SELinux 为 permissive，不声称 enforcing compatibility。
 
-四个醒目消息已从实际控制流分类：
+Exact `android-16.0.0_r4` source 证明这是一个连贯的 pre-exec failure path。Effective `/system/etc/cgroups.json` 要求非 optional 的 v1 blkio/cpu/cpuset，并使用 `/sys/fs/cgroup` v2 root；freezer required，memory v2 `NeedsActivation` 但 optional。first API 31 的 system override 与 accepted `/vendor/etc/cgroups.json`、`task_profiles.json` 都不存在。`libprocessgroup` 与 early `libprocessgroup_setup` 同时消费 `cgroup_v2_sys_app_isolation=true`，不存在 build-flag split。Retained 5.4.125 config 已有 CGROUPS、CGROUP_SCHED、CPUACCT、FREEZER、BPF，但 `BLK_CGROUP=n`、`CPUSETS=n`、`MEMCG=n`；只启用 BLK_CGROUP 会在下一个 required cpuset mount 再失败。
 
-- `Could not update logical partition` 是 first-stage SELinux 对不存在的独立 `system_ext` logical partition 的非 fatal fallback；候选使用 `/system_ext -> /system/system_ext`，运行继续，非当前首错。
-- secilc 的 `/linkerconfig/ld.config.txt` 缺失警告发生在 A16 early-init 生成 bootstrap linker config 之前；policy compile 成功并进入 second stage，非 fatal。
-- `cgroup1: Unknown subsys name 'blkio'` 对应 exact kernel 的 `CONFIG_BLK_CGROUP` 未启用。它是后续 Android 进程管理兼容风险，但没有证据把它与 apexd 失败相连。
-- `/dev/block/by-name/misc` 缺失只在 init 已选择 `bootstrap-apexd-failed` 重启后出现；它阻止写入 bootloader message，但不触发本次失败，属于 reboot-path secondary noise。
+四类消息的最终分类为：blkio 是首个 causal blocker；missing `pid_163`/`pid_164/cgroup.procs` 是失败清理 cascade；`Could not update logical partition` 与 early secilc `/linkerconfig/ld.config.txt` warning 是已继续执行的 non-fatal early path；missing `/dev/block/by-name/misc` 只发生在 `reboot_on_failure` 已选择重启后。重启 reason 是 service policy 的结果，不是 apexd 内部错误。
 
-A16 source 与 exact artifacts 的重新审计没有给出可诚实声称的内部根因。`apexd-bootstrap` 的五个必需 APEX（i18n/runtime/tzdata/virt/VNDK31）均为 clean ext4、通过 exact `host_apex_verifier`；ARM32 apexd、bootstrap linker 与依赖存在且标记正确。Exact 5.4 kernel built-in 支持 loop、device mapper/verity、ext4、mount namespaces、SELinux、seccomp 与所需 crypto；APEX payload 不依赖缺失的 EROFS。A12 accepted baseline 使用 flattened APEX，而 A16 r1 首次要求 container/loop/dm bootstrap activation，因此当前最窄分类是 **exact-board bootstrap APEX integration blocker**，不是已证明的 ARM32 架构上限。
+唯一 Prototype A r2 已在 GCP 原生 Linux 上离线构建并审核，状态为 **OFFLINE CHECKED CANDIDATE / NO PHYSICAL AUTHORIZATION**。Kernel source 固定为 Orange Pi commit `9ab7a758149d3c9b721878a0c18b3f9c5d6c93e6`，compiler 为 AOSP `clang-r416183b1`。唯一有效 config delta 是 `CONFIG_BLK_CGROUP=y`、`CONFIG_CPUSETS=y` 及 Kconfig 自动启用的 `CONFIG_PROC_PID_CPUSET=y`；MEMCG 与新显露的 blkio throttling/IOLATENCY/IOCOST policy 保持关闭。候选仅替换 kernel、`boot.fex` 和生成的 `Vboot.fex`；r1 system/APEX/super/LP、vendor_boot/ramdisk、vendor/product/vendor_dlkm、vbmeta/vbmeta_system 与其余 48/50 outer payload 原字节保持。
 
-现有 UART 没有任何 apexd 内部消息；不能仅凭 reboot reason 猜测 loop、dm、mount namespace、AVB 或 SELinux 中哪一步失败。最小下一诊断是保持 r1 的 system/APEX/vendor/product/LP 与 accepted kernel/ramdisk 不变，仅在 boot cmdline 加入 exact kernel 已支持的 `printk.devkmsg=on`，禁用每个 `/dev/kmsg` FD 的 10 messages/5 seconds userspace 限流，做一次**另行授权、只采一个周期**的 UART diagnostic boot。若仍无 apexd 输出，下一层才在 `apexd-bootstrap` service 加 `console` 捕获 dynamic-linker stderr。该诊断设计不等于授权，也不命名为 r2；在看到真实内部错误前不构建 r2、不再刷写、不启动 Prototype B。Rollback 的 `m8b-remote-r1`、Test8r2 与 stock 资产保持不变。
+| r2 工件 | 大小 | SHA-256 |
+|---|---:|---|
+| `out/candidates/a16-prototype-a-r2/x12-a16-prototype-a-r2.img` | 1261038592 | `114DF8677CD6984EB1431377723EDF61C80ACF26C15D8770BAE47DCFE7D1B6D0` |
+| `boot.fex` | 67108864 | `4F0DB0070E294DEA93319F4B21335E6725DBB7B70066E7C1E6BF55CFEB09C10C` |
+| kernel `Image` | 23232520 | `5D7D7F84A8E3CBCC4A4AF78A9EB4DECAC846E62BA4C681E85B438B69B196EBF3` |
+| `candidate.config` | 141009 | `0F2284289AE5374296EA180F128BFEE12F648D75A1BBE575AE21F50A8582E02E` |
+
+Detached compile/pack 加无特权审计 wall 约 13 分 03 秒，其中包含一次约 3 分钟的 host mount 权限停顿；已完成的 kernel/outer 没有重编，审计续跑 4 秒成功。21 个资源样本中 available RAM 最低 31,036,456 KiB，无 swap；`/work` available 最低 182,048,014,336 bytes，远高于安全阈值。Boot AVB footer/hash 验证、IMAGEWTY、50-entry outer preservation、四 logical ext4、cgroup/config contract 与 SHA256SUMS PASS；r2 focused 5 tests 与全量 75 tests PASS（25 个缺少 ignored 历史 fixture 的 expected skip）。Full exact VINTF exit 65 的唯一错误仍是继承的 `CONFIG_NFS_FS=y` 对 FCM 6 `n`，r2 未引入新错误；linker/ELF、split SELinux、APEX 与 LP 结果由相关分区逐字节等同 r1 后继承。完整 raw logs 保留在 ignored `/work/build-logs/ubox10-a16-gate2-cgroup/20260821T180108Z/`。
+
+结论：r1 是 **bounded retained-kernel cgroup integration defect**，不是 APEX activation failure，也不是已证明的 ARM32 architecture ceiling。r2 在离线范围内足够一致，可供未来**另行明确授权**的一次 UART-first ARM32 exact-board 验证；本结果不授权刷写或启动。Gate 2 继续 **CLOSED**，Prototype B 不得启动，`m8b-remote-r1`、Test8r2 与 stock rollback 保持。
 
 ## Accepted audio milestone
 
@@ -347,7 +353,7 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - r10 已在实机完成 framework boot；r9 Lights/Watchdog/llkd 方向保持关闭，不再修改。
 - r13 是当前 GOLDEN BASELINE；Projectivy、provisioning、遥控和 Power sleep/wake/shutdown 均以实机 UART 为准。
 - M8B native rc-core 遥控迁移已在 r5 设备验收并关闭；Mouse mode intentionally dropped，legacy multi_ir 工件保留为 inert reference，其 Android 12 清理已随 freeze 延期。
-- 当前 board、DT 与 runtime 证据识别为 H616。architecture-ceiling study 已找到强匹配 paired AArch64 Mali 与 multilib mapper/gralloc provider 证据；A16 ARM32 `systemimage` 与 exact-board offline candidate 已完成，r1 已运行到 bootstrap apexd 后稳定失败。ARM32 OMX/Cedar media 可继续进程隔离复用，但在 ARM32 bootstrap base 闭合前不启动 AArch64 Prototype B。
+- 当前 board、DT 与 runtime 证据识别为 H616。architecture-ceiling study 已找到强匹配 paired AArch64 Mali 与 multilib mapper/gralloc provider 证据；A16 ARM32 `systemimage` 已完成，r1 稳定失败于 ueventd/apexd exec 前的 cgroup setup，boot-only r2 已离线闭合最小 kernel delta。ARM32 OMX/Cedar media 可继续进程隔离复用，但在 ARM32 runtime base 闭合前不启动 AArch64 Prototype B。
 - `m8b-audio-r2` 只启用产品级 Treble/VNDK 合同；未修改 VNDK payload、mixer、audio platform XML、DTS、machine driver 或已验收功能，现已设备验收为 AUDIO PASS。
 - 2026-08-16 ADB-only 补验未刷机、未重启且未修改 ROM/device properties：VP9 为 Allwinner OMX/Cedar hardware-runtime PASS；Widevine 为可操作 L3，HDCP `NONE`，无 secure decoder 要求。物理画面/逐帧质量与商业服务认证或播放仍未证明。
 - 遥控器 Menu 与 Settings 当前均打开 Projectivy menu。两键语义分离为独立延期项，不回改已验收的 rc-core、keylayout 选择或其他按键行为。
@@ -355,4 +361,4 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 
 ## Next action
 
-保持 `m8b-remote-r1`、Test8r2 与 stock rollback 不变。当前唯一下一动作是离线准备并审核一个不改变 r1 system/APEX/LP/vendor 的 diagnostic-only boot variant，仅追加 `printk.devkmsg=on`；随后等待一次新的明确授权，以 UART 只捕获一个启动周期，取得 apexd 的首个内部错误。未取得该错误前不构建 r2、不再次刷写、不启动 Prototype B；Gate 2 保持关闭。
+保持 `m8b-remote-r1`、Test8r2 与 stock rollback 不变。当前唯一下一动作是等待用户对 `a16-prototype-a-r2` 的一次单独明确授权；若获得授权，只做一次 UART-first ARM32 exact-board 启动，并在 U-Boot RAM-only bootargs 临时加入 `printk.devkmsg=on`，验证 required blkio/cpuset mount、`/sys/fs/cgroup/system` 创建、ueventd/apexd exec 与第一条后续 runtime 边界。当前未授权，不刷写、不启动；Gate 2 保持关闭，Prototype B 不得启动。

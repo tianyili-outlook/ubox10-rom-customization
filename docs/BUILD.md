@@ -120,6 +120,22 @@ The builder materializes exactly two tracked compatibility inputs in a copy of G
 
 The verified result is `out/candidates/a16-prototype-a-r1/x12-a16-prototype-a-r1.img`, 1,261,038,592 bytes, SHA-256 `A034C8193236C93746E5962CB3E7F26A1D56CEC1435D5AD9D95F653B60BEBD83`. It is an offline-checked candidate, not flash authorization. See `docs/m8/candidates/a16-prototype-a-r1.md` for the exact preservation and runtime boundary.
 
+### Prototype A r2 cgroup kernel candidate
+
+The r1 devkmsg result proves a pre-exec process-group failure. Do not rerun Gate 1 or rebuild r1 system/APEX/LP. `configs/candidates/a16-prototype-a-r2.json` pins the r1 outer input, Orange Pi kernel source commit `9ab7a758149d3c9b721878a0c18b3f9c5d6c93e6`, AOSP `clang-r416183b1`, the retained rc-core patch/keymap, exact base kernel config, and the only enabled config delta: `CONFIG_BLK_CGROUP=y`, `CONFIG_CPUSETS=y`, and Kconfig-generated `CONFIG_PROC_PID_CPUSET=y`. The builder fails if `olddefconfig` changes any other effective option; newly visible blkio throttling/I/O-cost policy symbols must remain disabled, and `CONFIG_MEMCG` remains disabled.
+
+The verified GCP image lacks system-installed `libssl-dev` and `bc`, and only permits passwordless sudo for the final poweroff. Prepare these host-only tools without sudo under `/work/toolchains`: Ubuntu `libssl-dev_3.0.13-0ubuntu3.12_amd64.deb` SHA-256 `9A5CF7BC8E876EF4498DDF0180B6FAFE0E52C2A8DA2F06F8BC78C2A6FC92EC58`, matching `libssl3t64` `libcrypto.so.3` SHA-256 `1451ACEEC262C3338052FA77542EB971D4BA311C6BF12D9AA70D0B56ACA942F9`, and `bc_1.07.1-3ubuntu4_amd64.deb` SHA-256 `CB85D5929476088533B3C5E1DB2DE5AB4593A69FA54243710F762197DBAEA60D`. The expected extracted roots are `/work/toolchains/ubuntu-libssl-dev/root` and `/work/toolchains/ubuntu-bc/root`; package downloads remain outside Git.
+
+With the pinned kernel checkout at `/work/tmp-orangepi-kernel-exact` and toolchain at `/work/toolchains/aosp-clang-android12/clang-r416183b1`, run the candidate builder from the repository root in detached tmux with persistent stdout, resource log and explicit status file:
+
+```bash
+python3 scripts/build-a16-prototype-a-r2-candidate.py --keep-failed
+```
+
+The builder uses `-j8`, repacks the accepted boot header/ramdisk/hash-footer contract, and replaces only `boot.fex` plus its generated `Vboot.fex` companion in the accepted r1 outer image. All other 48/50 payloads are byte-preserved. It performs IMAGEWTY and standalone boot AVB verification, exact cgroup/config checks, read-only ext4 checks and full exact VINTF with unprivileged `debugfs rdump`; linker, ELF, SELinux, APEX and LP results are inherited only after proving their r1-containing partitions byte-identical. The output is never flash authorization. If a host-only interruption occurs after kernel/outer artifacts are complete, `--resume-stage` may continue the same exact staging directory without recompiling; it refuses incomplete or external staging paths.
+
+The verified result is `out/candidates/a16-prototype-a-r2/x12-a16-prototype-a-r2.img`, 1,261,038,592 bytes, SHA-256 `114DF8677CD6984EB1431377723EDF61C80ACF26C15D8770BAE47DCFE7D1B6D0`. Its boot image is 67,108,864 bytes / `4F0DB0070E294DEA93319F4B21335E6725DBB7B70066E7C1E6BF55CFEB09C10C`; kernel is 23,232,520 bytes / `5D7D7F84A8E3CBCC4A4AF78A9EB4DECAC846E62BA4C681E85B438B69B196EBF3`. See `docs/m8/candidates/a16-prototype-a-r2.md`; the output remains offline-only and does not authorize flashing.
+
 ## Checks
 
 ```powershell

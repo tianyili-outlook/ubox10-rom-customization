@@ -1,6 +1,6 @@
 # Android 16 Prototype A r1 candidate
 
-状态：**PHYSICAL FAIL — BOOTSTRAP APEXD BOUNDARY / NOT ACCEPTED**。用户已另行授权并完成唯一一次 r1 刷写/启动；Gate 2 继续 **CLOSED**。不得再次刷写，不得启动 Prototype B。
+状态：**PHYSICAL FAIL — PRE-EXEC CGROUP INITIALIZATION / NOT ACCEPTED**。用户已另行授权并完成唯一一次 r1 刷写/启动；后续 RAM-only `printk.devkmsg=on` 诊断证明此前的 bootstrap APEX 分类不成立。Gate 2 继续 **CLOSED**；不得再次刷写，不得启动 Prototype B。
 
 ## Purpose and provenance
 
@@ -52,8 +52,12 @@ Large artifacts and raw logs remain ignored on the GCP VM. The final detached ca
 
 离线证据曾支持申请一次 UART-first ARM32 boot；该授权已使用。离线审计仍有效，但实机不接受 r1：白色 UBOX logo 后黑屏并循环重启。
 
-PhoenixCard 日志 `logs/20260822-a-r1/uart-putty.log` 为 44,206 bytes / SHA-256 `C4823F59F09FA2ED60E5F35251641B0B0E9ABFAFEF1318F065DAFBED901E4D0C`，所有 download/MBR payload checksum 与 `CARD OK` 成功。UART `logs/20260822-a-r1/boot.log` 为 78,275 bytes / SHA-256 `18BF7217AFA25CAB2B7443B17A801D8825932FA4EB15ADCFC87D6FE1C3F46C7F`，包含 7 次 kernel start 与 6 个完整周期。每个完整周期证明 accepted 5.4.125 kernel、first-stage init、logical mapping/system mount、vendor/system_ext policy inputs、split SELinux 与 A16 second-stage init，随后在 `exec_start apexd-bootstrap` 边界失败并以 `bootstrap-apexd-failed` 重启。`servicemanager`、`zygote32`、`system_server`、SurfaceFlinger、HWC 均未到达；SELinux 为 permissive，不能声称 enforcing compatibility。
+PhoenixCard 日志 `logs/20260822-a-r1/uart-putty.log` 为 44,206 bytes / SHA-256 `C4823F59F09FA2ED60E5F35251641B0B0E9ABFAFEF1318F065DAFBED901E4D0C`，所有 download/MBR payload checksum 与 `CARD OK` 成功。原 UART `logs/20260822-a-r1/boot.log` 为 78,275 bytes / SHA-256 `18BF7217AFA25CAB2B7443B17A801D8825932FA4EB15ADCFC87D6FE1C3F46C7F`。新诊断 `logs/20260822-a-r1-devkmsg/boot-devkmsg-on.log` 为 35,625 bytes / SHA-256 `E3EF999E109B837C5DBB3390E110EC80AD3D9DEFE02F0B0CAF581C46C4C2A517`；`printk.devkmsg=on` 只追加到 U-Boot RAM 环境，并在 `run boot_normal` 前由 bootargs 回读确认，重启后没有持久化。
 
-完整源代码和工件复核没有暴露 apexd 内部错误。五个 A16 bootstrap APEX 通过 exact host verifier，payload 为 clean ext4；apexd/bootstrap linker/依赖/labels 存在；exact kernel built-in 支持 loop、DM/verity、ext4、mount namespaces、SELinux、seccomp 与所需 crypto。`Could not update logical partition`、early secilc linkerconfig warning、missing blkio cgroup 和 reboot-path missing misc 分别属于 non-fatal fallback、预期时序 warning、独立 kernel risk 和 secondary noise；均不是已证明首错。
+首个诊断周期在 5.204791 秒给出 `Unknown subsys name 'blkio'`，随后 required blkio mount 和 `CgroupSetup()` 失败；由于函数在创建 v2 `apps`/`system` 子层级之前返回，`/sys/fs/cgroup/system` 不存在。Init 随后 fork PID 163/164，但父进程的 `createProcessGroup(0, pid, false)` 无法建立 `/sys/fs/cgroup/system/uid_0`，向子进程 FIFO 写入失败状态；子进程在 task profiles、credentials/caps 和 `ExpandArgsAndExecv()` 之前 fatal exit。因此 `ueventd` 与 `apexd-bootstrap` 二进制均**没有 exec**，没有发生 bootstrap APEX activation 尝试。`pid_163`/`pid_164/cgroup.procs` 是失败清理的 cascade；reboot reason 只是 `apexd-bootstrap` service 的 `reboot_on_failure` 后果。
 
-当前证据只支持把问题定为 **exact-board bootstrap APEX integration blocker**；既未证明 bounded fix，也未证明 ARM32 architecture-level blocker，因此不构建 r2。最小下一诊断设计是保持 r1 system/APEX/LP/vendor/kernel/ramdisk 不变，仅给 boot cmdline 追加 `printk.devkmsg=on`，并在另行授权后只采一个 UART 周期以取得 apexd 的内部失败；仍无输出时才给 `apexd-bootstrap` service 增加 `console`。Rollback 资产保持不变。
+Exact retained config 缺少 `CONFIG_BLK_CGROUP` 和 `CONFIG_CPUSETS`；只开启前者会在下一个 required cpuset mount 再次失败。A16 system `cgroups.json` 要求 v1 blkio/cpu/cpuset，v2 root 为 `/sys/fs/cgroup`，freezer required、memory v2 optional；API-31 system override 与 exact vendor `cgroups.json`/`task_profiles.json` 均不存在。`libprocessgroup` 和 early `libprocessgroup_setup` 共享同一 `libprocessgroup_build_flags_cc`，exact Soong value 为 `cgroup_v2_sys_app_isolation=true`，不存在 build-flag split。
+
+因此 r1 根因是 **bounded retained-kernel cgroup integration defect**，不是 APEX 本身失败，也不是已证明的 ARM32 architecture-level blocker。最小修复为 `CONFIG_BLK_CGROUP=y`、`CONFIG_CPUSETS=y`，由 Kconfig 自动产生 `CONFIG_PROC_PID_CPUSET=y`；`CONFIG_MEMCG` 保持关闭，因为 exact A16 memory controller 是 optional。`Could not update logical partition` 与 early secilc linkerconfig warning 仍属继续执行的非 fatal 早期路径，missing `misc` 仍只在已选择重启后发生。Rollback 资产保持不变。
+
+该最小修复已物化为唯一 offline-only `a16-prototype-a-r2`；其构建与审计结果见 `docs/m8/candidates/a16-prototype-a-r2.md`。这不改变 r1 的不接受状态，也不构成新的物理授权。

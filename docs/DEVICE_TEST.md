@@ -32,6 +32,8 @@ accepted baseline 已确认 Treble/VNDK、primary HAL/output、HEVC+AAC HDMI 音
 
 运行日志 `logs/20260822-a-r1/boot.log` 为 78,275 bytes / SHA-256 `18BF7217AFA25CAB2B7443B17A801D8825932FA4EB15ADCFC87D6FE1C3F46C7F`。它记录 7 次 accepted 5.4.125 kernel start 和 6 个完整周期；每个完整周期均进入 Android init，并以 `reboot: Restarting system with command 'bootloader,bootstrap-apexd-failed'` 结束。第 7 次在相同 early-init/cgroup 位置后截断。
 
+后续诊断日志 `logs/20260822-a-r1-devkmsg/boot-devkmsg-on.log` 为 35,625 bytes / SHA-256 `E3EF999E109B837C5DBB3390E110EC80AD3D9DEFE02F0B0CAF581C46C4C2A517`。`printk.devkmsg=on` 只在 U-Boot RAM 中追加并在启动前回读确认，未改 boot image 或持久环境。它推翻了原先把 blkio 视为独立噪声的分类。
+
 运行时边界：
 
 | 阶段 | 结果 |
@@ -39,13 +41,23 @@ accepted baseline 已确认 Treble/VNDK、primary HAL/output、HEVC+AAC HDMI 音
 | kernel / accepted first-stage init / LP mapping | **PROVEN** |
 | system mount；vendor/system_ext SELinux inputs 可读 | **PROVEN** |
 | split SELinux compile/load；A16 second-stage init | **PROVEN**；cmdline 为 permissive，不证明 enforcing |
-| bootstrap apexd | **FAILED AT THIS BOUNDARY**；init 调用后失败退出，内部错误未被 UART 保存，未证明任何 bootstrap APEX activation |
+| A16 `CgroupSetup` | **FIRST REPRODUCIBLE BLOCKER**；required v1 blkio mount 因 kernel 无 `CONFIG_BLK_CGROUP` 失败，并在创建 v2 `apps`/`system` 子层级前返回 |
+| ueventd / apexd-bootstrap | **FORKED BUT NOT EXEC'D**；父进程无法建立 `/sys/fs/cgroup/system/uid_0`，子进程在 `ExpandArgsAndExecv()` 前收到 fatal 状态 |
+| bootstrap APEX activation | **NOT ATTEMPTED / NOT PROVEN** |
 | servicemanager / zygote32 / system_server | **NOT REACHED / NOT PROVEN** |
 | SurfaceFlinger / HWC | **NOT REACHED / NOT PROVEN** |
 
-`Could not update logical partition` 和 early secilc `/linkerconfig/ld.config.txt` 消息均为继续执行的非 fatal early-boot 行为；`blkio` 表示 exact kernel 缺少 `CONFIG_BLK_CGROUP`，是独立风险但尚无 apexd 因果证据；missing `misc` 仅发生在已经选择失败重启之后。不得把这些消息当作已证明根因。
+Exact A16 source path 为：`CgroupSetup()` 在 required blkio `mount()` 返回 `EINVAL` 后 false-return；`cgroup_v2_sys_app_isolation=true` 所需 `/sys/fs/cgroup/system` 因此尚未创建；`Service::Start()` fork 后的 parent `createProcessGroup()` 失败并通过 FIFO 发 `kActivatingCgroupsFailed`；child 在 task profile、credentials/caps 和 `execv` 之前 fatal exit。Exact retained kernel 同时缺少 `CONFIG_CPUSETS`，所以只开启 `CONFIG_BLK_CGROUP` 仍会在下一个 required controller 失败；最小 delta 是 BLK_CGROUP + CPUSETS（自动带出 PROC_PID_CPUSET）。A16 v2 memory controller 为 optional，故本轮不增加 MEMCG。
 
-当前不允许再次刷写，不允许启动 Prototype B。若以后单独授权下一次诊断，只捕获一个周期，首选保持 r1 全部 payload 不变并追加 `printk.devkmsg=on`，以解除 exact kernel 对 apexd/init `/dev/kmsg` 输出的限流；没有实际内部错误前不构建 r2。
+`Could not update logical partition` 和 early secilc `/linkerconfig/ld.config.txt` 仍是继续执行的 non-fatal early-boot 行为；missing `pid_163`/`pid_164/cgroup.procs` 是进程组创建失败后的清理 cascade；missing `misc` 只发生在 `reboot_on_failure` 已选择重启之后。当前不允许再次刷写，不允许启动 Prototype B；任何离线 r2 结果都不构成物理授权。
+
+## Offline-only next candidate: a16-prototype-a-r2
+
+r2 已构建并完成离线审核，但**没有刷写或启动授权**。镜像为 `out/candidates/a16-prototype-a-r2/x12-a16-prototype-a-r2.img`，1,261,038,592 bytes / SHA-256 `114DF8677CD6984EB1431377723EDF61C80ACF26C15D8770BAE47DCFE7D1B6D0`。
+
+它只把 retained kernel config 的 `CONFIG_BLK_CGROUP`、`CONFIG_CPUSETS` 及 Kconfig 自动产生的 `CONFIG_PROC_PID_CPUSET` 改为 `y`，并只替换 outer `boot.fex`/`Vboot.fex`。r1 system/APEX/LP/vendor、vendor_boot/ramdisk、AVB 元数据和其余 48/50 outer payload 原字节保持。Boot AVB、IMAGEWTY、ext4、cgroup contract、SHA256SUMS PASS；full VINTF 没有新增错误，仍只保留继承的 NFS config 例外。Gate 2 继续 **CLOSED**。
+
+若未来获得 r2 的单独明确授权，现场动作必须限定为一次 UART-first boot：先校验上述 SHA-256，仅在 U-Boot RAM bootargs 临时追加 `printk.devkmsg=on`，确认后 `run boot_normal`，采集一个周期后停止。首要观察点依次是 required blkio/cpuset mount、`/sys/fs/cgroup/system` 创建、ueventd/apexd 是否真正 exec，以及第一条新的 fatal。当前不得执行这些动作，也不得启动 Prototype B。
 
 ## Accepted physical result: m8b-remote-r1
 
