@@ -1,11 +1,11 @@
 # UBOX10 Architecture Ceiling Study
 
-Study date: 2026-08-17; build evidence updated: 2026-08-21
+Study date: 2026-08-17; build/runtime evidence updated: 2026-08-22
 
 Study branch/base: `codex/m8-architecture-ceiling` / `c30c8d0bbbcab5667a9aeaaf9cbfadbdf168d401`
 
-Runtime baseline: accepted `m8b-remote-r1` on the physical UBOX10, observed over read-only ADB
-Scope: architecture decision and bounded offline prototype configuration/attempt; no device mutation or flash
+Accepted runtime baseline: `m8b-remote-r1`; last flashed image: failing `a16-prototype-a-r1`
+Scope: architecture decision, bounded offline prototype, and the single separately authorized r1 physical boot; no further device mutation is authorized
 
 Confidence labels in this report have the following strict meanings: **PROVEN** is direct
 binary, build, runtime, repository, or authoritative-source evidence; **HIGH CONFIDENCE**
@@ -18,8 +18,9 @@ declaration is not called physically verified unless the physical device exercis
 The best architecture worth formally developing is **Android 16 for TV, mixed ARM64/ARM32
 userspace, `zygote64_32`, the existing Allwinner 5.4 kernel and hardware-facing vendor stack,
 plus only the minimum matched ARM64 graphics client provider and bounded vendor
-zygote/AVB metadata changes**. This is **CONDITIONAL GO, MEDIUM confidence** pending the
-bounded gates in section 15.
+zygote/AVB metadata changes**. This remains a candidate end architecture, but the current
+decision is **HOLD before Prototype B**: the ARM32 base reproducibly fails at the Android 16
+bootstrap APEX boundary, and the internal apexd error must be exposed before mixed-mode work.
 
 This is a modern hybrid, not a full port. Framework, `system_server`, SurfaceFlinger, and
 eligible apps become AArch64; legacy Allwinner media, audio, HWC/composer, DRM, Wi-Fi,
@@ -434,47 +435,132 @@ IMAGEWTY, exact compatibility checks, focused tests and all 70 repository tests 
 expected skips for absent ignored historical fixtures). The final detached construction took
 130 seconds, used no swap, and left about 181 GiB free on `/work`.
 
-This evidence raises Prototype A from a standalone system image to an **OFFLINE CHECKED
-CANDIDATE eligible for one separately authorized UART-first boot**. It does not prove physical
-bootability, `apexd`, zygote/system_server, graphics, media, audio, wireless, DRM, or enforcing
-SELinux behavior. No physical device action was performed, flash is not authorized by this
-result, Gate 2 remains closed, and Prototype B remains untouched. The highest-information
-next experiment is one rollback-controlled Prototype A boot with UART capture.
+This evidence raised Prototype A from a standalone system image to an **OFFLINE CHECKED
+CANDIDATE eligible for one separately authorized UART-first boot**. That authorization was
+subsequently granted and consumed by the physical result below. Gate 2 remains closed and
+Prototype B remains untouched.
 
-## 11. Static boot-readiness analysis
+### Gate 2 r1 physical result and bootstrap APEX boundary
 
-The furthest offline-proven point is **one hash-locked ARM32 Android 16 exact-board candidate
-paired with the accepted partitions and outer container**. No Android boot stage is proven
-because the candidate has not executed on the UBOX10. The table keeps offline packaging
-closure separate from runtime architecture evidence.
+The PhoenixCard capture `logs/20260822-a-r1/uart-putty.log` is 44,206 bytes, SHA-256
+`c4823f59f09fa2ed60e5f35251641b0b0e9abfafef1318f065dafbed901e4d0c`. All 13 download
+parts and 26 MBR parts completed, the payload checksums matched, and the writer ended with
+`sprite success` and `CARD OK`. The pre-rewrite fallback from an old primary GPT and alignment
+warnings are not write failures and cannot explain the deterministic Android restart.
+
+The UART boot capture `logs/20260822-a-r1/boot.log` is 78,275 bytes, SHA-256
+`18bf7217afa25cab2b7443b17a801d8825932fa4eb15adcfc87d6fe1c3f46c7f`. It contains seven
+kernel starts and six complete failure cycles. Every complete cycle reaches the Android 16
+second-stage init cgroup setup, then 10.03 seconds later enters the failure reboot path and
+ends with `reboot: Restarting system with command 'bootloader,bootstrap-apexd-failed'`.
+The seventh capture stops after the same cgroup point. This repeatability rules out a one-off
+write, power or transient boot observation; it does not reveal the apexd-internal error.
+
+The exact first reproducible runtime boundary is therefore:
+
+1. the accepted 5.4.125 kernel starts and the accepted first-stage init maps the logical
+   partitions;
+2. `/system` is usable because its `secilc` executes, while the exact vendor and system_ext
+   CIL inputs are consumed and the split policy compilation succeeds;
+3. SELinux setup completes sufficiently to enter Android 16 second-stage init and `early-init`;
+4. init invokes `apexd-bootstrap`, that service exits unsuccessfully, and its declared
+   `reboot_on_failure reboot,bootloader,bootstrap-apexd-failed` action runs.
+
+No capture proves that a bootstrap APEX mounted. `servicemanager`, `zygote32`,
+`system_server`, SurfaceFlinger and HWC/composer do not appear and were not reached. The kernel
+command line selects SELinux permissive, so successful split-policy loading is not enforcing
+compatibility proof.
+
+The four conspicuous messages have distinct control-flow meanings:
+
+- `Could not update logical partition` is emitted by `MountMissingSystemPartitions()` when it
+  cannot create a separate logical `system_ext` mapping. The code continues, and this candidate
+  deliberately supplies `/system_ext -> /system/system_ext`; it is a non-fatal fallback.
+- secilc warns that `/linkerconfig/ld.config.txt` does not exist during first-stage split-policy
+  compilation. Android 16 creates and bind-mounts the bootstrap linker configuration later in
+  `early-init`; the compiler returns success and second-stage init executes. The warning is not
+  the bootstrap failure.
+- `cgroup1: Unknown subsys name 'blkio'` matches the exact kernel's disabled
+  `CONFIG_BLK_CGROUP`. It is a real later process-management compatibility risk, but the present
+  evidence does not connect it to apexd activation.
+- retries for `/dev/block/by-name/misc` begin only after init has selected the
+  `bootstrap-apexd-failed` bootloader reboot. They prevent persistence of the bootloader message
+  but neither select nor cause the failure.
+
+The A16 `apexd.rc` and `apexd` source establish what the missing diagnostic must contain:
+`apexd --bootstrap` scans preinstalled APEXes, reserves loop/device-mapper resources and
+activates the bootstrap set, logging its actual activation error to the kernel logger before
+returning nonzero. The exact build uses the legacy two-namespace bootstrap path
+(`RELEASE_APEX_MOUNT_BEFORE_DATA` false) and requires five bootstrap containers: i18n, runtime,
+tzdata, virt and VNDK 31. All five are uncompressed APEXes, parse with the exact
+`host_apex_verifier`, and contain clean 4 KiB-block ext4 payloads. Their on-image sizes and
+SHA-256 values are respectively 35,864,576 / `9451a568822aa459c4f602f41fb48fa15e9e14cce3e25fcfde60456511fc12e5`,
+4,554,752 / `d650bbcc87a7c986de211483958465263766cb47ca94fa9b660a08e8686fcef1`,
+950,272 / `4fa24e4d5a723f19b4bd3d80c99f3a71e7ca1e2069875ae7ed45920f5263febf`,
+1,036,288 / `742d9e06ba9a7b3c400efcb9302fcb6883709b246236808d160f3069330916c6`,
+and 17,743,872 / `fb94b4e2ba84bdefddfaf59729fdae87b0195d2eefd972fd69235dd7a12d705e`.
+
+The ARM32 apexd executable, bootstrap linker, direct libraries and SELinux labels are present.
+The exact H616/sun50iw9 5.4.125 configuration and source provide built-in loop,
+`LOOP_CONFIGURE` plus the legacy loop fallback, device mapper/uevent/verity/FEC, ext4,
+fs-verity, mount namespaces, SELinux, seccomp and the required SHA/RSA crypto. EROFS is absent,
+but these bootstrap payloads are ext4. These facts eliminate simple container corruption,
+missing executable/interpreter and wholly absent loop/DM/ext4 support; they do not prove that
+device nodes, coldboot, a particular loop/DM ioctl, namespace mount, AVB verification or an
+SELinux operation succeeds at runtime. Unlike r1, the accepted Android 12 image uses flattened
+APEX directories, so the accepted baseline did not exercise this container activation path.
+
+The capture has no apexd line other than init's final reboot reason—not even apexd's first
+`Started` message from `main()`. The exact kernel limits each userspace `/dev/kmsg` file
+descriptor to ten messages per five seconds by default, and prior M8 evidence demonstrated
+that it can hide later init lifecycle messages. Because a newly executed apexd would open its
+own logger FD, the limiter alone does not prove why every apexd line is absent; failure before
+`main()`/logger setup or inability to open kmsg remains possible. This supports the smallest
+diagnostic, not a root-cause claim: keep r1 system/APEX/vendor/product/LP and accepted
+kernel/ramdisk unchanged, append only the supported `printk.devkmsg=on` boot argument, and—if
+separately authorized—capture exactly one UART cycle. This removes the known rate limit and
+should expose additional init service-exit data and any otherwise suppressed apexd messages.
+Only if it still emits no internal line should a later diagnostic add `console` to
+`apexd-bootstrap` to catch pre-logger dynamic-linker stderr.
+
+The present classification is **reproducible exact-board bootstrap APEX integration blocker,
+root cause not yet exposed**. It is neither a bounded-fix conclusion nor an architecture-level
+no-go. No r2 is justified, no further flash is authorized, and rollback inputs remain
+unchanged.
+
+## 11. Boot-readiness analysis after r1
+
+The furthest runtime-proven point is **Android 16 second-stage init immediately before the
+failed bootstrap APEX activation**. The table keeps packaging evidence, runtime proof and
+unreached stages separate.
 
 | Area | Status | Evidence and boundary |
 |---|---|---|
-| 1. Boot/kernel contract | **LIKELY** | The accepted AArch64 5.4 kernel has ARM32 compat, Binder/binderfs and the relevant Android facilities, while A16 officially retains FCM 6. No A16 init binary has executed on it. |
-| 2. First-stage init | **UNKNOWN UNTIL BOOT** | The GSI shape deliberately reuses the accepted boot/vendor_boot first-stage path. The new ARM32 init is present, but its handoff from the accepted first stage is unexecuted. |
-| 3. First-stage mount | **OFFLINE COHERENT; RUNTIME OPEN** | Exact accepted first-stage fstab, A/B LP geometry, offsets and all non-system logical bytes are preserved in the candidate. Mount and handoff remain unexecuted. |
-| 4. AVB | **OFFLINE CHECKED; RUNTIME OPEN** | Candidate system hashtree and vbmeta_system chain verify with the established project key; rollback index/location and accepted top-level vbmeta are preserved. Boot-time verification is unexecuted; mixed mode would additionally change vendor-owned `ro.zygote`. |
-| 5. Dynamic partitions | **OFFLINE CHECKED** | Official tools verify all three metadata slots, exact 10.2/virtual-A/B topology and the 1,651,167,232-byte system allocation; vendor/product/vendor_dlkm remain byte-identical. Runtime mapping is open. |
-| 6. `apexd` | **OFFLINE CHECKED; RUNTIME OPEN** | All 36 installed APEX containers parse, including the ARM32 runtime and VNDK 31 payload. Activation on the device remains unexecuted. |
-| 7. `servicemanager` | **UNKNOWN UNTIL BOOT** | The built binary is ARM32 and Binder capability is proven on 5.4; the A16 runtime contract is unexercised. |
-| 8. `hwservicemanager` | **UNKNOWN UNTIL BOOT** | The built binary and current HIDL services are ARM32 and FCM 6 is supported; registration on A16 is not. |
+| 1. Boot/kernel contract | **PROVEN TO INIT** | The accepted 5.4.125 kernel boots r1 repeatedly and reaches Android init; this does not prove later Android 16 services. |
+| 2. First-stage init | **PROVEN** | The accepted boot/vendor_boot first stage executes, maps logical partitions and hands off to the new system. |
+| 3. First-stage mount | **PROVEN FOR CURRENT BOUNDARY** | `/system` executes A16 secilc; vendor and system_ext policy inputs are consumed. Direct metadata mount details are not all printed and are not overclaimed. |
+| 4. AVB | **RUNTIME ACCEPTED TO INIT** | The candidate passes the boot chain far enough to execute the verified system; mixed mode would still change vendor-owned `ro.zygote`. |
+| 5. Dynamic partitions | **RUNTIME PROVEN TO SYSTEM HANDOFF** | LP mapping and current system handoff succeed; the missing separate system_ext update is a tolerated fallback to the system-root symlink. |
+| 6. `apexd` | **REPRODUCIBLE FAILURE BOUNDARY** | Init invokes bootstrap apexd and its failure action repeats. No internal apexd error or successful bootstrap APEX activation is captured. |
+| 7. `servicemanager` | **NOT REACHED** | It starts after bootstrap activation; it is absent from all cycles. |
+| 8. `hwservicemanager` | **NOT REACHED** | No registration appears before bootstrap apexd selects the reboot path. |
 | 9. VINTF | **EXACT CHECKED; INHERITED EXCEPTION** | Exact system/product/vendor/device checks leave only `CONFIG_NFS_FS=y` versus FCM-6 `n`, the same deviation already present against the device-accepted A12 matrix. The two accepted display HALs are declared. Full check remains exit 65, not PASS. |
-| 10. Linker namespaces | **OFFLINE CHECKED; RUNTIME OPEN** | Exact linkerconfig generates the ARM32 vendor/VNDK-31 namespace and `libaudioroute.so` exposure; 1,769-ELF name-level closure has zero unresolved names. Runtime loading is open; mixed mode additionally requires AArch64 graphics SP-HAL/mapper closure. |
-| 11. Zygote | **LIKELY** for A; **KNOWN BLOCKER** for mixed packaging | Accepted vendor selects `zygote32`, matching Prototype A. A16 `core_64_bit.mk` selects `zygote64_32`, but the retained vendor property must be changed for Prototype B. |
-| 12. `system_server` | **UNKNOWN UNTIL BOOT** | No A16 zygote or framework process has executed. |
-| 13. SurfaceFlinger | **LIKELY** for A; provider-gated for mixed | ARM32 can in principle load the accepted ARM32 Mali/mapper. AArch64 SurfaceFlinger requires the matched AArch64 in-process provider. |
-| 14. HWC/composer | **UNKNOWN UNTIL BOOT** | The accepted 32-bit binderized composer can be retained, but mixed buffer exchange and A16 client compatibility are unproven. |
-| 15. Media services | **UNKNOWN UNTIL BOOT** | Accepted 32-bit OMX/Cedar services are process-isolatable; A16 framework compatibility is untested. |
-| 16. Audio service/HAL | **UNKNOWN UNTIL BOOT** | Accepted Apollo HAL is process-isolatable; A16 policy/service compatibility is untested. |
-| 17. Wi-Fi | **UNKNOWN UNTIL BOOT** | Accepted AIC8800 kernel/HAL path is proven only on Android 12. |
-| 18. Bluetooth | **UNKNOWN UNTIL BOOT** | Accepted binderized 32-bit service/HAL path is proven only on Android 12. |
-| 19. Input | **UNKNOWN UNTIL BOOT** | Kernel rc-core/input evidence transfers, but A16 framework, keylayout and TV-policy integration are absent. |
-| 20. DRM | **UNKNOWN UNTIL BOOT** | The 32-bit L3 service is process-isolatable; A16 MediaDrm/HIDL compatibility and playback are untested. No higher security claim is made. |
+| 10. Linker namespaces | **OFFLINE CHECKED; BOOTSTRAP RUNTIME OPEN** | Exact linkerconfig generates ARM32 vendor/VNDK-31 closure. The early secilc warning predates linkerconfig creation and is non-fatal; bootstrap linker operation inside apexd is not visible. |
+| 11. Zygote | **NOT REACHED** for A; **KNOWN BLOCKER** for mixed packaging | Accepted vendor selects `zygote32`, matching Prototype A, but r1 fails before zygote. Prototype B would additionally require the retained vendor property change. |
+| 12. `system_server` | **NOT REACHED** | No A16 zygote or framework process starts. |
+| 13. SurfaceFlinger | **NOT REACHED** | r1 stops before servicemanager/zygote; the prior ARM32 provider likelihood is not runtime proof. |
+| 14. HWC/composer | **NOT REACHED** | No composer/HWC registration appears. |
+| 15. Media services | **NOT REACHED** | Accepted 32-bit OMX/Cedar services are process-isolatable, but r1 stops before their A16 compatibility can be exercised. |
+| 16. Audio service/HAL | **NOT REACHED** | Accepted Apollo HAL is process-isolatable, but r1 stops before audio framework/HAL startup. |
+| 17. Wi-Fi | **NOT REACHED** | Accepted AIC8800 kernel/HAL path is proven only on Android 12. |
+| 18. Bluetooth | **NOT REACHED** | Accepted binderized 32-bit service/HAL path is proven only on Android 12. |
+| 19. Input | **NOT REACHED AT FRAMEWORK LEVEL** | Kernel/UART evidence transfers, but A16 input framework and TV policy never start. |
+| 20. DRM | **NOT REACHED** | The 32-bit L3 service is process-isolatable, but A16 MediaDrm/HIDL compatibility and playback are unexercised. No higher security claim is made. |
 
-One exact flash-format package has been prepared and audited, but **preparation is not flash
-authorization**. The accepted and Test8r2 rollback images are hash-verified on GCP, no device
-action has occurred, and Gate 2 is closed. One separately authorized, UART-first Prototype A
-boot is now the smallest decisive test.
+The one r1 authorization has been consumed and produced the bootstrap failure above. Gate 2
+is closed. A diagnostic boot variant may be prepared offline, but no second physical action is
+authorized; a separately authorized one-cycle `printk.devkmsg=on` capture is now the smallest
+decisive test.
 
 ## 12. Target A/B/C/D comparison
 
@@ -612,8 +698,9 @@ display, audio, wireless and DRM integration without a complete provider. It has
 of better Netflix capability and may lose the current 4K/audio path. The modern hybrid captures
 the application/framework benefit of ARM64 without paying that subsystem-rewrite cost.
 
-**Overall confidence: MEDIUM.** The Android 16 ARM32 build and exact-board offline integration
-are complete; the first physical boot and mixed graphics-provider gates remain.
+**Overall confidence: LOW-MEDIUM.** The Android 16 ARM32 build/offline integration and runtime
+boundary are strong evidence, but the bootstrap APEX internal error is missing. The end-state
+hybrid remains plausible; starting Prototype B before closing this base would not be justified.
 
 ## 15. Go / No-Go decisions and remaining decisive gates
 
@@ -621,9 +708,9 @@ are complete; the first physical boot and mixed graphics-provider gates remain.
 
 | Question | Decision | Reason |
 |---|---|---|
-| Recommended modern Android target | **CONDITIONAL GO — Android 16 for TV** | Best TV/API life and FCM-6 support; exact-board boot remains |
-| Android 16 specifically | **CONDITIONAL GO** | Official stable TV/source target; Prototype A builds and closes offline, while exact-board boot remains open |
-| Mixed ARM64/ARM32 userspace | **CONDITIONAL GO** | Exact paired Mali provider exists; mapper/gralloc and runtime still gate |
+| Recommended modern Android target | **HOLD — Android 16 for TV remains preferred if APEX base closes** | r1 reaches A16 init but fails before bootstrap APEX activation |
+| Android 16 specifically | **HOLD AT BOOTSTRAP DIAGNOSTIC** | Build/offline closure passes; exact-board apexd failure is reproducible but not internally explained |
+| Mixed ARM64/ARM32 userspace | **CLOSED PENDING PROTOTYPE A** | Exact paired Mali provider exists, but the common A16 ARM32 bootstrap base has not passed |
 | Full ARM64 userspace | **NO-GO** | Would convert/replace working proprietary service stack for little user value |
 | Kernel 5.4 as final architecture | **CONDITIONAL GO** | Technically credible for upgraded FCM 6; outside current ACK support and must pass A16 runtime |
 | Kernel 5.10+ migration | **NOT ECONOMICALLY JUSTIFIED** | No complete exact-SoC/board Android provider; regression surface is disproportionate |
@@ -632,10 +719,10 @@ are complete; the first physical boot and mixed graphics-provider gates remain.
 
 ### Remaining decisive gates (maximum four)
 
-1. With separate authorization, perform one rollback-controlled Prototype A physical boot and
-   prove first-stage mount through `apexd`, `zygote32`, `system_server`, SurfaceFlinger and the
-   retained ARM32 graphics stack. This decides the A16 framework/kernel/vendor base before
-   mixed-mode work begins.
+1. Prepare offline a diagnostic-only r1 boot variant whose sole runtime variable is
+   `printk.devkmsg=on`; with separate authorization, capture one cycle and identify apexd's
+   first internal loop/DM/mount/verification/namespace error. Build r2 only after that evidence
+   establishes a bounded fix.
 2. If Prototype A passes, establish lawful, reproducible availability of the paired AArch64
    Mali and multilib mapper/gralloc provider, then complete its A16 DT_NEEDED/linker closure and
    mixed image.
@@ -650,8 +737,9 @@ are complete; the first physical boot and mixed graphics-provider gates remain.
    exact hashes, hardware evidence and donor/provider rights/hash manifest.
 2. **Completed — exact ARM32 integration:** pair the completed Prototype A system image with the accepted
    partitions, close VINTF/linker/SELinux/AVB/LP checks and audit one rollback-safe candidate.
-3. **Current — authorized ARM32 boot proof:** capture UART/ADB milestones through framework and retained
-   hardware services; stop on the first reproducible failure and roll back.
+3. **Current — bootstrap APEX root-cause diagnostic:** r1 proved kernel through A16 second-stage
+   init but failed at `apexd-bootstrap`; prepare the one-variable devkmsg diagnostic and wait for
+   separate one-cycle physical authorization before any further flash.
 4. **Conditional mixed proof:** only after the ARM32 base passes, build the minimal
    `zygote64_32` product with the lawful paired graphics provider, close its offline checks and
    perform a separately authorized boot/parity test.

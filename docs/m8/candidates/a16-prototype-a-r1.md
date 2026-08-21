@@ -1,6 +1,6 @@
 # Android 16 Prototype A r1 candidate
 
-状态：**OFFLINE CHECKED CANDIDATE / ELIGIBLE FOR ONE UART-FIRST AUTHORIZATION**。Gate 2 为 **CLOSED**；本记录不授权刷写，未执行任何物理设备动作，也不声称 bootability。
+状态：**PHYSICAL FAIL — BOOTSTRAP APEXD BOUNDARY / NOT ACCEPTED**。用户已另行授权并完成唯一一次 r1 刷写/启动；Gate 2 继续 **CLOSED**。不得再次刷写，不得启动 Prototype B。
 
 ## Purpose and provenance
 
@@ -50,6 +50,10 @@ Large artifacts and raw logs remain ignored on the GCP VM. The final detached ca
 
 ## Decision and remaining boundary
 
-离线证据支持 **GO for requesting one explicit UART-first ARM32 boot authorization**：候选的变更面只有两个 system compatibility inputs，accepted hardware stack、partition topology、AVB delegation、outer payload 与 rollback 资产均被限制和验证。该结论不等于 full VINTF conformance，也不证明 first-stage handoff、`apexd`、`zygote32`、`system_server`、SurfaceFlinger/HWC、media/audio/wireless/DRM runtime 或 enforcing SELinux。
+离线证据曾支持申请一次 UART-first ARM32 boot；该授权已使用。离线审计仍有效，但实机不接受 r1：白色 UBOX logo 后黑屏并循环重启。
 
-唯一下一动作是等待用户明确授权后，以 UART 已连接、Test8r2 rollback 就绪的条件执行一次 boot；按 first-stage mount → `apexd` → `zygote32` → `system_server` → ARM32 SurfaceFlinger/accepted HWC 捕获第一个可复现结果。授权前不刷写；Prototype B 不启动；Gate 2 保持关闭。
+PhoenixCard 日志 `logs/20260822-a-r1/uart-putty.log` 为 44,206 bytes / SHA-256 `C4823F59F09FA2ED60E5F35251641B0B0E9ABFAFEF1318F065DAFBED901E4D0C`，所有 download/MBR payload checksum 与 `CARD OK` 成功。UART `logs/20260822-a-r1/boot.log` 为 78,275 bytes / SHA-256 `18BF7217AFA25CAB2B7443B17A801D8825932FA4EB15ADCFC87D6FE1C3F46C7F`，包含 7 次 kernel start 与 6 个完整周期。每个完整周期证明 accepted 5.4.125 kernel、first-stage init、logical mapping/system mount、vendor/system_ext policy inputs、split SELinux 与 A16 second-stage init，随后在 `exec_start apexd-bootstrap` 边界失败并以 `bootstrap-apexd-failed` 重启。`servicemanager`、`zygote32`、`system_server`、SurfaceFlinger、HWC 均未到达；SELinux 为 permissive，不能声称 enforcing compatibility。
+
+完整源代码和工件复核没有暴露 apexd 内部错误。五个 A16 bootstrap APEX 通过 exact host verifier，payload 为 clean ext4；apexd/bootstrap linker/依赖/labels 存在；exact kernel built-in 支持 loop、DM/verity、ext4、mount namespaces、SELinux、seccomp 与所需 crypto。`Could not update logical partition`、early secilc linkerconfig warning、missing blkio cgroup 和 reboot-path missing misc 分别属于 non-fatal fallback、预期时序 warning、独立 kernel risk 和 secondary noise；均不是已证明首错。
+
+当前证据只支持把问题定为 **exact-board bootstrap APEX integration blocker**；既未证明 bounded fix，也未证明 ARM32 architecture-level blocker，因此不构建 r2。最小下一诊断设计是保持 r1 system/APEX/LP/vendor/kernel/ramdisk 不变，仅给 boot cmdline 追加 `printk.devkmsg=on`，并在另行授权后只采一个 UART 周期以取得 apexd 的内部失败；仍无输出时才给 `apexd-bootstrap` service 增加 `console`。Rollback 资产保持不变。

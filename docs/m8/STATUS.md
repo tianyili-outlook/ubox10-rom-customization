@@ -1,6 +1,6 @@
 # M8 status
 
-Updated: 2026-08-21
+Updated: 2026-08-22
 
 ## Golden baseline
 
@@ -74,7 +74,7 @@ Updated: 2026-08-21
 
 ## Active architecture transition
 
-活跃架构开发转移到 `codex/m8-architecture-ceiling` 的 Android 16 路线；决策依据为该分支的 `docs/m8/research/architecture-ceiling-study.md`。推荐目标是 **Android 16 for TV mixed AArch64-primary / ARM32-secondary（CONDITIONAL GO）**：保留 H616 AArch64 5.4 kernel、accepted vendor/vendor_dlkm 与可进程隔离的 ARM32 media/audio/wireless/DRM 服务，只为 AArch64 同进程需求引入 hash-pinned matched Mali/mapper/gralloc provider。
+活跃架构开发转移到 `codex/m8-architecture-ceiling` 的 Android 16 路线；决策依据为该分支的 `docs/m8/research/architecture-ceiling-study.md`。长期推荐目标仍是 Android 16 for TV mixed AArch64-primary / ARM32-secondary，但 **Prototype A 运行时基础尚未成立，Prototype B 不得启动**：先解释并解决当前 ARM32 bootstrap APEX 边界，才可重新评估 mixed 路线。
 
 架构研究已经找到强匹配 provider 证据：同 lineage donor 的 ARM32 Mali 与 accepted UBOX 文件完全一致，并提供 paired AArch64 Mali 与 multilib mapper/gralloc source。该证据把“缺少匹配 graphics provider”从结构性阻塞收敛为 exact-board build/runtime gate；media 不要求先取得全套 AArch64 provider，可继续保留 ARM32 Allwinner OMX/Cedar 服务并通过进程边界复用。
 
@@ -86,7 +86,7 @@ Gate 1 本身只证明 A16 ARM32 product 可以完整构建并在离线结构上
 
 ### Android 16 Prototype A exact-board candidate
 
-2026-08-21 已完成 accepted exact-board 离线集成，结论为 **OFFLINE CHECKED CANDIDATE / ELIGIBLE FOR ONE UART-FIRST AUTHORIZATION**；这不是刷写授权，Gate 2 仍为 **CLOSED**，且未执行任何物理设备动作。
+2026-08-21 已完成 accepted exact-board 离线集成，当时结论为 **OFFLINE CHECKED CANDIDATE / ELIGIBLE FOR ONE UART-FIRST AUTHORIZATION**。2026-08-22 用户另行明确授权并完成唯一一次 r1 物理刷写/启动；下述离线审计结果仍成立，但已被新的运行时失败边界补充，Gate 2 继续 **CLOSED**。
 
 输入在 GCP 逐项校验：`m8b-remote-r1` 外层镜像为 1,031,723,008 bytes / SHA-256 `F3B09E5565AC4ED4E5EE326D392622E7B036A8519B8444B966E77CC4751B814A`；Test8r2 rollback 为 2,005,954,560 bytes / `6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8`。Accepted super、system/vendor/product/vendor_dlkm、boot、vendor_boot、vbmeta 与 Gate 1 system 均由 size/SHA-256 锁定；原始输入保持只读且构建前后 hash 一致。
 
@@ -103,7 +103,24 @@ Exact split SELinux 的首错是 A16 platform 与 accepted API-31 vendor 对同�
 
 候选 system 相对 accepted Gate 1 filesystem 的语义差异严格只有 `/system/etc/vintf/compatibility_matrix.device.xml` 与 `/system/etc/selinux/plat_sepolicy.cil`，文件 owner/mode/SELinux xattr 保持。System hashtree 与 `vbmeta_system` 使用既有项目 test key，rollback index `1644019200` / location 1 保持并通过 chain/standalone AVB verify；顶层 `vbmeta.fex` 原字节保留。外层 50 项中 46 项原字节保留，只替换 `super.fex`、`vbmeta_system.fex` 并重算两个 V companion；boot/kernel、vendor_boot、DTBO、TEE、metadata、media_data 与其他 rollback/recovery 依赖均未改。IMAGEWTY 12 个 payload checksum、SHA256SUMS、focused tests 与全量 70 tests（25 个缺少 ignored 历史 fixture 的 expected skip）PASS。
 
-最终 detached candidate pass 用时 130 秒；`/work` free space 约从 184 GiB 到 181 GiB，可用内存约 60–61 GiB，无 swap。完整 intake/extraction/audit/build logs 保留在 GCP ignored 路径 `/work/build-logs/ubox10-a16-prototype-a/20260821T150330Z/`，未进入 Git。结论是该候选在离线证据范围内足够一致、变更受限且 rollback-ready，可以提交一次**另行明确授权**的 UART-first ARM32 exact-board boot；离线结果不证明 bootability、运行时 HAL 或 enforcing SELinux。精确候选记录见 `docs/m8/candidates/a16-prototype-a-r1.md`。
+最终 detached candidate pass 用时 130 秒；`/work` free space 约从 184 GiB 到 181 GiB，可用内存约 60–61 GiB，无 swap。完整 intake/extraction/audit/build logs 保留在 GCP ignored 路径 `/work/build-logs/ubox10-a16-prototype-a/20260821T150330Z/`，未进入 Git。精确候选记录见 `docs/m8/candidates/a16-prototype-a-r1.md`。
+
+### Android 16 Prototype A r1 physical result
+
+状态：**PHYSICAL FAIL — BOOTSTRAP APEXD BOUNDARY / ROOT CAUSE NOT YET EXPOSED**。PhoenixCard 写入日志 `logs/20260822-a-r1/uart-putty.log` 为 44,206 bytes / SHA-256 `C4823F59F09FA2ED60E5F35251641B0B0E9ABFAFEF1318F065DAFBED901E4D0C`；13 个 download parts、26 个 MBR parts、payload checksum 与最终 `CARD OK` 全部成功。旧 primary GPT fallback 与 alignment 提示发生在重写前且不阻塞，不能解释运行时重启。
+
+运行日志 `logs/20260822-a-r1/boot.log` 为 78,275 bytes / SHA-256 `18BF7217AFA25CAB2B7443B17A801D8825932FA4EB15ADCFC87D6FE1C3F46C7F`。它包含 7 次 kernel start、6 个完整重启周期；每个完整周期都到达 Android 16 second-stage init/cgroup setup，随后约 10.03 秒进入 `reboot,bootloader,bootstrap-apexd-failed`，第 7 次记录在相同位置后截断。精确已证明边界为：accepted 5.4.125 kernel → accepted first-stage init/LP mapping → system/vendor/system_ext policy inputs可读 → split SELinux policy compile/load → A16 second-stage init/early-init → `exec_start apexd-bootstrap` 失败退出。`servicemanager`、`zygote32`、`system_server`、SurfaceFlinger 与 HWC 均未到达；没有证据证明任一 bootstrap APEX 已激活。kernel cmdline 为 SELinux permissive，因此也不声称 enforcing compatibility。
+
+四个醒目消息已从实际控制流分类：
+
+- `Could not update logical partition` 是 first-stage SELinux 对不存在的独立 `system_ext` logical partition 的非 fatal fallback；候选使用 `/system_ext -> /system/system_ext`，运行继续，非当前首错。
+- secilc 的 `/linkerconfig/ld.config.txt` 缺失警告发生在 A16 early-init 生成 bootstrap linker config 之前；policy compile 成功并进入 second stage，非 fatal。
+- `cgroup1: Unknown subsys name 'blkio'` 对应 exact kernel 的 `CONFIG_BLK_CGROUP` 未启用。它是后续 Android 进程管理兼容风险，但没有证据把它与 apexd 失败相连。
+- `/dev/block/by-name/misc` 缺失只在 init 已选择 `bootstrap-apexd-failed` 重启后出现；它阻止写入 bootloader message，但不触发本次失败，属于 reboot-path secondary noise。
+
+A16 source 与 exact artifacts 的重新审计没有给出可诚实声称的内部根因。`apexd-bootstrap` 的五个必需 APEX（i18n/runtime/tzdata/virt/VNDK31）均为 clean ext4、通过 exact `host_apex_verifier`；ARM32 apexd、bootstrap linker 与依赖存在且标记正确。Exact 5.4 kernel built-in 支持 loop、device mapper/verity、ext4、mount namespaces、SELinux、seccomp 与所需 crypto；APEX payload 不依赖缺失的 EROFS。A12 accepted baseline 使用 flattened APEX，而 A16 r1 首次要求 container/loop/dm bootstrap activation，因此当前最窄分类是 **exact-board bootstrap APEX integration blocker**，不是已证明的 ARM32 架构上限。
+
+现有 UART 没有任何 apexd 内部消息；不能仅凭 reboot reason 猜测 loop、dm、mount namespace、AVB 或 SELinux 中哪一步失败。最小下一诊断是保持 r1 的 system/APEX/vendor/product/LP 与 accepted kernel/ramdisk 不变，仅在 boot cmdline 加入 exact kernel 已支持的 `printk.devkmsg=on`，禁用每个 `/dev/kmsg` FD 的 10 messages/5 seconds userspace 限流，做一次**另行授权、只采一个周期**的 UART diagnostic boot。若仍无 apexd 输出，下一层才在 `apexd-bootstrap` service 加 `console` 捕获 dynamic-linker stderr。该诊断设计不等于授权，也不命名为 r2；在看到真实内部错误前不构建 r2、不再刷写、不启动 Prototype B。Rollback 的 `m8b-remote-r1`、Test8r2 与 stock 资产保持不变。
 
 ## Accepted audio milestone
 
@@ -330,7 +347,7 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - r10 已在实机完成 framework boot；r9 Lights/Watchdog/llkd 方向保持关闭，不再修改。
 - r13 是当前 GOLDEN BASELINE；Projectivy、provisioning、遥控和 Power sleep/wake/shutdown 均以实机 UART 为准。
 - M8B native rc-core 遥控迁移已在 r5 设备验收并关闭；Mouse mode intentionally dropped，legacy multi_ir 工件保留为 inert reference，其 Android 12 清理已随 freeze 延期。
-- 当前 board、DT 与 runtime 证据识别为 H616。architecture-ceiling study 已找到强匹配 paired AArch64 Mali 与 multilib mapper/gralloc provider 证据；A16 ARM32 `systemimage` 与 exact-board offline candidate 已完成，但 runtime 尚未证明。ARM32 OMX/Cedar media 可继续进程隔离复用，不再把“等待完整匹配 graphics/media provider”作为启动 AArch64 架构工作的前提。
+- 当前 board、DT 与 runtime 证据识别为 H616。architecture-ceiling study 已找到强匹配 paired AArch64 Mali 与 multilib mapper/gralloc provider 证据；A16 ARM32 `systemimage` 与 exact-board offline candidate 已完成，r1 已运行到 bootstrap apexd 后稳定失败。ARM32 OMX/Cedar media 可继续进程隔离复用，但在 ARM32 bootstrap base 闭合前不启动 AArch64 Prototype B。
 - `m8b-audio-r2` 只启用产品级 Treble/VNDK 合同；未修改 VNDK payload、mixer、audio platform XML、DTS、machine driver 或已验收功能，现已设备验收为 AUDIO PASS。
 - 2026-08-16 ADB-only 补验未刷机、未重启且未修改 ROM/device properties：VP9 为 Allwinner OMX/Cedar hardware-runtime PASS；Widevine 为可操作 L3，HDCP `NONE`，无 secure decoder 要求。物理画面/逐帧质量与商业服务认证或播放仍未证明。
 - 遥控器 Menu 与 Settings 当前均打开 Projectivy menu。两键语义分离为独立延期项，不回改已验收的 rc-core、keylayout 选择或其他按键行为。
@@ -338,4 +355,4 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 
 ## Next action
 
-保持 `m8b-remote-r1` 与 Test8r2 rollback 不变。当前唯一下一动作是等待用户对 `a16-prototype-a-r1` 的一次明确刷写授权，然后在 UART 已连接、rollback 已就绪的条件下执行一次 ARM32 exact-board boot；依次证明或捕获 first-stage→`apexd`→`zygote32`→`system_server`→ARM32 SurfaceFlinger/accepted HWC 的首个可复现结果。授权前不操作物理设备、不启动 Prototype B；Gate 2 在该隔离实验结果前保持关闭。
+保持 `m8b-remote-r1`、Test8r2 与 stock rollback 不变。当前唯一下一动作是离线准备并审核一个不改变 r1 system/APEX/LP/vendor 的 diagnostic-only boot variant，仅追加 `printk.devkmsg=on`；随后等待一次新的明确授权，以 UART 只捕获一个启动周期，取得 apexd 的首个内部错误。未取得该错误前不构建 r2、不再次刷写、不启动 Prototype B；Gate 2 保持关闭。

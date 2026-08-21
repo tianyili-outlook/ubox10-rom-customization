@@ -13,8 +13,12 @@
 - [x] 确认本 Gate 只生成 standalone `system.img`；未生成 boot/vendor/product/system_ext/super/userdata image，未组装 IMAGEWTY 或可刷固件，未修改设备。
 - [x] 已把 exact accepted `m8b-remote-r1` 外层镜像和 Test8r2 rollback 复制到 GCP 并 hash-verify；accepted logical、boot/vendor_boot、super/LP 与 AVB payload 已提取并逐项锁定，原始输入保持只读。
 - [x] 已完成 exact VINTF、linker/ELF、SELinux、partition-fit、LP/AVB 与 outer preservation closure：两个 accepted display HAL 已加入 device matrix；split SELinux 的单一 duplicate `fuseblk` rule 已做 bounded fix；linker/ELF/SELinux/LP/AVB/outer PASS。Full VINTF 仍准确记录唯一继承偏差 `CONFIG_NFS_FS=y`（FCM 6 要求 `n`），未声明 PASS。
-- [x] 已形成且审核唯一 `a16-prototype-a-r1`：外层 1,261,038,592 bytes / SHA-256 `A034C8193236C93746E5962CB3E7F26A1D56CEC1435D5AD9D95F653B60BEBD83`；system 语义差异仅 device matrix 与 platform duplicate genfscon；46/50 外层 payload、boot/kernel/vendor/product/vendor_dlkm/top-level vbmeta 保持。状态为 **OFFLINE CHECKED CANDIDATE**，Gate 2 **CLOSED**。
-- [ ] **当前唯一下一动作：**用户另行明确授权后，准备 UART 与 Test8r2 rollback，做一次 rollback-controlled UART-first exact-board boot；按 first-stage mount → `apexd` → `zygote32` → `system_server` → ARM32 SurfaceFlinger/accepted HWC 捕获首个可复现失败。授权前不刷写、不启动 Prototype B；该一次 ARM32 boot 结果决定是否开放 Gate 2。
+- [x] 已形成且审核唯一 `a16-prototype-a-r1`：外层 1,261,038,592 bytes / SHA-256 `A034C8193236C93746E5962CB3E7F26A1D56CEC1435D5AD9D95F653B60BEBD83`；system 语义差异仅 device matrix 与 platform duplicate genfscon；46/50 外层 payload、boot/kernel/vendor/product/vendor_dlkm/top-level vbmeta 保持。
+- [x] 用户另行明确授权并完成一次 r1 PhoenixCard 刷写/启动；刷写 checksum 与 `CARD OK` PASS。7 次 kernel start / 6 个完整周期稳定到达 A16 second-stage init 和 `apexd-bootstrap`，随后以 `bootstrap-apexd-failed` 重启。
+- [x] 完成首错边界分类：kernel、first-stage init、system/vendor/system_ext policy 可读、split SELinux 与 A16 second-stage init 已证明；bootstrap APEX activation 未证明；servicemanager、zygote32、system_server、SurfaceFlinger、HWC 未到达。Gate 2 继续 **CLOSED**。
+- [x] 将 logical-partition、early secilc linkerconfig、blkio 与 missing misc 消息分别分类为 non-fatal fallback、pre-linkerconfig warning、独立 kernel compatibility risk、reboot-path secondary noise；均没有证据是 apexd 首错。
+- [x] 复核五个 bootstrap APEX、apexd/linker、exact 5.4 loop/DM/verity/ext4/namespaces/SELinux/crypto 能力；未发现静态损坏或缺失能力。现有 UART 没有保存 apexd 内部错误；exact kernel 的 `/dev/kmsg` userspace 限流是可消除的日志缺口，但不能据此断言 apexd 已进入 `main()`。根因仍未建立，不能构建 r2，也不能升级为 architecture-level blocker。
+- [ ] **当前唯一下一动作：**离线准备并审计 diagnostic-only boot variant，只在 r1 accepted boot cmdline 追加 `printk.devkmsg=on`，其余 system/APEX/LP/vendor/kernel/ramdisk 不变；然后等待新的单独明确授权，仅采一个 UART boot 周期以取得 apexd 的第一条内部失败。仍无输出时才考虑给 `apexd-bootstrap` 增加 `console`。未授权前不刷写、不启动 Prototype B；不把 diagnostic variant 命名为 r2。
 
 ## 已验收基线
 
