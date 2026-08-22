@@ -74,7 +74,7 @@ Updated: 2026-08-22
 
 ## Active architecture transition
 
-活跃架构开发转移到 `codex/m8-architecture-ceiling` 的 Android 16 路线；决策依据为该分支的 `docs/m8/research/architecture-ceiling-study.md`。长期推荐目标仍是 Android 16 for TV mixed AArch64-primary / ARM32-secondary，但 **Prototype A 运行时基础尚未成立，Prototype B 不得启动**：r1 已定位为 `apexd` 执行前的 retained-kernel cgroup 缺项，最小 boot-only r2 已离线闭合；下一步只能在另行明确授权后验证这一个修复。
+活跃架构开发位于 `codex/m8-architecture-ceiling` 的 Android 16 路线；决策依据为该分支的 `docs/m8/research/architecture-ceiling-study.md`。长期 mixed AArch64-primary / ARM32-secondary 目标继续 **HOLD**，Prototype B 不得启动。r2 实机已证明 r1 的 retained-kernel cgroup 缺项修复有效，并推进到 APEX init import、ueventd 与三个 service manager；新的首个可重复 fatal 是 `android-16.0.0_r4` / 25Q4 的 `NetBpfLoad` 5.10 硬门槛。现有 exact 5.4.125 不再被视为 r4 可接受基础，也没有形成或授权 r3。
 
 架构研究已经找到强匹配 provider 证据：同 lineage donor 的 ARM32 Mali 与 accepted UBOX 文件完全一致，并提供 paired AArch64 Mali 与 multilib mapper/gralloc source。该证据把“缺少匹配 graphics provider”从结构性阻塞收敛为 exact-board build/runtime gate；media 不要求先取得全套 AArch64 provider，可继续保留 ARM32 Allwinner OMX/Cedar 服务并通过进程边界复用。
 
@@ -105,7 +105,7 @@ Exact split SELinux 的首错是 A16 platform 与 accepted API-31 vendor 对同�
 
 最终 detached candidate pass 用时 130 秒；`/work` free space 约从 184 GiB 到 181 GiB，可用内存约 60–61 GiB，无 swap。完整 intake/extraction/audit/build logs 保留在 GCP ignored 路径 `/work/build-logs/ubox10-a16-prototype-a/20260821T150330Z/`，未进入 Git。精确候选记录见 `docs/m8/candidates/a16-prototype-a-r1.md`。
 
-### Android 16 Prototype A r1 physical result and r2 offline correction
+### Android 16 Prototype A r1/r2 physical results and architecture hold
 
 r1 状态为 **PHYSICAL FAIL — PRE-EXEC CGROUP INITIALIZATION / NOT ACCEPTED**。PhoenixCard 日志 `logs/20260822-a-r1/uart-putty.log`（44,206 bytes / `C4823F59F09FA2ED60E5F35251641B0B0E9ABFAFEF1318F065DAFBED901E4D0C`）确认写入成功；原 UART 日志 `logs/20260822-a-r1/boot.log`（78,275 bytes / `18BF7217AFA25CAB2B7443B17A801D8825932FA4EB15ADCFC87D6FE1C3F46C7F`）记录 7 次 kernel start、6 个完整重启周期。RAM-only `printk.devkmsg=on` 诊断日志 `logs/20260822-a-r1-devkmsg/boot-devkmsg-on.log` 为 35,625 bytes / SHA-256 `E3EF999E109B837C5DBB3390E110EC80AD3D9DEFE02F0B0CAF581C46C4C2A517`；该参数在 `run boot_normal` 前从 bootargs 回读确认，未写入 boot image 或持久 U-Boot 环境。
 
@@ -115,7 +115,7 @@ Exact `android-16.0.0_r4` source 证明这是一个连贯的 pre-exec failure pa
 
 四类消息的最终分类为：blkio 是首个 causal blocker；missing `pid_163`/`pid_164/cgroup.procs` 是失败清理 cascade；`Could not update logical partition` 与 early secilc `/linkerconfig/ld.config.txt` warning 是已继续执行的 non-fatal early path；missing `/dev/block/by-name/misc` 只发生在 `reboot_on_failure` 已选择重启后。重启 reason 是 service policy 的结果，不是 apexd 内部错误。
 
-唯一 Prototype A r2 已在 GCP 原生 Linux 上离线构建并审核，状态为 **OFFLINE CHECKED CANDIDATE / NO PHYSICAL AUTHORIZATION**。Kernel source 固定为 Orange Pi commit `9ab7a758149d3c9b721878a0c18b3f9c5d6c93e6`，compiler 为 AOSP `clang-r416183b1`。唯一有效 config delta 是 `CONFIG_BLK_CGROUP=y`、`CONFIG_CPUSETS=y` 及 Kconfig 自动启用的 `CONFIG_PROC_PID_CPUSET=y`；MEMCG 与新显露的 blkio throttling/IOLATENCY/IOCOST policy 保持关闭。候选仅替换 kernel、`boot.fex` 和生成的 `Vboot.fex`；r1 system/APEX/super/LP、vendor_boot/ramdisk、vendor/product/vendor_dlkm、vbmeta/vbmeta_system 与其余 48/50 outer payload 原字节保持。
+唯一 Prototype A r2 先在 GCP 原生 Linux 上离线构建并审核，随后由用户单独授权并完成一次物理测试。Kernel source 固定为 Orange Pi commit `9ab7a758149d3c9b721878a0c18b3f9c5d6c93e6`，compiler 为 AOSP `clang-r416183b1`。唯一有效 config delta 是 `CONFIG_BLK_CGROUP=y`、`CONFIG_CPUSETS=y` 及 Kconfig 自动启用的 `CONFIG_PROC_PID_CPUSET=y`；MEMCG 与新显露的 blkio throttling/IOLATENCY/IOCOST policy 保持关闭。候选仅替换 kernel、`boot.fex` 和生成的 `Vboot.fex`；r1 system/APEX/super/LP、vendor_boot/ramdisk、vendor/product/vendor_dlkm、vbmeta/vbmeta_system 与其余 48/50 outer payload 原字节保持。
 
 | r2 工件 | 大小 | SHA-256 |
 |---|---:|---|
@@ -126,7 +126,21 @@ Exact `android-16.0.0_r4` source 证明这是一个连贯的 pre-exec failure pa
 
 Detached compile/pack 加无特权审计 wall 约 13 分 03 秒，其中包含一次约 3 分钟的 host mount 权限停顿；已完成的 kernel/outer 没有重编，审计续跑 4 秒成功。21 个资源样本中 available RAM 最低 31,036,456 KiB，无 swap；`/work` available 最低 182,048,014,336 bytes，远高于安全阈值。Boot AVB footer/hash 验证、IMAGEWTY、50-entry outer preservation、四 logical ext4、cgroup/config contract 与 SHA256SUMS PASS；r2 focused 5 tests 与全量 75 tests PASS（25 个缺少 ignored 历史 fixture 的 expected skip）。Full exact VINTF exit 65 的唯一错误仍是继承的 `CONFIG_NFS_FS=y` 对 FCM 6 `n`，r2 未引入新错误；linker/ELF、split SELinux、APEX 与 LP 结果由相关分区逐字节等同 r1 后继承。完整 raw logs 保留在 ignored `/work/build-logs/ubox10-a16-gate2-cgroup/20260821T180108Z/`。
 
-结论：r1 是 **bounded retained-kernel cgroup integration defect**，不是 APEX activation failure，也不是已证明的 ARM32 architecture ceiling。r2 在离线范围内足够一致，可供未来**另行明确授权**的一次 UART-first ARM32 exact-board 验证；本结果不授权刷写或启动。Gate 2 继续 **CLOSED**，Prototype B 不得启动，`m8b-remote-r1`、Test8r2 与 stock rollback 保持。
+r2 PhoenixCard 日志 `logs/20260822-a-r2/uart-flash-r2.log` 为 44,451 bytes / SHA-256 `832E3BEDC7BD50E3D9B562FFEE375189825EE3ECA1A3E67D8026157E4545DD2E`；13 个 download parts 全部成功并以 `CARD OK` / `sprite success` 结束。UART 日志 `logs/20260822-a-r2/boot-r2-devkmsg-on.log` 为 67,394 bytes / `BF3196E9DB99AF4F70B5F7CEA5CBA166A40A92299E9670ED517357F2EEE5C4AC`；U-Boot RAM-only `printk.devkmsg=on` 在启动前回读确认。日志包含 5 次 5.4.125 kernel start 和 4 个完整、相同的失败周期。
+
+r2 运行时证明 required blkio/cpuset 与 `/sys/fs/cgroup/system` 已建立，r1 的 `/uid_0` pre-exec failure 消失；ueventd 实际执行，servicemanager、hwservicemanager、vndservicemanager 实际运行，且 init 读取 `/apex/com.android.uprobestats/etc/init.rc`。`bootstrap-apexd-failed` 不再出现。四个完整周期的首个 fatal 均为 `NetBpfLoad: Android 25Q4 requires kernel 5.10.`，随后 init 执行 bpfloader 的 `reboot_on_failure` 并以 `bpfloader-failed` 重启。Zygote32、system_server、SurfaceFlinger 与 HWC 仍未到达。
+
+新兼容性信号已按控制流分类：5.4 不支持 `memory_recursiveprot`，但 A16 `CgroupSetup()` 明确无该选项重试且 r2 继续执行；`CAP_PERFMON` 缺失只使 disabled UprobeStats service 的 init stanza 失效，不是本轮 boot fatal，但代表真实的后续功能缺口；IncFS module 缺失会回退为 features v1/none，当前不阻塞普通启动；`/dev/stune/foreground/tasks` 与大部分 cgroup cleanup 消息发生在 bpfloader 已选择 shutdown 后。当前未发现新的 pre-bpfloader task-profile fatal。
+
+Source-proven 路线结论如下：
+
+| 排名 | 路线 | 结论 | 证据与边界 |
+|---:|---|---|---|
+| 1 | A：早期 A16 + retained 5.4 lineage | **HOLD / 唯一可继续路线** | 最合适基线是官方 `android-security-16.0.0_r7`（官方表 build `15180164`；source `BUILD_ID=BP2A.250805.034`；manifest `ebea28d151539ecf0730b1a4ab92ac33edc17ac9`；API 36.0 / 25Q2 / QPR0 / SPL 2025-08-05）。其 NetBpfLoad 接受 5.4，但 netd 明确要求 non-GKI 5.4 至少 `5.4.277`；exact 5.4.125 仍不合格。Kernel.org 已结束 5.4 维护，故若继续应优先评估同 lineage 升至最终 5.4.302，并补 `NET_CLS_MATCHALL`、`NET_ACT_POLICE`、`NET_ACT_BPF`。 |
+| 2 | B：r4 / 25Q4 + 5.4 backports | **NO-GO（当前 bounded Gate 2）** | r4 loader 与 netd 都以版本要求 5.10（并要求 5.10.210 LTS floor）；现有 5.4 还真实缺 ringbuf、CAP_PERFMON/BPF capability split、uprobes/ftrace、vmlinux BTF、BPF link/batch API 等。只删除检查或伪造 uname 不合法；完整回移已不是 bounded fix。 |
+| 3 | C：H616 5.10+ | **NO-GO（当前项目）** | Orange Pi `orange-pi-5.10` 是 5.10.75 / `e39ff11e...` 的 mainline-style H616 树，不含 retained 5.4 的 SUNXI display/Cedar/VIN/G2D/gralloc/DRM-heap/USB vendor stack。22 个 accepted vendor_dlkm modules 及 graphics/media/audio/TEE/wireless UAPI 都需同步移植或重建，实质是新 BSP/kernel port。 |
+
+因此当前总决策为 **HOLD**：保留 Android 16/API 36 目标和 TV 适用性，但不再以 r4/25Q4 + exact 5.4.125 构建候选。精确下一动作是在独立 clean checkout 锁定 `android-security-16.0.0_r7`，先做 source-only 产品/cgroup/APEX 差异审计，并为 retained H616 BSP 设计和验证 5.4.125→至少 5.4.277（优先 5.4.302）的可审查 LTS rebase；在该 checkpoint 通过前不构建 r3、不刷写、不启动 Prototype B。Gate 2 继续 **CLOSED**，`m8b-remote-r1`、Test8r2 与 stock rollback 保持。
 
 ## Accepted audio milestone
 
@@ -353,7 +367,7 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - r10 已在实机完成 framework boot；r9 Lights/Watchdog/llkd 方向保持关闭，不再修改。
 - r13 是当前 GOLDEN BASELINE；Projectivy、provisioning、遥控和 Power sleep/wake/shutdown 均以实机 UART 为准。
 - M8B native rc-core 遥控迁移已在 r5 设备验收并关闭；Mouse mode intentionally dropped，legacy multi_ir 工件保留为 inert reference，其 Android 12 清理已随 freeze 延期。
-- 当前 board、DT 与 runtime 证据识别为 H616。architecture-ceiling study 已找到强匹配 paired AArch64 Mali 与 multilib mapper/gralloc provider 证据；A16 ARM32 `systemimage` 已完成，r1 稳定失败于 ueventd/apexd exec 前的 cgroup setup，boot-only r2 已离线闭合最小 kernel delta。ARM32 OMX/Cedar media 可继续进程隔离复用，但在 ARM32 runtime base 闭合前不启动 AArch64 Prototype B。
+- 当前 board、DT 与 runtime 证据识别为 H616。architecture-ceiling study 已找到强匹配 paired AArch64 Mali 与 multilib mapper/gralloc provider 证据；A16 ARM32 r2 实机已越过 r1 cgroup/ueventd/APEX/service-manager 边界，随后稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛。唯一可继续研究的 Path A 是 QPR0 + 同 lineage 5.4 LTS update；该 checkpoint 通过前不构建 r3、不启动 AArch64 Prototype B。
 - `m8b-audio-r2` 只启用产品级 Treble/VNDK 合同；未修改 VNDK payload、mixer、audio platform XML、DTS、machine driver 或已验收功能，现已设备验收为 AUDIO PASS。
 - 2026-08-16 ADB-only 补验未刷机、未重启且未修改 ROM/device properties：VP9 为 Allwinner OMX/Cedar hardware-runtime PASS；Widevine 为可操作 L3，HDCP `NONE`，无 secure decoder 要求。物理画面/逐帧质量与商业服务认证或播放仍未证明。
 - 遥控器 Menu 与 Settings 当前均打开 Projectivy menu。两键语义分离为独立延期项，不回改已验收的 rc-core、keylayout 选择或其他按键行为。
@@ -361,4 +375,4 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 
 ## Next action
 
-保持 `m8b-remote-r1`、Test8r2 与 stock rollback 不变。当前唯一下一动作是等待用户对 `a16-prototype-a-r2` 的一次单独明确授权；若获得授权，只做一次 UART-first ARM32 exact-board 启动，并在 U-Boot RAM-only bootargs 临时加入 `printk.devkmsg=on`，验证 required blkio/cpuset mount、`/sys/fs/cgroup/system` 创建、ueventd/apexd exec 与第一条后续 runtime 边界。当前未授权，不刷写、不启动；Gate 2 保持关闭，Prototype B 不得启动。
+保持 `m8b-remote-r1`、Test8r2、stock rollback、r1/r2 artifacts 与物理日志不变。当前唯一下一动作是在独立 clean checkout 锁定 `android-security-16.0.0_r7` 并完成 source-only 产品/cgroup/APEX 差异审计，同时形成 retained H616 BSP 5.4.125→至少 5.4.277、优先最终 5.4.302 的可审查 LTS rebase/netd-config 方案。该 checkpoint 通过前不构建 r3、不刷写、不启动 Prototype B；Gate 2 保持 **CLOSED**。

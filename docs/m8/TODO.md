@@ -19,7 +19,11 @@
 - [x] 完成 exact A16 init/libprocessgroup 控制流、system/API31/vendor cgroup/task-profile、Soong flag 与 retained 5.4 config 审计。除 BLK_CGROUP 外，`CONFIG_CPUSETS=n` 也是下一个 required blocker；最小 delta 为 BLK_CGROUP + CPUSETS + Kconfig 自动 PROC_PID_CPUSET，optional memory-v2 不要求本轮启用 MEMCG。
 - [x] 更新消息分类：blkio 为首个 causal blocker；missing pid cgroup.procs 为 cascade；logical-partition 与 early secilc linkerconfig 为 non-fatal early path；missing misc 为 reboot-path secondary noise。r1 是 bounded retained-kernel integration defect，不是 apexd 内部失败或 architecture-level blocker。
 - [x] 构建并离线审核唯一 `a16-prototype-a-r2`：外层 1,261,038,592 bytes / SHA-256 `114DF8677CD6984EB1431377723EDF61C80ACF26C15D8770BAE47DCFE7D1B6D0`；只改变 kernel/boot/Vboot，r1 system/APEX/LP/vendor/vendor_boot/AVB 与其余 48/50 payload 保持。AVB/IMAGEWTY/ext4/cgroup/SHA PASS；full VINTF 仍只有继承的 NFS 例外，没有新增 incompatibility。
-- [ ] **当前唯一下一动作：**等待对 `a16-prototype-a-r2` 的一次单独明确授权；若获得授权，只做一次 UART-first ARM32 exact-board boot，并用 U-Boot RAM-only `printk.devkmsg=on` 验证 required cgroup mount、system hierarchy、ueventd/apexd exec 与下一条首错。当前不刷写、不启动 Prototype B；Gate 2 保持 **CLOSED**。
+- [x] 用户单独授权并完成一次 r2 PhoenixCard/UART-first 物理测试；flash `CARD OK`。5 次 kernel start / 4 个完整周期证明 r1 cgroup fix 生效、ueventd 与三个 service manager 运行、APEX init content 被 import；`bootstrap-apexd-failed` 消失。
+- [x] 确认 r2 新的首个可重复 fatal：exact r4/25Q4 `NetBpfLoad` 在加载 BPF objects 前因 5.4.125 小于 5.10 返回，init 的 bpfloader `reboot_on_failure` 随后以 `bpfloader-failed` 重启。Zygote32、system_server、SurfaceFlinger、HWC 未到达。
+- [x] 审核 `memory_recursiveprot`、CAP_PERFMON、剩余 cgroup/task-profile、IncFS、BPF/BTF 与最低 LTS：memory_recursiveprot 和 IncFS 当前有明确 fallback；CAP_PERFMON/UprobeStats 是非致命但真实后续缺口；当前没有第二个 pre-bpfloader cgroup fatal。25Q2 的 non-GKI 5.4 最低为 5.4.277，exact 5.4.125 不满足。
+- [x] 完成 A/B/C source-proven 决策：A（`android-security-16.0.0_r7` / API 36.0 / QPR0 + retained 5.4 lineage）排名第一但 **HOLD**；B（r4 + 5.4 feature backports）和 C（5.10+ BSP port）在当前 bounded Gate 2 均 **NO-GO**。没有构建 r3，没有启动 Prototype B。
+- [ ] **当前唯一下一动作：**在独立 clean checkout 锁定 `android-security-16.0.0_r7` manifest/source，先完成 source-only 产品/cgroup/APEX 差异审计；同时为 retained H616 BSP 形成可审查的 5.4.125→至少 5.4.277、优先最终 5.4.302 LTS rebase 与 netd config delta 方案。该 checkpoint 未通过前不构建 r3、不刷写；Gate 2 保持 **CLOSED**。
 
 ## 已验收基线
 

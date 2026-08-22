@@ -1,6 +1,6 @@
 # Android 16 Prototype A r2 candidate
 
-状态：**OFFLINE CHECKED CANDIDATE / NO PHYSICAL AUTHORIZATION**。Gate 2 继续 **CLOSED**；本候选尚未刷写或启动，不得据此启动 Prototype B。
+状态：**PHYSICAL FAIL — r1 CGROUP FIXED / r4 NETBPFLOAD KERNEL FLOOR**。用户已单独授权并完成一次物理测试；该授权已消耗。Gate 2 继续 **CLOSED**，不得再次刷写，不得构建 r3 或启动 Prototype B。
 
 ## Purpose and runtime cause
 
@@ -22,7 +22,7 @@ CONFIG_PROC_PID_CPUSET=y
 
 最后一项由 Kconfig 自动启用。`CONFIG_MEMCG`、`CONFIG_BLK_DEV_THROTTLING`、`CONFIG_BLK_CGROUP_IOLATENCY` 与 `CONFIG_BLK_CGROUP_IOCOST` 保持关闭；generic blkio hierarchy/membership 不要求这些 policy。Builder 对任何其他 effective config 变化 fail closed。
 
-Candidate boot 保持 r1 的 header、cmdline、ramdisk、AVB hash-footer algorithm/properties/salt 与 partition size，只替换 kernel。外层仅替换 `boot.fex` 并生成对应 `Vboot.fex`；system/APEX、super/LP、vendor_boot/ramdisk、vendor/product/vendor_dlkm、vbmeta/vbmeta_system、bootloader/TEE/DTBO/GPT/rollback 与其他 48/50 payload 原字节保持。没有物理设备命令。
+Candidate boot 保持 r1 的 header、cmdline、ramdisk、AVB hash-footer algorithm/properties/salt 与 partition size，只替换 kernel。外层仅替换 `boot.fex` 并生成对应 `Vboot.fex`；system/APEX、super/LP、vendor_boot/ramdisk、vendor/product/vendor_dlkm、vbmeta/vbmeta_system、bootloader/TEE/DTBO/GPT/rollback 与其他 48/50 payload 原字节保持。候选构建阶段没有物理设备命令；后续物理结果单列如下。
 
 ## Artifacts
 
@@ -48,6 +48,8 @@ Artifacts 与 raw logs 留在 GCP ignored paths。构建/audit 证据位于 `/wo
 
 ## Decision and next boundary
 
-r1 的故障是 **bounded retained-kernel cgroup integration defect before exec**，不是 bootstrap APEX activation failure，也不是已证明的 ARM32 architecture-level blocker。r2 已把 source-proven minimum 闭合，并在离线范围内足够一致，可供一次未来单独授权的 UART-first ARM32 exact-board boot。
+r1 的故障是 **bounded retained-kernel cgroup integration defect before exec**，不是 bootstrap APEX activation failure。r2 的 physical result 证明该修复有效：flash log `logs/20260822-a-r2/uart-flash-r2.log` 为 44,451 bytes / SHA-256 `832E3BEDC7BD50E3D9B562FFEE375189825EE3ECA1A3E67D8026157E4545DD2E` 并以 `CARD OK` / `sprite success` 结束；RAM-only devkmsg boot log `logs/20260822-a-r2/boot-r2-devkmsg-on.log` 为 67,394 bytes / `BF3196E9DB99AF4F70B5F7CEA5CBA166A40A92299E9670ED517357F2EEE5C4AC`。
 
-当前没有物理授权。若用户未来另行明确授权，唯一下一实验是只启动 r2 一次，并在 U-Boot RAM-only bootargs 临时加入 `printk.devkmsg=on`，确认 blkio/cpuset hierarchy、`/sys/fs/cgroup/system`、ueventd/apexd exec 以及第一条新的 runtime 边界。不得把离线结果写成 bootability、Gate 2 success 或 Prototype B authorization。
+5 次 kernel start / 4 个完整周期均不再出现 blkio、`/sys/fs/cgroup/system` 或 `bootstrap-apexd-failed` 边界；ueventd、servicemanager、hwservicemanager、vndservicemanager 执行，且 APEX init content 被 import。新的第一可重复 fatal 是 exact r4/25Q4 `NetBpfLoad: Android 25Q4 requires kernel 5.10.`；bpfloader 的 `reboot_on_failure` 随后以 `bpfloader-failed` 重启。Zygote32、system_server、SurfaceFlinger 与 HWC 未到达。
+
+r2 不接受为 bootable candidate。当前精确下一动作是 source/kernel architecture checkpoint：锁定 `android-security-16.0.0_r7` QPR0 并证明同 lineage 5.4 至少更新到 5.4.277、优先 5.4.302，连同 netd config 与 exact-board/module preservation。Checkpoint 通过前不构建 r3；任何后续物理动作都需要新的候选、完整离线审核与单独明确授权。
