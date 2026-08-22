@@ -2,10 +2,14 @@
 
 Study date: 2026-08-17; build/runtime evidence updated: 2026-08-22
 
-Study branch/evidence base: `codex/m8-architecture-ceiling` / `c891ae5e6e99d272a0138680ec4fcfaf4f6cf249`
+Study branch/evidence base: `codex/m8-architecture-ceiling` / starting commit
+`f40a37b6fd488800b5a1ada89f2ce2cf687e8e33`, plus the hash-locked Linux 5.4.302
+checkpoint inputs and results recorded below
 
 Accepted runtime baseline: `m8b-remote-r1`; last flashed image: failing `a16-prototype-a-r2`
-Scope: architecture decision, bounded offline prototypes, and the separately authorized r1/r2 physical tests; no further device mutation is authorized
+Scope: architecture decision, bounded offline prototypes, the separately authorized r1/r2
+physical tests, and the offline same-lineage Linux 5.4.302 BSP-preservation checkpoint; no
+further device mutation is authorized
 
 Confidence labels in this report have the following strict meanings: **PROVEN** is direct
 binary, build, runtime, repository, or authoritative-source evidence; **HIGH CONFIDENCE**
@@ -15,17 +19,28 @@ declaration is not called physically verified unless the physical device exercis
 
 ## 1. Executive architecture decision
 
-The best end architecture still worth investigating is **Android 16 for TV, mixed ARM64/ARM32
+The selected Android 16 direction is **Path A: official 25Q2/QPR0 Android 16 on the retained
+Allwinner 5.4 BSP lineage**. The best end architecture still worth investigating remains a
+TV-oriented mixed ARM64/ARM32 userspace, `zygote64_32`, plus only the minimum
+matched ARM64 graphics client provider and bounded vendor zygote/AVB metadata changes.
+The overall Android 16 decision remains **HOLD before any r3 or Prototype B**. r2 physically
+proves that the r1 cgroup fix works and advances through ueventd, APEX init content and all
+three service managers, but exact `android-16.0.0_r4` / 25Q4 then stops at the source-defined
+`NetBpfLoad` requirement for kernel 5.10.
+
+The Linux half of Path A has now passed its offline preservation checkpoint. A reproducible
+synthetic-base merge carries the exact H616/sun50iw9 vendor BSP from 5.4.125 to final
+5.4.302, builds the ARM64 Image and all 22 accepted module roles, and preserves the Android
+12 userspace/vendor/outer contracts in one audited kernel-only candidate. This is **GO only
+for one separately authorized UART-first Android 12 kernel-only physical validation**; it is
+not a hardware-compatibility PASS and is not authorization to flash. The r7 Android source
+audit remains deliberately unstarted until that physical preservation gate passes.
+
+The possible final architecture remains **Android 16 for TV, mixed ARM64/ARM32
 userspace, `zygote64_32`, the Allwinner 5.4 hardware-facing BSP lineage, plus only the minimum
 matched ARM64 graphics client provider and bounded vendor zygote/AVB metadata changes**.
-The immediate architecture decision is nevertheless **HOLD before any r3 or Prototype B**.
-r2 physically proves that the r1 cgroup fix works and advances through ueventd, APEX init
-content and all three service managers, but exact `android-16.0.0_r4` / 25Q4 then stops at the
-source-defined `NetBpfLoad` requirement for kernel 5.10.
-
-The only ranked path worth another architecture checkpoint is an earlier official Android 16
-25Q2/QPR0 source baseline, specifically `android-security-16.0.0_r7`, together with a
-same-lineage retained-BSP kernel LTS update. This is not permission to reuse exact 5.4.125:
+The selected source candidate is an earlier official Android 16 25Q2/QPR0 baseline,
+specifically `android-security-16.0.0_r7`. This is not permission to reuse exact 5.4.125:
 the QPR0 netd source requires non-GKI 5.4 to be at least 5.4.277, while upstream 5.4 is now
 EOL at 5.4.302. Keeping r4 and backporting a 5.10-class BPF stack into a kernel still reporting
 5.4 is not a bounded or policy-conformant fix; adopting a public H616 5.10+ tree is a new BSP
@@ -673,10 +688,11 @@ The official 25Q2 netd commit `7004c06cc45208ae8860057205fa41e7bb6eb47f`
 chooses **5.4.277** as the minimum non-GKI 5.4 LTS and explicitly notes that Google had no
 5.4 test coverage and considered it shaky. Exact 5.4.125 is therefore 152 patch releases below
 the minimum even though the top-level NetBpfLoad `uname` check would accept it. Kernel.org no
-longer lists 5.4 as active and the upstream series ends at 5.4.302. A responsible Path A must
-first prove a same-lineage vendor-BSP rebase to at least 5.4.277, preferably final 5.4.302,
-while preserving exact-board drivers, module ABI, DT and boot behavior. This is materially
-smaller than a 5.10 port, but it is not a config-only change.
+longer lists 5.4 as active and the upstream series ends at 5.4.302. A responsible Path A
+therefore required a same-lineage vendor-BSP move to final 5.4.302 while preserving exact-board
+drivers, module ABI, DT and boot behavior. The checkpoint below closes that requirement
+offline; physical preservation remains open. This is materially smaller than a 5.10 port, but
+it is not a config-only change.
 
 QPR0 remains Android 16/API 36 and therefore preserves the project's primary platform/API
 objective and the Android 16 TV framework direction. It gives up QPR1/QPR2 platform and TV
@@ -685,10 +701,68 @@ date must not be relabeled as a later device SPL; future security coverage would
 separate patch provenance program. No GMS, Play, certification or commercial-service status
 follows from choosing it.
 
-**Path A verdict: HOLD, ranked first and the only route worth the next source/kernel
-checkpoint.** It can become GO only after the r7 source delta, same-lineage 5.4 LTS rebase,
-required netd configs, module compatibility and exact offline boot contracts are demonstrated.
-No r3 candidate is justified yet.
+**Path A verdict: selected, overall HOLD.** Its kernel-preservation sub-checkpoint is now
+**GO for one separately authorized Android 12 kernel-only physical validation**; the r7 source
+audit and physical BSP-preservation proof remain open. No A16 r3 candidate is justified yet.
+
+#### Same-lineage Linux 5.4.302 preservation checkpoint
+
+The retained Orange Pi source is commit `9ab7a758149d3c9b721878a0c18b3f9c5d6c93e6`
+(tree `d37d590a1e61c8e099e72170bf36e54091aa4820`, release `5.4.125+`). It is a
+seven-commit BSP import with no Git merge-base to upstream Linux. The exact upstream anchors
+are v5.4.125 commit `3909e2374335335c9504467caabc906d3f7487e4` and final v5.4.302
+commit `9e3157c56ec7917e6a80ea53a8bd752e0037f2cb`. Android-common anchors
+`6cb0d5ef8b388d0249d96060e9ef31b466f88c7d` and
+`2443acb8671f5eaeac985e70446726278ed014ae` preserve the Android 12 kernel delta while
+moving across the same stable range.
+
+A direct rebase would invent ancestry, while rebuilding 4,603 vendor-delta files over vanilla
+v5.4.302 would maximize lost-BSP risk. The selected bounded hybrid uses exact vendor content as
+the `ours` side of a synthetic three-way merge, Android-common 5.4.125 as the base, and
+Android-common 5.4.302 as `theirs`. It exposes the 384 overlapping paths for review while
+preserving non-overlapping vendor content. The result has commit/tree
+`027ef79e8facb73cb2419b4a08c0bd3f13a2206e` /
+`b328c32712d65f8da98e013bc74944d68c05552b`; an independent clean replay reproduced
+both identities in 17 seconds.
+
+The machine inventory covers H616/sun50iw9 DT, display/HDMI, Mali-G31, Cedar/VIN, G2D and
+vendor heaps, audio, AIC8800/XR819/RTL wireless, Ethernet, USB, IR, thermal/DVFS, suspend,
+TEE and block/AVB-facing code. It found 434 source-level exports in hardware-critical vendor
+delta. There were 46 textual conflicts: 31 maintained stable/common implementations win, 12
+vendor implementations are preserved, and 3 are semantic merges (`drivers/char/Kconfig`,
+sun50i cpufreq-nvmem and SUNXI pinctrl). The exact per-path decisions are machine-readable.
+Critical DTS, display, Mali, Cedar/VIN, G2D/DI/gralloc/heap, AIC and SUNXI USB subtrees are
+byte-identical to the retained tree; the accepted rc-core repeat/keymap changes and exact donor
+identities for the out-of-tree wireless modules are pinned and reapplied.
+
+`olddefconfig` from the exact accepted Android 12 Image config produces 32 fully accounted
+effective changes: Android-common ABI padding, two stable ARM64 errata mitigations, compiler
+probes/internal helpers, `/proc/pid/mem` choice normalization, and disabled/removed Kconfig
+symbols. It does not enable a broad new hardware subsystem. A separate, non-candidate Path-A
+config proves clean closure of `BLK_CGROUP`, `CPUSETS`, `PROC_PID_CPUSET`,
+`NET_CLS_MATCHALL`, `NET_ACT_POLICE` and `NET_ACT_BPF`; none is smuggled into the Android
+12 preservation Image.
+
+A clean clang-r416183b1 build produced release `5.4.302+`, a 23,492,616-byte ARM64 Image
+with SHA-256 `9B781ABEA51DEF9AE1FEBB9011CFA630AC267C794FBA0E066674F0EAE2509DCC`,
+and all 22 accepted module roles rebuilt with consistent 5.4.302 vermagic. Required module
+names, dependency/alias/firmware/version/license metadata, exported symbol names and import
+CRC resolution close offline. Old 5.4.125 modules are explicitly not reused.
+
+The single Android 12 kernel-only candidate is
+`m8-kernel-5.4.302-r1`, 1,031,739,392 bytes, SHA-256
+`C93FC8A54391E091E0F95CFE63E4F6DA9AE90D55AA0163D91D42586B48BFEE2B`.
+It preserves system/vendor/product, boot ramdisk, LP geometry, accepted board DTBO and 46/50
+outer payloads byte-for-byte. Only boot, vendor_dlkm, their AVB data, the containing sparse
+super and IMAGEWTY checksum companions change. IMAGEWTY, boot AVB, vendor_dlkm AVB/FEC,
+ext4, sparse round-trip and LP audits pass; the fixed vendor_dlkm filesystem has only one 4 KiB
+block free, which is recorded as a physical-test risk.
+
+Compilation and structural comparison cannot prove probe order, display/HDMI, Mali/EGL,
+Cedar decode, audio, wireless, USB, IR, thermal/DVFS, suspend/wake or TEE/DRM runtime.
+Accordingly this is a bounded **kernel-checkpoint GO**, not a hardware PASS and not an Android
+16 GO. The next evidence-bearing action is one separately authorized UART-first test using the
+unchanged accepted Android 12 userspace/vendor baseline and immediately available rollback.
 
 ### Path B — r4/25Q4 on a kernel still identified as 5.4
 
@@ -739,12 +813,13 @@ accepted hardware product.
 
 | Rank | Path | Decision | Exact next condition |
 |---:|---|---|---|
-| 1 | A — QPR0/25Q2 plus retained 5.4 lineage | **HOLD** | Pin and audit `android-security-16.0.0_r7`; prove a reviewable same-lineage update to >=5.4.277 (prefer 5.4.302), required configs and module/board preservation before any candidate. |
+| 1 | A — QPR0/25Q2 plus retained 5.4 lineage | **SELECTED / OVERALL HOLD** | The 5.4.302 offline kernel checkpoint is GO for one separately authorized Android 12 kernel-only physical validation. If that passes, pin and audit `android-security-16.0.0_r7` before any A16 candidate. |
 | 2 | B — r4/25Q4 plus backports into 5.4 | **NO-GO** | Would require violating the version policy or executing a broad 5.10-class subsystem port. |
 | 3 | C — public H616 5.10+ kernel | **NO-GO** | Requires a new exact-board Android BSP and hardware-stack port. |
 
-Gate 2 remains closed. The r2 physical authorization is consumed; no further flash, r3 build
-or Prototype B work is authorized by this study.
+Gate 2 remains closed. The r2 physical authorization is consumed. The audited 5.4.302
+Android 12 kernel-only candidate is eligible for a future authorization request, but this study
+does not authorize a flash; no r3 build or Prototype B work is authorized.
 
 ## 12. Target A/B/C/D comparison
 
@@ -771,15 +846,15 @@ lower risk. They are decision aids grounded in the evidence above, not synthetic
 | **Unweighted total / 75** | **56** | **47** | **48** | **32** |
 
 The raw totals expose the actual trade: A wins stability and cost but loses future usefulness;
-B gains API 36 but now carries an EOL-kernel update and QPR0-security burden; C has the best
-long-term application value only after the same ARM32 base is established. The project objective
-still makes C the preferred possible end state, but r2 closes neither the Path-A kernel gate nor
-Prototype A. D remains dominated on engineering economics.
+B gains API 36 but now carries an EOL-kernel and QPR0-security burden; C has the best long-term
+application value only after the same ARM32 base is established. The project objective still
+makes C the preferred possible end state, but the offline kernel checkpoint does not close its
+physical preservation gate or Prototype A. D remains dominated on engineering economics.
 
 | Family | Viability | Main advantage | Decisive blocker/limit | Engineering risk | Verdict |
 |---|---|---|---|---|---|
 | Target A — Mature Legacy | **PROVEN now** | Accepted stability and hardware completeness | API 31 age and no 64-bit native apps; security/platform life is short | Low | Keep as rollback/reference, not final investment ceiling |
-| Target B — Modern Framework / Legacy Architecture | **HOLD** | Maximum vendor reuse and no new graphics provider | r4 requires 5.10; QPR0 still requires a major same-lineage 5.4 LTS update, and ARM32 excludes 64-bit-only native apps | High until Path A passes | Architecture bootstrap/fallback only |
+| Target B — Modern Framework / Legacy Architecture | **HOLD** | Maximum vendor reuse and no new graphics provider | r4 requires 5.10; QPR0 requires the now-built 5.4.302 kernel to pass exact-board hardware validation, and ARM32 excludes 64-bit-only native apps | High until Path A passes | Architecture bootstrap/fallback only |
 | Target C — Modern Hybrid | **CLOSED / MEDIUM-LOW** | API 36 plus AArch64 apps while preserving working 32-bit HALs/kernel | Path A must first pass; paired ARM64 graphics SP-HAL/mapper must then close and run on exact H616 | High but potentially bounded after A | Possible final target, not current GO |
 | Target D — Full Modern Port | **LOW** | Clean contemporary architecture in theory | No complete H616 5.10+ graphics/media/display/DRM provider; becomes multiple subsystem rewrites | Extreme | **NO-GO** |
 
@@ -835,7 +910,7 @@ that preserve ABI, remote/wake reliability, audio/media test assets and hardware
 | Android generation | Android 16 for TV / API 36, based on `android-security-16.0.0_r7` QPR0 only if Path A passes; r4/25Q4 is retired for retained 5.4 |
 | Userspace | Mixed AArch64 primary + ARM32 secondary |
 | Zygote | `zygote64_32` |
-| Kernel | Retain the Allwinner H616 AArch64 5.4 BSP lineage, but update from exact 5.4.125 to at least 5.4.277 and preferably final 5.4.302; no GKI/ACK-support claim |
+| Kernel | Retain the Allwinner H616 AArch64 5.4 BSP lineage at final 5.4.302 only if `m8-kernel-5.4.302-r1` passes the separately authorized Android 12 hardware-preservation test; no GKI/ACK-support or continuing upstream-support claim |
 | Vendor | Preserve accepted vendor/vendor_dlkm and all working ARM32 hardware services; add hash-pinned matched ARM64 graphics files, set `ro.zygote=zygote64_32`, correct the mapper bitness contract, and revalidate vendor/root AVB |
 | Graphics | Paired ARM64 Mali-G31 EGL/GLES plus AArch64 mapper/gralloc; retain 32-bit counterparts and 32-bit SUNXI HWC/composer |
 | Media | Retain 32-bit Allwinner OMX/Cedar service path; do not rewrite to Codec2 merely for elegance |
@@ -863,9 +938,10 @@ that preserve ABI, remote/wake reliability, audio/media test assets and hardware
 6. The public same-lineage donor's ARM32 Mali file exactly matches UBOX and it supplies the
    paired AArch64 library plus multilib mapper/gralloc source. **PROVEN provider existence;
    MEDIUM exact-board runtime confidence**.
-7. The current 5.4 BSP preserves the hardest hardware assets, but its exact 5.4.125 base is not
-   acceptable for A16; no complete newer H616 Android BSP justifies replacing the lineage before
-   a same-lineage stable update is tested. **HIGH CONFIDENCE**.
+7. The same-lineage 5.4.302 integration is reproducible, rebuilds the entire 22-module set and
+   preserves the strongest offline BSP contracts; no complete newer H616 Android BSP justifies
+   replacing it. Runtime hardware preservation still needs the isolated Android 12 test.
+   **HIGH CONFIDENCE offline; MEDIUM runtime confidence**.
 8. The box already exposes a live 4K60 HDMI output and hardware media path, so keeping the
    vendor stack has more user value than a clean port that regresses acceleration. **PROVEN
    output; MEDIUM 4K media confidence**.
@@ -885,11 +961,12 @@ display, audio, wireless and DRM integration without a complete provider. It has
 of better Netflix capability and may lose the current 4K/audio path. The modern hybrid captures
 the application/framework benefit of ARM64 without paying that subsystem-rewrite cost.
 
-**Overall confidence: MEDIUM-LOW.** The Android 16 ARM32 build/offline integration and r1/r2
+**Overall confidence: MEDIUM.** The Android 16 ARM32 build/offline integration and r1/r2
 runtime progression are strong evidence: cgroups, mounted APEX init content and service managers
-now work. The newly exposed kernel release floor is architectural rather than another config
-toggle. The end-state hybrid remains plausible only through Path A; starting Prototype B or
-building r3 before the QPR0/LTS checkpoint would not be justified.
+now work. The 5.4.302 build and kernel-only candidate close the source/config/module/packaging
+half of the kernel floor, but exact-board runtime and the r7 source delta remain open. The
+end-state hybrid remains plausible only through Path A; starting Prototype B or building r3
+before those gates would not be justified.
 
 ## 15. Go / No-Go decisions and remaining decisive gates
 
@@ -897,26 +974,26 @@ building r3 before the QPR0/LTS checkpoint would not be justified.
 
 | Question | Decision | Reason |
 |---|---|---|
-| Recommended modern Android target | **HOLD — Android 16/API 36 through Path A only** | r2 proves the cgroup correction but r4/25Q4 has an intentional 5.10 floor; QPR0 plus a same-lineage 5.4 LTS update is the only bounded-looking route |
+| Recommended modern Android target | **HOLD — Android 16/API 36 through Path A only** | r2 proves the cgroup correction but r4/25Q4 has an intentional 5.10 floor; QPR0 plus the offline-qualified 5.4.302 lineage is the only bounded-looking route, pending physical kernel preservation and r7 source audit |
 | Android 16 r4 / 25Q4 | **NO-GO with retained 5.4** | Physical and source evidence agree on the 5.10/5.10.210 requirement |
-| Android 16 QPR0 / 25Q2 | **HOLD** | `android-security-16.0.0_r7` accepts 5.4 lineage, but exact 5.4.125 is below the 5.4.277 floor and upstream 5.4 is EOL |
+| Android 16 QPR0 / 25Q2 | **SELECTED / HOLD** | `android-security-16.0.0_r7` accepts 5.4 lineage; the 5.4.302 kernel sub-checkpoint passes offline, but exact-board physical preservation and the r7 source audit remain open |
 | Mixed ARM64/ARM32 userspace | **CLOSED PENDING PROTOTYPE A** | Exact paired Mali provider exists, but the common A16 ARM32 bootstrap base has not passed |
 | Full ARM64 userspace | **NO-GO** | Would convert/replace working proprietary service stack for little user value |
-| Kernel 5.4 as final architecture | **HOLD** | Only a reviewed >=5.4.277, preferably 5.4.302 same-lineage result could qualify; no ACK or ongoing upstream support claim is possible |
+| Kernel 5.4 as final architecture | **GO FOR ONE A12 KERNEL-ONLY TEST** | Reviewed 5.4.302 source/config/build/module/AVB/LP contracts close offline; exact-board hardware preservation is not proven and no ACK or ongoing upstream support claim is possible |
 | Kernel 5.10+ migration | **NO-GO IN THIS PHASE** | No complete exact-SoC/board Android provider; regression surface is a new BSP port |
 | >1080p media target | **PLAUSIBLE** | Physical 4K60 output and 4K codec declarations exist; sustained physical 4K decode is not proven |
 | Netflix above current basic/L3 class | **STRUCTURALLY BLOCKED** | L3, HDCP NONE, no secure decoder/protected path; service certification remains an additional gate |
 
 ### Remaining decisive gates (maximum four)
 
-1. Pin a separate clean `android-security-16.0.0_r7` manifest/source checkout and re-audit the
-   exact ARM32 product, cgroups/task profiles, APEX set, linker/SELinux/VINTF deltas and build
-   reproducibility without creating a flash candidate.
-2. In a separate retained-kernel worktree, prove a reviewable 5.4.125→>=5.4.277 (prefer
-   5.4.302) stable update plus netd config delta while preserving exact DTS, drivers, module ABI,
-   boot AVB and rollback. Stop if this becomes a broad vendor-driver rewrite.
+1. With new explicit authorization only, run one UART-first Android 12 kernel-only physical
+   validation of `m8-kernel-5.4.302-r1`, keeping Test8r2 rollback immediately available and
+   checking the complete accepted hardware stack. No authorization exists in this study.
+2. Only if that kernel test passes, pin a separate clean `android-security-16.0.0_r7`
+   manifest/source checkout and re-audit the exact ARM32 product, cgroups/task profiles, APEX
+   set, linker/SELinux/VINTF deltas and build reproducibility without creating a candidate.
 3. Only after both checkpoints pass, build and fully offline-audit exactly one Prototype A r3;
-   any physical boot would require a new explicit authorization.
+   any physical boot would require another explicit authorization.
 4. Prototype B and mixed graphics proof remain closed until an authorized Prototype A passes
    bpfloader and establishes zygote/system_server/SurfaceFlinger/HWC boundaries.
 
@@ -929,12 +1006,16 @@ building r3 before the QPR0/LTS checkpoint would not be justified.
 3. **Completed — corrected cgroup runtime proof:** the separately authorized r2 test proves the
    cgroup correction, mounted APEX init content and service managers, then reproducibly stops at
    the r4/25Q4 5.10 policy boundary.
-4. **Current — source/kernel architecture checkpoint:** pin QPR0 security r7 and prove the
-   same-lineage 5.4 LTS/config update before constructing any r3. No flash is authorized.
-5. **Conditional mixed proof:** only after the ARM32 base passes, build the minimal
+4. **Completed offline — same-lineage kernel checkpoint:** reproducibly integrate and build
+   5.4.302, close config/module/AVB/LP preservation, and construct exactly one isolated Android
+   12 kernel-only candidate.
+5. **Current physical gate:** request, but do not assume, separate authorization for one
+   UART-first Android 12 kernel-only test. Only after it passes, pin QPR0 security r7 and perform
+   the source-only product/cgroup/APEX/linker/SELinux/VINTF audit. No flash is authorized now.
+6. **Conditional mixed proof:** only after the ARM32 base passes, build the minimal
    `zygote64_32` product with the lawful paired graphics provider, close its offline checks and
    perform a separately authorized boot/parity test.
-6. **Final acceptance:** sustained daily-use regression, 4K30-or-1080p evidence-led media
+7. **Final acceptance:** sustained daily-use regression, 4K30-or-1080p evidence-led media
    ceiling, recovery rehearsal and a hash-locked accepted architecture image.
 
 ## 17. Sources and provenance
@@ -974,5 +1055,8 @@ kernel and board claims.
 Local primary evidence includes the accepted-image hashes and logical partitions, generated
 ELF inventory, live read-only ADB capture in `work/architecture-ceiling/device-evidence/`,
 the read-only Android 12 UBOX product, current repository candidate/device-test records, the
-isolated Android 16 tree and donor metadata cache. Raw evidence and large artifacts remain
-ignored or outside Git; no DRM secret material was collected.
+isolated Android 16 tree and donor metadata cache. The Linux 5.4.302 checkpoint additionally
+pins the complete accepted/preservation/Path-A configs, conflict decisions, semantic patches,
+integration/build/audit scripts and candidate manifest under `configs/kernel/`,
+`configs/candidates/` and `scripts/`; its full inventory, logs, source/build trees and large
+artifacts remain ignored or outside Git. No DRM secret material was collected.

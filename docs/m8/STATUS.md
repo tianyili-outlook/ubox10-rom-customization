@@ -74,7 +74,7 @@ Updated: 2026-08-22
 
 ## Active architecture transition
 
-活跃架构开发位于 `codex/m8-architecture-ceiling` 的 Android 16 路线；决策依据为该分支的 `docs/m8/research/architecture-ceiling-study.md`。长期 mixed AArch64-primary / ARM32-secondary 目标继续 **HOLD**，Prototype B 不得启动。r2 实机已证明 r1 的 retained-kernel cgroup 缺项修复有效，并推进到 APEX init import、ueventd 与三个 service manager；新的首个可重复 fatal 是 `android-16.0.0_r4` / 25Q4 的 `NetBpfLoad` 5.10 硬门槛。现有 exact 5.4.125 不再被视为 r4 可接受基础，也没有形成或授权 r3。
+活跃架构开发位于 `codex/m8-architecture-ceiling` 的 Android 16 路线；决策依据为该分支的 `docs/m8/research/architecture-ceiling-study.md`。长期 mixed AArch64-primary / ARM32-secondary 目标继续 **HOLD**，Prototype B 不得启动。r2 实机已证明 r1 的 retained-kernel cgroup 缺项修复有效，并推进到 APEX init import、ueventd 与三个 service manager；新的首个可重复 fatal 是 `android-16.0.0_r4` / 25Q4 的 `NetBpfLoad` 5.10 硬门槛。Path A 已选定；现有 exact 5.4.125 不再被视为可接受 A16 基础。2026-08-22 同 lineage 5.4.302 BSP checkpoint 已离线达到 **GO for one separately authorized Android 12 kernel-only physical validation**，但尚无新物理授权，也没有形成或授权 A16 r3。
 
 架构研究已经找到强匹配 provider 证据：同 lineage donor 的 ARM32 Mali 与 accepted UBOX 文件完全一致，并提供 paired AArch64 Mali 与 multilib mapper/gralloc source。该证据把“缺少匹配 graphics provider”从结构性阻塞收敛为 exact-board build/runtime gate；media 不要求先取得全套 AArch64 provider，可继续保留 ARM32 Allwinner OMX/Cedar 服务并通过进程边界复用。
 
@@ -140,7 +140,40 @@ Source-proven 路线结论如下：
 | 2 | B：r4 / 25Q4 + 5.4 backports | **NO-GO（当前 bounded Gate 2）** | r4 loader 与 netd 都以版本要求 5.10（并要求 5.10.210 LTS floor）；现有 5.4 还真实缺 ringbuf、CAP_PERFMON/BPF capability split、uprobes/ftrace、vmlinux BTF、BPF link/batch API 等。只删除检查或伪造 uname 不合法；完整回移已不是 bounded fix。 |
 | 3 | C：H616 5.10+ | **NO-GO（当前项目）** | Orange Pi `orange-pi-5.10` 是 5.10.75 / `e39ff11e...` 的 mainline-style H616 树，不含 retained 5.4 的 SUNXI display/Cedar/VIN/G2D/gralloc/DRM-heap/USB vendor stack。22 个 accepted vendor_dlkm modules 及 graphics/media/audio/TEE/wireless UAPI 都需同步移植或重建，实质是新 BSP/kernel port。 |
 
-因此当前总决策为 **HOLD**：保留 Android 16/API 36 目标和 TV 适用性，但不再以 r4/25Q4 + exact 5.4.125 构建候选。精确下一动作是在独立 clean checkout 锁定 `android-security-16.0.0_r7`，先做 source-only 产品/cgroup/APEX 差异审计，并为 retained H616 BSP 设计和验证 5.4.125→至少 5.4.277（优先 5.4.302）的可审查 LTS rebase；在该 checkpoint 通过前不构建 r3、不刷写、不启动 Prototype B。Gate 2 继续 **CLOSED**，`m8b-remote-r1`、Test8r2 与 stock rollback 保持。
+在 5.4.302 checkpoint 开始前，总决策因此为 **HOLD**：保留 Android 16/API 36 目标和 TV 适用性，但不再以 r4/25Q4 + exact 5.4.125 构建候选；当时要求先完成可审查的 same-lineage LTS update。下节记录该条件的离线结果；这不改写 r2 历史结论，也不开放 Gate 2。
+
+### Linux 5.4.302 same-lineage BSP checkpoint
+
+结论：**GO FOR ONE SEPARATELY AUTHORIZED ANDROID 12 KERNEL-ONLY PHYSICAL VALIDATION**，不是 hardware compatibility PASS。没有切换 Android 16 source baseline，没有构建 A16 r3、Prototype B 或 5.10 port，也没有访问/修改物理设备。完整候选与证据记录见 `docs/m8/candidates/m8-kernel-5.4.302-r1.md`。
+
+Retained source 精确为 Orange Pi commit `9ab7a758149d3c9b721878a0c18b3f9c5d6c93e6` / tree `d37d590a1e61c8e099e72170bf36e54091aa4820` / `5.4.125+`。该七提交 BSP import 与 upstream v5.4.125 (`3909e237...`) 或 v5.4.302 (`9e3157c5...`) 都没有 Git merge-base，不能安全 blind rebase。最终策略用 Android common 5.4.125 merge commit `6cb0d5ef...` 作为 synthetic base，以 exact vendor tree 为 ours，合入包含 upstream v5.4.302 的 Android common `2443acb8...`。46 个冲突逐项分类为 31 upstream/common wins、12 vendor wins、3 semantic merge；可复现脚本在独立 worktree 17 秒精确重放最终 commit `027ef79e8facb73cb2419b4a08c0bd3f13a2206e` / tree `b328c32712d65f8da98e013bc74944d68c05552b`。
+
+Pre-change inventory 记录 4,603 个 vendor-delta files（4,056 A / 494 M / 53 D）、384 个 LTS overlap 和 434 个 hardware-critical exported symbols。H616/sun50iw9 DTS、SUNXI display/HDMI、Mali-Bifrost、Cedar/VIN、G2D/DI/gralloc/DRM heap、AIC8800 与 SUNXI USB 关键 subtree 在 integration 前后 Git object 完全一致；audio、Ethernet、IR、thermal/DVFS、suspend/wake、DM/AVB 与 generic TEE/OP-TEE source/config 另行审核。Accepted rc-core repeat patch、ff40 keymap、XR819、AIC8800 `20221108-004` 与 vendor RTLwifi source 均由 commit/subtree/hash 锁定并重建。
+
+Primary Android 12 preservation config 从 accepted Image 精确提取，140,888 bytes / `9D3DF7457F0921E1E5983ADB2DBD36A89042CE70BB28EBFEADA7FD5E633D677C`；5.4.302 effective config 为 141,140 bytes / `FA73240A16B52569D28EADF4AFD59834F05AEDD6B69F573863A611B3E359A75D`。32 个变化全部是新/移除 Kconfig 表达、Android KABI padding、stable ARM64 erratum/security/helper defaults 或保持为 `n` 的新增/淘汰选项，逐项解释与 exact diff 已 tracked。主 Image 不引入 A16-only config。Separate Path-A config 验证 `BLK_CGROUP`、`CPUSETS`、`PROC_PID_CPUSET`、`NET_CLS_MATCHALL`、`NET_ACT_POLICE`、`NET_ACT_BPF` 可作为六项 bounded `y` additions，三个新 blkio policy 保持 `n`。
+
+Native GCP clean build 复用 AOSP `clang-r416183b1` / clang 12.0.7，main compile 639 秒、sequential external-module finalization 64 秒，总 wall 703 秒。Image 为 23,492,616 bytes / `9B781ABEA51DEF9AE1FEBB9011CFA630AC267C794FBA0E066674F0EAE2509DCC`，release `5.4.302+`。22 个 accepted vendor_dlkm module name/dependency/alias/firmware/version/license/export-name contract 全部保留，所有新 import CRC 都由 exact 5.4.302 symbol-version set 满足，vermagic 统一为 `5.4.302+ SMP preempt mod_unload modversions aarch64`；旧 5.4.125 modules 不被复用。11 个编译 warning 与一次 vendor Mali parallel make race 全部分类记录；相同 source 的 sequential build 零 error，最终 offline audit 为 `PASS_WITH_PHYSICAL_VALIDATION_REQUIRED`。最低 sampled available RAM 56,826,608 KiB、无 swap；`/work` available 最低 164,776,160 KiB，未发生 OOM/I/O failure。
+
+唯一 Android 12 kernel-only candidate 为：
+
+| 工件 | 大小 | SHA-256 |
+|---|---:|---|
+| `out/candidates/m8-kernel-5.4.302-r1/x12-m8-kernel-5.4.302-r1.img` | 1031739392 | `C93FC8A54391E091E0F95CFE63E4F6DA9AE90D55AA0163D91D42586B48BFEE2B` |
+| `boot.fex` | 67108864 | `338CB4048796E213698585E035D8807D84381324163C19AA939BD8D6BFDDCD2C` |
+| `super.fex` | 851940812 | `913CDED66A315EBD401F042037A2DEE4660209D90AE56C2C45E476BB40742957` |
+| `vendor_dlkm_a.img` | 6680576 | `5B6FED8C5709F994450A2B3177A67E2F1BA94C17C170628F422A1EECE8BEC199` |
+
+Candidate 保留 accepted boot header/cmdline/ramdisk/partition geometry，替换 exact kernel；在 fixed vendor_dlkm extent 中替换匹配的全部 22 modules，保留 mode/uid/gid/timestamps/SELinux labels、module metadata 与所有 non-module files，ext4 `e2fsck` PASS 且剩 1 个 4 KiB free block。Boot AVB、vendor_dlkm AVB hashtree/FEC、LP metadata/extents、sparse→raw exact roundtrip、IMAGEWTY 12/12 checksums 均 PASS。`system_a`、`vendor_a`、`product_a` 原字节保持；outer 仅 `boot.fex`、`super.fex` 与 V companions 改变，其余 46/50（含 bootloader、TEE、vendor_boot、DTBO、vbmeta/vbmeta_system、GPT/factory/security payload）原字节保持。Accepted `m8b-remote-r1` 与 Test8r2 rollback 构建前后 hash 不变。
+
+Final validation 将 424,597-byte vendor inventory 与 39,373-byte offline audit 按原
+SHA-256 byte-for-byte 重生；repository suite 80 tests 全通过，25 个 skip 仅对应本机
+不存在的 ignored historical artifacts，5.4.302 checkpoint 的 5 tests 全部实际执行。
+Selected integration、retained vendor input、两个 module donor、AOSP 与 toolchain checkout
+均 clean；disposable 5.4.302 build worktree 已移除但 build outputs/logs 保留。历史 accepted
+A16 r2 build worktree 保持原状，其唯一 status 是已在 r2 构建记录中锁定的 untracked
+`drivers/net/wireless/xr819/` donor subtree，不属于本 checkpoint 的未记录修改。
+
+Compilation/source/config/module/AVB evidence 不会运行 display、GPU、media、audio、wireless、Ethernet、USB、IR、thermal/DVFS、suspend/wake 或 secure-world path；vendor_dlkm 只有一块 free space 也必须保留为实机风险。因此 Path A 的 kernel 子 checkpoint 离线 **GO**，但总体 A16 Path A 仍 **HOLD**，直到 Android 12 kernel-only 物理回归和后续 `android-security-16.0.0_r7` source-only audit 分别通过。Gate 2 保持 **CLOSED**。
 
 ## Accepted audio milestone
 
@@ -367,7 +400,7 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - r10 已在实机完成 framework boot；r9 Lights/Watchdog/llkd 方向保持关闭，不再修改。
 - r13 是当前 GOLDEN BASELINE；Projectivy、provisioning、遥控和 Power sleep/wake/shutdown 均以实机 UART 为准。
 - M8B native rc-core 遥控迁移已在 r5 设备验收并关闭；Mouse mode intentionally dropped，legacy multi_ir 工件保留为 inert reference，其 Android 12 清理已随 freeze 延期。
-- 当前 board、DT 与 runtime 证据识别为 H616。architecture-ceiling study 已找到强匹配 paired AArch64 Mali 与 multilib mapper/gralloc provider 证据；A16 ARM32 r2 实机已越过 r1 cgroup/ueventd/APEX/service-manager 边界，随后稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛。唯一可继续研究的 Path A 是 QPR0 + 同 lineage 5.4 LTS update；该 checkpoint 通过前不构建 r3、不启动 AArch64 Prototype B。
+- 当前 board、DT 与 runtime 证据识别为 H616。architecture-ceiling study 已找到强匹配 paired AArch64 Mali 与 multilib mapper/gralloc provider 证据；A16 ARM32 r2 实机已越过 r1 cgroup/ueventd/APEX/service-manager 边界，随后稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛。Path A 的 same-lineage 5.4.302 子 checkpoint 已离线 GO，但 physical BSP preservation 尚未证明；在 Android 12 kernel-only 回归和后续 r7 source audit 完成前不构建 r3、不启动 AArch64 Prototype B。
 - `m8b-audio-r2` 只启用产品级 Treble/VNDK 合同；未修改 VNDK payload、mixer、audio platform XML、DTS、machine driver 或已验收功能，现已设备验收为 AUDIO PASS。
 - 2026-08-16 ADB-only 补验未刷机、未重启且未修改 ROM/device properties：VP9 为 Allwinner OMX/Cedar hardware-runtime PASS；Widevine 为可操作 L3，HDCP `NONE`，无 secure decoder 要求。物理画面/逐帧质量与商业服务认证或播放仍未证明。
 - 遥控器 Menu 与 Settings 当前均打开 Projectivy menu。两键语义分离为独立延期项，不回改已验收的 rc-core、keylayout 选择或其他按键行为。
@@ -375,4 +408,4 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 
 ## Next action
 
-保持 `m8b-remote-r1`、Test8r2、stock rollback、r1/r2 artifacts 与物理日志不变。当前唯一下一动作是在独立 clean checkout 锁定 `android-security-16.0.0_r7` 并完成 source-only 产品/cgroup/APEX 差异审计，同时形成 retained H616 BSP 5.4.125→至少 5.4.277、优先最终 5.4.302 的可审查 LTS rebase/netd-config 方案。该 checkpoint 通过前不构建 r3、不刷写、不启动 Prototype B；Gate 2 保持 **CLOSED**。
+保持 `m8b-remote-r1`、Test8r2、stock rollback、A16 r1/r2 artifacts 与物理日志不变。当前精确下一动作是由用户另行明确授权后，对 `m8-kernel-5.4.302-r1` 做一次 UART-first Android 12 kernel-only physical validation，以 accepted Android 12 为唯一 userspace/vendor 对照并覆盖 display/Mali/media/audio/network/wireless/USB/IR/thermal/suspend/TEE 回归。当前未授权，不得刷写。通过后才进入 `android-security-16.0.0_r7` source-only 产品/cgroup/APEX 差异审计；不构建 A16 r3、不启动 Prototype B，Gate 2 保持 **CLOSED**。

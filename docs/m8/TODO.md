@@ -23,7 +23,13 @@
 - [x] 确认 r2 新的首个可重复 fatal：exact r4/25Q4 `NetBpfLoad` 在加载 BPF objects 前因 5.4.125 小于 5.10 返回，init 的 bpfloader `reboot_on_failure` 随后以 `bpfloader-failed` 重启。Zygote32、system_server、SurfaceFlinger、HWC 未到达。
 - [x] 审核 `memory_recursiveprot`、CAP_PERFMON、剩余 cgroup/task-profile、IncFS、BPF/BTF 与最低 LTS：memory_recursiveprot 和 IncFS 当前有明确 fallback；CAP_PERFMON/UprobeStats 是非致命但真实后续缺口；当前没有第二个 pre-bpfloader cgroup fatal。25Q2 的 non-GKI 5.4 最低为 5.4.277，exact 5.4.125 不满足。
 - [x] 完成 A/B/C source-proven 决策：A（`android-security-16.0.0_r7` / API 36.0 / QPR0 + retained 5.4 lineage）排名第一但 **HOLD**；B（r4 + 5.4 feature backports）和 C（5.10+ BSP port）在当前 bounded Gate 2 均 **NO-GO**。没有构建 r3，没有启动 Prototype B。
-- [ ] **当前唯一下一动作：**在独立 clean checkout 锁定 `android-security-16.0.0_r7` manifest/source，先完成 source-only 产品/cgroup/APEX 差异审计；同时为 retained H616 BSP 形成可审查的 5.4.125→至少 5.4.277、优先最终 5.4.302 LTS rebase 与 netd config delta 方案。该 checkpoint 未通过前不构建 r3、不刷写；Gate 2 保持 **CLOSED**。
+- [x] 完成 retained kernel lineage/provenance：Orange Pi `9ab7a758...` 是无 upstream merge-base 的七提交 BSP import；锁定 upstream v5.4.125/v5.4.302、Android common 5.4.125/5.4.302、4,603-file vendor delta、434 个 critical exports、accepted rc-core/keymap 与三个 external module source identities。
+- [x] 选择并精确重放 synthetic-base Android-common merge；46 conflicts 分类为 31 common/stable wins、12 vendor wins、3 semantic merges，最终 commit/tree `027ef79e...` / `b328c327...` 可由 tracked script/patch/record 在独立 worktree 17 秒重现。
+- [x] 从 accepted Android 12 Image config 构建 preservation-only 5.4.302+ Image；32 个 effective Kconfig 变化全部解释并 hash-lock。另行确认 A16 cgroup + QPR0 netd 六项 config addition 在 5.4.302 clean closure，不把它们加入 Android 12 preservation Image。
+- [x] 用 AOSP clang-r416183b1 完整构建 Image 与 exact 22-module set；critical vendor trees、module inventory/metadata/export names/import CRCs、ARM64/boot/DTBO/AVB source contracts 离线 PASS，结果 `PASS_WITH_PHYSICAL_VALIDATION_REQUIRED`。旧 5.4.125 modules 不复用。
+- [x] 构建并审核唯一 Android 12 kernel-only `m8-kernel-5.4.302-r1`：1,031,739,392 bytes / SHA-256 `C93FC8A54391E091E0F95CFE63E4F6DA9AE90D55AA0163D91D42586B48BFEE2B`。System/vendor/product、ramdisk、LP geometry、46/50 outer payload、rollback bytes 保持；boot/vendor_dlkm AVB、sparse roundtrip、IMAGEWTY、e2fsck PASS。未修改物理设备。
+- [ ] **当前唯一下一动作：**只有在用户另行明确授权后，执行一次 UART-first Android 12 kernel-only `m8-kernel-5.4.302-r1` physical validation，完整回归 boot/display/Mali/media/audio/Ethernet/Wi-Fi/Bluetooth/USB/IR/thermal/suspend/wake/TEE；Test8r2 rollback 必须现场可用。当前未授权，不得刷写，Gate 2 保持 **CLOSED**。
+- [ ] **随后但不提前执行：**只有上述 kernel physical checkpoint 通过后，才锁定 `android-security-16.0.0_r7` manifest/source 并做 source-only 产品/cgroup/APEX 差异审计；在此之前不构建 A16 r3、不启动 Prototype B。
 
 ## 已验收基线
 

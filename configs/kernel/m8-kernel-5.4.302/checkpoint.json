@@ -1,0 +1,175 @@
+{
+  "schema": 1,
+  "id": "m8-kernel-5.4.302",
+  "scope": "Same-major-lineage Linux 5.4 LTS preservation checkpoint for the accepted H616/sun50iw9 Android 12 BSP; no Android 16 source change and no physical device action.",
+  "decision": "GO_FOR_SEPARATELY_AUTHORIZED_ANDROID12_KERNEL_ONLY_PHYSICAL_VALIDATION",
+  "lineage": {
+    "vendor": {
+      "url": "https://github.com/orangepi-xunlong/linux-orangepi.git",
+      "commit": "9ab7a758149d3c9b721878a0c18b3f9c5d6c93e6",
+      "tree": "d37d590a1e61c8e099e72170bf36e54091aa4820",
+      "reported_release": "5.4.125+",
+      "root_commit": "9da1b18174fe5dcd773207bf9b884e0e87f7e8d1",
+      "first_bsp_commit": "2ef19d18ce29fd6d8e77f89367480f65616da2df",
+      "merge_base_with_upstream_v5_4_125": null,
+      "merge_base_with_upstream_v5_4_302": null
+    },
+    "upstream": {
+      "url": "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git",
+      "v5_4_125_tag_object": "e9351d7f0fb2ce8306234f07feb0a7598158bff4",
+      "v5_4_125_commit": "3909e2374335335c9504467caabc906d3f7487e4",
+      "v5_4_302_tag_object": "8ffcca9e0f269ee86a682eaae7e49c5efae79fe9",
+      "v5_4_302_commit": "9e3157c56ec7917e6a80ea53a8bd752e0037f2cb",
+      "v5_4_125_is_ancestor_of_v5_4_302": true,
+      "range_commit_count": 17753,
+      "range_changed_path_count": 9585
+    },
+    "android_common": {
+      "url": "https://android.googlesource.com/kernel/common",
+      "android12_5_4_after_v5_4_125_merge": "6cb0d5ef8b388d0249d96060e9ef31b466f88c7d",
+      "base_tree": "7dc9038a530ed9018f3645bf356a2a2dac982827",
+      "android12_5_4_at_v5_4_302": "2443acb8671f5eaeac985e70446726278ed014ae",
+      "target_tree": "e7a14382735b2398bb955e3b20288db305799ea4",
+      "target_contains_upstream_v5_4_302": true,
+      "range_commit_count": 19181,
+      "range_changed_path_count": 9713
+    },
+    "integration": {
+      "strategy": "Synthetic-base three-way merge: exact vendor tree as ours, Android common immediately after its v5.4.125 merge as base, and Android common containing v5.4.302 as theirs.",
+      "synthetic_vendor_commit": "31364553e3cb9171d767cbf0c5c1af4e0198d5d8",
+      "commit": "027ef79e8facb73cb2419b4a08c0bd3f13a2206e",
+      "tree": "b328c32712d65f8da98e013bc74944d68c05552b",
+      "exact_replay_verified": true
+    }
+  },
+  "vendor_delta_inventory": {
+    "file_count": 4603,
+    "status_counts": {
+      "added": 4056,
+      "modified": 494,
+      "deleted": 53
+    },
+    "overlap_with_android_common_5_4_125_to_5_4_302": 384,
+    "source_level_exports_in_critical_delta": 434,
+    "full_external_report": {
+      "path": "/work/build-logs/ubox10-kernel-5.4.302/20260822T170205Z/inventory/vendor-delta-inventory.json",
+      "size": 424597,
+      "sha256": "b2381be4d674cb64dea4d1419c74805040f8e5fbff60e91c5f1346db5151aaf0"
+    },
+    "critical_categories": {
+      "h616_sun50iw9_dts_bindings": {"files": 36, "stable_overlap": 0, "integration_changed": 0},
+      "display_hdmi_framebuffer_drm": {"files": 716, "stable_overlap": 0, "integration_changed": 0},
+      "mali_g31_kbase": {"files": 278, "stable_overlap": 0, "integration_changed": 0},
+      "cedar_vpu_media_vin": {"files": 247, "stable_overlap": 0, "integration_changed": 0},
+      "g2d_dma_heaps_ion": {"files": 53, "stable_overlap": 8, "integration_changed": 5},
+      "apollo_audio": {"files": 60, "stable_overlap": 0, "integration_changed": 0},
+      "aic8800_wifi_bluetooth": {"files": 94, "stable_overlap": 0, "integration_changed": 0},
+      "ethernet": {"files": 6, "stable_overlap": 0, "integration_changed": 0},
+      "usb_host_device": {"files": 47, "stable_overlap": 7, "integration_changed": 7},
+      "ir_rc_core": {"files": 9, "stable_overlap": 1, "integration_changed": 1},
+      "thermal_dvfs_clocks_regulators": {"files": 49, "stable_overlap": 3, "integration_changed": 2},
+      "suspend_wake": {"files": 3, "stable_overlap": 0, "integration_changed": 0},
+      "tee_optee_vendor_delta": {"files": 0, "stable_overlap": 0, "integration_changed": 0},
+      "block_dm_avb_filesystems": {"files": 3, "stable_overlap": 3, "integration_changed": 3}
+    },
+    "byte_preserved_critical_subtrees": {
+      "arch/arm64/boot/dts/sunxi": "3b9d9bd83fe858d7aab9ad449b6cd8d9831f3f9e",
+      "drivers/char/sunxi-di": "ed22ad8ef76e07082b1f7caeb80d5c1122b4724d",
+      "drivers/char/sunxi-gralloc": "44c67e82febf599501b6ad33227175267d92f1c5",
+      "drivers/char/sunxi_g2d": "35cdc3430acb96ffafd65e1e3cfbe2c798b70c8d",
+      "drivers/media/cedar-ve": "ce3d0c1d23d12a669c11dedd15d719bc670a0c69",
+      "drivers/media/platform/sunxi-vin": "9a5fe3093bb2a510a05a9f16f0af9837cd575848",
+      "drivers/net/wireless/aic8800": "c76aaa4162fa0556c0d6527804cddd9a23db5157",
+      "drivers/sunxi_drm_heap": "68b98f36a21b22aa62a550537cc2572c716de87e",
+      "drivers/usb/sunxi_usb": "3fc8a23b45eb847e927bd20e60d91bd905d5dbf1",
+      "drivers/video/fbdev/sunxi": "bb899172865198b1562575704d415a28a9835d84",
+      "modules/gpu/mali-bifrost": "aa1a5f5411248575b94f22b7082a7dbf1b6e6245"
+    }
+  },
+  "conflicts": {
+    "total": 46,
+    "upstream_stable_fix_wins": 31,
+    "vendor_implementation_preserved": 12,
+    "semantic_merge": 3,
+    "obsolete_vendor_patch_upstream_equivalent": 0,
+    "record": "conflict-resolutions.json"
+  },
+  "accepted_external_changes": {
+    "rc_core_repeat_patch": {
+      "path": "configs/candidates/m8b-rc-core-r2/rc-main-repeat.patch",
+      "size": 357,
+      "sha256": "70a316da67274fc2ed2584ccc090dc4282e6d740ffa04ee3c3b47da2cd266549"
+    },
+    "ff40_keymap_input": {
+      "path": "configs/candidates/m8b-rc-core-r1/ff40-map.json",
+      "size": 5358,
+      "sha256": "474c2f842e71d45282740603e3b13150242a8e0dac9718373222cd0251c62d7f"
+    },
+    "effective_config_override": "CONFIG_SUNXI_MULTI_IR_SUPPORT=n"
+  },
+  "external_module_sources": {
+    "xr819": {
+      "url": "https://github.com/JasonYANG170/Mini-LinuxPC-Pro.git",
+      "commit": "5bcbf22cdbc3f6ff7c5633447b0b0f8dbf6bfca1",
+      "subtree": "e5d1a2df874a1f81f810b443f73709c9559ec07c"
+    },
+    "aic8800_20221108_004": {
+      "url": "https://github.com/GammaKinematics/sunxi_kernel.git",
+      "commit": "abfe04920992577c71a4180a8480a4a774965c76",
+      "subtree": "70c98140316f7ed23af879bb0e3d881883f5e978"
+    },
+    "accepted_vendor_rtlwifi": {
+      "source_commit": "9ab7a758149d3c9b721878a0c18b3f9c5d6c93e6",
+      "subtree": "8d1d70eaacbb82e599e3db228045f86a1c4d05a8"
+    }
+  },
+  "toolchain": {
+    "identity": "AOSP clang-r416183b1 / Android 7485623 / clang 12.0.7",
+    "toolchain_commit": "3f17560d9bd078537f29294c2bcf80b591821a09",
+    "llvm_project_commit": "c935d99d7cf2016289302412d708641d52d2f7ee"
+  },
+  "effective_configs": {
+    "accepted_5_4_125": {"path": "accepted-5.4.125.config", "size": 140888, "sha256": "9d3df7457f0921e1e5983adb2dbd36a89042ce70bb28ebfeada7fd5e633d677c"},
+    "preservation_5_4_302": {"path": "preservation-5.4.302.config", "size": 141140, "sha256": "fa73240a16b52569d28eadf4afd59834f05aedd6b69f573863a611b3e359a75d"},
+    "path_a_5_4_302": {"path": "path-a-5.4.302.config", "size": 141228, "sha256": "2a159b7eaf3ed96988f169a022a927b440a5d786f20c490d7af004760f4b4f29"},
+    "preservation_delta_count": 32,
+    "path_a_delta_count": 9,
+    "path_a_enabled_requirements": [
+      "CONFIG_BLK_CGROUP",
+      "CONFIG_CPUSETS",
+      "CONFIG_PROC_PID_CPUSET",
+      "CONFIG_NET_CLS_MATCHALL",
+      "CONFIG_NET_ACT_POLICE",
+      "CONFIG_NET_ACT_BPF"
+    ]
+  },
+  "build": {
+    "release": "5.4.302+",
+    "image": {"size": 23492616, "sha256": "9b781abea51def9ae1febb9011cfa630ac267c794fba0e066674f0eae2509dcc"},
+    "module_count": 22,
+    "module_inventory_exact": true,
+    "module_metadata_and_export_names_exact": true,
+    "all_module_import_crcs_satisfied": true,
+    "dtb_count": 1,
+    "candidate_preserves_accepted_outer_dtbo": true,
+    "distinct_warning_count": 11,
+    "unresolved_compile_errors": 0,
+    "main_build_elapsed_seconds": 639,
+    "sequential_finalization_elapsed_seconds": 64,
+    "total_elapsed_seconds": 703,
+    "offline_audit": {
+      "result": "PASS_WITH_PHYSICAL_VALIDATION_REQUIRED",
+      "path": "/work/build-logs/ubox10-kernel-5.4.302/20260822T170205Z/offline-audit.json",
+      "size": 39373,
+      "sha256": "a67c456bedcf43f935aa8a19ad8e4ca8e24fe012816b4207f3a10c2db13a7b64"
+    }
+  },
+  "candidate": {
+    "id": "m8-kernel-5.4.302-r1",
+    "path": "out/candidates/m8-kernel-5.4.302-r1/x12-m8-kernel-5.4.302-r1.img",
+    "size": 1031739392,
+    "sha256": "c93fc8a54391e091e0f95cfe63e4f6da9ae90d55aa0163d91d42586b48bfee2b",
+    "physical_test_authorized": false,
+    "gate2": "CLOSED"
+  }
+}

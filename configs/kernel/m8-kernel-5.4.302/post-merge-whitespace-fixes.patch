@@ -1,0 +1,54 @@
+diff --git a/Documentation/devicetree/bindings/gpu/samsung-rotator.yaml b/Documentation/devicetree/bindings/gpu/samsung-rotator.yaml
+index 45ce562435fa..c369f3dda3fe 100644
+--- a/Documentation/devicetree/bindings/gpu/samsung-rotator.yaml
++++ b/Documentation/devicetree/bindings/gpu/samsung-rotator.yaml
+@@ -45,4 +45,3 @@ examples:
+         clocks = <&clock 278>;
+         clock-names = "rotator";
+     };
+-
+diff --git a/drivers/tty/synclink_gt.c b/drivers/tty/synclink_gt.c
+index b72471373c71..85e486bfead4 100644
+--- a/drivers/tty/synclink_gt.c
++++ b/drivers/tty/synclink_gt.c
+@@ -731,7 +731,7 @@ static void set_termios(struct tty_struct *tty, struct ktermios *old_termios)
+ 		if (!C_CRTSCTS(tty) || !tty_throttled(tty))
+ 			info->signals |= SerialSignal_RTS;
+ 		spin_lock_irqsave(&info->lock,flags);
+-	 	set_gtsignals(info);
++		set_gtsignals(info);
+ 		spin_unlock_irqrestore(&info->lock,flags);
+ 	}
+ 
+@@ -2545,7 +2545,7 @@ static int get_params(struct slgt_info *info, MGSL_PARAMS __user *user_params)
+ 
+ static int set_params(struct slgt_info *info, MGSL_PARAMS __user *new_params)
+ {
+- 	unsigned long flags;
++	unsigned long flags;
+ 	MGSL_PARAMS tmp_params;
+ 
+ 	DBGINFO(("%s set_params\n", info->device_name));
+@@ -3100,7 +3100,7 @@ static int tiocmget(struct tty_struct *tty)
+  	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&info->lock,flags);
+- 	get_gtsignals(info);
++	get_gtsignals(info);
+ 	spin_unlock_irqrestore(&info->lock,flags);
+ 
+ 	result = ((info->signals & SerialSignal_RTS) ? TIOCM_RTS:0) +
+@@ -5072,4 +5072,3 @@ static void rx_timeout(struct timer_list *t)
+ 	spin_unlock_irqrestore(&info->lock, flags);
+ 	bh_handler(&info->task);
+ }
+-
+diff --git a/sound/soc/meson/meson-codec-glue.c b/sound/soc/meson/meson-codec-glue.c
+index 524a33472337..2466525013b2 100644
+--- a/sound/soc/meson/meson-codec-glue.c
++++ b/sound/soc/meson/meson-codec-glue.c
+@@ -146,4 +146,3 @@ EXPORT_SYMBOL_GPL(meson_codec_glue_input_dai_remove);
+ MODULE_AUTHOR("Jerome Brunet <jbrunet@baylibre.com>");
+ MODULE_DESCRIPTION("Amlogic Codec Glue Helpers");
+ MODULE_LICENSE("GPL v2");
+-

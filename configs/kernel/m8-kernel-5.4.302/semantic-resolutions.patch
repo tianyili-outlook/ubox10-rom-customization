@@ -1,0 +1,70 @@
+diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+index 85e97550a9a6..57bb743209c5 100644
+--- a/drivers/char/Kconfig
++++ b/drivers/char/Kconfig
+@@ -572,4 +572,12 @@ config RANDOM_TRUST_BOOTLOADER
+ 	  believe its RNG facilities may be faulty. This may also be configured
+ 	  at boot time with "random.trust_bootloader=on/off".
+ 
++source "drivers/char/dump_reg/Kconfig"
++source "drivers/char/sunxi-sysinfo/Kconfig"
++source "drivers/char/sunxi_g2d/Kconfig"
++source "drivers/char/sunxi-di/Kconfig"
++source "drivers/char/sunxi_standby/Kconfig"
++source "drivers/char/sunxi-gralloc/Kconfig"
++source "drivers/char/sunxi_sw_sync/Kconfig"
++
+ endmenu
+diff --git a/drivers/cpufreq/sun50i-cpufreq-nvmem.c b/drivers/cpufreq/sun50i-cpufreq-nvmem.c
+index dc9343c9c595..a54179116b40 100644
+--- a/drivers/cpufreq/sun50i-cpufreq-nvmem.c
++++ b/drivers/cpufreq/sun50i-cpufreq-nvmem.c
+@@ -292,13 +292,17 @@ static int sun50i_cpufreq_nvmem_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+ 
+ 	match = dev_get_platdata(&pdev->dev);
+-	if (!match)
++	if (!match) {
++		kfree(opp_tables);
+ 		return -EINVAL;
++	}
+ 
+ 	ret = sun50i_cpufreq_get_efuse(match->data,
+ 				       &ver_data.version, ver_data.name);
+-	if (ret)
++	if (ret) {
++		kfree(opp_tables);
+ 		return ret;
++	}
+ 
+ 	for_each_possible_cpu(cpu) {
+ 		struct device *cpu_dev = get_cpu_device(cpu);
+diff --git a/drivers/pinctrl/sunxi/pinctrl-sunxi.c b/drivers/pinctrl/sunxi/pinctrl-sunxi.c
+index f73b783f71cf..8f846fb5b875 100644
+--- a/drivers/pinctrl/sunxi/pinctrl-sunxi.c
++++ b/drivers/pinctrl/sunxi/pinctrl-sunxi.c
+@@ -378,6 +378,7 @@ static int sunxi_pctrl_dt_node_to_map(struct pinctrl_dev *pctldev,
+ 	struct property *prop;
+ 	const char *function, *pin_prop;
+ 	const char *group;
++	struct pinctrl_map *new_map;
+ 	int ret, npins, nmaps, configlen = 0, i = 0;
+ 
+ 	*map = NULL;
+@@ -453,9 +454,13 @@ static int sunxi_pctrl_dt_node_to_map(struct pinctrl_dev *pctldev,
+ 	 * We know have the number of maps we need, we can resize our
+ 	 * map array
+ 	 */
+-	*map = krealloc(*map, i * sizeof(struct pinctrl_map), GFP_KERNEL);
+-	if (!*map)
+-		return -ENOMEM;
++	new_map = krealloc(*map, i * sizeof(struct pinctrl_map), GFP_KERNEL);
++	if (!new_map) {
++		ret = -ENOMEM;
++		goto err_free_map;
++	}
++
++	*map = new_map;
+ 
+ 	return 0;
+ 

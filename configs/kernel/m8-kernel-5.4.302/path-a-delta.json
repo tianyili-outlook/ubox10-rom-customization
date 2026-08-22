@@ -1,0 +1,38 @@
+{
+  "CONFIG_BLK_CGROUP": [
+    "n",
+    "y"
+  ],
+  "CONFIG_BLK_CGROUP_IOCOST": [
+    null,
+    "n"
+  ],
+  "CONFIG_BLK_CGROUP_IOLATENCY": [
+    null,
+    "n"
+  ],
+  "CONFIG_BLK_DEV_THROTTLING": [
+    null,
+    "n"
+  ],
+  "CONFIG_CPUSETS": [
+    "n",
+    "y"
+  ],
+  "CONFIG_NET_ACT_BPF": [
+    "n",
+    "y"
+  ],
+  "CONFIG_NET_ACT_POLICE": [
+    "n",
+    "y"
+  ],
+  "CONFIG_NET_CLS_MATCHALL": [
+    "n",
+    "y"
+  ],
+  "CONFIG_PROC_PID_CPUSET": [
+    null,
+    "y"
+  ]
+}

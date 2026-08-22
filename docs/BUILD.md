@@ -136,6 +136,80 @@ The builder uses `-j8`, repacks the accepted boot header/ramdisk/hash-footer con
 
 The verified result is `out/candidates/a16-prototype-a-r2/x12-a16-prototype-a-r2.img`, 1,261,038,592 bytes, SHA-256 `114DF8677CD6984EB1431377723EDF61C80ACF26C15D8770BAE47DCFE7D1B6D0`. Its boot image is 67,108,864 bytes / `4F0DB0070E294DEA93319F4B21335E6725DBB7B70066E7C1E6BF55CFEB09C10C`; kernel is 23,232,520 bytes / `5D7D7F84A8E3CBCC4A4AF78A9EB4DECAC846E62BA4C681E85B438B69B196EBF3`. See `docs/m8/candidates/a16-prototype-a-r2.md`; the output remains offline-only and does not authorize flashing.
 
+## Linux 5.4.302 same-lineage BSP checkpoint
+
+This is an isolated Android 12 kernel-preservation procedure, not an Android 16 build. It
+never writes the accepted Orange Pi checkout or accepted firmware inputs. The tracked contract
+under `configs/kernel/m8-kernel-5.4.302/` pins the retained vendor tree, Android-common
+5.4.125/5.4.302 anchors, all 46 conflict decisions, semantic resolutions, exact effective
+configs and expected integration commit/tree. Use a separate clean repository containing all
+three pinned Git objects; the integration script refuses a dirty tree and reproduces commit
+`027ef79e8facb73cb2419b4a08c0bd3f13a2206e`, tree
+`b328c32712d65f8da98e013bc74944d68c05552b`:
+
+```bash
+git clone https://android.googlesource.com/kernel/common \
+  /work/src/ubox10-kernel-5.4.302-common
+git -C /work/src/ubox10-kernel-5.4.302-common remote add vendor \
+  https://github.com/orangepi-xunlong/linux-orangepi.git
+git -C /work/src/ubox10-kernel-5.4.302-common fetch origin \
+  refs/heads/android12-5.4:refs/remotes/origin/android12-5.4
+git -C /work/src/ubox10-kernel-5.4.302-common fetch vendor \
+  refs/heads/orange-pi-5.4-sun50iw9:refs/remotes/vendor/orange-pi-5.4-sun50iw9
+scripts/integrate-m8-kernel-54302.sh \
+  /work/src/ubox10-kernel-5.4.302-common
+```
+
+Pin the external module donors exactly as recorded in `checkpoint.json`: XR819 from
+`Mini-LinuxPC-Pro` commit `5bcbf22cdbc3f6ff7c5633447b0b0f8dbf6bfca1` and AIC8800
+20221108-004 from `GammaKinematics/sunxi_kernel` commit
+`abfe04920992577c71a4180a8480a4a774965c76`. Use the already validated
+AOSP `clang-r416183b1` toolchain. From a clean build/evidence destination, the exact build
+entry point is:
+
+```bash
+scripts/build-m8-kernel-54302.sh \
+  /work/src/ubox10-kernel-5.4.302-common \
+  027ef79e8facb73cb2419b4a08c0bd3f13a2206e \
+  /work/build-logs/ubox10-kernel-5.4.302/20260822T170205Z/accepted/boot-unpacked/kernel \
+  configs/candidates/m8b-rc-core-r1/ff40-map.json \
+  configs/candidates/m8b-rc-core-r2/rc-main-repeat.patch \
+  /work/toolchains/aosp-clang-android12/clang-r416183b1/bin \
+  /work/toolchains/ubuntu-libssl-dev/root \
+  /work/toolchains/ubuntu-bc/root \
+  /work/kernel-builds/m8-kernel-5.4.302-r1 \
+  /work/build-logs/ubox10-kernel-5.4.302/20260822T170205Z \
+  /work/src/ubox10-xr819-5.4-donor \
+  5bcbf22cdbc3f6ff7c5633447b0b0f8dbf6bfca1 \
+  /work/src/gamma-sunxi-aic8800-donor \
+  abfe04920992577c71a4180a8480a4a774965c76
+```
+
+The builder starts from the Image-extracted accepted Android 12 config and fails unless its
+preservation and separate Path-A effective configs exactly match the tracked configs/diffs.
+It builds the ARM64 Image plus the complete 22-module set, records full provenance/resources,
+and leaves the source integration repository unchanged. Run it in a clearly named detached
+tmux session with persistent console and status files for any future rebuild. The accepted run
+used `-j8`, clang 12.0.7, and produced release `5.4.302+`; the Image is 23,492,616 bytes,
+SHA-256 `9B781ABEA51DEF9AE1FEBB9011CFA630AC267C794FBA0E066674F0EAE2509DCC`.
+
+After `scripts/audit-m8-kernel-54302.py` reports
+`PASS_WITH_PHYSICAL_VALIDATION_REQUIRED`, the only candidate assembly entry point is:
+
+```bash
+python3 scripts/build-m8-kernel-54302-candidate.py --keep-failed
+```
+
+The candidate builder hash-locks the build audit, accepted Android 12 base, rollback image,
+AOSP host tools and all expected results in
+`configs/candidates/m8-kernel-5.4.302-r1.json`. It refuses to overwrite an existing final
+output, performs no device operation, and must not be used to change system/vendor/product or
+unrelated outer payloads. The accepted offline result is
+`out/candidates/m8-kernel-5.4.302-r1/x12-m8-kernel-5.4.302-r1.img`, 1,031,739,392
+bytes, SHA-256 `C93FC8A54391E091E0F95CFE63E4F6DA9AE90D55AA0163D91D42586B48BFEE2B`.
+See `docs/m8/candidates/m8-kernel-5.4.302-r1.md` for conflict rationale, the complete config
+delta, module audit, packaging invariants and the still-closed physical gate.
+
 ## Checks
 
 ```powershell

@@ -1,0 +1,130 @@
+{
+  "CONFIG_ANDROID_KABI_RESERVE": [
+    null,
+    "y"
+  ],
+  "CONFIG_ANDROID_VENDOR_OEM_DATA": [
+    null,
+    "y"
+  ],
+  "CONFIG_ARM64_ERRATUM_1742098": [
+    null,
+    "y"
+  ],
+  "CONFIG_ARM64_ERRATUM_3194386": [
+    null,
+    "y"
+  ],
+  "CONFIG_BATTERY_RT5033": [
+    null,
+    "n"
+  ],
+  "CONFIG_BPF_UNPRIV_DEFAULT_OFF": [
+    null,
+    "n"
+  ],
+  "CONFIG_CC_HAS_ASM_GOTO_OUTPUT": [
+    null,
+    "y"
+  ],
+  "CONFIG_CC_HAS_AUTO_VAR_INIT_ZERO_ENABLER": [
+    null,
+    "y"
+  ],
+  "CONFIG_CRYPTO_LIB_BLAKE2S": [
+    "n",
+    null
+  ],
+  "CONFIG_CRYPTO_LIB_BLAKE2S_GENERIC": [
+    null,
+    "y"
+  ],
+  "CONFIG_DECNET": [
+    "n",
+    null
+  ],
+  "CONFIG_DRM_MXSFB": [
+    "n",
+    null
+  ],
+  "CONFIG_FORTIFY_SOURCE": [
+    "n",
+    null
+  ],
+  "CONFIG_INET_TABLE_PERTURB_ORDER": [
+    null,
+    "16"
+  ],
+  "CONFIG_LEDS_CLASS_MULTICOLOR": [
+    null,
+    "n"
+  ],
+  "CONFIG_LIB_MEMNEQ": [
+    null,
+    "y"
+  ],
+  "CONFIG_MFD_TI_AM335X_TSCADC": [
+    "n",
+    null
+  ],
+  "CONFIG_MITIGATE_SPECTRE_BRANCH_HISTORY": [
+    null,
+    "y"
+  ],
+  "CONFIG_NET_CLS_RSVP": [
+    "n",
+    null
+  ],
+  "CONFIG_NET_CLS_RSVP6": [
+    "n",
+    null
+  ],
+  "CONFIG_NET_CLS_TCINDEX": [
+    "n",
+    null
+  ],
+  "CONFIG_NET_SCH_CBQ": [
+    "n",
+    null
+  ],
+  "CONFIG_NET_SCH_DSMARK": [
+    "n",
+    null
+  ],
+  "CONFIG_NVM": [
+    "n",
+    null
+  ],
+  "CONFIG_NVME_TCP": [
+    null,
+    "n"
+  ],
+  "CONFIG_PROC_MEM_ALWAYS_FORCE": [
+    null,
+    "y"
+  ],
+  "CONFIG_PROC_MEM_FORCE_PTRACE": [
+    null,
+    "n"
+  ],
+  "CONFIG_PROC_MEM_NO_FORCE": [
+    null,
+    "n"
+  ],
+  "CONFIG_PSTORE_BLK": [
+    "n",
+    null
+  ],
+  "CONFIG_REFCOUNT_FULL": [
+    "y",
+    null
+  ],
+  "CONFIG_SURFACE_PLATFORMS": [
+    null,
+    "y"
+  ],
+  "CONFIG_XOR_BLOCKS": [
+    null,
+    "y"
+  ]
+}
