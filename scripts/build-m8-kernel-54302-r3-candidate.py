@@ -100,7 +100,7 @@ class R3Builder(R2.R2Builder):
             "vendor_dlkm": vendor_dlkm_audit,
             "super": super_audit,
             "outer": outer_audit,
-            "preserved": [
+            "preserved": self.cfg["experiment"].get("preserved", [
                 "physical r1 boot.fex, Linux 5.4.302 Image, ramdisk, DT and boot AVB bytes",
                 "r1 Android 12 system_a, vendor_a, product_a and userspace bytes",
                 "r1 DTBO, vendor_boot, bootloader, TEE and vbmeta payloads",
@@ -108,18 +108,18 @@ class R3Builder(R2.R2Builder):
                 "21 unrelated module bytes and all module metadata/static vendor_dlkm files",
                 "r1 70 MHz AIC runtime clock behavior and original timeouts/control flow",
                 "m8b-remote-r1 input, physical r1 candidate and Test8r2 rollback image",
-            ],
-            "changed": [
+            ]),
+            "changed": self.cfg["experiment"].get("changed", [
                 "START_APP-gated observability source in the pinned AIC8800 BSP",
                 "aic8800_bsp.ko only within vendor_dlkm",
                 "vendor_dlkm AVB hashtree/FEC and containing super.fex extent",
                 "IMAGEWTY Vsuper checksum companion",
-            ],
-            "offline_limitations": [
+            ]),
+            "offline_limitations": self.cfg["experiment"].get("offline_limitations", [
                 "Instrumentation does not change or prove Wi-Fi behavior.",
                 "Only a separately authorized UART run can locate the 1037/1038 runtime boundary.",
                 "This candidate does not authorize flashing and does not open Gate 2.",
-            ],
+            ]),
         }
         result = BASE.rewrite_paths(result, self.stage, self.final)
         (self.stage / "build-result.json").write_text(

@@ -1,0 +1,151 @@
+--- a/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aic_bsp_driver.c
++++ b/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aic_bsp_driver.c
+@@ -11,6 +11,11 @@
+ #include <linux/list.h>
+ #include <linux/version.h>
+ #include <linux/firmware.h>
++#ifndef __GENKSYMS__
++#include <linux/mmc/sdio.h>
++#include <linux/mmc/sdio_func.h>
++#include <linux/mmc/host.h>
++#endif
+ #include "aic_bsp_txrxif.h"
+ #include "aicsdio.h"
+ #include "aicusb.h"
+@@ -51,19 +52,73 @@
+ 	WRITE_ONCE(trace->cfm_seen, 0);
+ 	WRITE_ONCE(trace->token_match, 0);
+ 	WRITE_ONCE(trace->completion, 0);
++	WRITE_ONCE(trace->timeout_func_num, 0);
++	WRITE_ONCE(trace->timeout_host_cap_sdio_irq, 0);
++	WRITE_ONCE(trace->timeout_host_irq_pending, 0);
++	WRITE_ONCE(trace->timeout_irq_claimed, 0);
++	WRITE_ONCE(trace->timeout_handler_installed, 0);
++	WRITE_ONCE(trace->timeout_cccr_intx, 0);
++	WRITE_ONCE(trace->timeout_cccr_intx_ret, -EINPROGRESS);
++	WRITE_ONCE(trace->timeout_cccr_ienx, 0);
++	WRITE_ONCE(trace->timeout_cccr_ienx_ret, -EINPROGRESS);
+ 	smp_wmb();
+ 	atomic_set(&trace->active, 1);
+ }
+ 
++static void aic_startapp_trace_timeout_snapshot(struct priv_dev *aicdev)
++{
++	struct aic_startapp_trace *trace = &aicdev->startapp_trace;
++	struct sdio_func *func = READ_ONCE(aicdev->func[0]);
++	struct mmc_host *host;
++	u8 value;
++	int ret;
++
++	if (!func || !func->card || !func->card->host) {
++		WRITE_ONCE(trace->timeout_cccr_intx_ret, -ENODEV);
++		WRITE_ONCE(trace->timeout_cccr_ienx_ret, -ENODEV);
++		return;
++	}
++
++	host = func->card->host;
++	WRITE_ONCE(trace->timeout_func_num, func->num);
++	WRITE_ONCE(trace->timeout_host_cap_sdio_irq,
++		   !!(READ_ONCE(host->caps) & MMC_CAP_SDIO_IRQ));
++	WRITE_ONCE(trace->timeout_host_irq_pending,
++		   !!READ_ONCE(host->sdio_irq_pending));
++	WRITE_ONCE(trace->timeout_irq_claimed, !!sdio_irq_claimed(host));
++	WRITE_ONCE(trace->timeout_handler_installed,
++		   !!READ_ONCE(func->irq_handler));
++
++	/*
++	 * The START_APP wait has already timed out.  Read the read-only CCCR
++	 * pending register first while the function is still present and before
++	 * the existing teardown path; the trace remains active across this
++	 * snapshot so a racing handler is not hidden.
++	 */
++	sdio_claim_host(func);
++	value = sdio_f0_readb(func, SDIO_CCCR_INTx, &ret);
++	WRITE_ONCE(trace->timeout_cccr_intx, value);
++	WRITE_ONCE(trace->timeout_cccr_intx_ret, ret);
++	value = sdio_f0_readb(func, SDIO_CCCR_IENx, &ret);
++	WRITE_ONCE(trace->timeout_cccr_ienx, value);
++	WRITE_ONCE(trace->timeout_cccr_ienx_ret, ret);
++	sdio_release_host(func);
++}
++
+ static void aic_startapp_trace_finish(struct priv_dev *aicdev,
+ 				      const struct rwnx_cmd *cmd,
+-				      const char *result)
++				      const char *result,
++				      bool timed_out)
+ {
+ 	struct aic_startapp_trace *trace = &aicdev->startapp_trace;
+ 
+ 	if (cmd->id != DBG_START_APP_REQ || cmd->reqid != DBG_START_APP_CFM ||
+-	    !atomic_xchg(&trace->active, 0))
++	    !atomic_read(&trace->active))
+ 		return;
++	if (timed_out)
++		aic_startapp_trace_timeout_snapshot(aicdev);
++	if (!atomic_xchg(&trace->active, 0))
++		return;
+ 
+ 	pr_err("AIC_STARTAPP_TRACE: result=%s gen=%u token=%u req=%u cfm=%u "
+ 	       "tx_queued=%u tx_bus_len=%u tx_bus_ret=%d "
+@@ -73,7 +125,11 @@
+ 	       "rx_cmd53_count=%d rx_after_tx_return=%d "
+ 	       "rx_cmd53_len=%u rx_cmd53_ret=%d "
+ 	       "rx_frame_len=%u rx_type=0x%02x rx_msg_id=%u "
+-	       "cfm_seen=%u token_match=%u completion=%u\n",
++	       "cfm_seen=%u token_match=%u completion=%u "
++	       "timeout_func=%u host_cap_sdio_irq=%u host_irq_pending=%u "
++	       "irq_claimed=%u handler_installed=%u "
++	       "cccr_intx=0x%02x cccr_intx_ret=%d "
++	       "cccr_ienx=0x%02x cccr_ienx_ret=%d\n",
+ 	       result, READ_ONCE(trace->generation), READ_ONCE(trace->token),
+ 	       READ_ONCE(trace->req_id), READ_ONCE(trace->cfm_id),
+ 	       READ_ONCE(trace->tx_queued), READ_ONCE(trace->tx_bus_len),
+@@ -90,7 +146,16 @@
+ 	       READ_ONCE(trace->rx_frame_len), READ_ONCE(trace->rx_type),
+ 	       READ_ONCE(trace->rx_msg_id),
+ 	       READ_ONCE(trace->cfm_seen), READ_ONCE(trace->token_match),
+-	       READ_ONCE(trace->completion));
++	       READ_ONCE(trace->completion),
++	       READ_ONCE(trace->timeout_func_num),
++	       READ_ONCE(trace->timeout_host_cap_sdio_irq),
++	       READ_ONCE(trace->timeout_host_irq_pending),
++	       READ_ONCE(trace->timeout_irq_claimed),
++	       READ_ONCE(trace->timeout_handler_installed),
++	       READ_ONCE(trace->timeout_cccr_intx),
++	       READ_ONCE(trace->timeout_cccr_intx_ret),
++	       READ_ONCE(trace->timeout_cccr_ienx),
++	       READ_ONCE(trace->timeout_cccr_ienx_ret));
+ }
+ 
+ #ifndef CONFIG_PLATFORM_ALLWINNER
+@@ -192,9 +257,9 @@
+ 			}
+ 			spin_unlock_bh(&cmd_mgr->lock);
+ 			err = -ETIMEDOUT;
+-			aic_startapp_trace_finish(cmd_mgr->aicdev, cmd, "timeout");
++			aic_startapp_trace_finish(cmd_mgr->aicdev, cmd, "timeout", true);
+ 		} else {
+-			aic_startapp_trace_finish(cmd_mgr->aicdev, cmd, "success");
++			aic_startapp_trace_finish(cmd_mgr->aicdev, cmd, "success", false);
+ 			kfree(cmd);
+ 		}
+ 	} else {
+--- a/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aicsdio.h
++++ b/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aicsdio.h
+@@ -73,6 +73,15 @@
+ 	u8 cfm_seen;
+ 	u8 token_match;
+ 	u8 completion;
++	u8 timeout_func_num;
++	u8 timeout_host_cap_sdio_irq;
++	u8 timeout_host_irq_pending;
++	u8 timeout_irq_claimed;
++	u8 timeout_handler_installed;
++	u8 timeout_cccr_intx;
++	s32 timeout_cccr_intx_ret;
++	u8 timeout_cccr_ienx;
++	s32 timeout_cccr_ienx_ret;
+ };
+ 
+ struct priv_dev {

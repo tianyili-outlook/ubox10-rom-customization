@@ -1,0 +1,104 @@
+{
+  "id": "m8-kernel-5.4.302-r4",
+  "purpose": "One diagnostic-only Android 12 candidate based on physically tested r1/r3 behavior. Preserve the r1 70 MHz AIC behavior, Image, boot, DT, userspace and 21 unrelated modules while adding a read-only post-START_APP-timeout CCCR interrupt snapshot to aic8800_bsp.ko.",
+  "decision_scope": "Distinguish no persistent AIC card interrupt-pending indication from a pending interrupt lost before the AIC SDIO handler; not a Wi-Fi fix, not Android 16 Prototype A r3 and not physical-test authorization.",
+  "base_candidate": {
+    "path": "/work/projects/ubox10-rom-customization/out/candidates/m8-kernel-5.4.302-r1/x12-m8-kernel-5.4.302-r1.img",
+    "size": 1031739392,
+    "sha256": "C93FC8A54391E091E0F95CFE63E4F6DA9AE90D55AA0163D91D42586B48BFEE2B"
+  },
+  "rollback": {
+    "path": "/work/ubox10-a16-prototype-a-inputs/incoming/x12-test8r2-restore-contacts-provider.img",
+    "size": 2005954560,
+    "sha256": "6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8"
+  },
+  "candidate_module_build": "/work/kernel-builds/m8-kernel-5.4.302-r4-candidate-input",
+  "instrumented_module": {
+    "size": 129976,
+    "sha256": "C993867D21988F0F1C4E32A9857821ADDA7899374B440688131E2CD9897F8CA4",
+    "source": "aic8800-20221108-004-plus-startapp-trace-timeout-cccr"
+  },
+  "vendor_dlkm_delta": {
+    "candidate_module_inode_blocks": 1563,
+    "candidate_free_blocks": 1
+  },
+  "r1_preserved": {
+    "boot": {
+      "size": 67108864,
+      "sha256": "338CB4048796E213698585E035D8807D84381324163C19AA939BD8D6BFDDCD2C"
+    },
+    "image": {
+      "size": 23492616,
+      "sha256": "9B781ABEA51DEF9AE1FEBB9011CFA630AC267C794FBA0E066674F0EAE2509DCC"
+    }
+  },
+  "experiment": {
+    "donor_commit": "ABFE04920992577C71A4180A8480A4A774965C76",
+    "donor_subtree": "70C98140316F7ED23AF879BB0E3D881883F5E978",
+    "integration_commit": "027EF79E8FACB73CB2419B4A08C0BD3F13A2206E",
+    "trace_patch": "configs/kernel/m8-kernel-5.4.302/aic8800d-startapp-trace.patch",
+    "trace_patch_sha256": "B65CC9940302D8F204012B7365EC1437B48A3AA6C7A7E772E4F0A57E266EFFE4",
+    "cccr_patch": "configs/kernel/m8-kernel-5.4.302/aic8800d-startapp-timeout-cccr.patch",
+    "cccr_patch_sha256": "2E338EF6F8003F0CFD5F504039D0350263DB8AD0103758EE01D76400A195F251",
+    "functional_sdio_clock_hz": 70000000,
+    "build_evidence": "/work/build-logs/m8-kernel-5.4.302-r4/20260823T102830Z-final4",
+    "single_variable_audit": "/work/build-logs/m8-kernel-5.4.302-r4/20260823T102830Z-final4/offline-single-variable-audit.json",
+    "candidate_changed_modules": [
+      "aic8800_bsp.ko"
+    ],
+    "observed_fields": [
+      "r3 runtime generation/token/TX/IRQ/RX/dispatch/completion fields",
+      "timeout SDIO function number, MMC_CAP_SDIO_IRQ, host sdio_irq_pending, IRQ claim and handler state",
+      "post-timeout read-only CCCR INTx value/return followed by IENx value/return"
+    ],
+    "preserved": [
+      "physical r1 boot.fex, Linux 5.4.302 Image, ramdisk, DT and boot AVB bytes",
+      "r1 Android 12 system_a, vendor_a, product_a and userspace bytes",
+      "r1 DTBO, vendor_boot, bootloader, TEE and vbmeta payloads",
+      "LP metadata, extents, group limits and three metadata slots",
+      "21 unrelated module bytes, their expected exported-symbol CRCs and all static vendor_dlkm files",
+      "r1/r3 70 MHz AIC runtime clock behavior, original START_APP timeout and all pre-timeout control flow",
+      "m8b-remote-r1 input, physical r1/r3 candidates and Test8r2 rollback image"
+    ],
+    "changed": [
+      "START_APP-gated r3 trace plus one post-timeout read-only CCCR snapshot in the pinned AIC8800 BSP",
+      "after the existing timeout only: one host claim, CCCR INTx then IENx CMD52 reads, host/core state capture and one compact summary",
+      "aic8800_bsp.ko only within vendor_dlkm",
+      "vendor_dlkm AVB hashtree/FEC and containing super.fex extent",
+      "IMAGEWTY Vsuper checksum companion"
+    ],
+    "offline_limitations": [
+      "Instrumentation does not change or prove Wi-Fi behavior and is not a fix.",
+      "A clear INTx only proves that no standards-compliant pending indication survived until timeout; it cannot exclude an earlier transient or self-cleared assertion.",
+      "Only a separately authorized physical run can collect the snapshot; this candidate does not authorize flashing or open Gate 2."
+    ]
+  },
+  "container": {
+    "total_entries": 50,
+    "preserved_entries": 48,
+    "replacements": [
+      "super.fex"
+    ],
+    "companions": [
+      "Vsuper.fex"
+    ]
+  },
+  "expected_result": {
+    "firmware": {
+      "size": 1031739392,
+      "sha256": "18565E4F94FF1A843EA859254800E5E2BA732FBFE47410E86D6577038F85DFCA"
+    },
+    "boot": {
+      "size": 67108864,
+      "sha256": "338CB4048796E213698585E035D8807D84381324163C19AA939BD8D6BFDDCD2C"
+    },
+    "super": {
+      "size": 851940812,
+      "sha256": "68731B4E27029369A658A32344059561BFDDA406F2FFDF6BC048B6AE5A3E594B"
+    },
+    "vendor_dlkm": {
+      "size": 6680576,
+      "sha256": "EB2CCAAB4DF8948DD626AA325CDF5604667B702059D71420531C5BB618CA43C5"
+    }
+  }
+}

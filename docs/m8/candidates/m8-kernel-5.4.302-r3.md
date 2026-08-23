@@ -1,7 +1,7 @@
 # M8 Linux 5.4.302 AIC8800D START_APP trace r3
 
 Date: 2026-08-23
-Status: **OFFLINE CHECKED / INSTRUMENTATION ONLY / NOT A FIX / NOT PHYSICALLY VALIDATED**
+Status: **PHYSICAL DIAGNOSTIC PASS / WI-FI FAIL / POST-TX PRE-AIC-HANDLER BOUNDARY PROVEN**
 
 ## Purpose and baseline
 
@@ -121,27 +121,51 @@ four-test contract, including the present local candidate, passed without skips.
 This is **not Wi-Fi PASS** and not an accepted fix.  Gate 2 remains **CLOSED**.  No physical
 device action was performed and this record does not authorize one.
 
-## Separately authorized physical discriminator
+## Physical diagnostic result
 
-If the user later explicitly authorizes this exact hash, use the same PhoenixCard/UART-first and
-Test8r2 rollback boundary as r1/r2.  Preserve a complete UART capture, then extract only the
-decisive lines on the Windows host:
+The user separately authorized and performed one r3 physical diagnostic.  Uploaded evidence is
+`/work/device-evidence/m8-kernel-5.4.302-r3/20260823-wifi-on/r3-wifi-on-kernel.txt`
+(39,758 bytes / SHA-256
+`2EB7A8581C0B201A282995D7BA07AA24550D767A764B7A12DAE66113EDF6B0A2`) and the complete all-buffer
+capture `r3-wifi-on-all.txt` (5,673,014 bytes / SHA-256
+`A0FBC16964616C0E8BF24D00365B36C6B4C8CC7370250EB4A8AEE53579E36287`).  No UART file was
+uploaded in this evidence directory.
 
-```powershell
-Select-String -Path .\boot-r3-uart.log -Pattern `
-  'Set SDIO Clock|AIC_STARTAPP_TRACE|cmd timed-out|cmd:1037|reqcfm\(1038\)|wifi start fail|wlan0'
+At 09:26:46.868 the user enabled Wi-Fi once.  The first AIC power-on enumerated SDIO, selected the
+U04 path and retained `Set SDIO Clock 66 MHz`.  Its runtime token 476 summary was:
+
+```text
+tx_bus_len=24 tx_bus_ret=0
+tx_cmd53_state=2 tx_cmd53_len=512 tx_cmd53_ret=0
+irq_count=0 irq_after_tx_return=0 irq_block_count_ret=-115
+rx_cmd53_count=0 rx_after_tx_return=0 rx_cmd53_ret=-115
+rx_frame_len=0 rx_type=0x00 rx_msg_id=0
+cfm_seen=0 token_match=0 completion=0
 ```
 
-The test answers, in order:
+`-115` is the untouched `-EINPROGRESS` sentinel, not an attempted CMD52/CMD53 error.  The framework
+then returned to `DisabledState`; `WifiNative` death triggered exactly one self-recovery restart
+at 09:26:49.430.  That second power-on produced the same 66 MHz/runtime-token/trace values and the
+same 1037→1038 timeout before teardown.  The later Ethernet link-down at kernel uptime 00:09:13.650
+is about 86 seconds after the second Wi-Fi failure and is not causal on this chronology.
 
-1. `tx_cmd53_state=2`, `tx_cmd53_ret=0` and `tx_bus_ret=0` prove final 1037 TX returned;
-2. positive `irq_count` after the final write attempt proves transaction-scoped IRQ activity;
-   `irq_after_tx_return` distinguishes activity after the caller observed TX return, while the
-   block-count fields show whether readable blocks were advertised;
-3. positive RX count with `rx_cmd53_ret=0` proves response data was read;
-4. `rx_type=0x11`, `rx_msg_id=1038`, `cfm_seen=1` prove the expected CFM reached dispatch;
-5. `token_match=1 completion=1 result=success` prove it matched the runtime waiter.
+This proves the synchronous bus call and final `sdio_writesb()`-backed CMD53 write returned zero on
+the Linux host.  It does **not** prove that the card consumed, interpreted or executed START_APP.
+No attributable AIC handler entry occurred after the write attempt, so no AIC block-count CMD52,
+CMD53 RX, response header/1038 dispatch, token match or completion occurred.  It does **not** yet
+distinguish no card interrupt from a pending/asserted interrupt lost before the AIC handler.  The
+physical classification is therefore **diagnostic PASS, Wi-Fi FAIL, post-TX/pre-AIC-handler
+boundary proven**; r3 is not a fix and Gate 2 remains **CLOSED**.
 
-Do not interpret the trace as a fix, and do not proceed to a behavioral patch until these fields
-identify the missing boundary.  Rollback remains Test8r2, 2,005,954,560 bytes / SHA-256
+Exact source review finds no conclusive current-r3 card-level readout: `CONFIG_DEBUG_FS`, `DEVMEM`
+and `MMC_DEBUG` are disabled; SDIO sysfs exposes only identity fields.  The retained SUNXI
+`sunxi_dump_host_register` attribute has no store method, but its show method walks every MMIO
+offset from `0x000` through `0x14c` without host claiming; that broad register read is not proven
+non-destructive, does not expose the card's CCCR, and its shared host status cannot make a negative
+observation conclusive.  The exact vendor_boot DT enables `cap-sdio-irq`; the live path is SUNXI
+`MISTA/RINTR[16]` → `mmc_signal_sdio_irq()` → `ksdioirqd/mmc2` → the single-function fast path →
+the AIC handler.  A follow-up must observe CCCR pending/enable state only after the existing timeout
+and before teardown; no behavioral fix is justified by r3.
+
+Rollback remains Test8r2, 2,005,954,560 bytes / SHA-256
 `6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8`.

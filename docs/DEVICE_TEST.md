@@ -2,8 +2,8 @@
 
 ## 当前状态
 
-- 最后报告的刷入诊断镜像：`out/candidates/m8-kernel-5.4.302-r2/x12-m8-kernel-5.4.302-r2.img`
-- 当前设备状态：**ANDROID 12 BOOT COMPLETE / WI-FI FAIL / GATE 2 CLOSED**；Linux 5.4.302、HDMI/UI、遥控、Ethernet、ADB 正常，AIC8800D firmware START_APP confirmation 可重复超时。`m8-kernel-5.4.302-r2` 已实机拒绝 50 MHz hypothesis。`m8-kernel-5.4.302-r3` 已完成离线检查，但它只是 START_APP observability，不是 fix，尚未刷写且没有刷写授权。
+- 最后报告的刷入诊断镜像：`out/candidates/m8-kernel-5.4.302-r3/x12-m8-kernel-5.4.302-r3.img`
+- 当前设备状态：**ANDROID 12 BOOT COMPLETE / WI-FI FAIL / GATE 2 CLOSED**；Linux 5.4.302、HDMI/UI、遥控、Ethernet、ADB 正常。`m8-kernel-5.4.302-r2` 已实机拒绝 50 MHz hypothesis；r3 已实机证明 START_APP final CMD53 在 Linux host 返回成功，但随后没有进入 AIC IRQ handler，当前边界为 **POST-TX / PRE-AIC-HANDLER**。这不是 Wi-Fi fix。
 - 保留的设备验收基线：`out/candidates/m8b-remote-r1/x12-m8b-remote-r1.img`，状态 **DEVICE ACCEPTED / REMOTE PASS**（继承 **AUDIO PASS / IME PASS**）。
 - 大小 / SHA-256：1031723008 bytes / `F3B09E5565AC4ED4E5EE326D392622E7B036A8519B8444B966E77CC4751B814A`
 - 用户当前在设备现场，可执行物理交互、重启、suspend/resume、HDMI 观察与恢复；任何新候选刷写仍需该候选的单独明确授权。
@@ -76,7 +76,7 @@ Boot capture `logs/20260822-a-r2/boot-r2-devkmsg-on.log` 为 67,394 bytes / SHA-
 
 `cgroup2: Unknown parameter 'memory_recursiveprot'` 由 A16 source 明确重试无该选项，随后 boot 继续；IncFS module 缺失回退为 features v1/none；UprobeStats init 的 `CAP_PERFMON` 不支持发生在 APEX content import 后，该 service 本身 disabled，当前不是 fatal，但保留为真实后续兼容缺口。`/dev/stune/foreground/tasks` 与大量 process-group cleanup 是 bpfloader 已触发 shutdown 后的 secondary/cascade output。没有证据支持再改 cgroup 作为本轮首错。
 
-r2 物理授权已经消耗。当前不得再次刷写，不构建 r3，不启动 Prototype B。后续只允许先完成早期 A16 QPR0 与 retained-kernel LTS 路线的离线架构 checkpoint；任何新候选仍需重新离线审核和单独物理授权。
+r2 的 A16 物理授权已经消耗。当前不得再次刷写，不构建 A16 r3，不启动 Prototype B。后续只允许早期 A16 QPR0 与 retained-kernel LTS 路线的离线架构 checkpoint；任何新候选仍需重新离线审核和单独物理授权。
 
 ## Physical result: m8-kernel-5.4.302-r1
 
@@ -129,12 +129,12 @@ HAL service 存在，framework `CMD_STA_START_FAILURE`/`DisabledState` 是 firmw
 completion、host claim/release 与 SUNXI host live path 未改变，没有一个 LTS delta 足以
 支持行为回退。后续 r3 只增加 START_APP-gated AIC BSP observability，不改变这些行为。
 
-## Offline diagnostic candidate: m8-kernel-5.4.302-r3
+## Physical diagnostic result: m8-kernel-5.4.302-r3
 
 候选：`out/candidates/m8-kernel-5.4.302-r3/x12-m8-kernel-5.4.302-r3.img`，
 1,031,739,392 bytes / SHA-256
 `9E52B601F11F9368599098B4C5082037D010930D9B424D7CA2828977047C1B28`。
-状态为 **OFFLINE CHECKED / INSTRUMENTATION ONLY / NOT A FIX / NOT PHYSICALLY VALIDATED**。
+状态为 **PHYSICAL DIAGNOSTIC PASS / WI-FI FAIL / POST-TX PRE-AIC-HANDLER BOUNDARY PROVEN**。
 
 r3 回到 r1 的 `FEATURE_SDIO_CLOCK=70000000` 功能基线，并严格复用 r1 Image、boot、DT、
 userspace 和其他 21 个 module bytes；只有 `aic8800_bsp.ko` 加入动态 runtime token /
@@ -147,8 +147,43 @@ transaction-window trace。它在原有 START_APP success/timeout 后只输出�
 4. 1038 是否进入 dispatch；
 5. 1038 是否匹配当前 runtime token 并完成 waiter。
 
-不得从该离线结果推断 Wi-Fi 改善。任何 r3 物理测试需要对上述 exact hash 单独明确授权，
-并继续使用与 r1/r2 相同的 Test8r2 rollback 边界；当前不得刷写。
+用户手动打开一次 Wi-Fi 后，第一次启动与 framework 的一次自动 self-recovery 均保留
+`Set SDIO Clock 66 MHz`，并产生相同 runtime token 476 trace：`tx_bus_ret=0`、
+`tx_cmd53_state=2`、`tx_cmd53_len=512`、`tx_cmd53_ret=0`，随后
+`irq_count=0`、`rx_cmd53_count=0`、`cfm_seen=0`、`token_match=0`、`completion=0`，再发生
+1037→1038 timeout 与 SDIO teardown。`irq_block_count_ret=-115` 和 `rx_cmd53_ret=-115` 是
+未触发路径保留的 `-EINPROGRESS` sentinel，不是实际 I/O error。
+
+证据为 `/work/device-evidence/m8-kernel-5.4.302-r3/20260823-wifi-on/` 下的
+`r3-wifi-on-kernel.txt`（39,758 bytes / SHA-256
+`2EB7A8581C0B201A282995D7BA07AA24550D767A764B7A12DAE66113EDF6B0A2`）与
+`r3-wifi-on-all.txt`（5,673,014 bytes / SHA-256
+`A0FBC16964616C0E8BF24D00365B36C6B4C8CC7370250EB4A8AEE53579E36287`）；目录中没有 UART
+文件。Host-side CMD53 return 0 不证明 card/firmware 已消费 START_APP；`irq_count=0` 也不
+单独证明 card 未断言中断或 host 丢失中断。当前 r3 缺少 card CCCR pending 的安全接口，
+因此不得从该结果选择行为修复。后续任何新诊断候选仍需单独明确物理授权并保持 Test8r2
+rollback 边界。
+
+## Offline diagnostic candidate: m8-kernel-5.4.302-r4
+
+候选：`out/candidates/m8-kernel-5.4.302-r4/x12-m8-kernel-5.4.302-r4.img`，
+1,031,739,392 bytes / SHA-256
+`18565E4F94FF1A843EA859254800E5E2BA732FBFE47410E86D6577038F85DFCA`。
+状态为 **OFFLINE CHECKED / INSTRUMENTATION ONLY / NOT A FIX / NOT PHYSICALLY VALIDATED**；
+本记录不授权刷写，Gate 2 保持 CLOSED。
+
+r4 保留 r1/r3 的 70 MHz、Image、boot、DT、Android 12 userspace 和其他 21 modules，只在
+原 START_APP timeout 已成立后、teardown 之前，由 `aic8800_bsp.ko` 读取 read-only CCCR
+`INTx`，再读取 `IENx`，并记录 function、host/core pending、IRQ claim 与 handler 安装状态。
+没有改 START_APP timeout、retry、firmware、clock、MMC behavior 或 timeout 前控制流。
+离线检查确认 AIC exported-symbol CRC 与 r1 完全一致，避免 preserved `aic8800_fdrv.ko`
+发生 symbol-version mismatch；AVB/ext4/LP/IMAGEWTY 和 single-module preservation PASS。
+
+若未来对上述 exact hash 另行明确授权，只手动打开一次 Wi-Fi，完整保留 UART/logcat，读取
+`AIC_STARTAPP_TRACE` 新字段。`cccr_intx` 的 function bit 在 handler count 为零时仍置位，
+证明 card 在 timeout 时报告 pending 而 handler 未收到；该 bit 清零只证明没有 pending
+状态保留到 timeout，不能单独宣称 firmware failure。完整采集命令与判定规则见
+`docs/m8/candidates/m8-kernel-5.4.302-r4.md`。Rollback 仍为 Test8r2。
 
 ## Accepted physical result: m8b-remote-r1
 
