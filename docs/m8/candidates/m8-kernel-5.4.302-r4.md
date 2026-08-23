@@ -1,7 +1,7 @@
 # M8 Linux 5.4.302 post-timeout SDIO interrupt snapshot r4
 
 Date: 2026-08-23
-Status: **PHYSICAL DIAGNOSTIC PASS / WI-FI FAIL / DEVICE CONTRACT AUDITED / r5 NOT JUSTIFIED**
+Status: **PHYSICAL DIAGNOSTIC PASS / WI-FI FAIL / DRIVER SEMANTIC DIVERGENCE FOUND / r5 DESIGN JUSTIFIED, NOT BUILT**
 
 ## Decision boundary
 
@@ -163,8 +163,9 @@ read-only.  Its identities are:
 | `fw_patch_u03.bin` | 64,204 | `4B97D0F7C41F29EDB4B9082F0FB3B920770A8EF9C3F7E8D93C062AEDD9E778CD` |
 | `fw_patch_table_u03.bin` | 1,336 | `9EC1A1CC6A6249E3EE8302DC952D71C9F494FEC2A1A16499FFB72893C0A475ED` |
 
-`fmacfw.bin` is a raw Cortex-M image for the source-proven load address `0x00120000`: its vector
-table contains MSP `0x00183800` and Thumb reset vector `0x00120189`.  It identifies itself as
+`fmacfw.bin` is a raw Cortex-M image for the firmware-linked and accepted-driver load address
+`0x00120000`: its vector table contains MSP `0x00183800` and Thumb reset vector `0x00120189`.
+It identifies itself as
 `v6.4.3.1`, built 2022-10-08 from `gb01a3750`.  Its debug-handler table at file offset `0x3f884`
 maps message `0x040d` / 1037 to Thumb handler `0x00144f61`.  Read-only disassembly proves that
 handler:
@@ -222,11 +223,79 @@ setup, CUSTOM's initial semantics and the relative boot-ROM handoff ordering rem
 
 No exact U04 read-only boot-status register, CPU PC/status, FIFO dequeue pointer, firmware-ready
 magic, exception latch or CFM-constructed flag was found.  The `host_ready` string has no published
-address/read contract; different-chip reset/COMREG registers are not safe proxies.  Consequently
-there is no source-proven, high-information, low-perturbation r5 discriminator.  **r5 = NO**.  The
-earliest unresolved boundary remains host/controller-visible CMD53 completion → device FIFO
-dequeue/request parsing; conditional on consumption, the next boundary is boot-ROM AUTO handoff →
-FMAC reset-vector execution → exact FMAC 1037 handler/1038 send.
+address/read contract; different-chip reset/COMREG registers are not safe proxies.  Device-contract
+archaeology alone therefore found no source-proven read-only discriminator.  The later
+accepted-driver audit below changes the r5 decision for a separate, earlier host-side contract
+divergence; it does not make the unknown boot-ROM internals known.
+
+## Accepted-driver versus donor semantic audit
+
+The device-accepted reference was independently read from
+`/work/ubox10-a16-prototype-a-inputs/verified/m8b-remote-r1/logical/vendor_dlkm_a.img` rather than
+trusted only as a loose extraction.  Its 132,072-byte `aic8800_bsp.ko` is SHA-256
+`C06604861F8264B764A848FA7F432160884A5A45AFB8C765844DBD809F5A835D`; the clean r1 module is
+127,752 bytes / `2EF8EF0AE2302CD0B95452B9A6FA11710D07B19F518E53C985D4FFDEBE71C96B`.
+Both contain version `1.0`, the same Android clang 12.0.7 and 11.0.2 producer strings, and related
+2022-11-08 AIC BSP tags (`aic-bsp-sdio-20221108-001` versus
+`aic-bsp-compatible(sdio)-20221108-001`).  Exact working vendor source is still absent, so the
+pinned donor must not be called original UBOX source.  Nevertheless, equal sizes and raw machine
+bytes for the command manager, `aicbsp_driver_fw_init`, `aicbsp_get_feature`,
+`aicbsp_set_subsys`, `aicbsp_platform_power_off`, all debug memory request helpers,
+`rwnx_plat_bin_fw_upload_android`, `rwnx_send_dbg_start_app_req`, RX dispatch and several SDIO
+helpers establish **very strong same-lineage mapping** for the live path.
+
+Focused disassembly classified the remaining visible differences as follows:
+
+| Difference | Classification | START_APP relevance |
+|---|---|---|
+| Current code reads the revision sub-ID and labels the physical part U04; working code uses the older revision test | Semantic but irrelevant here | The SDIO donor aliases U03/U04 system tables and selects the same U03 firmware/config filenames for every non-U02 part |
+| Current BSP contains `aicbsp_system_reboot()` / `aicbsp_8800d_system_reboot()` | Not reached | The only donor caller is compiled in `aicusb.c`; the SDIO module has no caller |
+| Generic TX/RX thread names, larger inlined probe/thread bodies, private ThinLTO suffixes, log prefixes, layout, symbol count and module size | Build/refactor noise unless a selected branch differs | The U04-selected probe, function enable, 512-byte block size, register `0x0b=1`, byte-mode register `0x11=1`, IRQ claim and local interrupt register `0x04=0x07` instruction sequences match; the final message branch uses the same function, fixed address 7, padding and `sdio_writesb()` call |
+| FMAC upload/patch-read/START_APP base | **Plausible root-cause candidate** | Working uses `0x00120000`; r1, r3 and physically run r4 use `0x00110000` |
+
+The last row is exact binary and build evidence, not an inference from a source name:
+
+- working `aicbsp_8800d_fw_init` passes `1179648` / `0x00120000` both to
+  `rwnx_plat_bin_fw_upload_android()` at module `.text+0x2858` and to
+  `rwnx_send_dbg_start_app_req(..., HOST_START_APP_AUTO, ...)` at `.text+0x290c`;
+- clean r1 passes `1114112` / `0x00110000` at `.text+0x2860` and `.text+0x2914`;
+- the final r3 and r4 modules also pass `0x00110000`, including r4 at `.text+0x2cf4` and
+  `.text+0x2da8`; the r4 trace did not log `bootaddr`, so it cannot override its own ELF;
+- pinned donor `abfe04920992577c71a4180a8480a4a774965c76` selects `0x00120000` under
+  `#ifdef CONFIG_AIC_INTF_SDIO`, but its BSP Makefile translates that Kbuild variable only into
+  `-DAICWF_SDIO_SUPPORT`.  Exact r1/r3/r4 `.aic_bsp_8800d.o.cmd` files contain
+  `-DAICWF_SDIO_SUPPORT`, not `-DCONFIG_AIC_INTF_SDIO`, and generated `autoconf.h` has no such
+  Kconfig symbol.  The C preprocessor therefore selects the `0x00110000` `#else` branch.
+
+The upload helper, whose working and r1 machine bytes are identical, writes the raw file
+sequentially from the supplied base in 1,024-byte debug-memory blocks.  The accepted and r4
+`vendor_a.img` copies of all four U04 firmware inputs are byte-identical.  Exact `fmacfw.bin` has
+size `0x3fb78`, so accepted placement is `[0x00120000, 0x0015fb78)` while current placement is
+`[0x00110000, 0x0014fb78)`.  Its vector still names Thumb reset entry `0x00120189`: the intended
+entry bytes are at image offset `0x188`, but current placement puts offset `0x188` at
+`0x00110188`; bytes at `0x00120188` instead come from unrelated image offset `0x10188`.  This is a
+real execution-image contract mismatch before the final CMD53, irrespective of whether the
+unknown exact U04 AUTO implementation reads the vector or performs another vendor-specific
+handoff.
+
+This finding **RAISES donor/build-integration mismatch** from unproven lineage concern to the
+highest-value plausible root-cause candidate.  It does not yet prove the physical cause.  The
+earliest source-proven divergence is now the FMAC destination chosen in `aicwifi_init()`, before
+START_APP serialization; the remaining physical boundary is wrong image placement/boot address →
+boot-ROM AUTO handoff → FMAC reset-vector execution.  The former CMD53-complete → FIFO-dequeue
+boundary remains observationally unresolved, but is no longer the earliest known divergence.
+
+**r5 = YES, DESIGN ONLY / NOT BUILT.**  The bounded discriminator is one source-level contract
+correction on top of r4: change only the `RAM_FMAC_FW_ADDR` guard in `aic_bsp_8800d.c` from
+`CONFIG_AIC_INTF_SDIO` to the actually supplied `AICWF_SDIO_SUPPORT`, retaining all r4 trace code
+unchanged.  A future authorized build must prove by final-module disassembly that the firmware
+upload, `RAM_FMAC_FW_ADDR + 0x180` patch read and START_APP boot address all use `0x00120000`, while
+firmware, kernel/MMC, timeout and every unrelated module remain exact.  A returned 1038 and working
+Wi-Fi would strongly confirm sufficiency; the same r4 timeout after verified correct placement
+would reject this mismatch as sufficient and restore the downstream device boundary.  Risk is
+low and bounded because it reproduces the exact accepted module's address and leaves 0x1db0 bytes
+before the fixed ADID region, but it is a behavioral experiment and requires separate build and
+physical authorization.
 
 No physical action is authorized by this record.  This is not Wi-Fi PASS, not an accepted fix and
 not Android 16 Prototype A r3.  Gate 2 remains **CLOSED**.

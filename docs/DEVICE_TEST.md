@@ -3,7 +3,7 @@
 ## 当前状态
 
 - 最后报告的刷入诊断镜像：`out/candidates/m8-kernel-5.4.302-r4/x12-m8-kernel-5.4.302-r4.img`
-- 当前设备状态：**ANDROID 12 BOOT COMPLETE / WI-FI FAIL / GATE 2 CLOSED**；Linux 5.4.302、HDMI/UI、遥控、Ethernet、ADB 正常。`m8-kernel-5.4.302-r2` 已实机拒绝 50 MHz hypothesis；r3 证明 START_APP final CMD53 在 Linux host 返回成功但无 AIC IRQ/RX/1038，r4 又证明 timeout 时 `IENx=0x03`、`INTx=0x00`、core pending=0 且 IRQ claim/handler 正常。当前最早未解边界为 **HOST-COMPLETE CMD53 → DEVICE FIFO DEQUEUE/PARSE**；不证明无 transient IRQ 或 firmware failure。这不是 Wi-Fi fix。
+- 当前设备状态：**ANDROID 12 BOOT COMPLETE / WI-FI FAIL / GATE 2 CLOSED**；Linux 5.4.302、HDMI/UI、遥控、Ethernet、ADB 正常。`m8-kernel-5.4.302-r2` 已实机拒绝 50 MHz hypothesis；r3 证明 START_APP final CMD53 在 Linux host 返回成功但无 AIC IRQ/RX/1038，r4 又证明 timeout 时 `IENx=0x03`、`INTx=0x00`、core pending=0 且 IRQ claim/handler 正常。后续 accepted-driver audit 证明 working BSP 以 `0x00120000` 上传并启动 exact FMAC，而 r1-r4 实际使用 `0x00110000`，但 FMAC reset vector 仍为 `0x00120189`。当前最早 source-proven divergence 为 **WRONG FMAC PLACEMENT/BOOTADDR → AUTO HANDOFF → FMAC EXECUTION**；r5 design 已成立但尚未构建或授权实测。这不是 Wi-Fi fix。
 - 保留的设备验收基线：`out/candidates/m8b-remote-r1/x12-m8b-remote-r1.img`，状态 **DEVICE ACCEPTED / REMOTE PASS**（继承 **AUDIO PASS / IME PASS**）。
 - 大小 / SHA-256：1031723008 bytes / `F3B09E5565AC4ED4E5EE326D392622E7B036A8519B8444B966E77CC4751B814A`
 - 用户当前在设备现场，可执行物理交互、重启、suspend/resume、HDMI 观察与恢复；任何新候选刷写仍需该候选的单独明确授权。
@@ -191,8 +191,11 @@ handler 曾实际进入，但不证明 START_APP response IRQ 正确。
 后续 exact firmware/source archaeology 找到 U04 `fmacfw.bin` 内 post-start 1037 handler：它
 allocate/send 1038，并在 send 前输出 `DBG: FW started`。没有找到 exact U04 boot-ROM consumer、
 AUTO handoff 或 source-proven read-only dequeue/boot/FMAC-ready state；`bootstatus` 只存在于缺失的
-1038 payload 且被 host 当作 `hwinfo_r`。因此 r5 **不成立**，不得使用不同芯片的 FNCALL/DUMMY
-或随机寄存器读取作为替代。完整证据与 lineage 限制见
+1038 payload 且被 host 当作 `hwinfo_r`。该 archaeology 本身没有产生 r5，但随后的
+accepted-driver semantic audit 证明 working BSP 的 upload/START_APP base 是 `0x00120000`，r1-r4
+则因 donor preprocessor guard/Makefile define 不一致而编译成 `0x00110000`。这使仅修正该 guard、
+保留 r4 trace 的 r5 单变量 design 成立；当前仍未 build、未授权实测，也不得用不同芯片的
+FNCALL/DUMMY 或随机寄存器读取替代。完整证据与 lineage 限制见
 `docs/m8/candidates/m8-kernel-5.4.302-r4.md`。Rollback 仍为 Test8r2；本记录不授权任何新物理动作。
 
 ## Accepted physical result: m8b-remote-r1
