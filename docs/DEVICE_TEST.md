@@ -2,8 +2,8 @@
 
 ## 当前状态
 
-- 最后一次刷入镜像：`out/candidates/a16-prototype-a-r2/x12-a16-prototype-a-r2.img`
-- 当前设备状态：**BOOT LOOP / GATE 2 CLOSED**；r2 的 cgroup fix 生效，但 exact r4/25Q4 system 在 bpfloader 以 `Android 25Q4 requires kernel 5.10` 失败并 `bpfloader-failed` 重启，不能作为日用或 accepted baseline。
+- 最后报告的刷入镜像：`out/candidates/m8-kernel-5.4.302-r1/x12-m8-kernel-5.4.302-r1.img`
+- 当前设备状态：**ANDROID 12 BOOT COMPLETE / WI-FI FAIL / GATE 2 CLOSED**；Linux 5.4.302、HDMI/UI、遥控、Ethernet、ADB 正常，AIC8800D firmware START_APP confirmation 可重复超时。`m8-kernel-5.4.302-r2` 仅为未授权的离线诊断候选。
 - 保留的设备验收基线：`out/candidates/m8b-remote-r1/x12-m8b-remote-r1.img`，状态 **DEVICE ACCEPTED / REMOTE PASS**（继承 **AUDIO PASS / IME PASS**）。
 - 大小 / SHA-256：1031723008 bytes / `F3B09E5565AC4ED4E5EE326D392622E7B036A8519B8444B966E77CC4751B814A`
 - 用户当前在设备现场，可执行物理交互、重启、suspend/resume、HDMI 观察与恢复；任何新候选刷写仍需该候选的单独明确授权。
@@ -77,6 +77,62 @@ Boot capture `logs/20260822-a-r2/boot-r2-devkmsg-on.log` 为 67,394 bytes / SHA-
 `cgroup2: Unknown parameter 'memory_recursiveprot'` 由 A16 source 明确重试无该选项，随后 boot 继续；IncFS module 缺失回退为 features v1/none；UprobeStats init 的 `CAP_PERFMON` 不支持发生在 APEX content import 后，该 service 本身 disabled，当前不是 fatal，但保留为真实后续兼容缺口。`/dev/stune/foreground/tasks` 与大量 process-group cleanup 是 bpfloader 已触发 shutdown 后的 secondary/cascade output。没有证据支持再改 cgroup 作为本轮首错。
 
 r2 物理授权已经消耗。当前不得再次刷写，不构建 r3，不启动 Prototype B。后续只允许先完成早期 A16 QPR0 与 retained-kernel LTS 路线的离线架构 checkpoint；任何新候选仍需重新离线审核和单独物理授权。
+
+## Physical result: m8-kernel-5.4.302-r1
+
+用户已另行授权并执行一次 Android 12 kernel-only r1 实机测试。现场结果：Linux
+5.4.302 正常启动，Android `sys.boot_completed=1`；HDMI/UI、遥控、Ethernet 与 ADB
+PASS。Wi-Fi FAIL，且启动中稳定重复：
+
+```text
+mmc2: new SDIO card
+aicbsp_sdio_probe: matched chip: aic8800d
+Set SDIO Clock 66 MHz
+aicbsp_8800d_fw_init ... chip rev U04
+cmd timed-out
+tkn[...] result:-4 cmd:1037 - reqcfm(1038)
+wifi start fail
+aicbsp_sdio_remove
+mmc2: card ... removed
+```
+
+`aic8800_fdrv.ko`、`aic8800_bsp.ko`、`aic8800_btlpm.ko` 与 firmware 文件均存在；
+首个可重复 boundary 是 AIC firmware START_APP confirmation 缺失，不是 Android Wi-Fi
+HAL/framework 或 simple missing payload。当前仓库没有随该报告提供 raw UART capture，故不记录
+虚构的文件路径或 hash。r1 结论为 **PARTIAL PHYSICAL PASS / WIRELESS FAIL**。
+
+## Pending physical diagnostic: m8-kernel-5.4.302-r2
+
+候选：`out/candidates/m8-kernel-5.4.302-r2/x12-m8-kernel-5.4.302-r2.img`，
+1,031,739,392 bytes / SHA-256
+`A2963FD46685829774DBF5EA2E899ED5844BF44329BC8F46788F1D14D09AA036`。
+它只把 pinned AIC BSP runtime request 从 70 MHz 改为 50 MHz，复用 r1 Image/boot/DT、
+userspace 与 21 个 module bytes。状态为 **OFFLINE-CHECKED DIAGNOSTIC**，不是 accepted fix；
+本文件不授权刷写。
+
+只有取得该候选的单独明确授权后，先在 Windows 验证下载文件：
+
+```powershell
+certutil -hashfile .\x12-m8-kernel-5.4.302-r2.img SHA256
+```
+
+期望值必须为上述 SHA-256；Test8r2 rollback 必须现场可用。授权后的 UART capture 主要
+判据是：出现 `Set SDIO Clock 50 MHz`；`cmd:1037 - reqcfm(1038)` / `wifi start fail`
+消失；START_APP confirmation 可见或控制流成功返回；fdrv 保持加载、`wlan0` 出现、Android
+Wi-Fi 可用。Android 启动后可执行只读检查：
+
+```powershell
+C:\platform-tools\adb.exe shell getprop sys.boot_completed
+C:\platform-tools\adb.exe shell "lsmod | grep -E 'aic8800_(bsp|fdrv|btlpm)'"
+C:\platform-tools\adb.exe shell ip link show wlan0
+C:\platform-tools\adb.exe shell dumpsys wifi
+C:\platform-tools\adb.exe shell "dmesg | grep -E 'Set SDIO Clock|DBG_START_APP|cmd:1037|wifi start fail|aic8800|mmc2'"
+```
+
+从 `lsmod` 确认 `aic8800_bsp`、`aic8800_fdrv`、`aic8800_btlpm`；同时保存完整 UART
+与未过滤 dmesg，避免过滤输出成为唯一证据。若仍是
+完全相同的 1037→1038 timeout，则 **50 MHz hypothesis rejected**；不得继续猜频率，下一步
+是 Linux 5.4.125→5.4.302 generic MMC/SDIO core 与 AIC BSP interaction diff。
 
 ## Accepted physical result: m8b-remote-r1
 

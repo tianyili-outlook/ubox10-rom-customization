@@ -1,0 +1,13 @@
+diff --git a/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aic_bsp_driver.h b/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aic_bsp_driver.h
+index 937b252..561d699 100644
+--- a/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aic_bsp_driver.h
++++ b/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aic_bsp_driver.h
+@@ -386,7 +386,7 @@ struct aicbsp_info_t {
+ #define AICBT_LPM_ENABLE_DEFAULT    1
+ #define AICBT_TXPWR_LVL_DEFAULT     AICBT_TXPWR_LVL
+ 
+-#define FEATURE_SDIO_CLOCK          70000000 // 0: default, other: target clock rate
++#define FEATURE_SDIO_CLOCK          50000000 // 0: default, other: target clock rate
+ #define FEATURE_SDIO_PHASE          2        // 0: default, 2: 180°
+ 
+ struct aicbt_patch_table {

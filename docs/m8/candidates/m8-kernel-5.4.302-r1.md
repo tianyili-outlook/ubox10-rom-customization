@@ -141,6 +141,34 @@ repository suite completed 80 tests successfully; 25 expected skips cover absent
 historical artifacts, while all five 5.4.302 checkpoint tests—including hashes of this local
 candidate—ran and passed.
 
+## Physical result
+
+The user separately authorized and completed the r1 Android 12 physical validation. Linux
+5.4.302 boots, Android reaches `sys.boot_completed=1`, and HDMI/UI, remote, Ethernet and ADB
+pass. Wi-Fi fails reproducibly after `mmc2` enumerates the SDIO card, the BSP matches
+`aic8800d`, reports U04 and programs `Set SDIO Clock 66 MHz`:
+
+```text
+cmd timed-out
+tkn[...] result:-4 cmd:1037 - reqcfm(1038)
+wifi start fail
+aicbsp_sdio_remove
+```
+
+The AIC BSP/fdrv/btlpm modules and firmware payloads are present. The first wireless boundary
+is firmware START_APP confirmation, not Android Wi-Fi HAL/framework or a simple missing-file
+failure. No local raw capture was supplied with this physical result, so this record identifies
+the user-provided observations without inventing a log hash.
+
+r1 is therefore **PARTIAL PHYSICAL PASS / WIRELESS FAIL**, not a complete hardware-preservation
+PASS. Its source, artifact and prior offline conclusions remain historical inputs; it is not
+rebuilt or overwritten for the follow-up.
+
 ## Remaining gate
 
-The exact next action is **not** A16 r3. It is one separately authorized UART-first physical validation of this Android 12 kernel-only candidate against the accepted Android 12 baseline, with rollback media immediately available. A valid test must establish kernel start, first-stage/Android boot, display/HWC/Mali, media, HDMI audio, Ethernet, Wi-Fi/Bluetooth, USB, IR, thermal/DVFS, suspend/resume/wake and TEE/DRM regressions before this kernel can be called hardware-preserving. Until that authorization and result, do not flash; Gate 2 remains closed.
+The exact next action is **not** A16 r3. One offline-only `m8-kernel-5.4.302-r2` diagnostic
+changes the pinned AIC runtime SDIO request from 70 MHz (rounded to about 66.7 MHz) to 50 MHz
+while preserving this r1 Image, boot/DT/userspace and 21 other module bytes. It requires a new
+explicit authorization before any physical test. If the same 1037→1038 timeout remains, the
+clock hypothesis is rejected and the next work is a systematic Linux 5.4.125→5.4.302 generic
+MMC/SDIO/AIC interaction diff. Gate 2 remains closed.

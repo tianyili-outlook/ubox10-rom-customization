@@ -28,8 +28,12 @@
 - [x] 从 accepted Android 12 Image config 构建 preservation-only 5.4.302+ Image；32 个 effective Kconfig 变化全部解释并 hash-lock。另行确认 A16 cgroup + QPR0 netd 六项 config addition 在 5.4.302 clean closure，不把它们加入 Android 12 preservation Image。
 - [x] 用 AOSP clang-r416183b1 完整构建 Image 与 exact 22-module set；critical vendor trees、module inventory/metadata/export names/import CRCs、ARM64/boot/DTBO/AVB source contracts 离线 PASS，结果 `PASS_WITH_PHYSICAL_VALIDATION_REQUIRED`。旧 5.4.125 modules 不复用。
 - [x] 构建并审核唯一 Android 12 kernel-only `m8-kernel-5.4.302-r1`：1,031,739,392 bytes / SHA-256 `C93FC8A54391E091E0F95CFE63E4F6DA9AE90D55AA0163D91D42586B48BFEE2B`。System/vendor/product、ramdisk、LP geometry、46/50 outer payload、rollback bytes 保持；boot/vendor_dlkm AVB、sparse roundtrip、IMAGEWTY、e2fsck PASS。未修改物理设备。
-- [ ] **当前唯一下一动作：**只有在用户另行明确授权后，执行一次 UART-first Android 12 kernel-only `m8-kernel-5.4.302-r1` physical validation，完整回归 boot/display/Mali/media/audio/Ethernet/Wi-Fi/Bluetooth/USB/IR/thermal/suspend/wake/TEE；Test8r2 rollback 必须现场可用。当前未授权，不得刷写，Gate 2 保持 **CLOSED**。
-- [ ] **随后但不提前执行：**只有上述 kernel physical checkpoint 通过后，才锁定 `android-security-16.0.0_r7` manifest/source 并做 source-only 产品/cgroup/APEX 差异审计；在此之前不构建 A16 r3、不启动 Prototype B。
+- [x] 用户另行授权并完成 Android 12 kernel-only `m8-kernel-5.4.302-r1` physical validation：Linux 5.4.302、`sys.boot_completed=1`、HDMI/UI、遥控、Ethernet、ADB PASS；Wi-Fi FAIL，稳定收敛为 AIC8800D U04 firmware START_APP `cmd:1037 - reqcfm(1038)` timeout，随后 `wifi start fail`/SDIO remove。三模块和 firmware 均存在，不归因 HAL/framework 或 missing payload。
+- [x] Source-proven 66 MHz path：pinned AIC `FEATURE_SDIO_CLOCK=70000000` 经 `aicbsp_get_feature` 进入 BSP probe 的 direct `host->ios.clock` + host `set_ios`；exact sunxi-mmc-v4p1x 将 SDR module clock 双倍取整到约 133.333 MHz并回写逻辑约 66.666 MHz。该值在 firmware START_APP wait 前设置且期间无其他 AIC clock write。
+- [x] 构建并离线审核严格单变量 `m8-kernel-5.4.302-r2`：只把 AIC runtime request 70 MHz→50 MHz；候选复用实机 r1 Image 与 21 modules，只替换 `aic8800_bsp.ko`。外层 1,031,739,392 bytes / SHA-256 `A2963FD46685829774DBF5EA2E899ED5844BF44329BC8F46788F1D14D09AA036`；AVB/ext4/LP/IMAGEWTY/preservation PASS。状态为 diagnostic，不是 accepted fix。
+- [ ] **当前唯一下一动作：**只有在用户另行明确授权后，执行一次 UART-first `m8-kernel-5.4.302-r2` physical Wi-Fi diagnostic；Test8r2 rollback 必须现场可用。主要判据为 `Set SDIO Clock 50 MHz`、不再发生 1037→1038 timeout、START_APP CFM、fdrv 保持、`wlan0` 与 Android Wi-Fi 可用。当前未授权，不得刷写，Gate 2 保持 **CLOSED**。
+- [ ] **若 r2 仍完全相同超时：**立即判定 50 MHz hypothesis rejected，不继续猜频率；系统 diff Linux 5.4.125→5.4.302 generic MMC/SDIO request completion、SDIO IRQ、CMD52/53、host claim/release、timeout/completion 与 card power/re-enumeration lifecycle 对 pinned AIC BSP 的影响。
+- [ ] **随后但不提前执行：**只有 wireless/kernel preservation checkpoint 收敛后，才锁定 `android-security-16.0.0_r7` manifest/source 并做 source-only 产品/cgroup/APEX 差异审计；在此之前不构建 A16 r3、不启动 Prototype B。
 
 ## 已验收基线
 

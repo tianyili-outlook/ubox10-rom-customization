@@ -358,7 +358,11 @@ class Builder:
             raise RuntimeError(f"accepted module SELinux label changed: {label_file.read_bytes()!r}")
 
         batch = self.stage / "vendor-dlkm-debugfs.commands"
-        commands = []
+        # debugfs otherwise stamps the filesystem superblock with wall-clock
+        # time when it closes a writable image.  Pin its internal clock to the
+        # accepted filesystem creation time so identical module inputs produce
+        # byte-identical ext4, AVB, super and outer images.
+        commands = [f"set_current_time {int(str(spec['module_crtime']), 0)}"]
         for name in sorted(self.module_paths):
             commands.append(f"rm /lib/modules/{name}")
         for name in sorted(self.module_paths):

@@ -210,6 +210,54 @@ bytes, SHA-256 `C93FC8A54391E091E0F95CFE63E4F6DA9AE90D55AA0163D91D42586B48BFEE2B
 See `docs/m8/candidates/m8-kernel-5.4.302-r1.md` for conflict rationale, the complete config
 delta, module audit, packaging invariants and the still-closed physical gate.
 
+### AIC8800D 50 MHz diagnostic r2
+
+Do not rebuild or overwrite r1.  `build-m8-kernel-54302.sh` preserves the 14-argument r1
+behavior and accepts one optional 15th AIC compatibility patch.  For the r2 clean diagnostic
+build, append the tracked patch to the otherwise exact r1 invocation:
+
+```bash
+scripts/build-m8-kernel-54302.sh \
+  /work/src/ubox10-kernel-5.4.302-common \
+  027ef79e8facb73cb2419b4a08c0bd3f13a2206e \
+  /work/build-logs/ubox10-kernel-5.4.302/20260822T170205Z/accepted/boot-unpacked/kernel \
+  configs/candidates/m8b-rc-core-r1/ff40-map.json \
+  configs/candidates/m8b-rc-core-r2/rc-main-repeat.patch \
+  /work/toolchains/aosp-clang-android12/clang-r416183b1/bin \
+  /work/toolchains/ubuntu-libssl-dev/root \
+  /work/toolchains/ubuntu-bc/root \
+  /work/kernel-builds/m8-kernel-5.4.302-r2 \
+  /work/build-logs/m8-kernel-5.4.302-r2/REPRODUCIBLE_UTC_RUN \
+  /work/src/ubox10-xr819-5.4-donor \
+  5bcbf22cdbc3f6ff7c5633447b0b0f8dbf6bfca1 \
+  /work/src/gamma-sunxi-aic8800-donor \
+  abfe04920992577c71a4180a8480a4a774965c76 \
+  configs/kernel/m8-kernel-5.4.302/aic8800d-sdio-50mhz.patch
+```
+
+The patch changes only `FEATURE_SDIO_CLOCK 70000000` to `50000000`.  Run the single-variable
+audit against exact r1/r2 build roots, then use the prepared strict candidate module root:
+
+```bash
+python3 scripts/audit-m8-kernel-54302-r2.py \
+  --r1-evidence /work/build-logs/ubox10-kernel-5.4.302/20260822T170205Z \
+  --r2-evidence /work/build-logs/m8-kernel-5.4.302-r2/20260823T054052Z \
+  --r1-build /work/kernel-builds/m8-kernel-5.4.302-r1 \
+  --r2-build /work/kernel-builds/m8-kernel-5.4.302-r2-attempt2 \
+  --donor /work/src/gamma-sunxi-aic8800-donor \
+  --patch configs/kernel/m8-kernel-5.4.302/aic8800d-sdio-50mhz.patch \
+  --candidate-build /work/kernel-builds/m8-kernel-5.4.302-r2-candidate-input \
+  --output /work/build-logs/m8-kernel-5.4.302-r2/RUN/offline-single-variable-audit.json
+python3 scripts/build-m8-kernel-54302-r2-candidate.py
+```
+
+The candidate input deliberately reuses r1 Image and 21 r1 module bytes and substitutes only
+the audited r2 `aic8800_bsp.ko`; clean ThinLTO output is otherwise path/ID dependent and must
+not become extra physical variables.  Candidate assembly pins the debugfs current time to the
+accepted ext4 creation time so ext4/AVB/super/outer bytes reproduce.  The builder performs no
+device operation and emits `OFFLINE_CHECKED_DIAGNOSTIC`, Gate 2 closed, flash unauthorized.
+See `docs/m8/candidates/m8-kernel-5.4.302-r2.md`.
+
 ## Checks
 
 ```powershell

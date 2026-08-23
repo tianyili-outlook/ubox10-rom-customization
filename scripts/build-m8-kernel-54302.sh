@@ -1,25 +1,29 @@
 #!/bin/bash
 set -euo pipefail
 
-if [ "$#" -ne 14 ]; then
-    echo "usage: $0 SOURCE_REPO SOURCE_COMMIT ACCEPTED_IMAGE KEYMAP_JSON RC_PATCH CLANG_BIN HOST_SSL_ROOT HOST_TOOLS_ROOT BUILD_ROOT EVIDENCE_DIR XR819_DONOR_REPO XR819_DONOR_COMMIT AIC8800_DONOR_REPO AIC8800_DONOR_COMMIT" >&2
+if [ "$#" -lt 14 ] || [ "$#" -gt 15 ]; then
+    echo "usage: $0 SOURCE_REPO SOURCE_COMMIT ACCEPTED_IMAGE KEYMAP_JSON RC_PATCH CLANG_BIN HOST_SSL_ROOT HOST_TOOLS_ROOT BUILD_ROOT EVIDENCE_DIR XR819_DONOR_REPO XR819_DONOR_COMMIT AIC8800_DONOR_REPO AIC8800_DONOR_COMMIT [AIC8800_COMPAT_PATCH]" >&2
     exit 2
 fi
 
-source_repo=$1
+source_repo=$(realpath -e "$1")
 source_commit=$2
-accepted_image=$3
-keymap_json=$4
-rc_patch=$5
-clang_bin=$6
-host_ssl_root=$7
-host_tools_root=$8
+accepted_image=$(realpath -e "$3")
+keymap_json=$(realpath -e "$4")
+rc_patch=$(realpath -e "$5")
+clang_bin=$(realpath -e "$6")
+host_ssl_root=$(realpath -e "$7")
+host_tools_root=$(realpath -e "$8")
 build_root=$9
 evidence_dir=${10}
-xr819_donor_repo=${11}
+xr819_donor_repo=$(realpath -e "${11}")
 xr819_donor_commit=${12}
-aic8800_donor_repo=${13}
+aic8800_donor_repo=$(realpath -e "${13}")
 aic8800_donor_commit=${14}
+aic8800_compat_patch=${15:-}
+if [ -n "${aic8800_compat_patch}" ]; then
+    aic8800_compat_patch=$(realpath -e "${aic8800_compat_patch}")
+fi
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd -- "${script_dir}/.." && pwd)
 contract_dir="${repo_root}/configs/kernel/m8-kernel-5.4.302"
@@ -76,6 +80,9 @@ test -x "${clang_bin}/clang"
 test -f "${host_ssl_root}/usr/include/openssl/bio.h"
 test -e "${host_ssl_root}/usr/lib/x86_64-linux-gnu/libcrypto.so"
 test -x "${host_tools_root}/usr/bin/bc"
+if [ -n "${aic8800_compat_patch}" ]; then
+    test -f "${aic8800_compat_patch}"
+fi
 test "$(git -C "${xr819_donor_repo}" rev-parse HEAD)" = "${xr819_donor_commit}"
 test "$(git -C "${xr819_donor_repo}" rev-parse 'HEAD:kernel/linux-5.4/drivers/net/wireless/xr819')" = e5d1a2df874a1f81f810b443f73709c9559ec07c
 git -C "${xr819_donor_repo}" diff --quiet
@@ -121,6 +128,9 @@ vmstat_pid=$!
     git -C "${source_repo}" rev-parse "${source_commit}^{tree}"
     "${clang_bin}/clang" --version
     sha256sum "${accepted_image}" "${keymap_json}" "${rc_patch}"
+    if [ -n "${aic8800_compat_patch}" ]; then
+        sha256sum "${aic8800_compat_patch}"
+    fi
     git -C "${xr819_donor_repo}" remote -v
     git -C "${xr819_donor_repo}" show -s --format=fuller "${xr819_donor_commit}"
     git -C "${xr819_donor_repo}" rev-parse \
@@ -142,6 +152,13 @@ test ! -e "${kernel_src}/drivers/net/wireless/aic8800-accepted"
 mkdir -p "${kernel_src}/drivers/net/wireless/aic8800-accepted"
 cp -a "${aic8800_donor_repo}/drivers/net/wireless/aic8800/." \
     "${kernel_src}/drivers/net/wireless/aic8800-accepted/"
+if [ -n "${aic8800_compat_patch}" ]; then
+    git -C "${kernel_src}" apply --check "${aic8800_compat_patch}"
+    git -C "${kernel_src}" apply "${aic8800_compat_patch}"
+    cp "${aic8800_compat_patch}" "${result_dir}/aic8800-compatibility-source.patch"
+    grep -q '^#define FEATURE_SDIO_CLOCK          50000000 ' \
+        "${kernel_src}/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aic_bsp_driver.h"
+fi
 test "$(git -C "${source_repo}" rev-parse '9ab7a758149d3c9b721878a0c18b3f9c5d6c93e6:drivers/net/wireless/realtek/rtlwifi')" = 8d1d70eaacbb82e599e3db228045f86a1c4d05a8
 test ! -e "${kernel_src}/drivers/net/wireless/rtlwifi-accepted"
 mkdir -p "${kernel_src}/drivers/net/wireless/rtlwifi-accepted"

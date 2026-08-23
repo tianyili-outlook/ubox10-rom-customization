@@ -1,15 +1,15 @@
 # UBOX10 Architecture Ceiling Study
 
-Study date: 2026-08-17; build/runtime evidence updated: 2026-08-22
+Study date: 2026-08-17; build/runtime evidence updated: 2026-08-23
 
 Study branch/evidence base: `codex/m8-architecture-ceiling` / starting commit
 `f40a37b6fd488800b5a1ada89f2ce2cf687e8e33`, plus the hash-locked Linux 5.4.302
 checkpoint inputs and results recorded below
 
-Accepted runtime baseline: `m8b-remote-r1`; last flashed image: failing `a16-prototype-a-r2`
-Scope: architecture decision, bounded offline prototypes, the separately authorized r1/r2
-physical tests, and the offline same-lineage Linux 5.4.302 BSP-preservation checkpoint; no
-further device mutation is authorized
+Accepted runtime baseline: `m8b-remote-r1`; last reported flashed image: `m8-kernel-5.4.302-r1`
+Scope: architecture decision, bounded offline prototypes, the separately authorized A16 r1/r2
+and Linux 5.4.302 r1 physical tests, plus the offline 50 MHz AIC8800 diagnostic; no further
+device mutation is authorized
 
 Confidence labels in this report have the following strict meanings: **PROVEN** is direct
 binary, build, runtime, repository, or authoritative-source evidence; **HIGH CONFIDENCE**
@@ -28,13 +28,14 @@ proves that the r1 cgroup fix works and advances through ueventd, APEX init cont
 three service managers, but exact `android-16.0.0_r4` / 25Q4 then stops at the source-defined
 `NetBpfLoad` requirement for kernel 5.10.
 
-The Linux half of Path A has now passed its offline preservation checkpoint. A reproducible
-synthetic-base merge carries the exact H616/sun50iw9 vendor BSP from 5.4.125 to final
-5.4.302, builds the ARM64 Image and all 22 accepted module roles, and preserves the Android
-12 userspace/vendor/outer contracts in one audited kernel-only candidate. This is **GO only
-for one separately authorized UART-first Android 12 kernel-only physical validation**; it is
-not a hardware-compatibility PASS and is not authorization to flash. The r7 Android source
-audit remains deliberately unstarted until that physical preservation gate passes.
+The Linux half of Path A has advanced to **PARTIAL PHYSICAL PASS / WIRELESS OPEN**. The r1
+Android 12 test boots Linux 5.4.302 and reaches `sys.boot_completed=1`; HDMI/UI, remote,
+Ethernet and ADB pass. AIC8800D Wi-Fi reproducibly fails at firmware START_APP request 1037
+waiting for confirmation 1038 after the BSP programs a rounded 66.7 MHz SDIO clock. This is
+not an Android HAL/framework or missing module/firmware boundary. One offline-only r2 changes
+the AIC runtime request to 50 MHz and preserves the r1 Image, DT, userspace and 21 other module
+bytes. It is a diagnostic, not an accepted fix or authorization to flash. The r7 Android source
+audit remains deliberately unstarted until the wireless/kernel preservation question closes.
 
 The possible final architecture remains **Android 16 for TV, mixed ARM64/ARM32
 userspace, `zygote64_32`, the Allwinner 5.4 hardware-facing BSP lineage, plus only the minimum
@@ -690,8 +691,8 @@ chooses **5.4.277** as the minimum non-GKI 5.4 LTS and explicitly notes that Goo
 the minimum even though the top-level NetBpfLoad `uname` check would accept it. Kernel.org no
 longer lists 5.4 as active and the upstream series ends at 5.4.302. A responsible Path A
 therefore required a same-lineage vendor-BSP move to final 5.4.302 while preserving exact-board
-drivers, module ABI, DT and boot behavior. The checkpoint below closes that requirement
-offline; physical preservation remains open. This is materially smaller than a 5.10 port, but
+drivers, module ABI, DT and boot behavior. The checkpoint below closes source/build preservation;
+r1 physically closes boot/UI/Ethernet but leaves AIC8800D wireless open. This is materially smaller than a 5.10 port, but
 it is not a config-only change.
 
 QPR0 remains Android 16/API 36 and therefore preserves the project's primary platform/API
@@ -702,8 +703,8 @@ separate patch provenance program. No GMS, Play, certification or commercial-ser
 follows from choosing it.
 
 **Path A verdict: selected, overall HOLD.** Its kernel-preservation sub-checkpoint is now
-**GO for one separately authorized Android 12 kernel-only physical validation**; the r7 source
-audit and physical BSP-preservation proof remain open. No A16 r3 candidate is justified yet.
+**PARTIAL PHYSICAL PASS / WIRELESS OPEN**; the r2 50 MHz diagnostic, r7 source audit and full
+BSP-preservation proof remain open. No A16 r3 candidate is justified yet.
 
 #### Same-lineage Linux 5.4.302 preservation checkpoint
 
@@ -758,11 +759,32 @@ super and IMAGEWTY checksum companions change. IMAGEWTY, boot AVB, vendor_dlkm A
 ext4, sparse round-trip and LP audits pass; the fixed vendor_dlkm filesystem has only one 4 KiB
 block free, which is recorded as a physical-test risk.
 
-Compilation and structural comparison cannot prove probe order, display/HDMI, Mali/EGL,
-Cedar decode, audio, wireless, USB, IR, thermal/DVFS, suspend/wake or TEE/DRM runtime.
-Accordingly this is a bounded **kernel-checkpoint GO**, not a hardware PASS and not an Android
-16 GO. The next evidence-bearing action is one separately authorized UART-first test using the
-unchanged accepted Android 12 userspace/vendor baseline and immediately available rollback.
+The separately authorized r1 physical test subsequently proved Linux 5.4.302 boot,
+`sys.boot_completed=1`, HDMI/UI, remote, Ethernet and ADB. It did not prove full BSP
+preservation: Wi-Fi repeatedly reaches `mmc2` SDIO enumeration, matches `aic8800d` U04 and
+enters firmware init, then logs `Set SDIO Clock 66 MHz`, times out command 1037 waiting for
+confirmation 1038, reports `wifi start fail`, removes the BSP and removes the card.
+
+Pinned-source control flow proves `FEATURE_SDIO_CLOCK=70000000` is copied by
+`aicbsp_get_feature()` and programmed in `aicwf_sdio_func_init()` through direct
+`host->ios.clock` plus host `set_ios`. Exact sunxi-mmc-v4p1x SDR clocking doubles the logical
+request, rounds the module clock to about 133.333 MHz, and writes about 66.666 MHz back to the
+logged logical value. This occurs before `aicbsp_8800d_fw_init()` and remains effective through
+`rwnx_send_dbg_start_app_req()`'s two-second confirmation wait. The timeout proves missing
+`DBG_START_APP_CFM`; it does not by itself prove a clock-integrity cause.
+
+The offline `m8-kernel-5.4.302-r2` diagnostic changes only that feature constant from 70 MHz
+to 50 MHz. Clean clang-r416183b1 build succeeds in 548 seconds; the resulting BSP module is
+127,752 bytes / SHA-256
+`D3BA64E43FCD708B4EB7628576D83A01581023181271E0CF76613DD9BC4528F3` with unchanged
+vermagic/dependencies/normalized symbols. To exclude absolute-path/ThinLTO private-ID rebuild
+noise, the candidate reuses r1 Image and 21 modules and replaces only `aic8800_bsp.ko`.
+The 1,031,739,392-byte outer image has SHA-256
+`A2963FD46685829774DBF5EA2E899ED5844BF44329BC8F46788F1D14D09AA036`; AVB, ext4,
+LP, sparse round-trip, IMAGEWTY and 48/50 outer preservation checks pass. It is not Wi-Fi PASS.
+If an authorized physical test repeats the same 1037→1038 timeout, the frequency hypothesis is
+rejected and the next bounded study is a systematic 5.4.125→5.4.302 generic MMC/SDIO/AIC
+interaction diff, not another frequency guess.
 
 ### Path B — r4/25Q4 on a kernel still identified as 5.4
 
@@ -813,13 +835,13 @@ accepted hardware product.
 
 | Rank | Path | Decision | Exact next condition |
 |---:|---|---|---|
-| 1 | A — QPR0/25Q2 plus retained 5.4 lineage | **SELECTED / OVERALL HOLD** | The 5.4.302 offline kernel checkpoint is GO for one separately authorized Android 12 kernel-only physical validation. If that passes, pin and audit `android-security-16.0.0_r7` before any A16 candidate. |
+| 1 | A — QPR0/25Q2 plus retained 5.4 lineage | **SELECTED / OVERALL HOLD** | 5.4.302 r1 physically passes boot/UI/Ethernet but AIC8800D START_APP fails. One 50 MHz single-variable r2 is offline checked and awaits separate authorization; wireless closure precedes r7 audit. |
 | 2 | B — r4/25Q4 plus backports into 5.4 | **NO-GO** | Would require violating the version policy or executing a broad 5.10-class subsystem port. |
 | 3 | C — public H616 5.10+ kernel | **NO-GO** | Requires a new exact-board Android BSP and hardware-stack port. |
 
-Gate 2 remains closed. The r2 physical authorization is consumed. The audited 5.4.302
-Android 12 kernel-only candidate is eligible for a future authorization request, but this study
-does not authorize a flash; no r3 build or Prototype B work is authorized.
+Gate 2 remains closed. Prior physical authorizations are consumed. The audited 5.4.302 r2
+Wi-Fi diagnostic is eligible for a future authorization request, but this study does not
+authorize a flash; no A16 r3 build or Prototype B work is authorized.
 
 ## 12. Target A/B/C/D comparison
 
@@ -848,13 +870,13 @@ lower risk. They are decision aids grounded in the evidence above, not synthetic
 The raw totals expose the actual trade: A wins stability and cost but loses future usefulness;
 B gains API 36 but now carries an EOL-kernel and QPR0-security burden; C has the best long-term
 application value only after the same ARM32 base is established. The project objective still
-makes C the preferred possible end state, but the offline kernel checkpoint does not close its
-physical preservation gate or Prototype A. D remains dominated on engineering economics.
+makes C the preferred possible end state, but the 5.4.302 physical checkpoint still has an
+AIC8800D wireless failure and does not close Prototype A. D remains dominated on engineering economics.
 
 | Family | Viability | Main advantage | Decisive blocker/limit | Engineering risk | Verdict |
 |---|---|---|---|---|---|
 | Target A — Mature Legacy | **PROVEN now** | Accepted stability and hardware completeness | API 31 age and no 64-bit native apps; security/platform life is short | Low | Keep as rollback/reference, not final investment ceiling |
-| Target B — Modern Framework / Legacy Architecture | **HOLD** | Maximum vendor reuse and no new graphics provider | r4 requires 5.10; QPR0 requires the now-built 5.4.302 kernel to pass exact-board hardware validation, and ARM32 excludes 64-bit-only native apps | High until Path A passes | Architecture bootstrap/fallback only |
+| Target B — Modern Framework / Legacy Architecture | **HOLD** | Maximum vendor reuse and no new graphics provider | r4 requires 5.10; QPR0 requires the boot-proven 5.4.302 kernel to close AIC8800D wireless compatibility, and ARM32 excludes 64-bit-only native apps | High until Path A passes | Architecture bootstrap/fallback only |
 | Target C — Modern Hybrid | **CLOSED / MEDIUM-LOW** | API 36 plus AArch64 apps while preserving working 32-bit HALs/kernel | Path A must first pass; paired ARM64 graphics SP-HAL/mapper must then close and run on exact H616 | High but potentially bounded after A | Possible final target, not current GO |
 | Target D — Full Modern Port | **LOW** | Clean contemporary architecture in theory | No complete H616 5.10+ graphics/media/display/DRM provider; becomes multiple subsystem rewrites | Extreme | **NO-GO** |
 
@@ -910,7 +932,7 @@ that preserve ABI, remote/wake reliability, audio/media test assets and hardware
 | Android generation | Android 16 for TV / API 36, based on `android-security-16.0.0_r7` QPR0 only if Path A passes; r4/25Q4 is retired for retained 5.4 |
 | Userspace | Mixed AArch64 primary + ARM32 secondary |
 | Zygote | `zygote64_32` |
-| Kernel | Retain the Allwinner H616 AArch64 5.4 BSP lineage at final 5.4.302 only if `m8-kernel-5.4.302-r1` passes the separately authorized Android 12 hardware-preservation test; no GKI/ACK-support or continuing upstream-support claim |
+| Kernel | Retain the Allwinner H616 AArch64 5.4 BSP lineage at final 5.4.302 only if its current AIC8800D wireless compatibility question closes; no GKI/ACK-support or continuing upstream-support claim |
 | Vendor | Preserve accepted vendor/vendor_dlkm and all working ARM32 hardware services; add hash-pinned matched ARM64 graphics files, set `ro.zygote=zygote64_32`, correct the mapper bitness contract, and revalidate vendor/root AVB |
 | Graphics | Paired ARM64 Mali-G31 EGL/GLES plus AArch64 mapper/gralloc; retain 32-bit counterparts and 32-bit SUNXI HWC/composer |
 | Media | Retain 32-bit Allwinner OMX/Cedar service path; do not rewrite to Codec2 merely for elegance |
@@ -938,10 +960,10 @@ that preserve ABI, remote/wake reliability, audio/media test assets and hardware
 6. The public same-lineage donor's ARM32 Mali file exactly matches UBOX and it supplies the
    paired AArch64 library plus multilib mapper/gralloc source. **PROVEN provider existence;
    MEDIUM exact-board runtime confidence**.
-7. The same-lineage 5.4.302 integration is reproducible, rebuilds the entire 22-module set and
-   preserves the strongest offline BSP contracts; no complete newer H616 Android BSP justifies
-   replacing it. Runtime hardware preservation still needs the isolated Android 12 test.
-   **HIGH CONFIDENCE offline; MEDIUM runtime confidence**.
+7. The same-lineage 5.4.302 integration is reproducible and r1 physically boots Android 12 with
+   HDMI/UI, remote and Ethernet. AIC8800D alone fails at a source-traced firmware confirmation
+   boundary; one 50 MHz diagnostic is isolated offline. **HIGH CONFIDENCE core/runtime progress;
+   MEDIUM wireless compatibility confidence**.
 8. The box already exposes a live 4K60 HDMI output and hardware media path, so keeping the
    vendor stack has more user value than a clean port that regresses acceleration. **PROVEN
    output; MEDIUM 4K media confidence**.
@@ -964,7 +986,7 @@ the application/framework benefit of ARM64 without paying that subsystem-rewrite
 **Overall confidence: MEDIUM.** The Android 16 ARM32 build/offline integration and r1/r2
 runtime progression are strong evidence: cgroups, mounted APEX init content and service managers
 now work. The 5.4.302 build and kernel-only candidate close the source/config/module/packaging
-half of the kernel floor, but exact-board runtime and the r7 source delta remain open. The
+half of the kernel floor; exact-board boot/UI/network progress is strong, but wireless and the r7 source delta remain open. The
 end-state hybrid remains plausible only through Path A; starting Prototype B or building r3
 before those gates would not be justified.
 
@@ -974,22 +996,22 @@ before those gates would not be justified.
 
 | Question | Decision | Reason |
 |---|---|---|
-| Recommended modern Android target | **HOLD — Android 16/API 36 through Path A only** | r2 proves the cgroup correction but r4/25Q4 has an intentional 5.10 floor; QPR0 plus the offline-qualified 5.4.302 lineage is the only bounded-looking route, pending physical kernel preservation and r7 source audit |
+| Recommended modern Android target | **HOLD — Android 16/API 36 through Path A only** | r4/25Q4 has an intentional 5.10 floor; QPR0 plus 5.4.302 remains bounded, but r1 AIC8800D START_APP failure and r7 source audit are open |
 | Android 16 r4 / 25Q4 | **NO-GO with retained 5.4** | Physical and source evidence agree on the 5.10/5.10.210 requirement |
-| Android 16 QPR0 / 25Q2 | **SELECTED / HOLD** | `android-security-16.0.0_r7` accepts 5.4 lineage; the 5.4.302 kernel sub-checkpoint passes offline, but exact-board physical preservation and the r7 source audit remain open |
+| Android 16 QPR0 / 25Q2 | **SELECTED / HOLD** | `android-security-16.0.0_r7` accepts 5.4 lineage; 5.4.302 boots accepted A12 userspace but wireless compatibility and the r7 source audit remain open |
 | Mixed ARM64/ARM32 userspace | **CLOSED PENDING PROTOTYPE A** | Exact paired Mali provider exists, but the common A16 ARM32 bootstrap base has not passed |
 | Full ARM64 userspace | **NO-GO** | Would convert/replace working proprietary service stack for little user value |
-| Kernel 5.4 as final architecture | **GO FOR ONE A12 KERNEL-ONLY TEST** | Reviewed 5.4.302 source/config/build/module/AVB/LP contracts close offline; exact-board hardware preservation is not proven and no ACK or ongoing upstream support claim is possible |
+| Kernel 5.4 as final architecture | **HOLD — AIC8800D WIRELESS OPEN** | 5.4.302 boot/UI/Ethernet are physically proven; Wi-Fi fails at START_APP confirmation and one offline 50 MHz diagnostic awaits separate authorization |
 | Kernel 5.10+ migration | **NO-GO IN THIS PHASE** | No complete exact-SoC/board Android provider; regression surface is a new BSP port |
 | >1080p media target | **PLAUSIBLE** | Physical 4K60 output and 4K codec declarations exist; sustained physical 4K decode is not proven |
 | Netflix above current basic/L3 class | **STRUCTURALLY BLOCKED** | L3, HDCP NONE, no secure decoder/protected path; service certification remains an additional gate |
 
 ### Remaining decisive gates (maximum four)
 
-1. With new explicit authorization only, run one UART-first Android 12 kernel-only physical
-   validation of `m8-kernel-5.4.302-r1`, keeping Test8r2 rollback immediately available and
-   checking the complete accepted hardware stack. No authorization exists in this study.
-2. Only if that kernel test passes, pin a separate clean `android-security-16.0.0_r7`
+1. With new explicit authorization only, run one UART-first `m8-kernel-5.4.302-r2` Wi-Fi
+   diagnostic, keeping Test8r2 rollback immediately available. If the identical 1037→1038
+   timeout remains, reject the 50 MHz hypothesis and diff generic MMC/SDIO core interaction.
+2. Only after wireless/kernel preservation closes, pin a separate clean `android-security-16.0.0_r7`
    manifest/source checkout and re-audit the exact ARM32 product, cgroups/task profiles, APEX
    set, linker/SELinux/VINTF deltas and build reproducibility without creating a candidate.
 3. Only after both checkpoints pass, build and fully offline-audit exactly one Prototype A r3;
@@ -1006,12 +1028,13 @@ before those gates would not be justified.
 3. **Completed — corrected cgroup runtime proof:** the separately authorized r2 test proves the
    cgroup correction, mounted APEX init content and service managers, then reproducibly stops at
    the r4/25Q4 5.10 policy boundary.
-4. **Completed offline — same-lineage kernel checkpoint:** reproducibly integrate and build
-   5.4.302, close config/module/AVB/LP preservation, and construct exactly one isolated Android
-   12 kernel-only candidate.
+4. **Completed with one open subsystem — same-lineage kernel checkpoint:** reproducibly integrate
+   and build 5.4.302; r1 physically boots Android 12 and passes HDMI/UI/remote/Ethernet/ADB but
+   AIC8800D times out waiting for firmware START_APP confirmation.
 5. **Current physical gate:** request, but do not assume, separate authorization for one
-   UART-first Android 12 kernel-only test. Only after it passes, pin QPR0 security r7 and perform
-   the source-only product/cgroup/APEX/linker/SELinux/VINTF audit. No flash is authorized now.
+   UART-first r2 50 MHz Wi-Fi diagnostic. If the same timeout remains, reject the frequency
+   hypothesis and diff generic MMC/SDIO core interaction. Only after wireless closure, pin QPR0
+   security r7 and perform the source-only audit. No flash is authorized now.
 6. **Conditional mixed proof:** only after the ARM32 base passes, build the minimal
    `zygote64_32` product with the lawful paired graphics provider, close its offline checks and
    perform a separately authorized boot/parity test.
