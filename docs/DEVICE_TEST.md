@@ -2,8 +2,8 @@
 
 ## 当前状态
 
-- 最后报告的刷入诊断镜像：`out/candidates/m8-kernel-5.4.302-r3/x12-m8-kernel-5.4.302-r3.img`
-- 当前设备状态：**ANDROID 12 BOOT COMPLETE / WI-FI FAIL / GATE 2 CLOSED**；Linux 5.4.302、HDMI/UI、遥控、Ethernet、ADB 正常。`m8-kernel-5.4.302-r2` 已实机拒绝 50 MHz hypothesis；r3 已实机证明 START_APP final CMD53 在 Linux host 返回成功，但随后没有进入 AIC IRQ handler，当前边界为 **POST-TX / PRE-AIC-HANDLER**。这不是 Wi-Fi fix。
+- 最后报告的刷入诊断镜像：`out/candidates/m8-kernel-5.4.302-r4/x12-m8-kernel-5.4.302-r4.img`
+- 当前设备状态：**ANDROID 12 BOOT COMPLETE / WI-FI FAIL / GATE 2 CLOSED**；Linux 5.4.302、HDMI/UI、遥控、Ethernet、ADB 正常。`m8-kernel-5.4.302-r2` 已实机拒绝 50 MHz hypothesis；r3 证明 START_APP final CMD53 在 Linux host 返回成功但无 AIC IRQ/RX/1038，r4 又证明 timeout 时 `IENx=0x03`、`INTx=0x00`、core pending=0 且 IRQ claim/handler 正常。当前最早未解边界为 **HOST-COMPLETE CMD53 → DEVICE FIFO DEQUEUE/PARSE**；不证明无 transient IRQ 或 firmware failure。这不是 Wi-Fi fix。
 - 保留的设备验收基线：`out/candidates/m8b-remote-r1/x12-m8b-remote-r1.img`，状态 **DEVICE ACCEPTED / REMOTE PASS**（继承 **AUDIO PASS / IME PASS**）。
 - 大小 / SHA-256：1031723008 bytes / `F3B09E5565AC4ED4E5EE326D392622E7B036A8519B8444B966E77CC4751B814A`
 - 用户当前在设备现场，可执行物理交互、重启、suspend/resume、HDMI 观察与恢复；任何新候选刷写仍需该候选的单独明确授权。
@@ -164,13 +164,13 @@ transaction-window trace。它在原有 START_APP success/timeout 后只输出�
 因此不得从该结果选择行为修复。后续任何新诊断候选仍需单独明确物理授权并保持 Test8r2
 rollback 边界。
 
-## Offline diagnostic candidate: m8-kernel-5.4.302-r4
+## Physical diagnostic result: m8-kernel-5.4.302-r4
 
 候选：`out/candidates/m8-kernel-5.4.302-r4/x12-m8-kernel-5.4.302-r4.img`，
 1,031,739,392 bytes / SHA-256
 `18565E4F94FF1A843EA859254800E5E2BA732FBFE47410E86D6577038F85DFCA`。
-状态为 **OFFLINE CHECKED / INSTRUMENTATION ONLY / NOT A FIX / NOT PHYSICALLY VALIDATED**；
-本记录不授权刷写，Gate 2 保持 CLOSED。
+状态为 **PHYSICAL DIAGNOSTIC PASS / WI-FI FAIL / NO PERSISTENT FUNCTION PENDING AT TIMEOUT**；
+Gate 2 保持 CLOSED。
 
 r4 保留 r1/r3 的 70 MHz、Image、boot、DT、Android 12 userspace 和其他 21 modules，只在
 原 START_APP timeout 已成立后、teardown 之前，由 `aic8800_bsp.ko` 读取 read-only CCCR
@@ -179,11 +179,21 @@ r4 保留 r1/r3 的 70 MHz、Image、boot、DT、Android 12 userspace 和其他 
 离线检查确认 AIC exported-symbol CRC 与 r1 完全一致，避免 preserved `aic8800_fdrv.ko`
 发生 symbol-version mismatch；AVB/ext4/LP/IMAGEWTY 和 single-module preservation PASS。
 
-若未来对上述 exact hash 另行明确授权，只手动打开一次 Wi-Fi，完整保留 UART/logcat，读取
-`AIC_STARTAPP_TRACE` 新字段。`cccr_intx` 的 function bit 在 handler count 为零时仍置位，
-证明 card 在 timeout 时报告 pending 而 handler 未收到；该 bit 清零只证明没有 pending
-状态保留到 timeout，不能单独宣称 firmware failure。完整采集命令与判定规则见
-`docs/m8/candidates/m8-kernel-5.4.302-r4.md`。Rollback 仍为 Test8r2。
+用户手动打开一次 Wi-Fi 后，该次尝试及一次正常 framework `WifiSelfRecovery` 均记录 token
+476、`tx_bus_len=24 tx_bus_ret=0`、`tx_cmd53_state=2 tx_cmd53_len=512 tx_cmd53_ret=0`，随后
+`irq_count=0 rx_cmd53_count=0 cfm_seen=0 token_match=0 completion=0`。两次 timeout snapshot 都是
+`timeout_func=1 host_cap_sdio_irq=1 host_irq_pending=0 irq_claimed=1 handler_installed=1`、
+`cccr_intx=0x00/ret=0`、`cccr_ienx=0x03/ret=0`。这只证明没有标准 function-1 pending 状态
+保留到两秒 snapshot；不证明 card 未短暂 assert、自清或产生 malformed IRQ，也不证明 firmware
+failure。自然启动的一次 `aicwf_sdio_hal_irqhandler: Interrupt but no data` 证明更早状态下 AIC
+handler 曾实际进入，但不证明 START_APP response IRQ 正确。
+
+后续 exact firmware/source archaeology 找到 U04 `fmacfw.bin` 内 post-start 1037 handler：它
+allocate/send 1038，并在 send 前输出 `DBG: FW started`。没有找到 exact U04 boot-ROM consumer、
+AUTO handoff 或 source-proven read-only dequeue/boot/FMAC-ready state；`bootstatus` 只存在于缺失的
+1038 payload 且被 host 当作 `hwinfo_r`。因此 r5 **不成立**，不得使用不同芯片的 FNCALL/DUMMY
+或随机寄存器读取作为替代。完整证据与 lineage 限制见
+`docs/m8/candidates/m8-kernel-5.4.302-r4.md`。Rollback 仍为 Test8r2；本记录不授权任何新物理动作。
 
 ## Accepted physical result: m8b-remote-r1
 

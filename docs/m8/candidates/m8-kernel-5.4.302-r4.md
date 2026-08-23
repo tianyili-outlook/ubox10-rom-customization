@@ -1,17 +1,18 @@
 # M8 Linux 5.4.302 post-timeout SDIO interrupt snapshot r4
 
 Date: 2026-08-23
-Status: **OFFLINE CHECKED / INSTRUMENTATION ONLY / NOT A FIX / NOT PHYSICALLY VALIDATED**
+Status: **PHYSICAL DIAGNOSTIC PASS / WI-FI FAIL / DEVICE CONTRACT AUDITED / r5 NOT JUSTIFIED**
 
 ## Decision boundary
 
-The separately authorized r3 run is a physical diagnostic pass but a Wi-Fi failure.  Both the
-manual Wi-Fi start and its one framework self-recovery attempt proved that the final 512-byte
-START_APP CMD53 write returned zero on the Linux host, followed by no attributable AIC handler,
-CMD53 RX, 1038 dispatch, token match or completion.  The proven boundary is therefore
-**post-TX/pre-AIC-handler**.  A successful host-side return does not prove card consumption, and
-zero AIC handler entries does not distinguish no card interrupt from an interrupt lost before the
-handler.
+The separately authorized r4 run is a physical diagnostic pass but a Wi-Fi failure.  Android 12
+completed boot on Linux 5.4.302+, and the r4-only CCCR fields prove the instrumented BSP ran.  One
+manual Wi-Fi start and its normal framework self-recovery both reported token 476, a successful
+host-side 24-byte bus TX / final 512-byte function-1 CMD53, and no attributable AIC handler, CMD53
+RX, 1038 dispatch, token match or completion.  Both timeout snapshots had function 1, hardware
+SDIO IRQ capability, a claimed IRQ and installed handler, `IENx=0x03`, but core pending zero and
+`INTx=0x00`.  Thus no standards-compliant function-1 pending indication survived to timeout.  This
+does not prove card FIFO dequeue, firmware execution, or absence of an earlier transient signal.
 
 The exact r3 build cannot make that distinction read-only from Android.  `CONFIG_DEBUG_FS`,
 `CONFIG_DEVMEM` and `CONFIG_MMC_DEBUG` are disabled; SDIO sysfs exposes identity, not CCCR pending
@@ -116,44 +117,119 @@ All candidate `SHA256SUMS`, the outer IMAGEWTY verifier, JSON/shell/Python synta
 focused four-test r4 contract pass.  The full repository suite reports 92 tests passing with 25
 expected fixture/candidate skips.
 
-## Separately authorized physical discriminator
+## Physical result
 
-No physical action is authorized by this record.  After separate authorization for the exact
-firmware hash above, use the r1/r3 PhoenixCard, UART-first and Test8r2 rollback boundary.  Boot
-Android, confirm `sys.boot_completed=1`, start continuous UART/logcat capture, then manually turn
-Wi-Fi on exactly once.  The framework's one normal self-recovery may be observed; do not add a
-second manual attempt.
+The five preserved files under ignored
+`/work/device-evidence/m8-kernel-5.4.302-r4/20260823-wifi-on/` show
+`sys.boot_completed=1`, Linux 5.4.302+, U04 selection (`rev id 0x7`, `sub id 0x20`) and the exact
+r4 trace schema.  Build/package evidence links that schema to the final 129,976-byte
+`aic8800_bsp.ko`, SHA-256
+`C993867D21988F0F1C4E32A9857821ADDA7899374B440688131E2CD9897F8CA4`; no on-device module hash was
+captured, so the identity proof is the unique instrumentation plus the audited candidate chain,
+not an independent runtime hash measurement.
 
-On the Windows host, collect the complete buffers without clearing them:
+At 320.093 and 324.637 seconds, the manual `AIC_WIFI ON` and framework `WifiSelfRecovery` attempts
+both recorded:
 
-```powershell
-adb wait-for-device
-adb shell getprop sys.boot_completed
-adb shell su 0 dmesg > .\r4-dmesg-before-wifi.txt
-# Start a separate continuous capture before the single manual Wi-Fi ON:
-adb logcat -b all -v threadtime > .\r4-wifi-on-all.txt
-# After the timeout/self-recovery sequence, from a second terminal:
-adb shell su 0 dmesg > .\r4-wifi-on-kernel.txt
-Select-String -Path .\r4-wifi-on-kernel.txt -Pattern `
-  'Set SDIO Clock|AIC_STARTAPP_TRACE|cmd timed-out|cmd:1037|wifi start fail|mmc2: card'
+```text
+token=476 tx_bus_len=24 tx_bus_ret=0
+tx_cmd53_state=2 tx_cmd53_len=512 tx_cmd53_ret=0
+irq_count=0 rx_cmd53_count=0 cfm_seen=0 token_match=0 completion=0
+timeout_func=1 host_cap_sdio_irq=1 host_irq_pending=0
+irq_claimed=1 handler_installed=1
+cccr_intx=0x00 cccr_intx_ret=0 cccr_ienx=0x03 cccr_ienx_ret=0
 ```
 
-Interpret the added summary fields as follows:
+Several natural-boot AIC_BLUETOOTH/shared-BSP cycles reached the same timeout.  One earlier cycle
+logged `aicwf_sdio_hal_irqhandler: Interrupt but no data`; that literal is emitted only after entry
+to the AIC handler and a successful zero block-count read.  It proves the physical DAT1 → SUNXI →
+MMC → AIC handler path can operate in an earlier state, but does not prove a START_APP response IRQ
+was generated or handled.
 
-- expected setup is `timeout_func=1 host_cap_sdio_irq=1 irq_claimed=1
-  handler_installed=1`, `cccr_ienx_ret=0`, with IENx master bit 0 and function bit 1 set;
-- `cccr_intx_ret=0` with function bit 1 set while r3 IRQ count remains zero proves the card reports
-  a pending function interrupt at timeout but the AIC handler did not receive it; `host_irq_pending`
-  then separates “core already signaled but not dispatched” from loss before core signaling;
-- `cccr_intx_ret=0` with the function bit clear and correct IENx means no standards-compliant
-  pending indication survived to timeout.  It narrows toward no persistent card indication but is
-  not by itself proof of firmware failure or proof that no earlier pulse occurred;
-- a nonzero CCCR return means card/bus state was unavailable and must be treated as its own result;
-- any positive r3 IRQ/RX/1038 field supersedes the old pre-handler boundary and must be interpreted
-  before choosing another experiment.
+The physical conclusion is therefore narrower than firmware failure: Linux completed the final
+CMD53 without error; no persistent standard function pending indication remained at timeout; and
+no START_APP-window handler/RX/1038/completion was observed.  Persistent-card-IRQ-lost-by-Linux is
+low priority.  FIFO consumption, a boot-transition failure and a transient indication remain open.
 
-Do not change behavior in the same run.  This is not Wi-Fi PASS, not an accepted fix and not
-Android 16 Prototype A r3.  Gate 2 remains **CLOSED**.
+## Exact U04 firmware contract audit
+
+The exact preserved `vendor_a.img` firmware selected by the physical U04 path was extracted
+read-only.  Its identities are:
+
+| File | Size | SHA-256 |
+|---|---:|---|
+| `fmacfw.bin` | 260,984 | `FC3BC7865CBB01560E706E87FEA23F07CBF86B0E9F76649381D553FE8E781904` |
+| `fw_adid_u03.bin` | 1,208 | `6C7CC9D899D2A4E5B91B0F009AA6679498131ADC27D220B96EC162536370A190` |
+| `fw_patch_u03.bin` | 64,204 | `4B97D0F7C41F29EDB4B9082F0FB3B920770A8EF9C3F7E8D93C062AEDD9E778CD` |
+| `fw_patch_table_u03.bin` | 1,336 | `9EC1A1CC6A6249E3EE8302DC952D71C9F494FEC2A1A16499FFB72893C0A475ED` |
+
+`fmacfw.bin` is a raw Cortex-M image for the source-proven load address `0x00120000`: its vector
+table contains MSP `0x00183800` and Thumb reset vector `0x00120189`.  It identifies itself as
+`v6.4.3.1`, built 2022-10-08 from `gb01a3750`.  Its debug-handler table at file offset `0x3f884`
+maps message `0x040d` / 1037 to Thumb handler `0x00144f61`.  Read-only disassembly proves that
+handler:
+
+1. allocates a four-byte message 1038 addressed back to the request source;
+2. treats types 0/1/2 as log-only in the already-running FMAC context;
+3. treats type 3 as delayed or immediate reboot;
+4. logs types above 3 as invalid, but still continues to confirmation;
+5. calls an indirect ROM/API pointer stored at `0x000001a4` with selector 15, keeps its low byte as
+   the four-byte `bootstatus`, prints `DBG: FW started`, then sends 1038.
+
+The exact callee behind selector 15 is not symbolized.  The host stores only the low byte as
+`aicbsp_info.hwinfo_r`; therefore `bootstatus` is a returned hardware-information-like value in
+this lineage, not a source-proven boot-progress/error latch.  It exists only inside the missing
+CFM and cannot discriminate an r4 timeout.
+
+The exact FMAC therefore contains a real post-start producer of 1038.  It does not reveal the
+initial U04 boot-ROM consumer, FIFO dequeue, AUTO handoff or whether the boot ROM could also emit a
+1038.  Authoritative ownership of the initial confirmation remains unknown.  The best-supported
+inference is post-transfer FMAC ownership: an AIC8800 same-vendor pre-transfer handler stops the
+old host interface and programs/reset-launches the requested vector without allocating a CFM,
+while the exact downloaded FMAC allocates and sends 1038 only after it is executing.
+
+## External lineage and mode limits
+
+[Radxa's AIC package history](https://github.com/radxa-pkg/aic8800) at commits
+[`7c8ed35d5e634186e0d1a25bc1436531ab57088f`](https://github.com/radxa-pkg/aic8800/commit/7c8ed35d5e634186e0d1a25bc1436531ab57088f),
+[`ea15d8515af1d773bda79c6a7ccaa4c271a73fa3`](https://github.com/radxa-pkg/aic8800/commit/ea15d8515af1d773bda79c6a7ccaa4c271a73fa3),
+[`78d6075fd52e0fc5f774cdeb208b150ebb3a2c9e`](https://github.com/radxa-pkg/aic8800/commit/78d6075fd52e0fc5f774cdeb208b150ebb3a2c9e)
+and [`d5e11d4b9166d4159ffb4d4baadfcdb07d482e20`](https://github.com/radxa-pkg/aic8800/commit/d5e11d4b9166d4159ffb4d4baadfcdb07d482e20)
+provides AIC8800 SDIO U03/U04 firmware from vendor
+SDK releases dated 2023-11-07 through 2026-01-23.  None of those `fmacfw.bin` files is byte-identical
+to the project binary, but all four contain the same 1037 → allocate 1038 → type/reboot handling →
+low-byte status → `DBG: FW started` → send control flow.  This is **strong same-chip/same-family
+evidence**, not exact binary identity.  The project `fw_adid_u03.bin` is byte-identical to the
+current public copy, while its FMAC and U03 patch/table are not.
+
+The [public AIC embedded SDK mirror at commit
+`0188df66ce158f540d65181109869fadf5cb9376`](https://github.com/RIRIKING/AIC8800Code/tree/0188df66ce158f540d65181109869fadf5cb9376)
+supplies a symbolized but prebuilt AIC8800
+`host_cmd.o`.  Its pre-transfer AUTO handler reads the vector at `bootaddr+4`, stops the host
+interface and programs the execution/reset trigger; a target-device variant copies vector words
+and calls `SystemCoreReset`.  CUSTOM only logs and returns.  Neither variant constructs a CFM.
+This is a **plausible same-vendor ancestor/structural proxy**, not AIC8800D U04 proof.
+
+Newer [AIC8800DC](https://github.com/radxa-pkg/aic8800/blob/df4c783b663eba1956579c681acd5e45f25c671d/src/SDIO/driver_fw/driver/aic8800/aic8800_bsp/aic8800dc_compat.c)
+and [D80N](https://github.com/radxa-pkg/aic8800/blob/df4c783b663eba1956579c681acd5e45f25c671d/src/SDIO/driver_fw/driver/aic8800/aic8800_bsp/aic8800d80n_compat.c)
+host code establishes only cross-chip usage semantics: FNCALL=4 runs uploaded
+calibration/cinit code at a Thumb entry and returns before the host reads its results; DUMMY=5 is
+used by the normal DC continuation path and returns quickly in a
+[public AIC8800DC bring-up log](https://github.com/LuckfoxTECH/luckfox-pico/issues/131).  No public
+device-handler source establishes their internal implementation.  The exact U04 FMAC labels both
+4 and 5 invalid, so neither is a justified U04 diagnostic command.  AUTO's exact initial U04
+setup, CUSTOM's initial semantics and the relative boot-ROM handoff ordering remain unknown.
+
+No exact U04 read-only boot-status register, CPU PC/status, FIFO dequeue pointer, firmware-ready
+magic, exception latch or CFM-constructed flag was found.  The `host_ready` string has no published
+address/read contract; different-chip reset/COMREG registers are not safe proxies.  Consequently
+there is no source-proven, high-information, low-perturbation r5 discriminator.  **r5 = NO**.  The
+earliest unresolved boundary remains host/controller-visible CMD53 completion → device FIFO
+dequeue/request parsing; conditional on consumption, the next boundary is boot-ROM AUTO handoff →
+FMAC reset-vector execution → exact FMAC 1037 handler/1038 send.
+
+No physical action is authorized by this record.  This is not Wi-Fi PASS, not an accepted fix and
+not Android 16 Prototype A r3.  Gate 2 remains **CLOSED**.
 
 Rollback remains Test8r2, 2,005,954,560 bytes / SHA-256
 `6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8`.
