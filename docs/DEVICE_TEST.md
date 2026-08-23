@@ -2,8 +2,8 @@
 
 ## 当前状态
 
-- 最后报告的刷入镜像：`out/candidates/m8-kernel-5.4.302-r1/x12-m8-kernel-5.4.302-r1.img`
-- 当前设备状态：**ANDROID 12 BOOT COMPLETE / WI-FI FAIL / GATE 2 CLOSED**；Linux 5.4.302、HDMI/UI、遥控、Ethernet、ADB 正常，AIC8800D firmware START_APP confirmation 可重复超时。`m8-kernel-5.4.302-r2` 仅为未授权的离线诊断候选。
+- 最后报告的刷入诊断镜像：`out/candidates/m8-kernel-5.4.302-r2/x12-m8-kernel-5.4.302-r2.img`
+- 当前设备状态：**ANDROID 12 BOOT COMPLETE / WI-FI FAIL / GATE 2 CLOSED**；Linux 5.4.302、HDMI/UI、遥控、Ethernet、ADB 正常，AIC8800D firmware START_APP confirmation 可重复超时。`m8-kernel-5.4.302-r2` 已实机拒绝 50 MHz hypothesis；没有下一候选或刷写授权。
 - 保留的设备验收基线：`out/candidates/m8b-remote-r1/x12-m8b-remote-r1.img`，状态 **DEVICE ACCEPTED / REMOTE PASS**（继承 **AUDIO PASS / IME PASS**）。
 - 大小 / SHA-256：1031723008 bytes / `F3B09E5565AC4ED4E5EE326D392622E7B036A8519B8444B966E77CC4751B814A`
 - 用户当前在设备现场，可执行物理交互、重启、suspend/resume、HDMI 观察与恢复；任何新候选刷写仍需该候选的单独明确授权。
@@ -101,38 +101,34 @@ mmc2: card ... removed
 HAL/framework 或 simple missing payload。当前仓库没有随该报告提供 raw UART capture，故不记录
 虚构的文件路径或 hash。r1 结论为 **PARTIAL PHYSICAL PASS / WIRELESS FAIL**。
 
-## Pending physical diagnostic: m8-kernel-5.4.302-r2
+## Completed physical diagnostic: m8-kernel-5.4.302-r2
 
 候选：`out/candidates/m8-kernel-5.4.302-r2/x12-m8-kernel-5.4.302-r2.img`，
 1,031,739,392 bytes / SHA-256
 `A2963FD46685829774DBF5EA2E899ED5844BF44329BC8F46788F1D14D09AA036`。
 它只把 pinned AIC BSP runtime request 从 70 MHz 改为 50 MHz，复用 r1 Image/boot/DT、
-userspace 与 21 个 module bytes。状态为 **OFFLINE-CHECKED DIAGNOSTIC**，不是 accepted fix；
-本文件不授权刷写。
+userspace 与 21 个 module bytes。用户已另行授权并完成测试，结果为
+**PHYSICALLY FAILED — 50 MHZ HYPOTHESIS REJECTED**：
 
-只有取得该候选的单独明确授权后，先在 Windows 验证下载文件：
-
-```powershell
-certutil -hashfile .\x12-m8-kernel-5.4.302-r2.img SHA256
+```text
+mmc2: new SDIO card
+aicbsp_sdio_probe: matched chip: aic8800d
+Set SDIO Clock 50 MHz
+cmd timed-out
+tkn[476] flags:0012 result:-4 cmd:1037 - reqcfm(1038)
+wifi start fail
+mmc2: card ... removed
 ```
 
-期望值必须为上述 SHA-256；Test8r2 rollback 必须现场可用。授权后的 UART capture 主要
-判据是：出现 `Set SDIO Clock 50 MHz`；`cmd:1037 - reqcfm(1038)` / `wifi start fail`
-消失；START_APP confirmation 可见或控制流成功返回；fdrv 保持加载、`wlan0` 出现、Android
-Wi-Fi 可用。Android 启动后可执行只读检查：
+该序列在多次 power/re-enumeration 中稳定重复。Android 12 boot complete，Ethernet 与
+ADB 正常；`aic8800_bsp`/`aic8800_btlpm` 保持，`aic8800_fdrv` 不保持，`wlan0` 不存在。
+HAL service 存在，framework `CMD_STA_START_FAILURE`/`DisabledState` 是 firmware init
+失败的下游结果。不要再测试任意 SDIO frequency。
 
-```powershell
-C:\platform-tools\adb.exe shell getprop sys.boot_completed
-C:\platform-tools\adb.exe shell "lsmod | grep -E 'aic8800_(bsp|fdrv|btlpm)'"
-C:\platform-tools\adb.exe shell ip link show wlan0
-C:\platform-tools\adb.exe shell dumpsys wifi
-C:\platform-tools\adb.exe shell "dmesg | grep -E 'Set SDIO Clock|DBG_START_APP|cmd:1037|wifi start fail|aic8800|mmc2'"
-```
-
-从 `lsmod` 确认 `aic8800_bsp`、`aic8800_fdrv`、`aic8800_btlpm`；同时保存完整 UART
-与未过滤 dmesg，避免过滤输出成为唯一证据。若仍是
-完全相同的 1037→1038 timeout，则 **50 MHz hypothesis rejected**；不得继续猜频率，下一步
-是 Linux 5.4.125→5.4.302 generic MMC/SDIO core 与 AIC BSP interaction diff。
+后续离线 source diff 证明 retained→5.4.302 的 generic CMD52/CMD53、SDIO IRQ、request
+completion、host claim/release 与 SUNXI host live path 未改变，没有一个 LTS delta 足以
+支持行为回退。当前下一步只是设计 START_APP-gated AIC BSP instrumentation；尚无候选，
+不得刷写。任何后续实机都需要新的明确授权，并继续使用相同 Test8r2 rollback 边界。
 
 ## Accepted physical result: m8b-remote-r1
 

@@ -6,9 +6,9 @@ Study branch/evidence base: `codex/m8-architecture-ceiling` / starting commit
 `f40a37b6fd488800b5a1ada89f2ce2cf687e8e33`, plus the hash-locked Linux 5.4.302
 checkpoint inputs and results recorded below
 
-Accepted runtime baseline: `m8b-remote-r1`; last reported flashed image: `m8-kernel-5.4.302-r1`
+Accepted runtime baseline: `m8b-remote-r1`; last reported flashed diagnostic: `m8-kernel-5.4.302-r2`
 Scope: architecture decision, bounded offline prototypes, the separately authorized A16 r1/r2
-and Linux 5.4.302 r1 physical tests, plus the offline 50 MHz AIC8800 diagnostic; no further
+and Linux 5.4.302 r1/r2 physical tests, plus the generic MMC/SDIO differential; no further
 device mutation is authorized
 
 Confidence labels in this report have the following strict meanings: **PROVEN** is direct
@@ -32,10 +32,13 @@ The Linux half of Path A has advanced to **PARTIAL PHYSICAL PASS / WIRELESS OPEN
 Android 12 test boots Linux 5.4.302 and reaches `sys.boot_completed=1`; HDMI/UI, remote,
 Ethernet and ADB pass. AIC8800D Wi-Fi reproducibly fails at firmware START_APP request 1037
 waiting for confirmation 1038 after the BSP programs a rounded 66.7 MHz SDIO clock. This is
-not an Android HAL/framework or missing module/firmware boundary. One offline-only r2 changes
-the AIC runtime request to 50 MHz and preserves the r1 Image, DT, userspace and 21 other module
-bytes. It is a diagnostic, not an accepted fix or authorization to flash. The r7 Android source
-audit remains deliberately unstarted until the wireless/kernel preservation question closes.
+not an Android HAL/framework or missing module/firmware boundary. r2 preserved the r1 Image,
+DT, userspace and 21 other module bytes and changed only the AIC request to 50 MHz. Its physical
+test proves 50 MHz active but repeats the same token-476 timeout on every re-enumeration, so the
+frequency hypothesis is rejected. Exact source diff finds no change in the live generic
+CMD52/CMD53/SDIO-IRQ/SUNXI-host path and no LTS semantic delta strong enough for a behavior
+revert. No next image was built. The r7 Android source audit remains deliberately unstarted
+until the wireless/kernel preservation question closes.
 
 The possible final architecture remains **Android 16 for TV, mixed ARM64/ARM32
 userspace, `zygote64_32`, the Allwinner 5.4 hardware-facing BSP lineage, plus only the minimum
@@ -703,8 +706,9 @@ separate patch provenance program. No GMS, Play, certification or commercial-ser
 follows from choosing it.
 
 **Path A verdict: selected, overall HOLD.** Its kernel-preservation sub-checkpoint is now
-**PARTIAL PHYSICAL PASS / WIRELESS OPEN**; the r2 50 MHz diagnostic, r7 source audit and full
-BSP-preservation proof remain open. No A16 r3 candidate is justified yet.
+**PARTIAL PHYSICAL PASS / WIRELESS OPEN**; r2 has rejected the 50 MHz hypothesis, while a
+transport-boundary diagnostic, r7 source audit and full BSP-preservation proof remain open.
+No A16 r3 candidate is justified yet.
 
 #### Same-lineage Linux 5.4.302 preservation checkpoint
 
@@ -782,9 +786,32 @@ noise, the candidate reuses r1 Image and 21 modules and replaces only `aic8800_b
 The 1,031,739,392-byte outer image has SHA-256
 `A2963FD46685829774DBF5EA2E899ED5844BF44329BC8F46788F1D14D09AA036`; AVB, ext4,
 LP, sparse round-trip, IMAGEWTY and 48/50 outer preservation checks pass. It is not Wi-Fi PASS.
-If an authorized physical test repeats the same 1037→1038 timeout, the frequency hypothesis is
-rejected and the next bounded study is a systematic 5.4.125→5.4.302 generic MMC/SDIO/AIC
-interaction diff, not another frequency guess.
+
+The authorized physical test reports `Set SDIO Clock 50 MHz` and then repeats
+`tkn[476] flags:0012 ... cmd:1037 - reqcfm(1038)`, `wifi start fail` and card removal on every
+attempt. Android 12, Ethernet and ADB remain working; fdrv does not remain loaded and `wlan0`
+does not appear. This rejects frequency as the root cause and leaves HAL/framework failure
+downstream.
+
+The exact retained-vendor→integration diff shows `sdio_irq.c`, `sdio_io.c`, `sdio_ops.c`, MMC
+host/card/function headers and all retained `sunxi-mmc*` controller sources unchanged.
+Request completion/wait and host claim/release functions also have no changed hunk. The
+remaining ranked deltas are: corrected cold-init OCR mask (`076712ff...` / upstream
+`39a72dbf...`, weak but the only potentially reachable setup delta); initial max-rate quirk
+(`ea7e57d...`, physically rejected by r2); retune fixes (`2d95959...`, `894b678...`, inactive
+because this host has no tuning op and the run is not resume); SDIO refcount/error removal
+(`761db46...`, `7a09c64...`, after failure); host-cap validation (`95d65bc...`, passed at host
+registration); and NONSTD/shutdown/SPI paths, which are inactive. Copying the old MMC subtree
+or reverting these as a group would not be a controlled experiment.
+
+The AIC receive chain is SUNXI IRQ → `ksdioirqd` → AIC IRQ handler → block-count CMD52 →
+CMD53 read → RX thread → config message → ID match → completion. Token 476 proves 476 earlier
+blocking confirmations completed over that machinery before START_APP. Existing logs do not
+show the final 1037 TX return, IRQ entry, RX length/header/id, or 1038 dispatcher match, so they
+cannot select among final-TX, firmware-IRQ, RX and dispatch boundaries. The smallest next
+experiment is a START_APP-gated, diagnostic-only BSP module recording those four stages while
+changing no behavior. Exact commits, call paths and discriminators are recorded in the current
+r2 candidate record. No diagnostic module/image has yet been built or authorized.
 
 ### Path B — r4/25Q4 on a kernel still identified as 5.4
 
@@ -835,13 +862,12 @@ accepted hardware product.
 
 | Rank | Path | Decision | Exact next condition |
 |---:|---|---|---|
-| 1 | A — QPR0/25Q2 plus retained 5.4 lineage | **SELECTED / OVERALL HOLD** | 5.4.302 r1 physically passes boot/UI/Ethernet but AIC8800D START_APP fails. One 50 MHz single-variable r2 is offline checked and awaits separate authorization; wireless closure precedes r7 audit. |
+| 1 | A — QPR0/25Q2 plus retained 5.4 lineage | **SELECTED / OVERALL HOLD** | 5.4.302 r1 physically passes boot/UI/Ethernet but AIC8800D START_APP fails; r2 physically rejects the 50 MHz hypothesis. A transport-boundary diagnostic precedes wireless closure and r7 audit. |
 | 2 | B — r4/25Q4 plus backports into 5.4 | **NO-GO** | Would require violating the version policy or executing a broad 5.10-class subsystem port. |
 | 3 | C — public H616 5.10+ kernel | **NO-GO** | Requires a new exact-board Android BSP and hardware-stack port. |
 
-Gate 2 remains closed. Prior physical authorizations are consumed. The audited 5.4.302 r2
-Wi-Fi diagnostic is eligible for a future authorization request, but this study does not
-authorize a flash; no A16 r3 build or Prototype B work is authorized.
+Gate 2 remains closed. Prior physical authorizations are consumed. No next diagnostic image
+exists or is authorized; no A16 r3 build or Prototype B work is authorized.
 
 ## 12. Target A/B/C/D comparison
 
@@ -962,7 +988,8 @@ that preserve ABI, remote/wake reliability, audio/media test assets and hardware
    MEDIUM exact-board runtime confidence**.
 7. The same-lineage 5.4.302 integration is reproducible and r1 physically boots Android 12 with
    HDMI/UI, remote and Ethernet. AIC8800D alone fails at a source-traced firmware confirmation
-   boundary; one 50 MHz diagnostic is isolated offline. **HIGH CONFIDENCE core/runtime progress;
+   boundary; r2 physically rejects the 50 MHz hypothesis and the live generic MMC transport
+   source is unchanged. **HIGH CONFIDENCE core/runtime progress;
    MEDIUM wireless compatibility confidence**.
 8. The box already exposes a live 4K60 HDMI output and hardware media path, so keeping the
    vendor stack has more user value than a clean port that regresses acceleration. **PROVEN
@@ -1001,16 +1028,16 @@ before those gates would not be justified.
 | Android 16 QPR0 / 25Q2 | **SELECTED / HOLD** | `android-security-16.0.0_r7` accepts 5.4 lineage; 5.4.302 boots accepted A12 userspace but wireless compatibility and the r7 source audit remain open |
 | Mixed ARM64/ARM32 userspace | **CLOSED PENDING PROTOTYPE A** | Exact paired Mali provider exists, but the common A16 ARM32 bootstrap base has not passed |
 | Full ARM64 userspace | **NO-GO** | Would convert/replace working proprietary service stack for little user value |
-| Kernel 5.4 as final architecture | **HOLD — AIC8800D WIRELESS OPEN** | 5.4.302 boot/UI/Ethernet are physically proven; Wi-Fi fails at START_APP confirmation and one offline 50 MHz diagnostic awaits separate authorization |
+| Kernel 5.4 as final architecture | **HOLD — AIC8800D WIRELESS OPEN** | 5.4.302 boot/UI/Ethernet are physically proven; Wi-Fi fails at START_APP confirmation and r2 physically rejects the 50 MHz hypothesis |
 | Kernel 5.10+ migration | **NO-GO IN THIS PHASE** | No complete exact-SoC/board Android provider; regression surface is a new BSP port |
 | >1080p media target | **PLAUSIBLE** | Physical 4K60 output and 4K codec declarations exist; sustained physical 4K decode is not proven |
 | Netflix above current basic/L3 class | **STRUCTURALLY BLOCKED** | L3, HDCP NONE, no secure decoder/protected path; service certification remains an additional gate |
 
 ### Remaining decisive gates (maximum four)
 
-1. With new explicit authorization only, run one UART-first `m8-kernel-5.4.302-r2` Wi-Fi
-   diagnostic, keeping Test8r2 rollback immediately available. If the identical 1037→1038
-   timeout remains, reject the 50 MHz hypothesis and diff generic MMC/SDIO core interaction.
+1. Design and source-review one START_APP-gated, diagnostic-only AIC BSP instrumentation that
+   distinguishes final TX, SDIO IRQ, CMD53 RX and 1038 dispatch/completion; build only after its
+   single-variable boundary is proven offline. Any physical test needs new explicit authorization.
 2. Only after wireless/kernel preservation closes, pin a separate clean `android-security-16.0.0_r7`
    manifest/source checkout and re-audit the exact ARM32 product, cgroups/task profiles, APEX
    set, linker/SELinux/VINTF deltas and build reproducibility without creating a candidate.
@@ -1031,10 +1058,10 @@ before those gates would not be justified.
 4. **Completed with one open subsystem — same-lineage kernel checkpoint:** reproducibly integrate
    and build 5.4.302; r1 physically boots Android 12 and passes HDMI/UI/remote/Ethernet/ADB but
    AIC8800D times out waiting for firmware START_APP confirmation.
-5. **Current physical gate:** request, but do not assume, separate authorization for one
-   UART-first r2 50 MHz Wi-Fi diagnostic. If the same timeout remains, reject the frequency
-   hypothesis and diff generic MMC/SDIO core interaction. Only after wireless closure, pin QPR0
-   security r7 and perform the source-only audit. No flash is authorized now.
+5. **Current diagnostic gate:** r2 has rejected frequency and the generic MMC live path is
+   source-identical. Design one START_APP-gated BSP trace for final TX, IRQ, RX and dispatch;
+   build only after its single-variable review and do not flash without new authorization. Only
+   after wireless closure, pin QPR0 security r7 and perform the source-only audit.
 6. **Conditional mixed proof:** only after the ARM32 base passes, build the minimal
    `zygote64_32` product with the lawful paired graphics provider, close its offline checks and
    perform a separately authorized boot/parity test.
