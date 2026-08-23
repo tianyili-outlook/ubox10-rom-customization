@@ -3,7 +3,7 @@
 ## 当前状态
 
 - 最后报告的刷入诊断镜像：`out/candidates/m8-kernel-5.4.302-r2/x12-m8-kernel-5.4.302-r2.img`
-- 当前设备状态：**ANDROID 12 BOOT COMPLETE / WI-FI FAIL / GATE 2 CLOSED**；Linux 5.4.302、HDMI/UI、遥控、Ethernet、ADB 正常，AIC8800D firmware START_APP confirmation 可重复超时。`m8-kernel-5.4.302-r2` 已实机拒绝 50 MHz hypothesis；没有下一候选或刷写授权。
+- 当前设备状态：**ANDROID 12 BOOT COMPLETE / WI-FI FAIL / GATE 2 CLOSED**；Linux 5.4.302、HDMI/UI、遥控、Ethernet、ADB 正常，AIC8800D firmware START_APP confirmation 可重复超时。`m8-kernel-5.4.302-r2` 已实机拒绝 50 MHz hypothesis。`m8-kernel-5.4.302-r3` 已完成离线检查，但它只是 START_APP observability，不是 fix，尚未刷写且没有刷写授权。
 - 保留的设备验收基线：`out/candidates/m8b-remote-r1/x12-m8b-remote-r1.img`，状态 **DEVICE ACCEPTED / REMOTE PASS**（继承 **AUDIO PASS / IME PASS**）。
 - 大小 / SHA-256：1031723008 bytes / `F3B09E5565AC4ED4E5EE326D392622E7B036A8519B8444B966E77CC4751B814A`
 - 用户当前在设备现场，可执行物理交互、重启、suspend/resume、HDMI 观察与恢复；任何新候选刷写仍需该候选的单独明确授权。
@@ -127,8 +127,28 @@ HAL service 存在，framework `CMD_STA_START_FAILURE`/`DisabledState` 是 firmw
 
 后续离线 source diff 证明 retained→5.4.302 的 generic CMD52/CMD53、SDIO IRQ、request
 completion、host claim/release 与 SUNXI host live path 未改变，没有一个 LTS delta 足以
-支持行为回退。当前下一步只是设计 START_APP-gated AIC BSP instrumentation；尚无候选，
-不得刷写。任何后续实机都需要新的明确授权，并继续使用相同 Test8r2 rollback 边界。
+支持行为回退。后续 r3 只增加 START_APP-gated AIC BSP observability，不改变这些行为。
+
+## Offline diagnostic candidate: m8-kernel-5.4.302-r3
+
+候选：`out/candidates/m8-kernel-5.4.302-r3/x12-m8-kernel-5.4.302-r3.img`，
+1,031,739,392 bytes / SHA-256
+`9E52B601F11F9368599098B4C5082037D010930D9B424D7CA2828977047C1B28`。
+状态为 **OFFLINE CHECKED / INSTRUMENTATION ONLY / NOT A FIX / NOT PHYSICALLY VALIDATED**。
+
+r3 回到 r1 的 `FEATURE_SDIO_CLOCK=70000000` 功能基线，并严格复用 r1 Image、boot、DT、
+userspace 和其他 21 个 module bytes；只有 `aic8800_bsp.ko` 加入动态 runtime token /
+transaction-window trace。它在原有 START_APP success/timeout 后只输出一条
+`AIC_STARTAPP_TRACE:`，用于回答：
+
+1. final 1037 CMD53 TX 是否尝试并成功返回；
+2. TX 后是否有可归属于该 transaction window 的 AIC IRQ，以及 block-count CMD52 结果；
+3. CMD53 RX 是否发生、requested length/return 与 frame type/message ID；
+4. 1038 是否进入 dispatch；
+5. 1038 是否匹配当前 runtime token 并完成 waiter。
+
+不得从该离线结果推断 Wi-Fi 改善。任何 r3 物理测试需要对上述 exact hash 单独明确授权，
+并继续使用与 r1/r2 相同的 Test8r2 rollback 边界；当前不得刷写。
 
 ## Accepted physical result: m8b-remote-r1
 

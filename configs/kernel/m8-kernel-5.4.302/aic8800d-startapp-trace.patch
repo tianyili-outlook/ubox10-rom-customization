@@ -1,0 +1,326 @@
+diff --git a/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aic_bsp_driver.c b/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aic_bsp_driver.c
+index 8d249f5..5e2cfb3 100644
+--- a/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aic_bsp_driver.c
++++ b/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aic_bsp_driver.c
+@@ -20,6 +20,79 @@ static void rwnx_set_cmd_tx(void *dev, struct lmac_msg *msg, uint len);
+ u8 binding_enc_data[16];
+ bool need_binding_verify;
+ 
++static void aic_startapp_trace_begin(struct priv_dev *aicdev,
++				     const struct rwnx_cmd *cmd)
++{
++	struct aic_startapp_trace *trace = &aicdev->startapp_trace;
++	u32 generation = READ_ONCE(trace->generation) + 1;
++
++	atomic_set(&trace->active, 0);
++	WRITE_ONCE(trace->generation, generation);
++	WRITE_ONCE(trace->token, cmd->tkn);
++	WRITE_ONCE(trace->req_id, cmd->id);
++	WRITE_ONCE(trace->cfm_id, cmd->reqid);
++	WRITE_ONCE(trace->tx_queued, 1);
++	WRITE_ONCE(trace->tx_bus_len, 0);
++	WRITE_ONCE(trace->tx_bus_ret, -EINPROGRESS);
++	atomic_set(&trace->tx_cmd53_state, 0);
++	WRITE_ONCE(trace->tx_cmd53_len, 0);
++	WRITE_ONCE(trace->tx_cmd53_ret, -EINPROGRESS);
++	atomic_set(&trace->irq_count, 0);
++	atomic_set(&trace->irq_after_tx_return_count, 0);
++	WRITE_ONCE(trace->irq_block_count, 0);
++	WRITE_ONCE(trace->irq_block_count_ret, -EINPROGRESS);
++	atomic_set(&trace->rx_cmd53_count, 0);
++	atomic_set(&trace->rx_after_tx_return_count, 0);
++	WRITE_ONCE(trace->rx_cmd53_len, 0);
++	WRITE_ONCE(trace->rx_cmd53_ret, -EINPROGRESS);
++	WRITE_ONCE(trace->rx_frame_len, 0);
++	WRITE_ONCE(trace->rx_type, 0);
++	WRITE_ONCE(trace->rx_msg_id, 0);
++	WRITE_ONCE(trace->cfm_seen, 0);
++	WRITE_ONCE(trace->token_match, 0);
++	WRITE_ONCE(trace->completion, 0);
++	smp_wmb();
++	atomic_set(&trace->active, 1);
++}
++
++static void aic_startapp_trace_finish(struct priv_dev *aicdev,
++				      const struct rwnx_cmd *cmd,
++				      const char *result)
++{
++	struct aic_startapp_trace *trace = &aicdev->startapp_trace;
++
++	if (cmd->id != DBG_START_APP_REQ || cmd->reqid != DBG_START_APP_CFM ||
++	    !atomic_xchg(&trace->active, 0))
++		return;
++
++	pr_err("AIC_STARTAPP_TRACE: result=%s gen=%u token=%u req=%u cfm=%u "
++	       "tx_queued=%u tx_bus_len=%u tx_bus_ret=%d "
++	       "tx_cmd53_state=%d tx_cmd53_len=%u tx_cmd53_ret=%d "
++	       "irq_count=%d irq_after_tx_return=%d "
++	       "irq_block_count=%u irq_block_count_ret=%d "
++	       "rx_cmd53_count=%d rx_after_tx_return=%d "
++	       "rx_cmd53_len=%u rx_cmd53_ret=%d "
++	       "rx_frame_len=%u rx_type=0x%02x rx_msg_id=%u "
++	       "cfm_seen=%u token_match=%u completion=%u\n",
++	       result, READ_ONCE(trace->generation), READ_ONCE(trace->token),
++	       READ_ONCE(trace->req_id), READ_ONCE(trace->cfm_id),
++	       READ_ONCE(trace->tx_queued), READ_ONCE(trace->tx_bus_len),
++	       READ_ONCE(trace->tx_bus_ret),
++	       atomic_read(&trace->tx_cmd53_state),
++	       READ_ONCE(trace->tx_cmd53_len), READ_ONCE(trace->tx_cmd53_ret),
++	       atomic_read(&trace->irq_count),
++	       atomic_read(&trace->irq_after_tx_return_count),
++	       READ_ONCE(trace->irq_block_count),
++	       READ_ONCE(trace->irq_block_count_ret),
++	       atomic_read(&trace->rx_cmd53_count),
++	       atomic_read(&trace->rx_after_tx_return_count),
++	       READ_ONCE(trace->rx_cmd53_len), READ_ONCE(trace->rx_cmd53_ret),
++	       READ_ONCE(trace->rx_frame_len), READ_ONCE(trace->rx_type),
++	       READ_ONCE(trace->rx_msg_id),
++	       READ_ONCE(trace->cfm_seen), READ_ONCE(trace->token_match),
++	       READ_ONCE(trace->completion));
++}
++
+ #ifndef CONFIG_PLATFORM_ALLWINNER
+ int wcn_bind_verify_calculate_verify_data(uint8_t *din, uint8_t *dout)
+ {
+@@ -97,6 +170,8 @@ static int cmd_mgr_queue(struct rwnx_cmd_mgr *cmd_mgr, struct rwnx_cmd *cmd)
+ 	spin_unlock_bh(&cmd_mgr->lock);
+ 
+ 	if (!defer_push) {
++		if (cmd->id == DBG_START_APP_REQ && cmd->reqid == DBG_START_APP_CFM)
++			aic_startapp_trace_begin(cmd_mgr->aicdev, cmd);
+ 		rwnx_set_cmd_tx((void *)(cmd_mgr->aicdev), cmd->a2e_msg, sizeof(struct lmac_msg) + cmd->a2e_msg->param_len);
+ 		kfree(cmd->a2e_msg);
+ 	} else {
+@@ -117,7 +192,9 @@ static int cmd_mgr_queue(struct rwnx_cmd_mgr *cmd_mgr, struct rwnx_cmd *cmd)
+ 			}
+ 			spin_unlock_bh(&cmd_mgr->lock);
+ 			err = -ETIMEDOUT;
++			aic_startapp_trace_finish(cmd_mgr->aicdev, cmd, "timeout");
+ 		} else {
++			aic_startapp_trace_finish(cmd_mgr->aicdev, cmd, "success");
+ 			kfree(cmd);
+ 		}
+ 	} else {
+@@ -153,9 +230,17 @@ static int cmd_mgr_msgind(struct rwnx_cmd_mgr *cmd_mgr, struct rwnx_cmd_e2amsg *
+ 	list_for_each_entry(cmd, &cmd_mgr->cmds, list) {
+ 		if (cmd->reqid == msg->id &&
+ 			(cmd->flags & RWNX_CMD_FLAG_WAIT_CFM)) {
++			struct aic_startapp_trace *trace =
++				&((struct priv_dev *)cmd_mgr->aicdev)->startapp_trace;
+ 
+ 			if (!cmd_mgr_run_callback(cmd_mgr, cmd, msg, cb)) {
+ 				found = true;
++				if (atomic_read(&trace->active) &&
++				    atomic_read(&trace->tx_cmd53_state) >= 1 &&
++				    msg->id == READ_ONCE(trace->cfm_id) &&
++				    cmd->id == READ_ONCE(trace->req_id) &&
++				    cmd->tkn == READ_ONCE(trace->token))
++					WRITE_ONCE(trace->token_match, 1);
+ 				cmd->flags &= ~RWNX_CMD_FLAG_WAIT_CFM;
+ 
+ 				if (WARN((msg->param_len > RWNX_CMD_E2AMSG_LEN_MAX),
+@@ -167,8 +252,13 @@ static int cmd_mgr_msgind(struct rwnx_cmd_mgr *cmd_mgr, struct rwnx_cmd_e2amsg *
+ 				if (cmd->e2a_msg && msg->param_len)
+ 					memcpy(cmd->e2a_msg, &msg->param, msg->param_len);
+ 
+-				if (RWNX_CMD_WAIT_COMPLETE(cmd->flags))
++				if (RWNX_CMD_WAIT_COMPLETE(cmd->flags)) {
++					if (atomic_read(&trace->active) &&
++					    atomic_read(&trace->tx_cmd53_state) >= 1 &&
++					    cmd->tkn == READ_ONCE(trace->token))
++						WRITE_ONCE(trace->completion, 1);
+ 					cmd_complete(cmd_mgr, cmd);
++				}
+ 
+ 				break;
+ 			}
+@@ -256,7 +346,16 @@ static void rwnx_set_cmd_tx(void *dev, struct lmac_msg *msg, uint len)
+ 	index += 2;
+ 	memcpy(&buffer[index], (u8 *)msg->param, msg->param_len);
+ 
+-	aicwf_bus_txmsg(bus, buffer, len + 8);
++	if (atomic_read(&aicdev->startapp_trace.active) &&
++	    msg->id == READ_ONCE(aicdev->startapp_trace.req_id)) {
++		int ret;
++
++		WRITE_ONCE(aicdev->startapp_trace.tx_bus_len, len + 8);
++		ret = aicwf_bus_txmsg(bus, buffer, len + 8);
++		WRITE_ONCE(aicdev->startapp_trace.tx_bus_ret, ret);
++	} else {
++		aicwf_bus_txmsg(bus, buffer, len + 8);
++	}
+ }
+ 
+ static inline void *rwnx_msg_zalloc(lmac_msg_id_t const id,
+@@ -496,6 +595,10 @@ static msg_cb_fct *msg_hdlrs[] = {
+ 
+ void rwnx_rx_handle_msg(struct priv_dev *aicdev, struct ipc_e2a_msg *msg)
+ {
++	if (atomic_read(&aicdev->startapp_trace.active) &&
++	    atomic_read(&aicdev->startapp_trace.tx_cmd53_state) >= 1 &&
++	    msg->id == READ_ONCE(aicdev->startapp_trace.cfm_id))
++		WRITE_ONCE(aicdev->startapp_trace.cfm_seen, 1);
+ 	aicdev->cmd_mgr.msgind(&aicdev->cmd_mgr, msg,
+ 							msg_hdlrs[MSG_T(msg->id)][MSG_I(msg->id)]);
+ }
+diff --git a/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aic_bsp_txrxif.c b/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aic_bsp_txrxif.c
+index d92ddec..204c139 100644
+--- a/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aic_bsp_txrxif.c
++++ b/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aic_bsp_txrxif.c
+@@ -170,6 +170,17 @@ int aicwf_process_rxframes(struct aicwf_rx_priv *rx_priv)
+ 		while (aicwf_another_ptk(skb)) {
+ 			data = skb->data;
+ 			pkt_len = (*skb->data | (*(skb->data + 1) << 8));
++			if (atomic_read(&rx_priv->aicdev->startapp_trace.active) &&
++			    atomic_read(&rx_priv->aicdev->startapp_trace.tx_cmd53_state) >= 1) {
++				u8 type = data[2] & 0x7f;
++
++				WRITE_ONCE(rx_priv->aicdev->startapp_trace.rx_frame_len,
++					   pkt_len);
++				WRITE_ONCE(rx_priv->aicdev->startapp_trace.rx_type, type);
++				if (type == PRIV_TYPE_CFG_CMD_RSP && pkt_len >= sizeof(u16))
++					WRITE_ONCE(rx_priv->aicdev->startapp_trace.rx_msg_id,
++						   ((struct ipc_e2a_msg *)(data + 4))->id);
++			}
+ 
+ 			if ((skb->data[2] & PRIV_TYPE_CFG) != PRIV_TYPE_CFG) { // type : data
+ 				aggr_len = pkt_len + RX_HWHRD_LEN;
+@@ -453,4 +464,3 @@ bool aicwf_frame_enq(struct device *dev, struct frame_queue *q, struct sk_buff *
+ 	return p != NULL;
+ }
+ 
+-
+diff --git a/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aicsdio.c b/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aicsdio.c
+index 58efccd..a431a3f 100644
+--- a/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aicsdio.c
++++ b/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aicsdio.c
+@@ -497,14 +497,28 @@ static int aicwf_sdio_recv_pkt(struct priv_dev *aicdev, struct sk_buff *skbbuf,
+ 	u32 size)
+ {
+ 	int ret;
++	bool trace_rx;
++	bool trace_after_tx_return;
+ 
+ 	if ((!skbbuf) || (!size)) {
+ 		return -EINVAL;;
+ 	}
+ 
++	trace_rx = atomic_read(&aicdev->startapp_trace.active) &&
++		atomic_read(&aicdev->startapp_trace.tx_cmd53_state) >= 1;
++	trace_after_tx_return = trace_rx &&
++		atomic_read(&aicdev->startapp_trace.tx_cmd53_state) == 2;
++	if (trace_rx) {
++		atomic_inc(&aicdev->startapp_trace.rx_cmd53_count);
++		if (trace_after_tx_return)
++			atomic_inc(&aicdev->startapp_trace.rx_after_tx_return_count);
++		WRITE_ONCE(aicdev->startapp_trace.rx_cmd53_len, size);
++	}
+ 	sdio_claim_host(aicdev->func[0]);
+ 	ret = sdio_readsb(aicdev->func[0], skbbuf->data, 8, size);
+ 	sdio_release_host(aicdev->func[0]);
++	if (trace_rx)
++		WRITE_ONCE(aicdev->startapp_trace.rx_cmd53_ret, ret);
+ 
+ 	if (ret < 0) {
+ 		return ret;
+@@ -793,7 +807,15 @@ static int aicwf_sdio_tx_msg(struct priv_dev *aicdev)
+ 
+ 	if (aicbsp_info.chipinfo->chipid == PRODUCT_ID_AIC8800D) {
+ 		if (buffer_cnt > 0 && len < (buffer_cnt * BUFFER_SIZE)) {
++			if (atomic_read(&aicdev->startapp_trace.active)) {
++				atomic_set(&aicdev->startapp_trace.tx_cmd53_state, 1);
++				WRITE_ONCE(aicdev->startapp_trace.tx_cmd53_len, len);
++			}
+ 			err = aicwf_sdio_send_pkt(aicdev, payload, len);
++			if (atomic_read(&aicdev->startapp_trace.active)) {
++				WRITE_ONCE(aicdev->startapp_trace.tx_cmd53_ret, err);
++				atomic_set(&aicdev->startapp_trace.tx_cmd53_state, 2);
++			}
+ 			if (err) {
+ 				bsp_err("aicwf_sdio_send_pkt fail%d\n", err);
+ 			}
+@@ -1191,17 +1213,32 @@ static void aicwf_sdio_hal_irqhandler(struct sdio_func *func)
+ 	u8 byte_len = 0;
+ 	struct sk_buff *pkt = NULL;
+ 	int ret;
++	bool trace_irq;
++	bool trace_after_tx_return;
+ 
+ 	if (!bus_if || bus_if->state == BUS_DOWN_ST) {
+ 		bsp_err("bus err\n");
+ 		return;
+ 	}
++	trace_irq = atomic_read(&aicdev->startapp_trace.active) &&
++		atomic_read(&aicdev->startapp_trace.tx_cmd53_state) >= 1;
++	trace_after_tx_return = trace_irq &&
++		atomic_read(&aicdev->startapp_trace.tx_cmd53_state) == 2;
++	if (trace_irq) {
++		atomic_inc(&aicdev->startapp_trace.irq_count);
++		if (trace_after_tx_return)
++			atomic_inc(&aicdev->startapp_trace.irq_after_tx_return_count);
++	}
+ 
+ 	ret = aicwf_sdio_readb(aicdev->func[0], SDIOWIFI_BLOCK_CNT_REG, &intstatus);
+ 	while (ret || (intstatus & SDIO_OTHER_INTERRUPT)) {
+ 		bsp_err("ret=%d, intstatus=%x\r\n", ret, intstatus);
+ 		ret = aicwf_sdio_readb(aicdev->func[0], SDIOWIFI_BLOCK_CNT_REG, &intstatus);
+ 	}
++	if (trace_irq) {
++		WRITE_ONCE(aicdev->startapp_trace.irq_block_count, intstatus);
++		WRITE_ONCE(aicdev->startapp_trace.irq_block_count_ret, ret);
++	}
+ 	aicdev->rx_priv->data_len = intstatus * SDIOWIFI_FUNC_BLOCKSIZE;
+ 
+ 	if (intstatus > 0) {
+@@ -1489,4 +1526,3 @@ fail:
+ 	aicwf_sdio_release(aicdev);
+ 	return NULL;
+ }
+-
+diff --git a/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aicsdio.h b/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aicsdio.h
+index f338138..a9a572c 100644
+--- a/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aicsdio.h
++++ b/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aicsdio.h
+@@ -47,6 +47,34 @@ typedef enum {
+ 	PRIV_TYPE_CFG_DATA_CFM = 0X12
+ } priv_type;
+ 
++struct aic_startapp_trace {
++	atomic_t active;
++	u32 generation;
++	u32 token;
++	u16 req_id;
++	u16 cfm_id;
++	u8 tx_queued;
++	u32 tx_bus_len;
++	s32 tx_bus_ret;
++	atomic_t tx_cmd53_state;
++	u32 tx_cmd53_len;
++	s32 tx_cmd53_ret;
++	atomic_t irq_count;
++	atomic_t irq_after_tx_return_count;
++	u8 irq_block_count;
++	s32 irq_block_count_ret;
++	atomic_t rx_cmd53_count;
++	atomic_t rx_after_tx_return_count;
++	u32 rx_cmd53_len;
++	s32 rx_cmd53_ret;
++	u16 rx_frame_len;
++	u8 rx_type;
++	u16 rx_msg_id;
++	u8 cfm_seen;
++	u8 token_match;
++	u8 completion;
++};
++
+ struct priv_dev {
+ 	struct rwnx_cmd_mgr cmd_mgr;
+ 	struct sdio_func *func[2];
+@@ -56,6 +84,7 @@ struct priv_dev {
+ 	struct aicwf_rx_priv *rx_priv;
+ 	struct aicwf_tx_priv *tx_priv;
+ 	u32 state;
++	struct aic_startapp_trace startapp_trace;
+ 
+ 	//for sdio pwr ctrl
+ 	struct timer_list timer;

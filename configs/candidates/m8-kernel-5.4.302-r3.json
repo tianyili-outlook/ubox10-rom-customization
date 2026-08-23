@@ -1,0 +1,83 @@
+{
+  "id": "m8-kernel-5.4.302-r3",
+  "purpose": "One diagnostic-only Android 12 candidate based on physically tested r1. Preserve the r1 70 MHz AIC behavior, Image, boot, DT, userspace and 21 unrelated modules while adding START_APP-transaction observability only to aic8800_bsp.ko.",
+  "decision_scope": "AIC8800D DBG_START_APP_REQ 1037 to DBG_START_APP_CFM 1038 boundary localization only; not a Wi-Fi fix, not Android 16 Prototype A r3 and not physical-test authorization.",
+  "base_candidate": {
+    "path": "/work/projects/ubox10-rom-customization/out/candidates/m8-kernel-5.4.302-r1/x12-m8-kernel-5.4.302-r1.img",
+    "size": 1031739392,
+    "sha256": "C93FC8A54391E091E0F95CFE63E4F6DA9AE90D55AA0163D91D42586B48BFEE2B"
+  },
+  "rollback": {
+    "path": "/work/ubox10-a16-prototype-a-inputs/incoming/x12-test8r2-restore-contacts-provider.img",
+    "size": 2005954560,
+    "sha256": "6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8"
+  },
+  "candidate_module_build": "/work/kernel-builds/m8-kernel-5.4.302-r3-candidate-input",
+  "instrumented_module": {
+    "size": 129280,
+    "sha256": "1A64A5E98CBA60FC0D619014245F1FFCF9B4C983AB6092F084F5547978126AD8",
+    "source": "aic8800-20221108-004-plus-startapp-trace"
+  },
+  "vendor_dlkm_delta": {
+    "candidate_module_inode_blocks": 1563,
+    "candidate_free_blocks": 1
+  },
+  "r1_preserved": {
+    "boot": {
+      "size": 67108864,
+      "sha256": "338CB4048796E213698585E035D8807D84381324163C19AA939BD8D6BFDDCD2C"
+    },
+    "image": {
+      "size": 23492616,
+      "sha256": "9B781ABEA51DEF9AE1FEBB9011CFA630AC267C794FBA0E066674F0EAE2509DCC"
+    }
+  },
+  "experiment": {
+    "donor_commit": "ABFE04920992577C71A4180A8480A4A774965C76",
+    "donor_subtree": "70C98140316F7ED23AF879BB0E3D881883F5E978",
+    "integration_commit": "027EF79E8FACB73CB2419B4A08C0BD3F13A2206E",
+    "patch": "configs/kernel/m8-kernel-5.4.302/aic8800d-startapp-trace.patch",
+    "patch_sha256": "B65CC9940302D8F204012B7365EC1437B48A3AA6C7A7E772E4F0A57E266EFFE4",
+    "functional_sdio_clock_hz": 70000000,
+    "build_evidence": "/work/build-logs/m8-kernel-5.4.302-r3/20260823T083600Z-final",
+    "single_variable_audit": "/work/build-logs/m8-kernel-5.4.302-r3/20260823T083600Z-final/offline-single-variable-audit.json",
+    "candidate_changed_modules": [
+      "aic8800_bsp.ko"
+    ],
+    "observed_fields": [
+      "runtime generation/token/request/expected-confirmation IDs",
+      "synchronous bus TX length/return and final CMD53 requested length/return",
+      "post-final-TX-attempt and post-TX-return AIC IRQ counts plus final block-count CMD52 value/return",
+      "post-final-TX-attempt and post-TX-return CMD53 RX counts, requested length/return and parsed frame length/type/message ID",
+      "1038 dispatch visibility, runtime-token match and completion signal"
+    ]
+  },
+  "container": {
+    "total_entries": 50,
+    "preserved_entries": 48,
+    "replacements": [
+      "super.fex"
+    ],
+    "companions": [
+      "Vsuper.fex"
+    ]
+  },
+  "expected_result": {
+    "firmware": {
+      "size": 1031739392,
+      "sha256": "9E52B601F11F9368599098B4C5082037D010930D9B424D7CA2828977047C1B28"
+    },
+    "boot": {
+      "size": 67108864,
+      "sha256": "338CB4048796E213698585E035D8807D84381324163C19AA939BD8D6BFDDCD2C"
+    },
+    "super": {
+      "size": 851940812,
+      "sha256": "FB1DC3C3568CAB428207B1BE3C823E8B0DC191041E00861B5B374DA34833638A"
+    },
+    "vendor_dlkm": {
+      "size": 6680576,
+      "sha256": "471FDC7299BD36A9B2507A1450A398F130CDDAAEF9041A9D3803CB8C8F54AA44"
+    }
+  }
+}

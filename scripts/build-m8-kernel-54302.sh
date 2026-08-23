@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-if [ "$#" -lt 14 ] || [ "$#" -gt 15 ]; then
-    echo "usage: $0 SOURCE_REPO SOURCE_COMMIT ACCEPTED_IMAGE KEYMAP_JSON RC_PATCH CLANG_BIN HOST_SSL_ROOT HOST_TOOLS_ROOT BUILD_ROOT EVIDENCE_DIR XR819_DONOR_REPO XR819_DONOR_COMMIT AIC8800_DONOR_REPO AIC8800_DONOR_COMMIT [AIC8800_COMPAT_PATCH]" >&2
+if [ "$#" -lt 14 ] || [ "$#" -gt 16 ]; then
+    echo "usage: $0 SOURCE_REPO SOURCE_COMMIT ACCEPTED_IMAGE KEYMAP_JSON RC_PATCH CLANG_BIN HOST_SSL_ROOT HOST_TOOLS_ROOT BUILD_ROOT EVIDENCE_DIR XR819_DONOR_REPO XR819_DONOR_COMMIT AIC8800_DONOR_REPO AIC8800_DONOR_COMMIT [AIC8800_COMPAT_PATCH] [EXPECTED_AIC8800_SDIO_CLOCK_HZ]" >&2
     exit 2
 fi
 
@@ -21,6 +21,7 @@ xr819_donor_commit=${12}
 aic8800_donor_repo=$(realpath -e "${13}")
 aic8800_donor_commit=${14}
 aic8800_compat_patch=${15:-}
+aic8800_expected_sdio_clock=${16:-50000000}
 if [ -n "${aic8800_compat_patch}" ]; then
     aic8800_compat_patch=$(realpath -e "${aic8800_compat_patch}")
 fi
@@ -156,7 +157,7 @@ if [ -n "${aic8800_compat_patch}" ]; then
     git -C "${kernel_src}" apply --check "${aic8800_compat_patch}"
     git -C "${kernel_src}" apply "${aic8800_compat_patch}"
     cp "${aic8800_compat_patch}" "${result_dir}/aic8800-compatibility-source.patch"
-    grep -q '^#define FEATURE_SDIO_CLOCK          50000000 ' \
+    grep -q "^#define FEATURE_SDIO_CLOCK          ${aic8800_expected_sdio_clock} " \
         "${kernel_src}/drivers/net/wireless/aic8800-accepted/aic8800_bsp/aic_bsp_driver.h"
 fi
 test "$(git -C "${source_repo}" rev-parse '9ab7a758149d3c9b721878a0c18b3f9c5d6c93e6:drivers/net/wireless/realtek/rtlwifi')" = 8d1d70eaacbb82e599e3db228045f86a1c4d05a8
