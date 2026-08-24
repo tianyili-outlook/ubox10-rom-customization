@@ -3,7 +3,7 @@
 ## 当前状态
 
 - 最后报告的刷入诊断镜像：`out/candidates/m8-kernel-5.4.302-r4/x12-m8-kernel-5.4.302-r4.img`
-- 当前设备状态：**ANDROID 12 BOOT COMPLETE / WI-FI FAIL / GATE 2 CLOSED**；Linux 5.4.302、HDMI/UI、遥控、Ethernet、ADB 正常。`m8-kernel-5.4.302-r2` 已实机拒绝 50 MHz hypothesis；r3 证明 START_APP final CMD53 在 Linux host 返回成功但无 AIC IRQ/RX/1038，r4 又证明 timeout 时 `IENx=0x03`、`INTx=0x00`、core pending=0 且 IRQ claim/handler 正常。后续 accepted-driver audit 证明 working BSP 以 `0x00120000` 上传并启动 exact FMAC，而 r1-r4 实际使用 `0x00110000`，但 FMAC reset vector 仍为 `0x00120189`。当前最早 source-proven divergence 为 **WRONG FMAC PLACEMENT/BOOTADDR → AUTO HANDOFF → FMAC EXECUTION**；r5 design 已成立但尚未构建或授权实测。这不是 Wi-Fi fix。
+- 当前设备状态：**ANDROID 12 BOOT COMPLETE / WI-FI FAIL / GATE 2 CLOSED**；Linux 5.4.302、HDMI/UI、遥控、Ethernet、ADB 正常。`m8-kernel-5.4.302-r2` 已实机拒绝 50 MHz hypothesis；r3 证明 START_APP final CMD53 在 Linux host 返回成功但无 AIC IRQ/RX/1038，r4 又证明 timeout 时 `IENx=0x03`、`INTx=0x00`、core pending=0 且 IRQ claim/handler 正常。后续 accepted-driver audit 证明 working BSP 以 `0x00120000` 上传并启动 exact FMAC，而 r1-r4 实际使用 `0x00110000`，但 FMAC reset vector 仍为 `0x00120189`。当前最早 source-proven divergence 为 **WRONG FMAC PLACEMENT/BOOTADDR → AUTO HANDOFF → FMAC EXECUTION**。r5 已按 locked single-variable design 完成 offline build/audit/package，但未 flash、未实测；这不是 Wi-Fi fix。
 - 保留的设备验收基线：`out/candidates/m8b-remote-r1/x12-m8b-remote-r1.img`，状态 **DEVICE ACCEPTED / REMOTE PASS**（继承 **AUDIO PASS / IME PASS**）。
 - 大小 / SHA-256：1031723008 bytes / `F3B09E5565AC4ED4E5EE326D392622E7B036A8519B8444B966E77CC4751B814A`
 - 用户当前在设备现场，可执行物理交互、重启、suspend/resume、HDMI 观察与恢复；任何新候选刷写仍需该候选的单独明确授权。
@@ -197,6 +197,28 @@ accepted-driver semantic audit 证明 working BSP 的 upload/START_APP base 是 
 保留 r4 trace 的 r5 单变量 design 成立；当前仍未 build、未授权实测，也不得用不同芯片的
 FNCALL/DUMMY 或随机寄存器读取替代。完整证据与 lineage 限制见
 `docs/m8/candidates/m8-kernel-5.4.302-r4.md`。Rollback 仍为 Test8r2；本记录不授权任何新物理动作。
+
+## Offline candidate: m8-kernel-5.4.302-r5
+
+候选：`out/candidates/m8-kernel-5.4.302-r5/x12-m8-kernel-5.4.302-r5.img`，
+1,031,739,392 bytes / SHA-256
+`A185B0A3C7516FBC9D34F61B3218171F07BDA00B84903A644D2D71FBB1DCC28F`。
+状态为 **OFFLINE CHECKED / PHYSICAL VALIDATION REQUIRED / GATE 2 CLOSED**。
+
+r5 只把 `RAM_FMAC_FW_ADDR` guard 从未实际定义的 `CONFIG_AIC_INTF_SDIO` 改为 build 已提供的
+`AICWF_SDIO_SUPPORT`。Final packaged `aic8800_bsp.ko` 为 129,976 bytes / SHA-256
+`2BF0F46C69968408544D8F1B344C0999C6B2E69E03C7E24A5EB8D2A23133D03A`；final-ELF audit 证明
+FMAC upload=`0x00120000`、patch read=`0x00120180`、START_APP=`0x00120000`，与 accepted working
+5.4.125 BSP 一致。r4 三值分别为 `0x00110000`、`0x00110180`、`0x00110000`。
+
+r4 START_APP trace/timeout CCCR、70 MHz、timeout/retry、MMC/SUNXI、firmware、Image/boot/ramdisk/DT、
+Android userspace 与其他 21 modules 保持。Relative r4 outer delta 仅 `super.fex`/`Vsuper.fex`；
+AVB/FEC、ext4/e2fsck、LP/sparse round trip、IMAGEWTY 与 focused tests PASS。完整记录见
+`docs/m8/candidates/m8-kernel-5.4.302-r5.md`。
+
+本轮没有 physical UBOX action。r5 没有 flash authorization；不得据此刷写、重启或 toggle Wi-Fi。
+若后续用户另行明确授权，才执行一次 UART-first physical validation。当前不声称 Wi-Fi fixed，
+Gate 2 保持 **CLOSED**，rollback 仍为 Test8r2。
 
 ## Accepted physical result: m8b-remote-r1
 

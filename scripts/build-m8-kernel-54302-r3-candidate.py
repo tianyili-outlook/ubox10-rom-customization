@@ -83,12 +83,16 @@ class R3Builder(R2.R2Builder):
         result = {
             "schema": 1,
             "id": self.candidate_id,
-            "status": "OFFLINE_CHECKED_INSTRUMENTATION_ONLY",
-            "decision": "AWAIT_SEPARATE_EXPLICIT_PHYSICAL_AUTHORIZATION",
+            "status": self.cfg["experiment"].get(
+                "offline_status", "OFFLINE_CHECKED_INSTRUMENTATION_ONLY"
+            ),
+            "decision": self.cfg["experiment"].get(
+                "offline_decision", "AWAIT_SEPARATE_EXPLICIT_PHYSICAL_AUTHORIZATION"
+            ),
             "gate2": "CLOSED",
             "physical_device_actions_performed": False,
             "flash_authorized": False,
-            "not_a_fix": True,
+            "not_a_fix": self.cfg["experiment"].get("not_a_fix", True),
             "firmware": BASE.record(firmware),
             "kernel": BASE.record(image),
             "kernel_release": "5.4.302+",

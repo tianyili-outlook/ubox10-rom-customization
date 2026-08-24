@@ -1,0 +1,115 @@
+{
+  "id": "m8-kernel-5.4.302-r5",
+  "purpose": "One Android 12 single-variable contract correction based on the r4 functional and diagnostic state. Preserve the exact r4/r1 Image, boot, DT, userspace, firmware, START_APP trace, timeout CCCR instrumentation and 21 unrelated modules while making the actual AICWF_SDIO_SUPPORT build select RAM_FMAC_FW_ADDR 0x00120000.",
+  "decision_scope": "Correct the source/binary-proven FMAC placement, patch-read and START_APP address divergence only; physical validation remains separately authorized, Wi-Fi is not claimed fixed and Gate 2 remains closed.",
+  "base_candidate": {
+    "path": "/work/projects/ubox10-rom-customization/out/candidates/m8-kernel-5.4.302-r1/x12-m8-kernel-5.4.302-r1.img",
+    "size": 1031739392,
+    "sha256": "C93FC8A54391E091E0F95CFE63E4F6DA9AE90D55AA0163D91D42586B48BFEE2B"
+  },
+  "rollback": {
+    "path": "/work/ubox10-a16-prototype-a-inputs/incoming/x12-test8r2-restore-contacts-provider.img",
+    "size": 2005954560,
+    "sha256": "6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8"
+  },
+  "candidate_module_build": "/work/kernel-builds/m8-kernel-5.4.302-r5-candidate-input",
+  "instrumented_module": {
+    "size": 129976,
+    "sha256": "2BF0F46C69968408544D8F1B344C0999C6B2E69E03C7E24A5EB8D2A23133D03A",
+    "source": "aic8800-20221108-004-plus-r4-diagnostics-plus-fmac-address-contract"
+  },
+  "vendor_dlkm_delta": {
+    "candidate_module_inode_blocks": 1563,
+    "candidate_free_blocks": 1
+  },
+  "r1_preserved": {
+    "boot": {
+      "size": 67108864,
+      "sha256": "338CB4048796E213698585E035D8807D84381324163C19AA939BD8D6BFDDCD2C"
+    },
+    "image": {
+      "size": 23492616,
+      "sha256": "9B781ABEA51DEF9AE1FEBB9011CFA630AC267C794FBA0E066674F0EAE2509DCC"
+    }
+  },
+  "firmware_contract": {
+    "fmacfw.bin": {"size": 260984, "sha256": "FC3BC7865CBB01560E706E87FEA23F07CBF86B0E9F76649381D553FE8E781904"},
+    "fw_adid_u03.bin": {"size": 1208, "sha256": "6C7CC9D899D2A4E5B91B0F009AA6679498131ADC27D220B96EC162536370A190"},
+    "fw_patch_u03.bin": {"size": 64204, "sha256": "4B97D0F7C41F29EDB4B9082F0FB3B920770A8EF9C3F7E8D93C062AEDD9E778CD"},
+    "fw_patch_table_u03.bin": {"size": 1336, "sha256": "9EC1A1CC6A6249E3EE8302DC952D71C9F494FEC2A1A16499FFB72893C0A475ED"}
+  },
+  "experiment": {
+    "donor_commit": "ABFE04920992577C71A4180A8480A4A774965C76",
+    "donor_subtree": "70C98140316F7ED23AF879BB0E3D881883F5E978",
+    "integration_commit": "027EF79E8FACB73CB2419B4A08C0BD3F13A2206E",
+    "trace_patch": "configs/kernel/m8-kernel-5.4.302/aic8800d-startapp-trace.patch",
+    "trace_patch_sha256": "B65CC9940302D8F204012B7365EC1437B48A3AA6C7A7E772E4F0A57E266EFFE4",
+    "cccr_patch": "configs/kernel/m8-kernel-5.4.302/aic8800d-startapp-timeout-cccr.patch",
+    "cccr_patch_sha256": "2E338EF6F8003F0CFD5F504039D0350263DB8AD0103758EE01D76400A195F251",
+    "contract_patch": "configs/kernel/m8-kernel-5.4.302/aic8800d-fmac-address-contract.patch",
+    "contract_patch_sha256": "10BE1AE58CB900DBD8B5250960B2FBA3846CC29DFFF676DAE5D87D17EBCADBD3",
+    "functional_sdio_clock_hz": 70000000,
+    "fmac_upload_address": 1179648,
+    "fmac_patch_read_address": 1180032,
+    "start_app_boot_address": 1179648,
+    "build_evidence": "/work/build-logs/m8-kernel-5.4.302-r5/20260824T-r5-final",
+    "single_variable_audit": "/work/build-logs/m8-kernel-5.4.302-r5/20260824T-r5-final/offline-single-variable-audit.json",
+    "candidate_changed_modules": [
+      "aic8800_bsp.ko"
+    ],
+    "offline_status": "OFFLINE_CHECKED_CONTRACT_CORRECTION",
+    "offline_decision": "PHYSICAL_VALIDATION_REQUIRED",
+    "not_a_fix": true,
+    "preserved": [
+      "physical r1/r4 boot.fex, Linux 5.4.302 Image, ramdisk, DT and boot AVB bytes",
+      "r4 START_APP trace and post-timeout CCCR instrumentation",
+      "r1 Android 12 system_a, vendor_a, product_a and userspace bytes",
+      "exact AIC8800D firmware, patch and configuration bytes",
+      "r1 DTBO, vendor_boot, bootloader, TEE and vbmeta payloads",
+      "LP metadata, extents, group limits and three metadata slots",
+      "21 unrelated module bytes, import/export CRCs, metadata and static vendor_dlkm files",
+      "70 MHz AIC runtime clock behavior, original START_APP timeout/retry behavior and MMC/SUNXI code",
+      "m8b-remote-r1 input, physical r1/r2/r3/r4 candidates and Test8r2 rollback image"
+    ],
+    "changed": [
+      "one preprocessor guard: CONFIG_AIC_INTF_SDIO to AICWF_SDIO_SUPPORT for RAM_FMAC_FW_ADDR",
+      "final aic8800_bsp.ko FMAC upload/patch-read/START_APP constants now match the working 5.4.125 BSP",
+      "aic8800_bsp.ko only within vendor_dlkm",
+      "vendor_dlkm AVB hashtree/FEC and containing super.fex extent",
+      "IMAGEWTY Vsuper checksum companion"
+    ],
+    "offline_limitations": [
+      "The final ELF proves the corrected address contract but cannot prove physical Wi-Fi behavior.",
+      "No physical device action is authorized by this candidate; flashing requires separate explicit authorization.",
+      "Gate 2 remains closed and this is not Android 16 Prototype A r3."
+    ]
+  },
+  "container": {
+    "total_entries": 50,
+    "preserved_entries": 48,
+    "replacements": [
+      "super.fex"
+    ],
+    "companions": [
+      "Vsuper.fex"
+    ]
+  },
+  "expected_result": {
+    "firmware": {
+      "size": 1031739392,
+      "sha256": "A185B0A3C7516FBC9D34F61B3218171F07BDA00B84903A644D2D71FBB1DCC28F"
+    },
+    "boot": {
+      "size": 67108864,
+      "sha256": "338CB4048796E213698585E035D8807D84381324163C19AA939BD8D6BFDDCD2C"
+    },
+    "super": {
+      "size": 851940812,
+      "sha256": "EBF481D7229AC148A4FE252CB6B74DE5F747AE5C85E4C99948BE312CE9BAF008"
+    },
+    "vendor_dlkm": {
+      "size": 6680576,
+      "sha256": "5B5AFE9B92FE07DE7423D81431B33D419549AFC2EE66467D4D59B4BC060C7D21"
+    }
+  }
+}
