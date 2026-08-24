@@ -1,7 +1,8 @@
 # M8 Linux 5.4.302 FMAC address-contract correction r5
 
-Date: 2026-08-24
-Status: **OFFLINE CHECKED / PHYSICAL VALIDATION REQUIRED / GATE 2 CLOSED**
+Offline date: 2026-08-24
+Physical evidence date: 2026-08-25
+Status: **PHYSICAL PASS / WI-FI PASS / PRESERVATION CHECKPOINT CLOSED**
 
 ## Change
 
@@ -16,7 +17,7 @@ rerun against the tracked form.
 
 The r3 START_APP trace and r4 post-timeout CCCR instrumentation remain unchanged. Firmware,
 patch/config files, 70 MHz request, MMC/SUNXI code, timeout/retry behavior, DT and userspace are
-unchanged. This is a bounded contract correction, not a physical Wi-Fi result.
+unchanged. This was a bounded contract correction; the later physical result is recorded below.
 
 ## Build and final-ELF proof
 
@@ -73,9 +74,49 @@ SHA256SUMS and the focused r3/r4/r5 tests pass. The full repository suite report
 passing with 25 expected local-fixture skips. Test8r2 rollback remains 2,005,954,560 bytes /
 SHA-256 `6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8`.
 
+## Physical validation
+
+The user physically tested r5 and supplied authoritative external ADB evidence. The original raw
+captures were not found on the accessible VM, so
+`docs/m8/device-tests/20260825-m8-kernel-5.4.302-r5/` preserves the reviewed facts/excerpts and
+explicitly does not claim raw-file archival or hashes.
+
+Linux reported:
+
+`Linux localhost 5.4.302+ #1 SMP PREEMPT Thu Aug 13 22:30:00 +08 2026 armv8l`
+
+`sys.boot_completed=1`. System boot, HDMI, Wi-Fi connection, Wi-Fi ADB, physical remote,
+Leanback framework, TV input method and launcher all passed. Loaded runtime modules included
+`aic8800_fdrv`, `aic8800_btlpm`, `aic8800_bsp` and `sunxi_rfkill`, with BSP referenced by FMAC.
+Initial Wi-Fi logs showed the expected 2022-11-08 driver tag, subsystem ON, SDIO probe, 66 MHz
+clock, `rwnx_init_aic()` and supplicant startup.
+
+The initial filtered result for `timeout|wifi start fail|reqcfm|1037|1038` was **EMPTY**. This is
+negative evidence; there is no non-empty error file to archive or describe.
+
+A physical Wi-Fi OFF → ON cycle then proved clean removal (`wlan0: CLOSE`, interface/SDIO and
+bus/thread teardown, subsystem state 0) followed by fresh subsystem state 1, SDIO probe, 66 MHz,
+FMAC and supplicant initialization. One `aicsdio: write retry: 20` was observed, but startup
+continued to full function; it is a non-fatal transient, not a basis for more generic SDIO work.
+The post-cycle filtered result for the same expression was again **EMPTY**.
+
+Android progressed through ASSOCIATING, ASSOCIATED, four-way/group handshake and COMPLETED,
+succeeded at DHCP, assigned `192.168.1.8/24` with gateway `192.168.1.254`, entered
+`L3ConnectedState`, and reported connected/validated on `wlan0`. Both `8.8.8.8` and
+`www.google.com` returned 4/4 packets with 0% loss; the latter also proves DNS resolution.
+Wi-Fi ADB reconnected after the cycle.
+
+The r1-r4 `START_APP 1037 -> reqcfm(1038) timeout` did not recur initially or after one physical
+reinitialization. Restoring the working BSP's `0x00120000` upload/boot contract after r1-r4's
+wrong `0x00110000` guard-selected placement is therefore accepted as the engineering root cause,
+with strong single-variable physical corroboration. This does not assert unproven boot-ROM or
+firmware internals.
+
 ## Decision
 
-**R5 OFFLINE PASS / PHYSICAL VALIDATION REQUIRED.** No physical UBOX action was performed or is
-authorized by this record. Gate 2 remains **CLOSED**. r5 does not prove that Wi-Fi is fixed; only a
-separately authorized UART-first physical test can determine whether corrected placement reaches
-1038 and a working wireless runtime.
+**R5 PHYSICAL PASS / WI-FI PASS.** The same-lineage Linux 5.4.302 kernel/wireless preservation
+checkpoint is **CLOSED / PASS**. No further SDIO-clock guessing, generic MMC revert, START_APP
+instrumentation or r6 kernel diagnostic is justified by current evidence.
+
+This closure removes the kernel/wireless block from Path A but does not itself make Android 16
+Gate 2 pass. The separate exact QPR0 source audit governs the next architecture decision.

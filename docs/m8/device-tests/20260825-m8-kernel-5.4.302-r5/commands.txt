@@ -1,0 +1,11 @@
+# Commands/results explicitly represented in the externally supplied evidence.
+# This is not a reconstructed raw capture and does not claim to list every collection command.
+
+uname -a
+getprop sys.boot_completed
+
+# The supplied initial and post-cycle filtered captures both returned no matches:
+timeout|wifi start fail|reqcfm|1037|1038
+
+ping -c 4 8.8.8.8
+ping -c 4 www.google.com

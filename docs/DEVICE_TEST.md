@@ -2,8 +2,8 @@
 
 ## 当前状态
 
-- 最后报告的刷入诊断镜像：`out/candidates/m8-kernel-5.4.302-r4/x12-m8-kernel-5.4.302-r4.img`
-- 当前设备状态：**ANDROID 12 BOOT COMPLETE / WI-FI FAIL / GATE 2 CLOSED**；Linux 5.4.302、HDMI/UI、遥控、Ethernet、ADB 正常。`m8-kernel-5.4.302-r2` 已实机拒绝 50 MHz hypothesis；r3 证明 START_APP final CMD53 在 Linux host 返回成功但无 AIC IRQ/RX/1038，r4 又证明 timeout 时 `IENx=0x03`、`INTx=0x00`、core pending=0 且 IRQ claim/handler 正常。后续 accepted-driver audit 证明 working BSP 以 `0x00120000` 上传并启动 exact FMAC，而 r1-r4 实际使用 `0x00110000`，但 FMAC reset vector 仍为 `0x00120189`。当前最早 source-proven divergence 为 **WRONG FMAC PLACEMENT/BOOTADDR → AUTO HANDOFF → FMAC EXECUTION**。r5 已按 locked single-variable design 完成 offline build/audit/package，但未 flash、未实测；这不是 Wi-Fi fix。
+- 最后报告的物理验收镜像：`out/candidates/m8-kernel-5.4.302-r5/x12-m8-kernel-5.4.302-r5.img`
+- 当前项目状态：**ANDROID 12 r5 BOOT/WI-FI PASS / KERNEL-WIRELESS CHECKPOINT CLOSED / QPR0 r3 BUILD READY**。Linux 5.4.302、HDMI/UI、遥控、Leanback/TV IME/Launcher、Wi-Fi 与 Wi-Fi ADB 正常；一次 physical Wi-Fi OFF→ON clean teardown/reinit 后完成 DHCP、validated L3、IP/DNS ping 与 ADB reconnect。旧 `timeout|wifi start fail|reqcfm|1037|1038` filter 在 initial 与 post-cycle 两次均为空。r1-r4 错用 `0x00110000` 的历史诊断保持；r5 恢复 working BSP `0x00120000` contract 后的 single-variable physical result 接受为 engineering root-cause corroboration。Exact QPR0 r7 audit 已完成；Gate 2 为 **UNBLOCKED / READY FOR QPR0 r3 BUILD**，不是 PASS，且当前没有 r3 image。
 - 保留的设备验收基线：`out/candidates/m8b-remote-r1/x12-m8b-remote-r1.img`，状态 **DEVICE ACCEPTED / REMOTE PASS**（继承 **AUDIO PASS / IME PASS**）。
 - 大小 / SHA-256：1031723008 bytes / `F3B09E5565AC4ED4E5EE326D392622E7B036A8519B8444B966E77CC4751B814A`
 - 用户当前在设备现场，可执行物理交互、重启、suspend/resume、HDMI 观察与恢复；任何新候选刷写仍需该候选的单独明确授权。
@@ -55,7 +55,7 @@ Exact A16 source path 为：`CgroupSetup()` 在 required blkio `mount()` 返回 
 
 r2 先完成离线审核，随后由用户单独授权并完成一次 PhoenixCard/UART-first 物理测试。镜像为 `out/candidates/a16-prototype-a-r2/x12-a16-prototype-a-r2.img`，1,261,038,592 bytes / SHA-256 `114DF8677CD6984EB1431377723EDF61C80ACF26C15D8770BAE47DCFE7D1B6D0`。
 
-它只把 retained kernel config 的 `CONFIG_BLK_CGROUP`、`CONFIG_CPUSETS` 及 Kconfig 自动产生的 `CONFIG_PROC_PID_CPUSET` 改为 `y`，并只替换 outer `boot.fex`/`Vboot.fex`。r1 system/APEX/LP/vendor、vendor_boot/ramdisk、AVB 元数据和其余 48/50 outer payload 原字节保持。Boot AVB、IMAGEWTY、ext4、cgroup contract、SHA256SUMS PASS；full VINTF 没有新增错误，仍只保留继承的 NFS config 例外。Gate 2 继续 **CLOSED**。
+它只把 retained kernel config 的 `CONFIG_BLK_CGROUP`、`CONFIG_CPUSETS` 及 Kconfig 自动产生的 `CONFIG_PROC_PID_CPUSET` 改为 `y`，并只替换 outer `boot.fex`/`Vboot.fex`。r1 system/APEX/LP/vendor、vendor_boot/ramdisk、AVB 元数据和其余 48/50 outer payload 原字节保持。Boot AVB、IMAGEWTY、ext4、cgroup contract、SHA256SUMS PASS；full VINTF 没有新增错误，仍只保留继承的 NFS config 例外。该历史 r2 结果使当时 Gate 2 继续 **CLOSED**；当前状态见文首 r5/r7 closure。
 
 Flash capture `logs/20260822-a-r2/uart-flash-r2.log` 为 44,451 bytes / SHA-256 `832E3BEDC7BD50E3D9B562FFEE375189825EE3ECA1A3E67D8026157E4545DD2E`。13 个 download parts 均成功，最终为 `CARD OK` / `sprite success`。旧 GPT fallback、erase alignment 文字与既有 successful PhoenixCard 流程一致，不改变写入成功结论。
 
@@ -170,7 +170,7 @@ rollback 边界。
 1,031,739,392 bytes / SHA-256
 `18565E4F94FF1A843EA859254800E5E2BA732FBFE47410E86D6577038F85DFCA`。
 状态为 **PHYSICAL DIAGNOSTIC PASS / WI-FI FAIL / NO PERSISTENT FUNCTION PENDING AT TIMEOUT**；
-Gate 2 保持 CLOSED。
+该历史 r4 结果使当时 Gate 2 保持 CLOSED，后续 r5 已关闭此 wireless checkpoint。
 
 r4 保留 r1/r3 的 70 MHz、Image、boot、DT、Android 12 userspace 和其他 21 modules，只在
 原 START_APP timeout 已成立后、teardown 之前，由 `aic8800_bsp.ko` 读取 read-only CCCR
@@ -194,16 +194,16 @@ AUTO handoff 或 source-proven read-only dequeue/boot/FMAC-ready state；`bootst
 1038 payload 且被 host 当作 `hwinfo_r`。该 archaeology 本身没有产生 r5，但随后的
 accepted-driver semantic audit 证明 working BSP 的 upload/START_APP base 是 `0x00120000`，r1-r4
 则因 donor preprocessor guard/Makefile define 不一致而编译成 `0x00110000`。这使仅修正该 guard、
-保留 r4 trace 的 r5 单变量 design 成立；当前仍未 build、未授权实测，也不得用不同芯片的
-FNCALL/DUMMY 或随机寄存器读取替代。完整证据与 lineage 限制见
-`docs/m8/candidates/m8-kernel-5.4.302-r4.md`。Rollback 仍为 Test8r2；本记录不授权任何新物理动作。
+保留 r4 trace 的 r5 单变量 design 成立。当时尚未 build/实测；后续 r5 结果已在下节关闭该
+边界。不同芯片 FNCALL/DUMMY 或随机寄存器读取仍不成立。完整历史证据与 lineage 限制见
+`docs/m8/candidates/m8-kernel-5.4.302-r4.md`。
 
-## Offline candidate: m8-kernel-5.4.302-r5
+## Physical result: m8-kernel-5.4.302-r5
 
 候选：`out/candidates/m8-kernel-5.4.302-r5/x12-m8-kernel-5.4.302-r5.img`，
 1,031,739,392 bytes / SHA-256
 `A185B0A3C7516FBC9D34F61B3218171F07BDA00B84903A644D2D71FBB1DCC28F`。
-状态为 **OFFLINE CHECKED / PHYSICAL VALIDATION REQUIRED / GATE 2 CLOSED**。
+状态为 **PHYSICAL PASS / WI-FI PASS / PRESERVATION CHECKPOINT CLOSED**。
 
 r5 只把 `RAM_FMAC_FW_ADDR` guard 从未实际定义的 `CONFIG_AIC_INTF_SDIO` 改为 build 已提供的
 `AICWF_SDIO_SUPPORT`。Final packaged `aic8800_bsp.ko` 为 129,976 bytes / SHA-256
@@ -216,9 +216,19 @@ Android userspace 与其他 21 modules 保持。Relative r4 outer delta 仅 `sup
 AVB/FEC、ext4/e2fsck、LP/sparse round trip、IMAGEWTY 与 focused tests PASS。完整记录见
 `docs/m8/candidates/m8-kernel-5.4.302-r5.md`。
 
-本轮没有 physical UBOX action。r5 没有 flash authorization；不得据此刷写、重启或 toggle Wi-Fi。
-若后续用户另行明确授权，才执行一次 UART-first physical validation。当前不声称 Wi-Fi fixed，
-Gate 2 保持 **CLOSED**，rollback 仍为 Test8r2。
+用户已完成 physical validation。`uname -a` 为
+`Linux localhost 5.4.302+ #1 SMP PREEMPT Thu Aug 13 22:30:00 +08 2026 armv8l`，
+`sys.boot_completed=1`。AIC FMAC/BTLPM/BSP/rfkill modules 加载，initial probe/66 MHz/FMAC/
+supplicant startup 成功；旧 error filter 为空。Physical Wi-Fi OFF→ON 后 old wlan0/SDIO/bus/
+thread/subsystem teardown 完整，再 fresh init 成功。一次 `aicsdio: write retry: 20` 后继续到
+functional/validated connection，按 non-fatal transient 记录。Android 完成 association、4-way/
+group handshake、DHCP `192.168.1.8/24`、gateway `192.168.1.254` 与 validated L3；IP/DNS ping
+均 4/4、0% loss，Wi-Fi ADB reconnect PASS。Post-cycle old error filter 再次为空。
+
+Original raw ADB captures 由用户在设备外部收集且未在 VM 找到；tracked evidence 只含 reviewed
+facts/excerpts，不虚构 raw file/hash。详见
+`docs/m8/device-tests/20260825-m8-kernel-5.4.302-r5/`。Rollback 仍为 frozen
+`m8b-remote-r1`/Test8r2；本结果不授权后续 r3 flash/physical action。
 
 ## Accepted physical result: m8b-remote-r1
 

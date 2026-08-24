@@ -1,9 +1,15 @@
 # Android 16 architecture prototype products
 
-These files define the two research-only UBOX10 Architecture Ceiling Study
-products. Copy the `device` directory into a clean `android-16.0.0_r4` tree,
-then select either `ubox10_ceiling_arm-bp4a-userdebug` or
-`ubox10_ceiling_arm64-bp4a-userdebug`.
+These files preserve the two research-only UBOX10 Architecture Ceiling Study
+products as used for the historical r4 Gate-1 work. That build copied the `device`
+directory into a clean `android-16.0.0_r4` tree and selected
+`ubox10_ceiling_arm-bp4a-userdebug`; the ARM64 choice was never authorized or built.
+
+The current source-audit decision selects exact `android-security-16.0.0_r7` / `bp2a` for one
+future ARM32 Prototype A r3 build. Before that future build, port only the ARM32 lunch choice
+from `bp4a` to `bp2a`, retain no secondary ABI and `zygote32`, and update the disposable build
+number. Do not select the ARM64 product or run this r4 wrapper unchanged. The exact r3 contract
+is in `docs/m8/research/android-16-qpr0-r7-source-audit.md`.
 
 Both products inherit the official Android TV GSI base, retain only VNDK 31,
 identify the device as an Android 12 field upgrade, and build no boot, vendor,
@@ -72,6 +78,6 @@ two changes in a staging image and rejects any other filesystem delta.
 preservation and split SELinux/linker/ELF closure. Full VINTF deliberately
 remains exit 65 only for the inherited `CONFIG_NFS_FS=y` versus FCM-6 `n`
 deviation that also exists against the device-accepted Android 12 matrix; it is
-not reported as a pass. The candidate is eligible only for requesting one
-UART-first authorization. No device action was performed, Gate 2 is closed,
-and Prototype B remains configuration only.
+not reported as a pass. The later r5 physical kernel/wireless checkpoint and exact QPR0 r7
+source-only audit now leave Gate 2 **UNBLOCKED / READY FOR QPR0 r3 BUILD**, not PASS. No r3
+build or physical action occurred in that audit, and Prototype B remains closed configuration.

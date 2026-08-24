@@ -1,0 +1,77 @@
+EXTERNALLY COLLECTED PHYSICAL EVIDENCE — REVIEWED EXCERPTS/RESULTS ONLY
+Original raw ADB captures were not found on the VM and are not claimed to be stored in Git.
+
+KERNEL / ANDROID
+uname -a:
+Linux localhost 5.4.302+ #1 SMP PREEMPT Thu Aug 13 22:30:00 +08 2026 armv8l
+
+getprop sys.boot_completed:
+1
+
+PHYSICAL FUNCTION PASS
+System boot
+HDMI output
+Wi-Fi connection
+Wi-Fi ADB
+Physical remote control
+Leanback framework
+TV input method
+Launcher
+
+AIC MODULE RUNTIME
+aic8800_fdrv
+aic8800_btlpm
+aic8800_bsp
+sunxi_rfkill
+aic8800_bsp was actively referenced by aic8800_fdrv.
+
+INITIAL WI-FI RUNTIME
+Driver Release Tag: aic-rwnx-compatible(sdio)-20221108-004
+AIC Wi-Fi subsystem state -> ON
+aicwf_sdio_probe:1
+Set SDIO Clock 66 MHz
+rwnx_init_aic()
+supplicant interface startup
+
+Initial filtered capture for timeout|wifi start fail|reqcfm|1037|1038:
+NO MATCHES (EMPTY RESULT)
+
+PHYSICAL WI-FI OFF -> ON REINITIALIZATION
+Old runtime teardown included:
+wlan0: CLOSE
+Remove Interface
+aicwf_sdio_remove
+bus/thread teardown
+AIC Wi-Fi subsystem state -> 0
+
+Fresh initialization included:
+AIC Wi-Fi subsystem state -> 1
+aicwf_sdio_probe:1
+Set SDIO Clock 66 MHz
+rwnx_init_aic()
+supplicant interface startup
+
+Non-fatal transient observation:
+aicsdio: write retry: 20
+Initialization continued and Wi-Fi became fully functional.
+
+Post-cycle filtered capture for timeout|wifi start fail|reqcfm|1037|1038:
+NO MATCHES (EMPTY RESULT)
+
+ANDROID WI-FI FRAMEWORK RECOVERY
+ASSOCIATING
+ASSOCIATED
+FOUR_WAY_HANDSHAKE
+GROUP_HANDSHAKE
+COMPLETED
+DHCP success
+IPv4 192.168.1.8/24
+gateway 192.168.1.254
+L3ConnectedState
+WifiStatus: isConnected=true isValidated=true
+interface: wlan0
+
+EXTERNAL CONNECTIVITY
+ping -c 4 8.8.8.8: 4 transmitted, 4 received, 0% packet loss
+ping -c 4 www.google.com: DNS resolution succeeded; 4 transmitted, 4 received, 0% packet loss
+Wi-Fi ADB successfully reconnected after the OFF -> ON cycle.

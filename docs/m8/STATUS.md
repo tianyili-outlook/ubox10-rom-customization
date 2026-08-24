@@ -74,7 +74,7 @@ Updated: 2026-08-24
 
 ## Active architecture transition
 
-活跃架构开发位于 `codex/m8-architecture-ceiling` 的 Android 16 路线；决策依据为该分支的 `docs/m8/research/architecture-ceiling-study.md`。长期 mixed AArch64-primary / ARM32-secondary 目标继续 **HOLD**，Prototype B 不得启动。A16 r2 实机已推进到 r4/25Q4 的 `NetBpfLoad` 5.10 硬门槛，Path A 因此选用早期 A16 QPR0 + final 5.4 lineage。Android 12 `m8-kernel-5.4.302-r1` 物理测试证明 Linux 5.4.302、`sys.boot_completed=1`、HDMI/UI、遥控、Ethernet 与 ADB 正常，但 Wi-Fi 在 AIC8800D firmware START_APP 1037→1038 handshake 可重复超时；r2 已实机拒绝 50 MHz hypothesis。r3 证明 final 512-byte CMD53 write 在 Linux host 返回 0 后没有 AIC IRQ/RX/1038/completion；r4 又实机证明 timeout 时 function 1、hardware SDIO IRQ、claim/handler 与 `IENx=0x03` 正常，但 `INTx=0x00`、core pending=0，故没有 persistent function pending indication 保留到 snapshot。Exact U04 FMAC audit 找到 post-start 1037→1038 producer，而 accepted-driver semantic audit 又发现更早的 source/binary-proven divergence：working BSP 把 exact FMAC 上传并 START_APP 于 `0x00120000`，r1-r4 因 donor preprocessor guard 与实际 Makefile define 不一致而使用 `0x00110000`，但 FMAC vector 仍指向 `0x00120189`。当前最早边界因此修订为 **WRONG FMAC PLACEMENT/BOOTADDR → BOOT-ROM AUTO HANDOFF → FMAC EXECUTION**。唯一 r5 已按 locked design 完成离线构建、final-ELF audit 与打包；upload/patch-read/START_APP 为 `0x00120000`/`0x00120180`/`0x00120000`，但尚未物理证明 root cause。same-lineage preservation 仍为 **PARTIAL PHYSICAL PASS / WIRELESS OPEN**，Gate 2 保持 **CLOSED**，没有形成 A16 r3。
+活跃架构开发位于 `codex/m8-architecture-ceiling` 的 Android 16 Path A；长期 mixed AArch64-primary / ARM32-secondary 目标继续 **HOLD**，Prototype B 不得启动。历史 r1-r4 在 AIC8800D `START_APP 1037 -> reqcfm(1038)` 边界失败；exact audit 证明这些候选因 donor guard/build-define mismatch 把 unchanged FMAC 放在 `0x00110000`，而 working BSP 使用 `0x00120000`。唯一 r5 恢复 upload/patch-read/START_APP `0x00120000`/`0x00120180`/`0x00120000` 后已经物理通过 system boot、HDMI、遥控、Leanback/TV IME/Launcher、Wi-Fi、Wi-Fi ADB 与一次 Wi-Fi OFF→ON reinitialization。两次 `timeout|wifi start fail|reqcfm|1037|1038` 过滤均为空；DHCP、validated L3、IP/DNS connectivity 与 ADB reconnect PASS。same-lineage Linux 5.4.302 kernel/wireless preservation checkpoint 现为 **CLOSED / PASS**。Exact QPR0 r7 source-only audit 也已完成并给出 **GO FOR ONE FUTURE PROTOTYPE A r3 BUILD**；Gate 2 是 **UNBLOCKED / READY FOR QPR0 r3 BUILD**，尚不是 PASS，本任务没有形成 A16 r3。
 
 架构研究已经找到强匹配 provider 证据：同 lineage donor 的 ARM32 Mali 与 accepted UBOX 文件完全一致，并提供 paired AArch64 Mali 与 multilib mapper/gralloc source。该证据把“缺少匹配 graphics provider”从结构性阻塞收敛为 exact-board build/runtime gate；media 不要求先取得全套 AArch64 provider，可继续保留 ARM32 Allwinner OMX/Cedar 服务并通过进程边界复用。
 
@@ -86,7 +86,7 @@ Gate 1 本身只证明 A16 ARM32 product 可以完整构建并在离线结构上
 
 ### Android 16 Prototype A exact-board candidate
 
-2026-08-21 已完成 accepted exact-board 离线集成，当时结论为 **OFFLINE CHECKED CANDIDATE / ELIGIBLE FOR ONE UART-FIRST AUTHORIZATION**。2026-08-22 用户另行明确授权并完成唯一一次 r1 物理刷写/启动；下述离线审计结果仍成立，但已被新的运行时失败边界补充，Gate 2 继续 **CLOSED**。
+2026-08-21 已完成 accepted exact-board 离线集成，当时结论为 **OFFLINE CHECKED CANDIDATE / ELIGIBLE FOR ONE UART-FIRST AUTHORIZATION**。2026-08-22 用户另行明确授权并完成唯一一次 r1 物理刷写/启动；下述离线审计结果仍成立，但已被新的运行时失败边界补充。该历史 r1 时点的 Gate 2 继续 **CLOSED**；当前状态由文首 r5/r7 closure 取代。
 
 输入在 GCP 逐项校验：`m8b-remote-r1` 外层镜像为 1,031,723,008 bytes / SHA-256 `F3B09E5565AC4ED4E5EE326D392622E7B036A8519B8444B966E77CC4751B814A`；Test8r2 rollback 为 2,005,954,560 bytes / `6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8`。Accepted super、system/vendor/product/vendor_dlkm、boot、vendor_boot、vbmeta 与 Gate 1 system 均由 size/SHA-256 锁定；原始输入保持只读且构建前后 hash 一致。
 
@@ -136,7 +136,7 @@ Source-proven 路线结论如下：
 
 | 排名 | 路线 | 结论 | 证据与边界 |
 |---:|---|---|---|
-| 1 | A：早期 A16 + retained 5.4 lineage | **HOLD / 唯一可继续路线** | 最合适基线是官方 `android-security-16.0.0_r7`（官方表 build `15180164`；source `BUILD_ID=BP2A.250805.034`；manifest `ebea28d151539ecf0730b1a4ab92ac33edc17ac9`；API 36.0 / 25Q2 / QPR0 / SPL 2025-08-05）。其 NetBpfLoad 接受 5.4，但 netd 明确要求 non-GKI 5.4 至少 `5.4.277`；exact 5.4.125 仍不合格。Kernel.org 已结束 5.4 维护，故若继续应优先评估同 lineage 升至最终 5.4.302，并补 `NET_CLS_MATCHALL`、`NET_ACT_POLICE`、`NET_ACT_BPF`。 |
+| 1 | A：QPR0 A16 + retained 5.4 lineage | **SELECTED / SOURCE-AUDIT GO** | Exact `android-security-16.0.0_r7` 为 `BP2A.250805.034`、manifest `ebea28d151539ecf0730b1a4ab92ac33edc17ac9`、API 36.0 / 25Q2 / QPR0 / SPL 2025-08-05。NetBpfLoad fatal floor 是 5.4，netd non-GKI 5.4 floor 是 5.4.277；physical-pass 5.4.302 合格。Path-A 六项 cgroup/netd config 可在 retained lineage bounded closure。 |
 | 2 | B：r4 / 25Q4 + 5.4 backports | **NO-GO（当前 bounded Gate 2）** | r4 loader 与 netd 都以版本要求 5.10（并要求 5.10.210 LTS floor）；现有 5.4 还真实缺 ringbuf、CAP_PERFMON/BPF capability split、uprobes/ftrace、vmlinux BTF、BPF link/batch API 等。只删除检查或伪造 uname 不合法；完整回移已不是 bounded fix。 |
 | 3 | C：H616 5.10+ | **NO-GO（当前项目）** | Orange Pi `orange-pi-5.10` 是 5.10.75 / `e39ff11e...` 的 mainline-style H616 树，不含 retained 5.4 的 SUNXI display/Cedar/VIN/G2D/gralloc/DRM-heap/USB vendor stack。22 个 accepted vendor_dlkm modules 及 graphics/media/audio/TEE/wireless UAPI 都需同步移植或重建，实质是新 BSP/kernel port。 |
 
@@ -144,7 +144,7 @@ Source-proven 路线结论如下：
 
 ### Linux 5.4.302 same-lineage BSP checkpoint
 
-该 checkpoint 当时的离线结论为 **GO FOR ONE SEPARATELY AUTHORIZED ANDROID 12 KERNEL-ONLY PHYSICAL VALIDATION**，不是 hardware compatibility PASS；后续授权测试已执行，其新结论是 **PARTIAL PHYSICAL PASS / WIRELESS OPEN**，详见本节末尾的 r1/r2 更新。期间没有切换 Android 16 source baseline，没有构建 A16 r3、Prototype B 或 5.10 port。完整历史候选记录见 `docs/m8/candidates/m8-kernel-5.4.302-r1.md`。
+该 checkpoint 的最终结论为 **CLOSED / PASS**。历史 r1-r4 diagnostics 与失败边界保持不变；r5 physical validation 已关闭唯一 wireless 缺口，详见本节末尾和 `docs/m8/candidates/m8-kernel-5.4.302-r5.md`。期间没有构建 A16 r3、Prototype B 或 5.10 port。
 
 Retained source 精确为 Orange Pi commit `9ab7a758149d3c9b721878a0c18b3f9c5d6c93e6` / tree `d37d590a1e61c8e099e72170bf36e54091aa4820` / `5.4.125+`。该七提交 BSP import 与 upstream v5.4.125 (`3909e237...`) 或 v5.4.302 (`9e3157c5...`) 都没有 Git merge-base，不能安全 blind rebase。最终策略用 Android common 5.4.125 merge commit `6cb0d5ef...` 作为 synthetic base，以 exact vendor tree 为 ours，合入包含 upstream v5.4.302 的 Android common `2443acb8...`。46 个冲突逐项分类为 31 upstream/common wins、12 vendor wins、3 semantic merge；可复现脚本在独立 worktree 17 秒精确重放最终 commit `027ef79e8facb73cb2419b4a08c0bd3f13a2206e` / tree `b328c32712d65f8da98e013bc74944d68c05552b`。
 
@@ -173,7 +173,7 @@ Selected integration、retained vendor input、两个 module donor、AOSP 与 to
 A16 r2 build worktree 保持原状，其唯一 status 是已在 r2 构建记录中锁定的 untracked
 `drivers/net/wireless/xr819/` donor subtree，不属于本 checkpoint 的未记录修改。
 
-Compilation/source/config/module/AVB evidence 不会运行 display、GPU、media、audio、wireless、Ethernet、USB、IR、thermal/DVFS、suspend/wake 或 secure-world path；vendor_dlkm 只有一块 free space 也必须保留为实机风险。后续 r1 实机已证明 kernel/Android/HDMI/UI/遥控/Ethernet/ADB，但 Wi-Fi 仍开放。因此 Path A 的 kernel 子 checkpoint 为 **PARTIAL PHYSICAL PASS / WIRELESS OPEN**，总体 A16 Path A 继续 **HOLD**。Gate 2 保持 **CLOSED**。
+原离线 evidence 本身不会运行 display、GPU、media、audio、wireless、Ethernet、USB、IR、thermal/DVFS、suspend/wake 或 secure-world path；vendor_dlkm 只有一块 free space 的风险仍需保留。后续 r1-r4 逐步证明 core/board contract 并收敛 Wi-Fi 边界，r5 现已物理证明 boot/HDMI/UI/remote/Wi-Fi 和一次完整无线 reinitialization。因此 Path A kernel/wireless 子 checkpoint 为 **CLOSED / PASS**；这项关闭解除 QPR0 audit 阻塞，但不单独使 Gate 2 PASS。
 
 ### Linux 5.4.302 r1 physical Wi-Fi boundary and r2 diagnostic
 
@@ -211,7 +211,19 @@ Device-contract archaeology 没有找到 exact U04 read-only dequeue pointer、b
 
 该 audit 找到一个真实而直接的差异。Accepted `aicbsp_8800d_fw_init` 在 firmware upload 和 `HOST_START_APP_AUTO` 两处都传 `0x00120000`；r1、r3、physically run r4 的 final ELF 均传 `0x00110000`。Donor source 用 `#ifdef CONFIG_AIC_INTF_SDIO` 选择前者，但 Makefile/最终 `.cmd` 只提供 `-DAICWF_SDIO_SUPPORT`，generated autoconf 也没有前一符号，故实际编译进入 `0x00110000` 分支。Exact accepted/current firmware 四文件仍 byte-identical；`fmacfw.bin` 的 MSP/reset vector 为 `0x00183800`/`0x00120189`，所以当前 build 把 image bytes 下移 64 KiB，却保留绝对 reset target。Revision/sub-ID 识别只选择 alias table/same files；SDIO setup、IRQ `0x04=0x07`、download helper、command/RX paths 相同；新增 reboot helper 仅 USB 可达；其余主要是 LTO/inlining/log/layout noise。Donor/build mismatch 因此 **RAISED / PLAUSIBLE ROOT-CAUSE CANDIDATE**，但未实机证明。
 
-最早 source-proven divergence 已前移到 `aicwifi_init()` 的 FMAC upload destination，修订边界为 wrong image placement/boot address → boot-ROM AUTO handoff → FMAC reset-vector execution；r4 的 CMD53-complete → FIFO-dequeue 观察缺口仍存在，但不再是最早已知差异。**r5 = OFFLINE CHECKED / PHYSICAL VALIDATION REQUIRED**：one-line patch SHA-256 `10BE1AE58CB900DBD8B5250960B2FBA3846CC29DFFF676DAE5D87D17EBCADBD3`；final packaged BSP 为 129,976 bytes / `2BF0F46C69968408544D8F1B344C0999C6B2E69E03C7E24A5EB8D2A23133D03A`。Final ELF 的 upload/patch-read/START_APP 为 `0x00120000`/`0x00120180`/`0x00120000`，与 accepted working 5.4.125 BSP 精确一致；r4 为 `0x00110000`/`0x00110180`/`0x00110000`。Source delta 仅 guard line；r4 trace/CCCR、ABI/import/export/vermagic、exact firmware 与其他 21 candidate modules 保持。唯一镜像 `out/candidates/m8-kernel-5.4.302-r5/x12-m8-kernel-5.4.302-r5.img` 为 1,031,739,392 bytes / `A185B0A3C7516FBC9D34F61B3218171F07BDA00B84903A644D2D71FBB1DCC28F`。相对 r4 仅 `super.fex`/`Vsuper.fex` 外层变化；boot/Image/ramdisk/DT、system/vendor/product/userspace 与其余 48/50 payload 保持。ext4/e2fsck、AVB/FEC、LP/sparse、IMAGEWTY 与 focused checks PASS。Clean ThinLTO raw whole-build outputs 的既有 path/private-ID drift 不进入候选；候选复用 exact r1/r4 Image 与 21-module root。这不是 Wi-Fi PASS；Gate 2 仍 **CLOSED**。详见 `docs/m8/candidates/m8-kernel-5.4.302-r5.md`。
+最早 source-proven divergence 已前移到 `aicwifi_init()` 的 FMAC upload destination。r5 one-line patch SHA-256 为 `10BE1AE58CB900DBD8B5250960B2FBA3846CC29DFFF676DAE5D87D17EBCADBD3`；final packaged BSP 为 129,976 bytes / `2BF0F46C69968408544D8F1B344C0999C6B2E69E03C7E24A5EB8D2A23133D03A`，upload/patch-read/START_APP 恢复 `0x00120000`/`0x00120180`/`0x00120000`。唯一镜像为 1,031,739,392 bytes / `A185B0A3C7516FBC9D34F61B3218171F07BDA00B84903A644D2D71FBB1DCC28F`，其 offline preservation checks 保持 PASS。
+
+用户随后物理验证 r5：Linux `5.4.302+`、`sys.boot_completed=1`；system/HDMI/remote/Leanback/TV IME/Launcher/Wi-Fi/Wi-Fi ADB PASS。AIC BSP/BTLPM/FMAC/rfkill modules 正常加载，初始 probe/66 MHz/FMAC/supplicant startup 完整；过滤 `timeout|wifi start fail|reqcfm|1037|1038` 结果为空。物理 Wi-Fi OFF→ON 后旧 `wlan0`、SDIO、bus/thread 与 subsystem state 0 清理，再完成 state 1/probe/66 MHz/FMAC/supplicant fresh init；第二次同一过滤仍为空。单次 `aicsdio: write retry: 20` 后继续成功，按非致命 transient 记录，不重开 SDIO 调试。Android 完成 association、4-way/group handshake、DHCP、`192.168.1.8/24` / gateway `192.168.1.254`、validated L3；IP 与 DNS ping 均 4/4、0% loss，Wi-Fi ADB reconnect PASS。r1-r4 START_APP timeout 未复现。错误 `0x00110000` placement/build-guard contract 与 r5 `0x00120000` correction 因而接受为有强单变量实机佐证的 engineering root cause，不声称未证明的 firmware internals。Raw ADB captures 由用户外部收集且未在 VM 找到；tracked record 只保存 reviewed excerpts/result，不虚构 raw files 或 SHA。完整记录见 `docs/m8/device-tests/20260825-m8-kernel-5.4.302-r5/`。
+
+### Android 16 QPR0 r7 source-only audit
+
+Exact official `android-security-16.0.0_r7` identity 已由 tag objects 独立验证：manifest commit/tree `ebea28d151539ecf0730b1a4ab92ac33edc17ac9` / `e4641ccf8e59e0028248d32e5a7fd212760b7a22`，`default.xml` SHA-256 `455B978FFD07E7A1699364E6CCAC3F8B9FE455905712B4923C0B97414F97769D`，`BP2A.250805.034`、API 36.0、REL、SPL 2025-08-05。Clean r4 checkout 未 repoint；其 233,871-byte pinned manifest SHA-256 `4E8BEB5D1B590DFF3D631B1DBB957138DBDA4E608A3183C625683DA4BC84918F` 与 946,765,824-byte `system.img` / `FD349F...DBE` 已在审计前复核。为避免 `/work` 仅约 50.8 GiB free 下复制完整 AOSP/output，r7 使用现有 Repo object store 的 immutable official tag objects 进行 source-only audit；未 sync/change worktree、未 build target/kernel/candidate。
+
+QPR0 `NetBpfLoad` fatal floor 是 5.4；netd exact non-GKI 5.4 floor 是 5.4.277，故 5.4.302 合法。r4 的 25Q4 5.10 fatal 在 r7 QPR0 不适用；r7 loader 还解析 installed rc 并强制 exact 2025 Q2/API 36.0，不是 bypass。Minimum config 精确为 tracked Path-A 六项：BLK_CGROUP/CPUSETS/PROC_PID_CPUSET 关闭已观测 init/cgroup contract，NET_CLS_MATCHALL/NET_ACT_POLICE/NET_ACT_BPF 满足 netd rate limiting。MEMCG optional；5.4 BPF variants 明确存在；BTF/ringbuf/link/batch/CAP split/kprobe/uprobe/ftrace/IncFS 均不应为 speculative 5.10 parity backport。
+
+QPR0 cgroups/API31/vendor overlay 顺序无新增 controller；APEX 保持 bootstrap-before-data，`mount_before_data=false`，bootstrap set 仍为 i18n/runtime/tzdata/virt/VNDK31。Frozen VNDK31 仍含 ARM32 `libaudioroute.so`，linkerconfig 保持 vendor `default→vndk`。FCM6 matrix 与 r4 byte-identical，accepted display HAL 两项 delta 仍需要；full exact VINTF 仍 exit 65 solely for inherited `CONFIG_NFS_FS=y` 对 FCM6 `n`，不称 PASS。QPR0 platform `fuseblk /` genfscon 仍与 accepted vendor duplicate，minimum one-line deferral 保持；permissive historical boot 不证明 enforcing。TV GSI base 在 r4/r7 byte-identical；Prototype A 可 bounded port 到 `bp2a` 并保持 ARM32/no-secondary/`zygote32`/shipping API31/VNDK31。
+
+Source-only decision 为 **GO FOR PROTOTYPE A r3 BUILD — FUTURE TASK ONLY**。Gate 2 从 kernel/wireless blocked 转为 **UNBLOCKED / READY FOR QPR0 r3 BUILD**，不是 PASS。完整 exact commits/file hashes/contract 在 `docs/m8/research/android-16-qpr0-r7-source-audit.md`；Prototype B、`zygote64_32` 与 ARM64 Mali/mapper 工作继续 CLOSED。
 
 ## Accepted audio milestone
 
@@ -438,7 +450,7 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - r10 已在实机完成 framework boot；r9 Lights/Watchdog/llkd 方向保持关闭，不再修改。
 - r13 是当前 GOLDEN BASELINE；Projectivy、provisioning、遥控和 Power sleep/wake/shutdown 均以实机 UART 为准。
 - M8B native rc-core 遥控迁移已在 r5 设备验收并关闭；Mouse mode intentionally dropped，legacy multi_ir 工件保留为 inert reference，其 Android 12 清理已随 freeze 延期。
-- 当前 board、DT 与 runtime 证据识别为 H616。A16 ARM32 r2 稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛。Path A 的 5.4.302 r1 已物理证明 Android 12 boot 与多项板级合同，但 AIC8800D Wi-Fi START_APP handshake 仍失败；r2 已实机拒绝 50 MHz hypothesis，r3 已实机把边界收敛为 host-complete TX 后无 AIC handler/RX/1038，r4 又证明 timeout 时 IRQ enable/claim/handler 正常但无 persistent function pending。Exact FMAC audit 找到 post-start 1037→1038 producer；accepted-driver audit 又证明 r1-r4 错用 `0x00110000`，与 working BSP 和 exact FMAC 的 `0x00120000` contract 不符。r5 已完成该单变量 correction 的 offline build/audit/package，但尚未实测；在另行明确物理授权前不得刷写，不构建 A16 r3、不启动 AArch64 Prototype B。
+- 当前 board、DT 与 runtime 证据识别为 H616。历史 A16 ARM32 r2 稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛；历史 kernel r1-r4 AIC failure 已收敛到错误 `0x00110000` FMAC contract。r5 恢复 working BSP `0x00120000` 后物理 boot/HDMI/remote/Wi-Fi/ADB 与 Wi-Fi OFF→ON reinitialization PASS，两次旧 error-signature filter 均为空；preservation checkpoint **CLOSED / PASS**。Exact QPR0 r7 audit 证明 5.4.302 超过 5.4.277 floor 并给出 future r3 source-build GO。当前不构建 r3、不启动 AArch64 Prototype B。
 - `m8b-audio-r2` 只启用产品级 Treble/VNDK 合同；未修改 VNDK payload、mixer、audio platform XML、DTS、machine driver 或已验收功能，现已设备验收为 AUDIO PASS。
 - 2026-08-16 ADB-only 补验未刷机、未重启且未修改 ROM/device properties：VP9 为 Allwinner OMX/Cedar hardware-runtime PASS；Widevine 为可操作 L3，HDCP `NONE`，无 secure decoder 要求。物理画面/逐帧质量与商业服务认证或播放仍未证明。
 - 遥控器 Menu 与 Settings 当前均打开 Projectivy menu。两键语义分离为独立延期项，不回改已验收的 rc-core、keylayout 选择或其他按键行为。
@@ -446,4 +458,4 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 
 ## Next action
 
-保持 `m8b-remote-r1`、Test8r2、stock rollback、A16 r1/r2 与 kernel r1/r2/r3/r4/r5 artifacts 不变。r5 离线合同已闭合；下一动作只能是用户另行明确授权后的 r5 UART-first physical validation。授权前不得刷写、重启或改变设备 Wi-Fi；不声称 Wi-Fi fixed。Wireless checkpoint 关闭后才进入 `android-security-16.0.0_r7` source-only audit；不构建 A16 r3、不启动 Prototype B，Gate 2 保持 **CLOSED**。
+保持 frozen `m8b-remote-r1`、Test8r2、stock rollback、A16 r1/r2 与 kernel r1-r5 artifacts 不变。下一会话唯一架构动作是按 exact `android-security-16.0.0_r7` / `bp2a` contract 构建并完整离线审核一个 ARM32/no-secondary/`zygote32` Prototype A r3：retained accepted vendor authority、physical-pass r5 5.4.302 lineage、Path-A 六项 config、两项 display matrix 与 one-line `fuseblk` deferral。当前任务未构建 r3，也未授权任何 flash/physical action。Gate 2 为 **UNBLOCKED / READY FOR QPR0 r3 BUILD**，不是 PASS；Prototype B、`zygote64_32`、ARM64 Mali/mapper integration 继续关闭。
