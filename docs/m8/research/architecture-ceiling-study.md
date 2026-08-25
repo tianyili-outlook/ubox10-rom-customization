@@ -1,6 +1,6 @@
 # UBOX10 Architecture Ceiling Study
 
-Study date: 2026-08-17; build/runtime/source evidence updated: 2026-08-24
+Study date: 2026-08-17; build/runtime/source evidence updated: 2026-08-25
 
 Study branch/evidence base: `codex/m8-architecture-ceiling` / starting commit
 `f40a37b6fd488800b5a1ada89f2ce2cf687e8e33`, plus the hash-locked Linux 5.4.302
@@ -9,8 +9,8 @@ checkpoint inputs and results recorded below
 Accepted rollback/runtime baseline: frozen `m8b-remote-r1`; latest physically accepted kernel
 checkpoint: `m8-kernel-5.4.302-r5`
 Scope: architecture decision, bounded offline prototypes, completed physical evidence through
-Linux 5.4.302 r5, and exact QPR0 r7 source-only audit. No A16 r3 build, Prototype B, mixed ABI
-work or new device action was performed by the r7 audit.
+Linux 5.4.302 r5, exact QPR0 r7 source audit, and the completed Prototype A r3 build/full offline
+audit. No r3 physical action, Prototype B or mixed-ABI work was performed.
 
 Confidence labels in this report have the following strict meanings: **PROVEN** is direct
 binary, build, runtime, repository, or authoritative-source evidence; **HIGH CONFIDENCE**
@@ -33,13 +33,14 @@ The exact r7 source-only audit is also complete. Official source identifies
 exact non-GKI 5.4 floor is 5.4.277; physical-pass 5.4.302 satisfies it. The Path-A cgroup/netd
 config contract is six bounded additions and r7 retains explicit 5.4 BPF variants, API-31
 cgroup overlay behavior, bootstrap APEX/VNDK31, FCM6, linker/SELinux and ARM32 TV product paths.
-The result is **GO FOR ONE FUTURE PROTOTYPE A r3 BUILD**.
+That audit issued **GO FOR ONE PROTOTYPE A r3 BUILD**; the bounded build and offline audit are
+now complete.
 
-This means Android 16 Gate 2 is **UNBLOCKED / READY FOR QPR0 r3 BUILD**, not PASS. Full VINTF
-still reports the inherited `CONFIG_NFS_FS=y` versus FCM6 `n` exception, and historical boots
-were permissive. No r3 image exists yet. Prototype B, mixed ARM64/ARM32 userspace,
-`zygote64_32` and ARM64 graphics/mapper integration remain closed until the ARM32 QPR0 base is
-built, audited and later physically proven.
+Android 16 Gate 2 is therefore **UNBLOCKED / AWAITING EXPLICIT PHYSICAL VALIDATION DECISION**,
+not PASS. Full VINTF still reports only the inherited `CONFIG_NFS_FS=y` versus FCM6 `n`
+exception, and historical boots were permissive. The r3 image is offline checked but has not
+been physically tested. Prototype B, mixed ARM64/ARM32 userspace, `zygote64_32` and ARM64
+graphics/mapper integration remain closed until the ARM32 QPR0 base is later physically proven.
 
 The possible final architecture still worth investigating remains **Android 16 for TV, mixed
 ARM64/ARM32 userspace, `zygote64_32`, the Allwinner 5.4 hardware-facing BSP lineage, plus only
@@ -704,10 +705,11 @@ date must not be relabeled as a later device SPL; future security coverage would
 separate patch provenance program. No GMS, Play, certification or commercial-service status
 follows from choosing it.
 
-**Path A verdict: selected; GO FOR ONE FUTURE ARM32 PROTOTYPE A r3 BUILD.** The same-lineage
-kernel/wireless preservation checkpoint is **CLOSED / PASS** and the exact r7 source audit finds
-no new architecture blocker. Gate 2 is **UNBLOCKED / READY FOR QPR0 r3 BUILD**, not PASS; no r3
-candidate exists yet, and Prototype B remains closed.
+**Path A verdict: selected; Prototype A r3 is OFFLINE CHECKED / READY TO REQUEST PHYSICAL
+VALIDATION.** The same-lineage kernel/wireless preservation checkpoint is **CLOSED / PASS**, the
+exact r7 source audit finds no architecture blocker, and the one bounded r3 build/package/offline
+audit is complete. Gate 2 is **UNBLOCKED / AWAITING EXPLICIT PHYSICAL VALIDATION DECISION**, not a
+runtime PASS. No r3 physical action is authorized by this result, and Prototype B remains closed.
 
 #### QPR0 r7 source-only closure
 
@@ -739,6 +741,40 @@ Exact findings are:
 
 The exact source commits, file hashes and future r3 contract are in
 `docs/m8/research/android-16-qpr0-r7-source-audit.md`.
+
+#### Prototype A r3 build and exact-board offline closure
+
+The source workspace was transitioned reproducibly to exact
+`android-security-16.0.0_r7` at manifest
+`ebea28d151539ecf0730b1a4ab92ac33edc17ac9`; the 246,298-byte pinned manifest hashes to
+`F52BA4A04957CEC7EEE7C9DCDD1525533156A0B5A1F0ADFC31A8155F48FB087E`. The source audit
+passes before and after the build. Relative `OUT_DIR=out-ceiling`, build number
+`UBOX10_A16_QPR0_R3` and `m -j8 systemimage` completed all 121,285 actions with exit 0. The
+actual output identifies as BP2A/API36/SPL 2025-08-05 and remains ARMv7-A NEON with no secondary
+architecture, empty 64-bit ABI list, zygote32, shipping API31 and VNDK31.
+
+The matching `5.4.302+` Image and all 22 modules were clean-built from retained integration
+commit `027ef79e...` using the exact Path-A config. Its only preservation-config additions are
+BLK_CGROUP/CPUSETS/PROC_PID_CPUSET for process groups and
+NET_CLS_MATCHALL/NET_ACT_POLICE/NET_ACT_BPF for QPR0 netd. MODVERSIONS/import CRCs, dependency
+graph and hardware config close. The final BSP preserves the r5 FMAC upload/patch-read/START_APP
+contract `0x00120000`/`0x00120180`/`0x00120000`; generic MMC/SDIO, 70 MHz, firmware and DT
+authority remain unchanged.
+
+The single exact-board firmware is 1,239,738,368 bytes / SHA-256
+`FA47939654B4E2A7E14FE963C7819296157338D33355E75D89E8086356071F1B`. The offline audit
+closes all four ext4 filesystems, system/boot/vendor_dlkm AVB, vbmeta_system rollback metadata,
+LP 10.2 geometry/three slots/sparse round trip/empty B slots, IMAGEWTY, ARM32 ELF/name closure,
+all 35 r7 APEXes, VNDK31 `libaudioroute.so`, generated vendor `default→vndk`, split SELinux and
+kernel preservation. Full VINTF remains exit 65 / INCOMPATIBLE solely for inherited
+`CONFIG_NFS_FS=y` versus FCM-6 `n`; no new incompatibility appears and this is not called PASS.
+Only boot/super/vbmeta_system and their three checksum companions change in the outer container;
+the other 44 entries, accepted vendor/product and all unrelated hardware authority are exact.
+
+This establishes offline eligibility only. No boot, zygote32, system_server, SurfaceFlinger/HWC,
+enforcing SELinux or hardware runtime result follows. The full record and machine-readable
+preservation inventory are `docs/m8/candidates/a16-prototype-a-r3.md` and
+`docs/m8/candidates/a16-prototype-a-r3-preservation.json`.
 
 #### Same-lineage Linux 5.4.302 preservation checkpoint
 
@@ -892,12 +928,12 @@ accepted hardware product.
 
 | Rank | Path | Decision | Exact next condition |
 |---:|---|---|---|
-| 1 | A — QPR0/25Q2 plus retained 5.4 lineage | **SELECTED / SOURCE-AUDIT GO** | r5 physically closes kernel/wireless preservation; exact r7 proves 5.4.302 passes the 5.4.277 floor and all minimum deltas remain bounded. Next is one future ARM32 Prototype A r3 build/offline audit. |
+| 1 | A — QPR0/25Q2 plus retained 5.4 lineage | **SELECTED / OFFLINE CHECKED** | r5 physically closes kernel/wireless preservation; exact r7 and the complete r3 build/offline audit close all expected bounded checks. Next is a separate decision on one UART-first r3 physical validation. |
 | 2 | B — r4/25Q4 plus backports into 5.4 | **NO-GO** | Would require violating the version policy or executing a broad 5.10-class subsystem port. |
 | 3 | C — public H616 5.10+ kernel | **NO-GO** | Requires a new exact-board Android BSP and hardware-stack port. |
 
-Gate 2 is **UNBLOCKED / READY FOR QPR0 r3 BUILD**, not PASS. This audit did not build r3 and
-authorizes no device action. Prototype B and mixed graphics work remain closed.
+Gate 2 is **UNBLOCKED / AWAITING EXPLICIT PHYSICAL VALIDATION DECISION**, not PASS. The r3 build
+and offline audit authorize no device action. Prototype B and mixed graphics work remain closed.
 
 ## 12. Target A/B/C/D comparison
 
@@ -933,7 +969,7 @@ D remains dominated on engineering economics.
 | Family | Viability | Main advantage | Decisive blocker/limit | Engineering risk | Verdict |
 |---|---|---|---|---|---|
 | Target A — Mature Legacy | **PROVEN now** | Accepted stability and hardware completeness | API 31 age and no 64-bit native apps; security/platform life is short | Low | Keep as rollback/reference, not final investment ceiling |
-| Target B — Modern Framework / Legacy Architecture | **SOURCE-AUDIT GO** | Maximum vendor reuse and no new graphics provider | r4 requires 5.10, so only QPR0 applies; ARM32 excludes 64-bit-only native apps and still needs r3 build/runtime proof | High until r3 passes | Next bounded architecture bootstrap |
+| Target B — Modern Framework / Legacy Architecture | **OFFLINE CHECKED / RUNTIME OPEN** | Maximum vendor reuse and no new graphics provider | r4 requires 5.10, so only QPR0 applies; ARM32 excludes 64-bit-only native apps and still needs r3 physical runtime proof | High until r3 physically passes | Await separate UART-first validation decision |
 | Target C — Modern Hybrid | **CLOSED / MEDIUM-LOW** | API 36 plus AArch64 apps while preserving working 32-bit HALs/kernel | ARM32 QPR0 r3 must first pass; paired ARM64 graphics SP-HAL/mapper must then close and run on exact H616 | High but potentially bounded after A | Possible final target, not current GO |
 | Target D — Full Modern Port | **LOW** | Clean contemporary architecture in theory | No complete H616 5.10+ graphics/media/display/DRM provider; becomes multiple subsystem rewrites | Extreme | **NO-GO** |
 
@@ -1041,11 +1077,12 @@ display, audio, wireless and DRM integration without a complete provider. It has
 of better Netflix capability and may lose the current 4K/audio path. The modern hybrid captures
 the application/framework benefit of ARM64 without paying that subsystem-rewrite cost.
 
-**Overall confidence: MEDIUM-HIGH for one ARM32 r3 build; MEDIUM for the end-state hybrid.** The
-r1/r2 runtime progression proves cgroups, mounted APEX init content and service managers; r5
-closes same-lineage 5.4.302 wireless preservation; exact r7 source proves the kernel floor and
-bounded QPR0 product/config deltas. Runtime beyond QPR0 bpfloader remains unproven, so Gate 2 is
-not PASS. Prototype B remains unjustified until an ARM32 r3 is built, audited and later passes.
+**Overall confidence: HIGH for the completed ARM32 r3 offline composition; MEDIUM for its first
+runtime and for the end-state hybrid.** The r1/r2 runtime progression proves cgroups, mounted
+APEX init content and service managers; r5 closes same-lineage 5.4.302 wireless preservation;
+exact r7 source and r3 outputs prove the kernel floor and bounded QPR0 product/config/offline
+closure. Runtime beyond QPR0 bpfloader remains unproven, so Gate 2 is not PASS. Prototype B
+remains unjustified until the offline-checked ARM32 r3 later physically passes.
 
 ## 15. Go / No-Go decisions and remaining decisive gates
 
@@ -1053,10 +1090,10 @@ not PASS. Prototype B remains unjustified until an ARM32 r3 is built, audited an
 
 | Question | Decision | Reason |
 |---|---|---|
-| Recommended modern Android target | **GO FOR ONE ARM32 PROTOTYPE A r3 BUILD through Path A only** | r4/25Q4 has an intentional 5.10 floor; r5 closes 5.4.302 wireless preservation and exact QPR0 r7 audit finds bounded deltas |
+| Recommended modern Android target | **PROTOTYPE A r3 OFFLINE CHECKED / REQUEST PHYSICAL DECISION NEXT** | r4/25Q4 has an intentional 5.10 floor; r5 closes 5.4.302 wireless preservation; exact QPR0 r7 and the bounded r3 offline result close expected deltas |
 | Android 16 r4 / 25Q4 | **NO-GO with retained 5.4** | Physical and source evidence agree on the 5.10/5.10.210 requirement |
-| Android 16 QPR0 / 25Q2 | **SELECTED / SOURCE-AUDIT GO** | Exact r7 requires 5.4.277+ for non-GKI 5.4; physical-pass 5.4.302 qualifies and minimum config/product deltas are bounded |
-| Mixed ARM64/ARM32 userspace | **CLOSED PENDING PROTOTYPE A** | Exact paired Mali provider exists, but the common A16 ARM32 bootstrap base has not passed |
+| Android 16 QPR0 / 25Q2 | **SELECTED / r3 OFFLINE CHECKED** | Exact r7 requires 5.4.277+ for non-GKI 5.4; physical-pass 5.4.302 qualifies and the minimum config/product deltas close in the actual output |
+| Mixed ARM64/ARM32 userspace | **CLOSED PENDING PROTOTYPE A PHYSICAL PASS** | Exact paired Mali provider exists, but the common A16 ARM32 bootstrap base has not run on the board |
 | Full ARM64 userspace | **NO-GO** | Would convert/replace working proprietary service stack for little user value |
 | Kernel 5.4 as final architecture | **CLOSED / PASS AT 5.4.302 r5** | Boot/HDMI/remote/Wi-Fi/ADB and physical wireless reinitialization pass after restoring the working FMAC address contract |
 | Kernel 5.10+ migration | **NO-GO IN THIS PHASE** | No complete exact-SoC/board Android provider; regression surface is a new BSP port |
@@ -1065,11 +1102,11 @@ not PASS. Prototype B remains unjustified until an ARM32 r3 is built, audited an
 
 ### Remaining decisive gates (maximum four)
 
-1. In a future task, build and fully offline-audit exactly one r7/`bp2a` ARM32 Prototype A r3
+1. **Completed:** build and fully offline-audit exactly one r7/`bp2a` ARM32 Prototype A r3
    with no secondary ABI, `zygote32`, shipping API 31, VNDK31, r5 5.4.302 authority, the six
    Path-A config additions, two display HAL declarations and one-line `fuseblk` deferral.
-2. Resolve or explicitly carry the sole inherited full-VINTF NFS conformance exception; never
-   report exit 65 as PASS. Re-run exact linker/ELF/APEX/split-SELinux/AVB/LP checks on r3.
+2. Continue to carry the sole inherited full-VINTF NFS conformance exception; never report exit
+   65 as PASS. The actual r3 linker/ELF/APEX/split-SELinux/AVB/LP reruns are complete.
 3. Any r3 physical boot/flash requires separate explicit authorization and must prove QPR0
    bpfloader, zygote32, system_server, SurfaceFlinger/HWC and preserved hardware behavior.
 4. Prototype B and mixed graphics proof remain closed until an authorized Prototype A passes.
@@ -1088,11 +1125,14 @@ not PASS. Prototype B remains unjustified until an ARM32 r3 is built, audited an
    FMAC address-contract correction.
 5. **Completed — exact QPR0 source audit:** pin official r7 identity, prove the 5.4.277 floor,
    re-derive minimum cgroup/netd/APEX/VNDK/linker/VINTF/SELinux/TV-product deltas, and issue the
-   future ARM32 r3 build GO.
-6. **Current next action — ARM32 QPR0 proof:** in a later task build/offline-audit exactly one
-   r3 contract; any physical test remains separately authorized. Only after it passes may the
-   minimal `zygote64_32` product with lawful paired graphics provider be considered.
-7. **Final acceptance:** sustained daily-use regression, 4K30-or-1080p evidence-led media
+   ARM32 r3 build GO.
+6. **Completed — ARM32 QPR0 build/offline proof:** build the exact r7 system and Path-A kernel,
+   package one exact-board r3, then close ELF/APEX/VNDK/linker/SELinux/AVB/LP/outer preservation
+   while strictly carrying the sole inherited NFS exception.
+7. **Current next action — separate physical decision:** request explicit authorization before
+   any UART-first r3 test. Only after a physical pass may the minimal `zygote64_32` product with
+   lawful paired graphics provider be considered.
+8. **Final acceptance:** sustained daily-use regression, 4K30-or-1080p evidence-led media
    ceiling, recovery rehearsal and a hash-locked accepted architecture image.
 
 ## 17. Sources and provenance

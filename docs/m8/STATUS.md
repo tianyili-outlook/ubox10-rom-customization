@@ -1,6 +1,6 @@
 # M8 status
 
-Updated: 2026-08-24
+Updated: 2026-08-25
 
 ## Golden baseline
 
@@ -74,7 +74,7 @@ Updated: 2026-08-24
 
 ## Active architecture transition
 
-活跃架构开发位于 `codex/m8-architecture-ceiling` 的 Android 16 Path A；长期 mixed AArch64-primary / ARM32-secondary 目标继续 **HOLD**，Prototype B 不得启动。历史 r1-r4 在 AIC8800D `START_APP 1037 -> reqcfm(1038)` 边界失败；exact audit 证明这些候选因 donor guard/build-define mismatch 把 unchanged FMAC 放在 `0x00110000`，而 working BSP 使用 `0x00120000`。唯一 r5 恢复 upload/patch-read/START_APP `0x00120000`/`0x00120180`/`0x00120000` 后已经物理通过 system boot、HDMI、遥控、Leanback/TV IME/Launcher、Wi-Fi、Wi-Fi ADB 与一次 Wi-Fi OFF→ON reinitialization。两次 `timeout|wifi start fail|reqcfm|1037|1038` 过滤均为空；DHCP、validated L3、IP/DNS connectivity 与 ADB reconnect PASS。same-lineage Linux 5.4.302 kernel/wireless preservation checkpoint 现为 **CLOSED / PASS**。Exact QPR0 r7 source-only audit 也已完成并给出 **GO FOR ONE FUTURE PROTOTYPE A r3 BUILD**；Gate 2 是 **UNBLOCKED / READY FOR QPR0 r3 BUILD**，尚不是 PASS，本任务没有形成 A16 r3。
+活跃架构开发位于 `codex/m8-architecture-ceiling` 的 Android 16 Path A；长期 mixed AArch64-primary / ARM32-secondary 目标继续 **HOLD**，Prototype B 不得启动。历史 r1-r4 在 AIC8800D `START_APP 1037 -> reqcfm(1038)` 边界失败；exact audit 证明这些候选因 donor guard/build-define mismatch 把 unchanged FMAC 放在 `0x00110000`，而 working BSP 使用 `0x00120000`。唯一 r5 恢复 upload/patch-read/START_APP `0x00120000`/`0x00120180`/`0x00120000` 后已经物理通过 system boot、HDMI、遥控、Leanback/TV IME/Launcher、Wi-Fi、Wi-Fi ADB 与一次 Wi-Fi OFF→ON reinitialization。两次 `timeout|wifi start fail|reqcfm|1037|1038` 过滤均为空；DHCP、validated L3、IP/DNS connectivity 与 ADB reconnect PASS。same-lineage Linux 5.4.302 kernel/wireless preservation checkpoint 现为 **CLOSED / PASS**，Exact QPR0 r7 source audit 为 PASS。唯一 ARM32 QPR0 `a16-prototype-a-r3` 已完成 build、exact-board packaging 与完整离线审核，结论为 **OFFLINE CHECKED / READY TO REQUEST PHYSICAL VALIDATION**。Gate 2 现为 **UNBLOCKED / AWAITING EXPLICIT PHYSICAL VALIDATION DECISION**，不是 runtime PASS；r3 尚未进行任何物理验证。
 
 架构研究已经找到强匹配 provider 证据：同 lineage donor 的 ARM32 Mali 与 accepted UBOX 文件完全一致，并提供 paired AArch64 Mali 与 multilib mapper/gralloc source。该证据把“缺少匹配 graphics provider”从结构性阻塞收敛为 exact-board build/runtime gate；media 不要求先取得全套 AArch64 provider，可继续保留 ARM32 Allwinner OMX/Cedar 服务并通过进程边界复用。
 
@@ -223,7 +223,52 @@ QPR0 `NetBpfLoad` fatal floor 是 5.4；netd exact non-GKI 5.4 floor 是 5.4.277
 
 QPR0 cgroups/API31/vendor overlay 顺序无新增 controller；APEX 保持 bootstrap-before-data，`mount_before_data=false`，bootstrap set 仍为 i18n/runtime/tzdata/virt/VNDK31。Frozen VNDK31 仍含 ARM32 `libaudioroute.so`，linkerconfig 保持 vendor `default→vndk`。FCM6 matrix 与 r4 byte-identical，accepted display HAL 两项 delta 仍需要；full exact VINTF 仍 exit 65 solely for inherited `CONFIG_NFS_FS=y` 对 FCM6 `n`，不称 PASS。QPR0 platform `fuseblk /` genfscon 仍与 accepted vendor duplicate，minimum one-line deferral 保持；permissive historical boot 不证明 enforcing。TV GSI base 在 r4/r7 byte-identical；Prototype A 可 bounded port 到 `bp2a` 并保持 ARM32/no-secondary/`zygote32`/shipping API31/VNDK31。
 
-Source-only decision 为 **GO FOR PROTOTYPE A r3 BUILD — FUTURE TASK ONLY**。Gate 2 从 kernel/wireless blocked 转为 **UNBLOCKED / READY FOR QPR0 r3 BUILD**，不是 PASS。完整 exact commits/file hashes/contract 在 `docs/m8/research/android-16-qpr0-r7-source-audit.md`；Prototype B、`zygote64_32` 与 ARM64 Mali/mapper 工作继续 CLOSED。
+2026-08-24 source-only decision 当时为 **GO FOR PROTOTYPE A r3 BUILD — FUTURE TASK ONLY**，并把 Gate 2 从 kernel/wireless blocked 转为 **UNBLOCKED / READY FOR QPR0 r3 BUILD**，不是 PASS。该历史 build-only 授权现已由下节唯一 r3 build/offline audit 履行，不把它扩张为 physical authorization。完整 exact commits/file hashes/contract 在 `docs/m8/research/android-16-qpr0-r7-source-audit.md`；Prototype B、`zygote64_32` 与 ARM64 Mali/mapper 工作继续 CLOSED。
+
+### Android 16 QPR0 Prototype A r3 offline result
+
+2026-08-25 将 source workspace 从 retained clean r4 reproducibly transition 到 exact
+`android-security-16.0.0_r7`；manifest commit 为
+`ebea28d151539ecf0730b1a4ab92ac33edc17ac9`，pinned manifest 为 246,298 bytes /
+`F52BA4A04957CEC7EEE7C9DCDD1525533156A0B5A1F0ADFC31A8155F48FB087E`。产品只做
+`bp4a→bp2a` release/lunch port、exact 两项 display matrix 与 one-line platform `fuseblk`
+deferral；ARMv7-A NEON/no-secondary/`zygote32`/shipping API31/VNDK31/pKVM-off 合同保持。
+Native `m -j8 systemimage` 完成 121,285/121,285 actions，exit 0；输出为
+`BP2A.250805.034` / API36 / SPL 2025-08-05，source `system.img` 931,926,016 bytes /
+`2963A982345C25F26F3128CC1A40E41B64FB6EBDEA412E89C1EAFE3C258750EC`。
+
+Path-A kernel 从 retained integration commit `027ef79e...` clean build 为 `5.4.302+`；config
+相对 preservation 只有 BLK_CGROUP/CPUSETS/PROC_PID_CPUSET 与
+NET_CLS_MATCHALL/NET_ACT_POLICE/NET_ACT_BPF 六项 additions。Image 23,498,760 bytes /
+`287A82F799982FB58D02ADE88150A9EAB22D4C0956BE3CE50765F6FD1DB24F40`，22-module
+inventory/dependencies/vermagic/import CRC closure PASS。Final BSP 保持 r5 FMAC
+`0x00120000`/`0x00120180`/`0x00120000`、70 MHz、firmware、generic MMC/SDIO 与 DT authority。
+
+唯一 firmware `out/candidates/a16-prototype-a-r3/x12-a16-prototype-a-r3.img` 为
+1,239,738,368 bytes / SHA-256
+`FA47939654B4E2A7E14FE963C7819296157338D33355E75D89E8086356071F1B`。ext4/e2fsck、
+system/boot/vendor_dlkm AVB、vbmeta_system rollback index/location、LP 10.2/three slots/sparse
+roundtrip/A-B empty slots、outer IMAGEWTY、APEX、ARM32 ELF/name closure、VNDK31/linkerconfig、
+split SELinux 和 kernel preservation audit close。Outer 50 entries 中只有 boot/super/
+vbmeta_system 与三个 `V*` companions 改变，44 项保持；vendor/product、vendor_boot/ramdisk、
+DT/DTBO、TEE、factory/security、top-level vbmeta、rollback/recovery 与其他 hardware payload
+原字节保持。
+
+System VINTF PASS；full exact VINTF 仍 exit 65 / **INCOMPATIBLE**，唯一原因是继承
+`CONFIG_NFS_FS=y` 对 FCM-6 required `n`，没有新 incompatibility，绝不称 full PASS。35 个
+actual r7 APEX 全部 parse/activate offline；ARM32 VNDK31 `libaudioroute.so` 与 generated
+vendor `default→vndk` exposure PASS。1,816 ELF 中无 AArch64 platform userspace consumer；15
+个 ELF64 为 BPF bytecode，22 个为 AArch64 kernel modules，AOSP ARM CTS shim 内一份 inactive
+test-only arm64 JNI payload 不构成 secondary ABI。Exact result 与 changed/preserved inventory
+见 `docs/m8/candidates/a16-prototype-a-r3.md` 和其 preservation JSON。
+R3 focused 5/5、combined r3/kernel-preservation 22/22 与 full repository 101 tests PASS；25
+个 skip 是预期缺少 ignored historical fixtures。Exact r7 source audit 与 `git diff --check`
+也 PASS。
+
+最终决定为 **OFFLINE CHECKED / READY TO REQUEST PHYSICAL VALIDATION**。这不授权 flash，
+也不证明 boot、zygote、system_server、SurfaceFlinger/HWC 或 enforcing runtime。r3 尚无任何
+物理测试；Gate 2 为 **UNBLOCKED / AWAITING EXPLICIT PHYSICAL VALIDATION DECISION**。Prototype B
+继续 CLOSED。
 
 ## Accepted audio milestone
 
@@ -450,7 +495,7 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - r10 已在实机完成 framework boot；r9 Lights/Watchdog/llkd 方向保持关闭，不再修改。
 - r13 是当前 GOLDEN BASELINE；Projectivy、provisioning、遥控和 Power sleep/wake/shutdown 均以实机 UART 为准。
 - M8B native rc-core 遥控迁移已在 r5 设备验收并关闭；Mouse mode intentionally dropped，legacy multi_ir 工件保留为 inert reference，其 Android 12 清理已随 freeze 延期。
-- 当前 board、DT 与 runtime 证据识别为 H616。历史 A16 ARM32 r2 稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛；历史 kernel r1-r4 AIC failure 已收敛到错误 `0x00110000` FMAC contract。r5 恢复 working BSP `0x00120000` 后物理 boot/HDMI/remote/Wi-Fi/ADB 与 Wi-Fi OFF→ON reinitialization PASS，两次旧 error-signature filter 均为空；preservation checkpoint **CLOSED / PASS**。Exact QPR0 r7 audit 证明 5.4.302 超过 5.4.277 floor 并给出 future r3 source-build GO。当前不构建 r3、不启动 AArch64 Prototype B。
+- 当前 board、DT 与 runtime 证据识别为 H616。历史 A16 ARM32 r2 稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛；历史 kernel r1-r4 AIC failure 已收敛到错误 `0x00110000` FMAC contract。r5 恢复 working BSP `0x00120000` 后物理 boot/HDMI/remote/Wi-Fi/ADB 与 Wi-Fi OFF→ON reinitialization PASS，两次旧 error-signature filter 均为空；preservation checkpoint **CLOSED / PASS**。Exact QPR0 r7 audit 证明 5.4.302 超过 5.4.277 floor；r3 已 build/offline-audit 并可申请独立物理授权，但尚未物理测试。AArch64 Prototype B 不启动。
 - `m8b-audio-r2` 只启用产品级 Treble/VNDK 合同；未修改 VNDK payload、mixer、audio platform XML、DTS、machine driver 或已验收功能，现已设备验收为 AUDIO PASS。
 - 2026-08-16 ADB-only 补验未刷机、未重启且未修改 ROM/device properties：VP9 为 Allwinner OMX/Cedar hardware-runtime PASS；Widevine 为可操作 L3，HDCP `NONE`，无 secure decoder 要求。物理画面/逐帧质量与商业服务认证或播放仍未证明。
 - 遥控器 Menu 与 Settings 当前均打开 Projectivy menu。两键语义分离为独立延期项，不回改已验收的 rc-core、keylayout 选择或其他按键行为。
@@ -458,4 +503,4 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 
 ## Next action
 
-保持 frozen `m8b-remote-r1`、Test8r2、stock rollback、A16 r1/r2 与 kernel r1-r5 artifacts 不变。下一会话唯一架构动作是按 exact `android-security-16.0.0_r7` / `bp2a` contract 构建并完整离线审核一个 ARM32/no-secondary/`zygote32` Prototype A r3：retained accepted vendor authority、physical-pass r5 5.4.302 lineage、Path-A 六项 config、两项 display matrix 与 one-line `fuseblk` deferral。当前任务未构建 r3，也未授权任何 flash/physical action。Gate 2 为 **UNBLOCKED / READY FOR QPR0 r3 BUILD**，不是 PASS；Prototype B、`zygote64_32`、ARM64 Mali/mapper integration 继续关闭。
+保持 frozen `m8b-remote-r1`、Test8r2、stock rollback、A16 r1/r2 与 kernel r1-r5 artifacts 不变。下一项架构动作只能是先请求用户对一个 UART-first `a16-prototype-a-r3` 物理验证作出单独明确决定；本次离线任务没有授权或执行 flash/physical action。Gate 2 为 **UNBLOCKED / AWAITING EXPLICIT PHYSICAL VALIDATION DECISION**，不是 PASS。只有 Prototype A r3 经授权并取得 boot/zygote32/system_server/SurfaceFlinger/HWC 与 hardware preservation runtime evidence 后，才可重新评估 Prototype B；`zygote64_32`、secondary ABI 与 ARM64 Mali/mapper integration 目前继续关闭。

@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-if [ "$#" -lt 14 ] || [ "$#" -gt 18 ]; then
-    echo "usage: $0 SOURCE_REPO SOURCE_COMMIT ACCEPTED_IMAGE KEYMAP_JSON RC_PATCH CLANG_BIN HOST_SSL_ROOT HOST_TOOLS_ROOT BUILD_ROOT EVIDENCE_DIR XR819_DONOR_REPO XR819_DONOR_COMMIT AIC8800_DONOR_REPO AIC8800_DONOR_COMMIT [AIC8800_COMPAT_PATCH] [EXPECTED_AIC8800_SDIO_CLOCK_HZ] [AIC8800_DIAGNOSTIC_PATCH] [AIC8800_CONTRACT_PATCH]" >&2
+if [ "$#" -lt 14 ] || [ "$#" -gt 19 ]; then
+    echo "usage: $0 SOURCE_REPO SOURCE_COMMIT ACCEPTED_IMAGE KEYMAP_JSON RC_PATCH CLANG_BIN HOST_SSL_ROOT HOST_TOOLS_ROOT BUILD_ROOT EVIDENCE_DIR XR819_DONOR_REPO XR819_DONOR_COMMIT AIC8800_DONOR_REPO AIC8800_DONOR_COMMIT [AIC8800_COMPAT_PATCH] [EXPECTED_AIC8800_SDIO_CLOCK_HZ] [AIC8800_DIAGNOSTIC_PATCH] [AIC8800_CONTRACT_PATCH] [preservation|path-a]" >&2
     exit 2
 fi
 
@@ -24,6 +24,14 @@ aic8800_compat_patch=${15:-}
 aic8800_expected_sdio_clock=${16:-50000000}
 aic8800_diagnostic_patch=${17:-}
 aic8800_contract_patch=${18:-}
+build_config=${19:-preservation}
+case ${build_config} in
+    preservation|path-a) ;;
+    *)
+        echo "error: final kernel config must be preservation or path-a" >&2
+        exit 2
+        ;;
+esac
 if [ -n "${aic8800_compat_patch}" ]; then
     aic8800_compat_patch=$(realpath -e "${aic8800_compat_patch}")
 fi
@@ -54,6 +62,7 @@ write_status() {
         printf 'result=%s\n' "${result}"
         printf 'exit_code=%s\n' "${code}"
         printf 'source_commit=%s\n' "${source_commit}"
+        printf 'build_config=%s\n' "${build_config}"
         printf 'build_root=%s\n' "${build_root}"
         printf 'start_epoch=%s\n' "${start_epoch}"
         printf 'end_epoch=%s\n' "${end_epoch}"
@@ -350,9 +359,18 @@ cmp "${contract_dir}/path-a-5.4.302.config" "${result_dir}/path-a.config"
 cmp "${contract_dir}/path-a-effective.diff" "${result_dir}/path-a-effective.diff"
 cmp "${contract_dir}/path-a-delta.json" "${result_dir}/path-a-delta.json"
 
-cp "${kernel_out}/.config.preservation" "${kernel_out}/.config"
+case ${build_config} in
+    preservation)
+        cp "${kernel_out}/.config.preservation" "${kernel_out}/.config"
+        selected_config="${result_dir}/preservation.config"
+        ;;
+    path-a)
+        cp "${result_dir}/path-a.config" "${kernel_out}/.config"
+        selected_config="${result_dir}/path-a.config"
+        ;;
+esac
 make -C "${kernel_src}" O="${kernel_out}" olddefconfig
-cmp "${result_dir}/preservation.config" "${kernel_out}/.config"
+cmp "${selected_config}" "${kernel_out}/.config"
 
 make -C "${kernel_src}" O="${kernel_out}" -j8 Image modules dtbs
 make -C "${kernel_src}" O="${kernel_out}" modules_install INSTALL_MOD_PATH="${modules_root}"

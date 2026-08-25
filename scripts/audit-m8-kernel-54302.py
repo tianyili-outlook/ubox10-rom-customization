@@ -177,6 +177,10 @@ def main() -> None:
     parser.add_argument("--evidence-dir", type=Path, required=True)
     parser.add_argument("--accepted-modules", type=Path, required=True)
     parser.add_argument("--accepted-vendor-dlkm", type=Path, required=True)
+    parser.add_argument(
+        "--built-config", choices=("preservation", "path-a"), default="preservation"
+    )
+    parser.add_argument("--build-log", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
 
@@ -256,6 +260,13 @@ def main() -> None:
     image_config = result_dir / "image-extracted.config"
     if built_config.read_bytes() != image_config.read_bytes():
         raise SystemExit("embedded Image configuration differs from build configuration")
+    selected_config = result_dir / (
+        "path-a.config" if args.built_config == "path-a" else "preservation.config"
+    )
+    if built_config.read_bytes() != selected_config.read_bytes():
+        raise SystemExit(
+            f"built Image configuration is not the selected {args.built_config} contract"
+        )
     with image.open("rb") as stream:
         stream.seek(56)
         image_magic = stream.read(4)
@@ -459,12 +470,15 @@ def main() -> None:
     if not dtb_lines:
         raise SystemExit("no DTB was produced")
 
-    log_paths = {
-        "main_compile": args.evidence_dir / "attempt2/build.log",
-        "successful_finalization": args.evidence_dir / "build.log",
-        "aic8800_exact_donor": args.evidence_dir / "aic8800-donor-rebuild/build.log",
-        "rtlwifi_vendor_debug": args.evidence_dir / "rtlwifi-debug-rebuild/build.log",
-    }
+    if args.build_log:
+        log_paths = {"selected_build": args.build_log}
+    else:
+        log_paths = {
+            "main_compile": args.evidence_dir / "attempt2/build.log",
+            "successful_finalization": args.evidence_dir / "build.log",
+            "aic8800_exact_donor": args.evidence_dir / "aic8800-donor-rebuild/build.log",
+            "rtlwifi_vendor_debug": args.evidence_dir / "rtlwifi-debug-rebuild/build.log",
+        }
     warning_lines = []
     unresolved_error_lines = []
     log_report = {}
@@ -480,7 +494,7 @@ def main() -> None:
             for line in text.splitlines()
             if re.search(r"(^|\s)(fatal error:|error:)", line, re.I)
         ]
-        if label == "main_compile":
+        if label in {"main_compile", "selected_build"}:
             unclassified = [line for line in errors if not line.startswith("llvm-nm: error:")]
         else:
             unclassified = errors
@@ -492,7 +506,7 @@ def main() -> None:
             "error_count": len(errors),
             "errors": errors,
         }
-    if log_report["main_compile"]["error_count"] != 5:
+    if not args.build_log and log_report["main_compile"]["error_count"] != 5:
         raise SystemExit(
             "expected the five classified parallel Mali llvm-nm race lines in the retained "
             f"main log, got {log_report['main_compile']['error_count']}"
@@ -500,6 +514,32 @@ def main() -> None:
     if unresolved_error_lines:
         raise SystemExit(f"build logs contain unresolved errors: {unresolved_error_lines[:10]}")
     warning_lines = sorted(set(warning_lines))
+    classified_recovered_failures = []
+    if args.build_log:
+        llvm_nm_errors = [
+            line for line in log_report["selected_build"]["errors"]
+            if line.startswith("llvm-nm: error:")
+        ]
+        if llvm_nm_errors:
+            classified_recovered_failures.append({
+                "cause": "Vendor Mali parallel clean/build race; final build completed successfully.",
+                "source_or_abi_failure": False,
+                "retained_error_lines": llvm_nm_errors,
+            })
+    else:
+        classified_recovered_failures = [
+            {
+                "attempt": "attempt1",
+                "cause": "Invocation omitted the vendor NAND KERNEL_SRC export; script fixed before compilation.",
+                "source_or_abi_failure": False,
+            },
+            {
+                "attempt": "attempt2 final external GPU step",
+                "cause": "Vendor Mali top-level make launched clean/build submakes concurrently; the same source rebuilt sequentially.",
+                "source_or_abi_failure": False,
+                "retained_error_lines": log_report["main_compile"]["errors"],
+            },
+        ]
 
     report = {
         "schema": 1,
@@ -523,6 +563,7 @@ def main() -> None:
         "build": {
             "status": build_status,
             "image": {"path": str(image), "size": image.stat().st_size, "sha256": digest(image)},
+            "config_contract": args.built_config,
             "config_sha256": digest(built_config),
             "module_symvers_sha256": digest(result_dir / "Module.symvers"),
             "symbol_version_sources": {
@@ -533,19 +574,7 @@ def main() -> None:
             "unique_warning_count": len(warning_lines),
             "warnings": warning_lines,
             "logs": log_report,
-            "classified_recovered_failures": [
-                {
-                    "attempt": "attempt1",
-                    "cause": "Invocation omitted the vendor NAND KERNEL_SRC export; script fixed before compilation.",
-                    "source_or_abi_failure": False,
-                },
-                {
-                    "attempt": "attempt2 final external GPU step",
-                    "cause": "Vendor Mali top-level make launched clean/build submakes concurrently; the same source rebuilt sequentially.",
-                    "source_or_abi_failure": False,
-                    "retained_error_lines": log_report["main_compile"]["errors"],
-                },
-            ],
+            "classified_recovered_failures": classified_recovered_failures,
         },
         "critical_subtrees": subtree_report,
         "hardware_config": {"required": REQUIRED_CONFIG, "mismatches": config_mismatches},
