@@ -1,0 +1,137 @@
+Start begin: 08-25 15:05:59.133
+Start end:   08-25 15:05:59.247
+Now:         08-25 15:26:54.959
+Notification Clients:
+   pid    uid  name
+ 13049   1000  android.uid.system
+ 14789   1041  audioserver
+Global session refs:
+  session  cnt     pid    uid  name
+Hardware status: 0
+Vibrator infos(size=0):
+Bluetooth latency modes are enabled
+
+ ## BEGIN thread dump
+
+Output thread 0xf347bc90, name AudioOut_D, tid 14811, type 0 (MIXER):
+  I/O handle: 13
+  Standby: yes
+  Sample rate: 44100 Hz
+  HAL frame count: 960
+  HAL format: 0x1 (AUDIO_FORMAT_PCM_16_BIT)
+  HAL buffer size: 3840 bytes
+  Channel count: 2
+  Channel mask: 0x00000003 (front-left, front-right)
+  Processing format: 0x1 (AUDIO_FORMAT_PCM_16_BIT)
+  Processing frame size: 4 bytes
+  Pending config events: none
+  Output devices: 0x2 (AUDIO_DEVICE_OUT_SPEAKER)
+  Input device: 0 (AUDIO_DEVICE_NONE)
+  Audio source: 0 (AUDIO_SOURCE_DEFAULT)
+  Timestamp stats: n=0 disc=0 cold=0 nRdy=0 err=978 jitterMs(unavail) localSR(nan, nan) correctedJitterMs(unavail)
+  Timestamp corrected: no
+  Last write occurred (msecs): 1233187
+  Process time ms stats: ave=0.483033 std=0.0401974 min=0.427917 max=0.523417
+  Hal write jitter ms stats: ave=0.0023233 std=0.318768 min=-0.381165 max=0.399459
+  Master volume: 1.000000
+  Master mute: off
+  Mixer channel Mask: 0x3 (front-left, front-right)
+  Normal frame count: 960
+  Total writes: 507
+  Delayed writes: 0
+  Blocked in write: no
+  Suspend count: 0
+  Fast track availMask=0xfe
+  Standby delay ns=3000000000
+  AudioStreamOut: 0xf388c2d0 flags 0x2 (AUDIO_OUTPUT_FLAG_PRIMARY)
+  Frames written: 486720
+  Suspended frames: 0
+  Hal stream dump:
+      Signal power history (resolution: 1000.0 ms):
+       08-25 15:06:09.202: [  -79.1  -79.1 ] sum(-26.6)
+       08-25 15:06:15.210: [  -79.1 ] sum(-29.6)
+       08-25 15:06:17.866: [  -79.1 ] sum(-29.6)
+      Signal power history (resolution: 50.0 ms):
+       08-25 15:06:09.202: [  -69.1 -106.0 ] sum(-32.6)
+       08-25 15:06:09.681: [  -69.1 -106.0 ] sum(-32.6)
+       08-25 15:06:10.203: [  -69.1 -106.0 ] sum(-32.6)
+       08-25 15:06:10.508: [  -69.1 -106.0 ] sum(-32.6)
+       08-25 15:06:15.210: [  -69.1 -106.0 ] sum(-32.6)
+       08-25 15:06:15.711: [  -69.1 -106.0 ] sum(-32.6)
+       08-25 15:06:17.866: [  -69.1 -106.0 ] sum(-32.6)
+       08-25 15:06:18.715: [  -69.1 -106.0 ] sum(-32.6)
+
+    -65.4 -|  |  |  |  |  |  |  |
+    -69.1 -|* |* |* |* |* |* |* |*
+    -72.8 -|  |  |  |  |  |  |  |
+    -76.5 -|  |  |  |  |  |  |  |
+    -80.1 -|  |  |  |  |  |  |  |
+    -83.8 -|  |  |  |  |  |  |  |
+    -87.5 -|  |  |  |  |  |  |  |
+    -91.2 -|  |  |  |  |  |  |  |
+    -94.9 -|  |  |  |  |  |  |  |
+    -98.6 -|  |  |  |  |  |  |  |
+   -102.3 -|  |  |  |  |  |  |  |
+   -106.0 -| *| *| *| *| *| *| *| *
+   -109.6 -|  |  |  |  |  |  |  |
+   -113.3 -|  |  |  |  |  |  |  |
+           |_______________________
+
+
+  Thread throttle time (msecs): 20
+  AudioMixer tracks: 55
+  Master mono: off
+  Master balance: 0.000000 (balance 0 channelCount 2 volumes: 1 1)
+  No FastMixer
+Bluetooth latency modes are not enabled
+HAL does not support Bluetooth latency modes
+Supported latency modes: { }
+
+  Normal mixer raw underrun counters: partial=0 empty=0
+  1 Tracks of which 0 are active
+    Type     Id Active Client(pid/uid) Session Port Id S  Flags   Format Chn mask  SRate ST Usg CT  G db  L dB  R dB  VS dB  PortVol dB  PortMuted   Server FrmCnt  FrmRdy F Underruns  Flushed BitPerfect InternalMute   Latency
+       S     55     no   13049/   1000    7961       9 S  0x600 00000001 00000003  48000  1   d  4   -36    -6    -6     0          -30      false 00008D00   4512       0 f         0        0      false        false   unavail
+  0 Effect Chains
+  Local log:
+                                                         Type     Id Active Client(pid/uid) Session Port Id S  Flags   Format Chn mask  SRate ST Usg CT  G db  L dB  R dB  VS dB  PortVol dB  PortMuted   Server FrmCnt  FrmRdy F Underruns  Flushed BitPerfect InternalMute   Latency
+   08-25 15:05:59.218 CFG_EVENT_CREATE_AUDIO_PATCH: old device  (Empty device types) new device 0x2 (AUDIO_DEVICE_OUT_SPEAKER)
+   08-25 15:06:09.197 AT::add       (0xeeac3e28)    S     55     no   13049/   1000    7961       9 A  0x000 00000001 00000003  48000  1   d  4  -inf    -6    -6     0          -30      false 00000000   4512    4512 F         0        0      false        false       new
+   08-25 15:06:09.312 AT::remove    (0xeeac3e28)    S     55     no   13049/   1000    7961       9 S  0x600 00000001 00000003  48000  1   d  4   -36    -6    -6     0          -30      false 000011A0   4512       0 f         0        0      false        false   unavail
+   08-25 15:06:09.670 AT::add       (0xeeac3e28)    S     55     no   13049/   1000    7961       9 A  0x200 00000001 00000003  48000  1   d  4   -36    -6    -6     0          -30      false 000011A0   4512       0 F         0        0      false        false   unavail
+   08-25 15:06:09.812 AT::remove    (0xeeac3e28)    S     55     no   13049/   1000    7961       9 S  0x600 00000001 00000003  48000  1   d  4   -36    -6    -6     0          -30      false 00002340   4512       0 f         0        0      false        false   unavail
+   08-25 15:06:10.171 AT::add       (0xeeac3e28)    S     55     no   13049/   1000    7961       9 A  0x200 00000001 00000003  48000  1   d  4   -36    -6    -6     0          -30      false 00002340   4512       0 F         0        0      false        false   unavail
+   08-25 15:06:10.335 AT::remove    (0xeeac3e28)    S     55     no   13049/   1000    7961       9 S  0x600 00000001 00000003  48000  1   d  4   -36    -6    -6     0          -30      false 000034E0   4512       0 f         0        0      false        false   unavail
+   08-25 15:06:10.488 AT::add       (0xeeac3e28)    S     55     no   13049/   1000    7961       9 A  0x200 00000001 00000003  48000  1   d  4   -36    -6    -6     0          -30      false 000034E0   4512       0 F         0        0      false        false   unavail
+   08-25 15:06:10.639 AT::remove    (0xeeac3e28)    S     55     no   13049/   1000    7961       9 S  0x600 00000001 00000003  48000  1   d  4   -36    -6    -6     0          -30      false 00004680   4512       0 f         0        0      false        false   unavail
+   08-25 15:06:15.207 AT::add       (0xeeac3e28)    S     55     no   13049/   1000    7961       9 A  0x200 00000001 00000003  48000  1   d  4   -36    -6    -6     0          -30      false 00004680   4512       0 F         0        0      false        false   unavail
+   08-25 15:06:15.320 AT::remove    (0xeeac3e28)    S     55     no   13049/   1000    7961       9 S  0x600 00000001 00000003  48000  1   d  4   -36    -6    -6     0          -30      false 00005820   4512       0 f         0        0      false        false   unavail
+   08-25 15:06:15.681 AT::add       (0xeeac3e28)    S     55     no   13049/   1000    7961       9 A  0x200 00000001 00000003  48000  1   d  4   -36    -6    -6     0          -30      false 00005820   4512       0 F         0        0      false        false   unavail
+   08-25 15:06:15.842 AT::remove    (0xeeac3e28)    S     55     no   13049/   1000    7961       9 S  0x600 00000001 00000003  48000  1   d  4   -36    -6    -6     0          -30      false 000069C0   4512       0 f         0        0      false        false   unavail
+   08-25 15:06:17.837 AT::add       (0xeeac3e28)    S     55     no   13049/   1000    7961       9 A  0x200 00000001 00000003  48000  1   d  4   -36    -6    -6     0          -30      false 000069C0   4512       0 F         0        0      false        false   unavail
+   08-25 15:06:17.998 AT::remove    (0xeeac3e28)    S     55     no   13049/   1000    7961       9 S  0x600 00000001 00000003  48000  1   d  4   -36    -6    -6     0          -30      false 00007B60   4512       0 f         0        0      false        false   unavail
+   08-25 15:06:18.696 AT::add       (0xeeac3e28)    S     55     no   13049/   1000    7961       9 A  0x200 00000001 00000003  48000  1   d  4   -36    -6    -6     0          -30      false 00007B60   4512       0 F         0        0      false        false   unavail
+   08-25 15:06:18.846 AT::remove    (0xeeac3e28)    S     55     no   13049/   1000    7961       9 S  0x600 00000001 00000003  48000  1   d  4   -36    -6    -6     0          -30      false 00008D00   4512       0 f         0        0      false        false   unavail
+
+ ## BEGIN setParameters dump
+
+  Rejected setParameters:
+
+  App setParameters:
+
+  System setParameters:
+    08-25 15:05:59.434 UID  1000, 1 KVP received: restarting=true
+    08-25 15:05:59.442 UID  1000, 1 KVP received: BT_SCO=off
+    08-25 15:05:59.443 UID  1000, 1 KVP received: A2dpSuspended=false
+    08-25 15:05:59.444 UID  1000, 1 KVP received: LeAudioSuspended=false
+    08-25 15:05:59.526 UID  1000, 1 KVP received: restarting=false
+
+ ## BEGIN misc af dump
+
+Patches:
+  Patch 12: No software bridge (thread 0x0 => thread 0x0) thread 0xf34bffec num sinks (1) first device type 00000002
+
+Device Effects:
+
+Sound Dose:
+
+Cached Mel Records:

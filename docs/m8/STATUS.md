@@ -74,7 +74,7 @@ Updated: 2026-08-25
 
 ## Active architecture transition
 
-活跃架构开发位于 `codex/m8-architecture-ceiling` 的 Android 16 Path A；长期 mixed AArch64-primary / ARM32-secondary 目标继续 **HOLD**，Prototype B 不得启动。历史 r1-r4 在 AIC8800D `START_APP 1037 -> reqcfm(1038)` 边界失败；exact audit 证明这些候选因 donor guard/build-define mismatch 把 unchanged FMAC 放在 `0x00110000`，而 working BSP 使用 `0x00120000`。唯一 r5 恢复 upload/patch-read/START_APP `0x00120000`/`0x00120180`/`0x00120000` 后已经物理通过 system boot、HDMI、遥控、Leanback/TV IME/Launcher、Wi-Fi、Wi-Fi ADB 与一次 Wi-Fi OFF→ON reinitialization。两次 `timeout|wifi start fail|reqcfm|1037|1038` 过滤均为空；DHCP、validated L3、IP/DNS connectivity 与 ADB reconnect PASS。same-lineage Linux 5.4.302 kernel/wireless preservation checkpoint 现为 **CLOSED / PASS**，Exact QPR0 r7 source audit 为 PASS。唯一 ARM32 QPR0 `a16-prototype-a-r3` 已完成 build、exact-board packaging 与完整离线审核，结论为 **OFFLINE CHECKED / READY TO REQUEST PHYSICAL VALIDATION**。Gate 2 现为 **UNBLOCKED / AWAITING EXPLICIT PHYSICAL VALIDATION DECISION**，不是 runtime PASS；r3 尚未进行任何物理验证。
+活跃架构开发位于 `codex/m8-architecture-ceiling` 的 Android 16 Path A；长期 mixed AArch64-primary / ARM32-secondary 目标继续 **HOLD**，Prototype B 不得启动。历史 r1-r4 在 AIC8800D `START_APP 1037 -> reqcfm(1038)` 边界失败；exact audit 证明这些候选因 donor guard/build-define mismatch 把 unchanged FMAC 放在 `0x00110000`，而 working BSP 使用 `0x00120000`。唯一 r5 恢复 upload/patch-read/START_APP `0x00120000`/`0x00120180`/`0x00120000` 后已经物理通过 system boot、HDMI、遥控、Leanback/TV IME/Launcher、Wi-Fi、Wi-Fi ADB 与一次 Wi-Fi OFF→ON reinitialization。两次 `timeout|wifi start fail|reqcfm|1037|1038` 过滤均为空；DHCP、validated L3、IP/DNS connectivity 与 ADB reconnect PASS。same-lineage Linux 5.4.302 kernel/wireless preservation checkpoint 现为 **CLOSED / PASS**，Exact QPR0 r7 source audit 为 PASS。唯一 ARM32 QPR0 `a16-prototype-a-r3` 已完成 build、exact-board packaging、完整离线审核与一次 local physical validation。原始 r3 缺少 EGL selector；在用户预先设置的 `persist.graphics.egl=mali` runtime override 下，Android 16/zygote32/system_server/SurfaceFlinger/Mali-G31 已物理证明，故结论为 **CORE PATH-A ARCHITECTURE VIABILITY PHYSICALLY PROVEN / FORMAL CANDIDATE CLOSURE PENDING**。Gate 2 **NOT CLOSED**：正式 EGL 集成未构建，HDMI 周期性黑屏与 vendor audio HAL 崩溃仍存在，Wi-Fi association 未测试。
 
 架构研究已经找到强匹配 provider 证据：同 lineage donor 的 ARM32 Mali 与 accepted UBOX 文件完全一致，并提供 paired AArch64 Mali 与 multilib mapper/gralloc source。该证据把“缺少匹配 graphics provider”从结构性阻塞收敛为 exact-board build/runtime gate；media 不要求先取得全套 AArch64 provider，可继续保留 ARM32 Allwinner OMX/Cedar 服务并通过进程边界复用。
 
@@ -265,10 +265,46 @@ R3 focused 5/5、combined r3/kernel-preservation 22/22 与 full repository 101 t
 个 skip 是预期缺少 ignored historical fixtures。Exact r7 source audit 与 `git diff --check`
 也 PASS。
 
-最终决定为 **OFFLINE CHECKED / READY TO REQUEST PHYSICAL VALIDATION**。这不授权 flash，
-也不证明 boot、zygote、system_server、SurfaceFlinger/HWC 或 enforcing runtime。r3 尚无任何
-物理测试；Gate 2 为 **UNBLOCKED / AWAITING EXPLICIT PHYSICAL VALIDATION DECISION**。Prototype B
-继续 CLOSED。
+该离线阶段的历史决定为 **OFFLINE CHECKED / READY TO REQUEST PHYSICAL VALIDATION**。它本身
+不授权 flash，也不证明 boot、zygote、system_server、SurfaceFlinger/HWC 或 enforcing runtime。
+后续物理结果由下一节独立补充；Prototype B 继续 CLOSED。
+
+### Android 16 QPR0 Prototype A r3 physical result
+
+2026-08-25 的 local physical validation 未执行 flash、reboot、build 或 image mutation；通过
+Ethernet ADB 对现场已运行的 r3 采证。完整脱敏证据位于
+`docs/m8/device-tests/20260825-a16-prototype-a-r3-physical-validation/`。
+
+`sys.boot_completed=1`，Android 16/API36/BP2A、ARM32-only ABI、`zygote32`、Linux 5.4.302+、
+六项 Path-A config、APEX ready/mount、三个 service manager、system_server/SystemUI、TV/
+Leanback launcher 与 LeanbackIME 均已运行时证明。旧 bootstrap/bpfloader fatal filter 为空。
+原始 r3 没有 `persist.graphics.egl` 或 `ro.hardware.egl`，用户提供的 pre-validation 证据记录
+SurfaceFlinger 无法从 `ro.board.platform=apollo` 选择驱动；在本次采证前用户已设置 runtime
+`persist.graphics.egl=mali`，当前 SurfaceFlinger 报告 ARM Mali-G31 / GLES 3.2 并有 composition
+layers。正式方向是保持 `ro.board.platform=apollo` 并加入 `ro.hardware.egl=mali`；该变化本次
+**NOT IMPLEMENTED / NOT BUILT / NOT PHYSICALLY VALIDATED**。
+
+Ethernet、gateway/IP/DNS 与 Ethernet ADB PASS。Wi-Fi BSP/framework、scan 与 OFF→ON clean
+reinitialization PASS；因无 saved network 且无法输入凭据，association/DHCP/validated L3/DNS
+为 **NOT TESTED**。物理 IR 全部按键均有 Linux DOWN/UP；OK 的 scanCode 352 在 Android 成为
+`KEYCODE_UNKNOWN`，而 `Generic.kl` 只把 353 映射为 DPAD_CENTER，root cause PROVEN、fix
+**NOT IMPLEMENTED**。音量/静音 framework effect PASS。
+
+HDMI physical stability FAIL：monitor 周期性约 1 秒有画面、约 5 秒黑屏。45 秒 framework
+monitor 中 SurfaceFlinger/system_server 保持，42 秒 extcon 始终 `HDMI=1`，20 秒 display
+sampling 始终 unblank/error 0、3840x2160 YUV444 mode 34，interrupt 持续增长；kernel history
+另有 HDMI disconnect/connect transitions。黑屏精确根因尚未证明，不得把 framework counters
+稳定扩张为 physical PASS。
+
+ALSA/Apollo/AudioFlinger 可枚举 `ahubhdmi`/`AUDIO_HDMI`，但 legacy HIDL audio HAL 在 observed
+HDMI status transition 的 `getAudioPort` path 重复发生 null-pointer SIGSEGV；automatic service
+recovery PASS，HAL stability FAIL。隔离窗口中的普通 AudioFlinger/AudioPolicy dumps 没有单独
+增加 crash。当前连接的 monitor 没有音频输出，因此 basic/HDMI audible output 均为 **NOT
+TESTED**；`tinyplay` 完成不等同实际听音。
+
+物理结论为 **CORE PATH-A ARCHITECTURE VIABILITY PHYSICALLY PROVEN / FORMAL CANDIDATE
+CLOSURE PENDING**。依赖 runtime EGL override 的证明不能关闭 Gate 2；enforcing SELinux、
+Wi-Fi association、稳定 HDMI 与稳定 vendor audio HAL 均未闭合。Prototype B 继续 CLOSED。
 
 ## Accepted audio milestone
 
@@ -503,4 +539,4 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 
 ## Next action
 
-保持 frozen `m8b-remote-r1`、Test8r2、stock rollback、A16 r1/r2 与 kernel r1-r5 artifacts 不变。下一项架构动作只能是先请求用户对一个 UART-first `a16-prototype-a-r3` 物理验证作出单独明确决定；本次离线任务没有授权或执行 flash/physical action。Gate 2 为 **UNBLOCKED / AWAITING EXPLICIT PHYSICAL VALIDATION DECISION**，不是 PASS。只有 Prototype A r3 经授权并取得 boot/zygote32/system_server/SurfaceFlinger/HWC 与 hardware preservation runtime evidence 后，才可重新评估 Prototype B；`zygote64_32`、secondary ABI 与 ARM64 Mali/mapper integration 目前继续关闭。
+保持 frozen `m8b-remote-r1`、Test8r2、stock rollback、A16 r1-r3 与 kernel r1-r5 artifacts 不变。下一项只能在 GCP 构建一个 evidence-led bounded 后继：保持 `ro.board.platform=apollo`，持久集成 `ro.hardware.egl=mali`，把 sunxi-ir scanCode 352 映射为 DPAD_CENTER，并先基于现有 4K60 YUV444/HDMI status 与 HIDL `getAudioPort` 证据确定最小 display/audio delta；不得因 Wi-Fi association 未测试而修改已通过 scan/reinit 的 BSP/HAL。任何后继 image 仍需离线审计及单独物理授权。Gate 2 为 **NOT CLOSED**；只有无 runtime intervention 的 Prototype A 通过 boot/graphics、稳定 HDMI、输入、Wi-Fi association 和必要 audio stability gates 后才可重新评估 Prototype B。`zygote64_32`、secondary ABI 与 ARM64 Mali/mapper integration 继续关闭。

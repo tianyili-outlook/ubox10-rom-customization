@@ -1,0 +1,80 @@
+15:40:55.245
+mgr0: 3840x2160 fmt[yuv444] cs[0x101] range[limit] eotf[0x4] bits[8bits] err[0] force_sync[229] unblank direct_show[false] iommu[1]
+	hdmi output mode(34)	fps:60.5	3840x2160
+	err:0	skip:3	irq:239947	vsync:285	vsync_skip:0
+15:40:56.317
+mgr0: 3840x2160 fmt[yuv444] cs[0x101] range[limit] eotf[0x4] bits[8bits] err[0] force_sync[229] unblank direct_show[false] iommu[1]
+	hdmi output mode(34)	fps:60.5	3840x2160
+	err:0	skip:3	irq:240012	vsync:285	vsync_skip:0
+15:40:57.389
+mgr0: 3840x2160 fmt[yuv444] cs[0x101] range[limit] eotf[0x4] bits[8bits] err[0] force_sync[229] unblank direct_show[false] iommu[1]
+	hdmi output mode(34)	fps:60.6	3840x2160
+	err:0	skip:3	irq:240076	vsync:285	vsync_skip:0
+15:40:58.461
+mgr0: 3840x2160 fmt[yuv444] cs[0x101] range[limit] eotf[0x4] bits[8bits] err[0] force_sync[229] unblank direct_show[false] iommu[1]
+	hdmi output mode(34)	fps:60.6	3840x2160
+	err:0	skip:3	irq:240140	vsync:285	vsync_skip:0
+15:40:59.532
+mgr0: 3840x2160 fmt[yuv444] cs[0x101] range[limit] eotf[0x4] bits[8bits] err[0] force_sync[229] unblank direct_show[false] iommu[1]
+	hdmi output mode(34)	fps:60.5	3840x2160
+	err:0	skip:3	irq:240205	vsync:285	vsync_skip:0
+15:41:00.604
+mgr0: 3840x2160 fmt[yuv444] cs[0x101] range[limit] eotf[0x4] bits[8bits] err[0] force_sync[230] unblank direct_show[false] iommu[1]
+	hdmi output mode(34)	fps:60.5	3840x2160
+	err:0	skip:3	irq:240269	vsync:285	vsync_skip:0
+15:41:01.676
+mgr0: 3840x2160 fmt[yuv444] cs[0x101] range[limit] eotf[0x4] bits[8bits] err[0] force_sync[230] unblank direct_show[false] iommu[1]
+	hdmi output mode(34)	fps:60.6	3840x2160
+	err:0	skip:3	irq:240333	vsync:285	vsync_skip:0
+15:41:02.748
+mgr0: 3840x2160 fmt[yuv444] cs[0x101] range[limit] eotf[0x4] bits[8bits] err[0] force_sync[230] unblank direct_show[false] iommu[1]
+	hdmi output mode(34)	fps:60.6	3840x2160
+	err:0	skip:3	irq:240398	vsync:285	vsync_skip:0
+15:41:03.819
+mgr0: 3840x2160 fmt[yuv444] cs[0x101] range[limit] eotf[0x4] bits[8bits] err[0] force_sync[230] unblank direct_show[false] iommu[1]
+	hdmi output mode(34)	fps:60.5	3840x2160
+	err:0	skip:3	irq:240462	vsync:285	vsync_skip:0
+15:41:04.891
+mgr0: 3840x2160 fmt[yuv444] cs[0x101] range[limit] eotf[0x4] bits[8bits] err[0] force_sync[230] unblank direct_show[false] iommu[1]
+	hdmi output mode(34)	fps:60.6	3840x2160
+	err:0	skip:3	irq:240526	vsync:285	vsync_skip:0
+15:41:05.963
+mgr0: 3840x2160 fmt[yuv444] cs[0x101] range[limit] eotf[0x4] bits[8bits] err[0] force_sync[230] unblank direct_show[false] iommu[1]
+	hdmi output mode(34)	fps:60.6	3840x2160
+	err:0	skip:3	irq:240591	vsync:285	vsync_skip:0
+15:41:07.035
+mgr0: 3840x2160 fmt[yuv444] cs[0x101] range[limit] eotf[0x4] bits[8bits] err[0] force_sync[230] unblank direct_show[false] iommu[1]
+	hdmi output mode(34)	fps:60.5	3840x2160
+	err:0	skip:3	irq:240655	vsync:285	vsync_skip:0
+15:41:08.107
+mgr0: 3840x2160 fmt[yuv444] cs[0x101] range[limit] eotf[0x4] bits[8bits] err[0] force_sync[230] unblank direct_show[false] iommu[1]
+	hdmi output mode(34)	fps:60.5	3840x2160
+	err:0	skip:3	irq:240719	vsync:285	vsync_skip:0
+15:41:09.178
+mgr0: 3840x2160 fmt[yuv444] cs[0x101] range[limit] eotf[0x4] bits[8bits] err[0] force_sync[230] unblank direct_show[false] iommu[1]
+	hdmi output mode(34)	fps:60.6	3840x2160
+	err:0	skip:3	irq:240783	vsync:285	vsync_skip:0
+15:41:10.250
+mgr0: 3840x2160 fmt[yuv444] cs[0x101] range[limit] eotf[0x4] bits[8bits] err[0] force_sync[230] unblank direct_show[false] iommu[1]
+	hdmi output mode(34)	fps:60.6	3840x2160
+	err:0	skip:3	irq:240848	vsync:285	vsync_skip:0
+15:41:11.321
+mgr0: 3840x2160 fmt[yuv444] cs[0x101] range[limit] eotf[0x4] bits[8bits] err[0] force_sync[230] unblank direct_show[false] iommu[1]
+	hdmi output mode(34)	fps:60.5	3840x2160
+	err:0	skip:3	irq:240912	vsync:285	vsync_skip:0
+15:41:12.393
+mgr0: 3840x2160 fmt[yuv444] cs[0x101] range[limit] eotf[0x4] bits[8bits] err[0] force_sync[230] unblank direct_show[false] iommu[1]
+	hdmi output mode(34)	fps:60.6	3840x2160
+	err:0	skip:3	irq:240976	vsync:285	vsync_skip:0
+15:41:13.465
+mgr0: 3840x2160 fmt[yuv444] cs[0x101] range[limit] eotf[0x4] bits[8bits] err[0] force_sync[230] unblank direct_show[false] iommu[1]
+	hdmi output mode(34)	fps:60.6	3840x2160
+	err:0	skip:3	irq:241041	vsync:285	vsync_skip:0
+15:41:14.536
+mgr0: 3840x2160 fmt[yuv444] cs[0x101] range[limit] eotf[0x4] bits[8bits] err[0] force_sync[230] unblank direct_show[false] iommu[1]
+	hdmi output mode(34)	fps:60.5	3840x2160
+	err:0	skip:3	irq:241105	vsync:285	vsync_skip:0
+15:41:15.608
+mgr0: 3840x2160 fmt[yuv444] cs[0x101] range[limit] eotf[0x4] bits[8bits] err[0] force_sync[230] unblank direct_show[false] iommu[1]
+	hdmi output mode(34)	fps:60.5	3840x2160
+	err:0	skip:3	irq:241169	vsync:285	vsync_skip:0

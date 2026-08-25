@@ -3,7 +3,7 @@
 ## 当前状态
 
 - 最后报告的物理验收镜像：`out/candidates/m8-kernel-5.4.302-r5/x12-m8-kernel-5.4.302-r5.img`
-- 当前项目状态：**ANDROID 12 r5 BOOT/WI-FI PASS / KERNEL-WIRELESS CHECKPOINT CLOSED / QPR0 r3 BUILD READY**。Linux 5.4.302、HDMI/UI、遥控、Leanback/TV IME/Launcher、Wi-Fi 与 Wi-Fi ADB 正常；一次 physical Wi-Fi OFF→ON clean teardown/reinit 后完成 DHCP、validated L3、IP/DNS ping 与 ADB reconnect。旧 `timeout|wifi start fail|reqcfm|1037|1038` filter 在 initial 与 post-cycle 两次均为空。r1-r4 错用 `0x00110000` 的历史诊断保持；r5 恢复 working BSP `0x00120000` contract 后的 single-variable physical result 接受为 engineering root-cause corroboration。Exact QPR0 r7 audit 已完成；Gate 2 为 **UNBLOCKED / READY FOR QPR0 r3 BUILD**，不是 PASS，且当前没有 r3 image。
+- 当前项目状态：**ANDROID 16 PATH-A CORE VIABILITY PHYSICALLY PROVEN / FORMAL CANDIDATE CLOSURE PENDING**。QPR0 r3 在用户预先设置的 runtime `persist.graphics.egl=mali` override 下达到 Android 16/zygote32/system_server/SurfaceFlinger/Mali-G31；原始 image 缺 EGL selector。Ethernet、TV/Leanback/IME、Wi-Fi scan 与 OFF→ON reinit PASS；Wi-Fi association 未测试。HDMI 实际输出周期性黑屏 FAIL，vendor audio HAL `getAudioPort` null-pointer stability FAIL，scanCode 352 的 Android OK mapping FAIL。Gate 2 **NOT CLOSED**。
 - 保留的设备验收基线：`out/candidates/m8b-remote-r1/x12-m8b-remote-r1.img`，状态 **DEVICE ACCEPTED / REMOTE PASS**（继承 **AUDIO PASS / IME PASS**）。
 - 大小 / SHA-256：1031723008 bytes / `F3B09E5565AC4ED4E5EE326D392622E7B036A8519B8444B966E77CC4751B814A`
 - 用户当前在设备现场，可执行物理交互、重启、suspend/resume、HDMI 观察与恢复；任何新候选刷写仍需该候选的单独明确授权。
@@ -25,6 +25,31 @@ C:\platform-tools\adb.exe -s 192.168.1.8:7896 logcat -d -b all
 ```
 
 accepted baseline 已确认 Treble/VNDK、primary HAL/output、HEVC+AAC HDMI 音频、VP9 Allwinner/Cedar hardware runtime、Widevine 16.1.0 L3、LeanbackIME，以及 official Google TV iPhone Remote discovery/pair/navigation/phone text。刷入任何新候选仍须先获得该候选的单独明确授权。
+
+## Gate 2 physical result: a16-prototype-a-r3
+
+本轮仅对现场已运行的 r3 进行 Ethernet-ADB 采证，未 flash、reboot、build 或修改 image。
+Evidence：`docs/m8/device-tests/20260825-a16-prototype-a-r3-physical-validation/`。
+
+| 阶段/功能 | r3 结果 |
+|---|---|
+| Android identity | **PASS**：Android 16、API36、BP2A.250805.034、SPL 2025-08-05 |
+| ABI/zygote/kernel | **PASS**：ARM32-only、empty ABI64、`zygote32`、Linux 5.4.302+、六项 Path-A config `=y` |
+| APEX/core framework | **PASS**：boot complete、APEX ready/mount、三个 service manager、system_server/SystemUI |
+| Original EGL selection | **FAIL**：无 `persist.graphics.egl`/`ro.hardware.egl`；用户提供的原始日志显示 `ro.board.platform=apollo` 驱动选择失败 |
+| Graphics with pre-existing runtime override | **PASS WITH OVERRIDE**：`persist.graphics.egl=mali`，Mali-G31 GLES 3.2、SurfaceFlinger composition |
+| TV/launcher/IME | **PASS**：TV/Leanback feature、HOME launcher 与 LeanbackIME present/default；文字输入本身不声明 |
+| Ethernet | **PASS**：carrier、gateway/IP/DNS 4/4、Ethernet ADB |
+| Wi-Fi | **PARTIAL**：BSP/framework/scan/OFF→ON reinit PASS；association/DHCP/L3/DNS **NOT TESTED**（无 saved network/无法输入凭据） |
+| IR remote | **PARTIAL FAIL**：全部 Linux DOWN/UP PASS；OK scanCode 352→Android UNKNOWN，Generic.kl 仅 353→DPAD_CENTER |
+| HDMI | **FAIL**：monitor 约 1 秒画面后约 5 秒黑屏循环；framework/extcon/display counters 的 bounded sample 未解释物理黑屏 |
+| Audio | **FAIL / NOT TESTED SPLIT**：Apollo/ALSA/AudioFlinger topology 与 volume/mute framework effect 存在；HIDL HAL 在 `getAudioPort` null-pointer crash，stability FAIL；monitor 无 audio output，实际听音 **NOT TESTED** |
+
+Exact gate wording：**CORE PATH-A ARCHITECTURE VIABILITY PHYSICALLY PROVEN / FORMAL CANDIDATE
+CLOSURE PENDING**。依赖 runtime EGL override，因此 Gate 2 **NOT CLOSED**。下一候选才可持久加入
+`ro.hardware.egl=mali`（保持 `ro.board.platform=apollo`）和 scanCode 352→DPAD_CENTER；二者在
+本轮均 **NOT IMPLEMENTED / NOT BUILT / NOT PHYSICALLY VALIDATED**。HDMI/audio 只按现有 evidence
+继续 diagnosis，不在本轮修改。Prototype B 继续关闭。
 
 ## Gate 2 physical result: a16-prototype-a-r1
 

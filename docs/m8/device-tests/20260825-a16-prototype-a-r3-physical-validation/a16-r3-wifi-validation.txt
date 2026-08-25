@@ -1,0 +1,37 @@
+=== WIFI MODULES ===
+aic8800_fdrv 286720 0 - Live 0x0000000000000000 (O)
+aic8800_btlpm 32768 0 - Live 0x0000000000000000 (O)
+aic8800_bsp 77824 1 aic8800_fdrv, Live 0x0000000000000000 (O)
+sunxi_rfkill 36864 2 aic8800_fdrv,aic8800_bsp, Live 0x0000000000000000
+=== WIFI ENABLE ===
+=== WLAN0 ===
+178: wlan0: <NO-CARRIER,BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state DORMANT mode DORMANT group default qlen 1000
+    link/ether <redacted-mac> brd <redacted-mac>
+=== CMD WIFI STATUS BEFORE SCAN ===
+Wifi is enabled
+Wifi scanning is only available when wifi is enabled
+==== ClientModeManager instance: ConcreteClientModeManager{id=1731645 iface=wlan0 role=ROLE_CLIENT_PRIMARY} ====
+Wifi is not connected
+=== SAVED NETWORKS ===
+No networks
+=== START SCAN ===
+=== SCAN RESULTS ===
+    BSSID              Frequency      RSSI           Age(sec)     SSID                                 Flags
+  <redacted-mac>       5260        -88              7.330    <redacted-ssid>                               [WPA2-PSK-CCMP-128][RSN-PSK-CCMP-128][ESS][WPS]
+  <redacted-mac>       5785        -88              6.668    <redacted-ssid>                  [RSN-SAE-CCMP-128][ESS][MFPR][MFPC]
+  <redacted-mac>       5805        -55              6.578    <redacted-ssid>                      [WPA2-PSK-CCMP-128][RSN-PSK-CCMP-128][ESS][WPS][MFPC]
+  <redacted-mac>       5785        -88              6.670    <redacted-ssid>                   [WPA2-PSK-CCMP-128][RSN-PSK+SAE-CCMP-128][ESS][MFPC]
+  <redacted-mac>       2437        -58              7.815                                     <redacted-ssid> [WPA2-PSK-CCMP-128][RSN-PSK-CCMP-128][ESS]
+  <redacted-mac>       2437        -58              7.818    <redacted-ssid>                      [WPA2-PSK-CCMP-128][RSN-PSK-CCMP-128][ESS][WPS][MFPC]
+  <redacted-mac>       5785        -89              6.669                                     <redacted-ssid> [WPA2-PSK-CCMP-128][RSN-PSK-CCMP-128][ESS]
+  <redacted-mac>       5805        -55              6.578                                     <redacted-ssid> [WPA2-PSK-CCMP-128][RSN-PSK-CCMP-128][ESS]
+  <redacted-mac>       5785        -87              6.669                                     <redacted-ssid> [WPA2-PSK-CCMP-128][RSN-PSK-CCMP-128][ESS]
+=== CMD WIFI STATUS AFTER SCAN ===
+Wifi is enabled
+Wifi scanning is only available when wifi is enabled
+==== ClientModeManager instance: ConcreteClientModeManager{id=1731645 iface=wlan0 role=ROLE_CLIENT_PRIMARY} ====
+Wifi is not connected
+=== WLAN0 AFTER SCAN ===
+178: wlan0: <NO-CARRIER,BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state DORMANT mode DORMANT group default qlen 1000
+    link/ether <redacted-mac> brd <redacted-mac>
+=== OLD BSP BLOCKER ===

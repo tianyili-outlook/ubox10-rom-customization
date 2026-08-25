@@ -1,0 +1,40 @@
+=== ETH0 ADDRESS ===
+12: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    inet 192.168.1.9/24 brd 192.168.1.255 scope global eth0
+       valid_lft forever preferred_lft forever
+=== ROUTE ===
+192.168.1.0/24 dev eth0 proto kernel scope link src 192.168.1.9
+=== OPERSTATE ===
+up
+=== CARRIER ===
+1
+=== GATEWAY PING ===
+PING 192.168.1.1 (192.168.1.1) 56(84) bytes of data.
+64 bytes from 192.168.1.1: icmp_seq=1 ttl=64 time=9.64 ms
+64 bytes from 192.168.1.1: icmp_seq=2 ttl=64 time=5.53 ms
+64 bytes from 192.168.1.1: icmp_seq=3 ttl=64 time=5.78 ms
+64 bytes from 192.168.1.1: icmp_seq=4 ttl=64 time=5.59 ms
+
+--- 192.168.1.1 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3005ms
+rtt min/avg/max/mdev = 5.532/6.639/9.642/1.737 ms
+=== IP PING ===
+PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
+64 bytes from 8.8.8.8: icmp_seq=1 ttl=114 time=3.42 ms
+64 bytes from 8.8.8.8: icmp_seq=2 ttl=114 time=3.24 ms
+64 bytes from 8.8.8.8: icmp_seq=3 ttl=114 time=3.22 ms
+64 bytes from 8.8.8.8: icmp_seq=4 ttl=114 time=3.22 ms
+
+--- 8.8.8.8 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3004ms
+rtt min/avg/max/mdev = 3.223/3.279/3.421/0.082 ms
+=== DNS PING ===
+PING www.google.com (142.251.152.119) 56(84) bytes of data.
+64 bytes from 142.251.152.119: icmp_seq=1 ttl=114 time=3.18 ms
+64 bytes from 142.251.152.119: icmp_seq=2 ttl=114 time=3.25 ms
+64 bytes from 142.251.152.119: icmp_seq=3 ttl=114 time=3.28 ms
+64 bytes from 142.251.152.119: icmp_seq=4 ttl=114 time=3.26 ms
+
+--- www.google.com ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3004ms
+rtt min/avg/max/mdev = 3.188/3.249/3.284/0.036 ms

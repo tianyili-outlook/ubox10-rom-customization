@@ -1,0 +1,20 @@
+=== config ===
+CONFIG_BLK_CGROUP=y
+CONFIG_CPUSETS=y
+CONFIG_PROC_PID_CPUSET=y
+CONFIG_NET_CLS_MATCHALL=y
+CONFIG_NET_ACT_POLICE=y
+CONFIG_NET_ACT_BPF=y
+=== cgroups ===
+#subsys_name	hierarchy	num_cgroups	enabled
+cpuset	3	8	1
+cpu	2	11	1
+cpuacct	0	148	1
+blkio	1	2	1
+freezer	0	148	1
+=== mounts ===
+none on /dev/blkio type cgroup (rw,nosuid,nodev,noexec,relatime,blkio)
+none on /sys/fs/cgroup type cgroup2 (rw,nosuid,nodev,noexec,relatime)
+none on /dev/cpuctl type cgroup (rw,nosuid,nodev,noexec,relatime,cpu)
+none on /dev/cpuset type cgroup (rw,nosuid,nodev,noexec,relatime,cpuset,noprefix,release_agent=/sbin/cpuset_release_agent)
+binder on /dev/binderfs type binder (rw,relatime,max=1048576,stats=global)

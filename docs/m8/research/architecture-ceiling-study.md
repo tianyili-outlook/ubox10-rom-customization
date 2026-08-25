@@ -9,8 +9,8 @@ checkpoint inputs and results recorded below
 Accepted rollback/runtime baseline: frozen `m8b-remote-r1`; latest physically accepted kernel
 checkpoint: `m8-kernel-5.4.302-r5`
 Scope: architecture decision, bounded offline prototypes, completed physical evidence through
-Linux 5.4.302 r5, exact QPR0 r7 source audit, and the completed Prototype A r3 build/full offline
-audit. No r3 physical action, Prototype B or mixed-ABI work was performed.
+Linux 5.4.302 r5, exact QPR0 r7 source audit, the Prototype A r3 build/full offline audit and the
+2026-08-25 r3 local physical validation. No Prototype B or mixed-ABI work was performed.
 
 Confidence labels in this report have the following strict meanings: **PROVEN** is direct
 binary, build, runtime, repository, or authoritative-source evidence; **HIGH CONFIDENCE**
@@ -36,11 +36,13 @@ cgroup overlay behavior, bootstrap APEX/VNDK31, FCM6, linker/SELinux and ARM32 T
 That audit issued **GO FOR ONE PROTOTYPE A r3 BUILD**; the bounded build and offline audit are
 now complete.
 
-Android 16 Gate 2 is therefore **UNBLOCKED / AWAITING EXPLICIT PHYSICAL VALIDATION DECISION**,
-not PASS. Full VINTF still reports only the inherited `CONFIG_NFS_FS=y` versus FCM6 `n`
-exception, and historical boots were permissive. The r3 image is offline checked but has not
-been physically tested. Prototype B, mixed ARM64/ARM32 userspace, `zygote64_32` and ARM64
-graphics/mapper integration remain closed until the ARM32 QPR0 base is later physically proven.
+Local physical validation now proves the ARM32 QPR0 base through Android 16 boot, `zygote32`,
+system_server and Mali-G31 composition, but only with the user's pre-existing runtime
+`persist.graphics.egl=mali` override. The original image lacks both EGL selector properties.
+Gate 2 is therefore **NOT CLOSED**: formal EGL integration is absent, physical HDMI output is
+unstable, the legacy vendor audio HAL is unstable, Wi-Fi association was not tested, full VINTF
+still carries the inherited NFS exception, and enforcing SELinux remains unproven. Prototype B,
+mixed ARM64/ARM32 userspace, `zygote64_32` and ARM64 graphics/mapper integration remain closed.
 
 The possible final architecture still worth investigating remains **Android 16 for TV, mixed
 ARM64/ARM32 userspace, `zygote64_32`, the Allwinner 5.4 hardware-facing BSP lineage, plus only
@@ -705,11 +707,12 @@ date must not be relabeled as a later device SPL; future security coverage would
 separate patch provenance program. No GMS, Play, certification or commercial-service status
 follows from choosing it.
 
-**Path A verdict: selected; Prototype A r3 is OFFLINE CHECKED / READY TO REQUEST PHYSICAL
-VALIDATION.** The same-lineage kernel/wireless preservation checkpoint is **CLOSED / PASS**, the
-exact r7 source audit finds no architecture blocker, and the one bounded r3 build/package/offline
-audit is complete. Gate 2 is **UNBLOCKED / AWAITING EXPLICIT PHYSICAL VALIDATION DECISION**, not a
-runtime PASS. No r3 physical action is authorized by this result, and Prototype B remains closed.
+**Path A verdict: selected; CORE ARCHITECTURE VIABILITY PHYSICALLY PROVEN / FORMAL CANDIDATE
+CLOSURE PENDING.** The same-lineage kernel/wireless preservation checkpoint is **CLOSED / PASS**,
+the exact r7 source audit finds no architecture blocker, and r3 now physically reaches Android
+16/zygote32/system_server/Mali-G31 with a pre-existing runtime EGL override. Gate 2 is **NOT
+CLOSED** because the original image has no EGL selector and the remaining physical HDMI/audio/
+Wi-Fi-association gates are incomplete. Prototype B remains closed.
 
 #### QPR0 r7 source-only closure
 
@@ -775,6 +778,38 @@ This establishes offline eligibility only. No boot, zygote32, system_server, Sur
 enforcing SELinux or hardware runtime result follows. The full record and machine-readable
 preservation inventory are `docs/m8/candidates/a16-prototype-a-r3.md` and
 `docs/m8/candidates/a16-prototype-a-r3-preservation.json`.
+
+#### Prototype A r3 local physical result
+
+The 2026-08-25 Ethernet-ADB session did not flash, reboot, rebuild or mutate an image. Its raw and
+reviewable evidence is in
+`docs/m8/device-tests/20260825-a16-prototype-a-r3-physical-validation/`.
+
+Direct runtime evidence proves Android 16/API36/BP2A, ARM32-only `zygote32`, Linux 5.4.302+, all
+six Path-A config additions, boot completion, active runtime/VNDK APEX mounts, service managers,
+system_server/SystemUI, TV/Leanback/IME and Ethernet. The original r3 lacked both
+`persist.graphics.egl` and `ro.hardware.egl`; user-provided pre-validation evidence records
+SurfaceFlinger failing driver selection through `ro.board.platform=apollo`. With the user's
+already-present `persist.graphics.egl=mali` override, current SurfaceFlinger reports Mali-G31 /
+GLES 3.2 and valid layer composition. The core architecture boundary is therefore proven, while
+formal `ro.hardware.egl=mali` integration remains not implemented or validated.
+
+Hardware evidence prevents an unqualified PASS. The monitor repeatedly shows about one second
+of picture followed by about five seconds black. SurfaceFlinger and system_server remain alive;
+bounded extcon and display-engine sampling stays connected/unblanked at 3840x2160 YUV444 mode 34
+with advancing interrupts, while kernel history also records HDMI disconnect/connect transitions.
+The exact black-cycle cause is not proven. The legacy HIDL audio service repeatedly
+null-dereferences in `Device::getAudioPortImpl` after observed HDMI status transitions and then
+recovers automatically. The attached monitor has no audio output, so audible output is not
+tested. Wi-Fi modules/framework/scan and OFF-to-ON reinitialization pass, but association/DHCP/L3
+are not tested because credentials could not be entered. Linux IR events pass; Android OK fails
+because scanCode 352 is unmapped while Generic.kl maps 353 to DPAD_CENTER.
+
+The evidence-led next candidate direction is bounded: preserve `ro.board.platform=apollo`, add
+`ro.hardware.egl=mali`, map scanCode 352 to DPAD_CENTER, and diagnose the 4K60 YUV444 HDMI/link
+and HIDL `getAudioPort` transition paths before selecting display/audio changes. No Wi-Fi BSP/HAL
+change is justified by this result. Gate 2 remains open until a no-runtime-intervention candidate
+passes the required physical gates.
 
 #### Same-lineage Linux 5.4.302 preservation checkpoint
 
@@ -928,12 +963,13 @@ accepted hardware product.
 
 | Rank | Path | Decision | Exact next condition |
 |---:|---|---|---|
-| 1 | A — QPR0/25Q2 plus retained 5.4 lineage | **SELECTED / OFFLINE CHECKED** | r5 physically closes kernel/wireless preservation; exact r7 and the complete r3 build/offline audit close all expected bounded checks. Next is a separate decision on one UART-first r3 physical validation. |
+| 1 | A — QPR0/25Q2 plus retained 5.4 lineage | **SELECTED / CORE VIABILITY PHYSICALLY PROVEN** | r3 reaches Android 16/zygote32/system_server/Mali with runtime EGL override; formal EGL, HDMI/audio/input and Wi-Fi-association closure remain. |
 | 2 | B — r4/25Q4 plus backports into 5.4 | **NO-GO** | Would require violating the version policy or executing a broad 5.10-class subsystem port. |
 | 3 | C — public H616 5.10+ kernel | **NO-GO** | Requires a new exact-board Android BSP and hardware-stack port. |
 
-Gate 2 is **UNBLOCKED / AWAITING EXPLICIT PHYSICAL VALIDATION DECISION**, not PASS. The r3 build
-and offline audit authorize no device action. Prototype B and mixed graphics work remain closed.
+Gate 2 is **NOT CLOSED**. The physical proof depends on a runtime EGL override and does not close
+the unstable HDMI/audio or untested Wi-Fi-association boundaries. Prototype B and mixed graphics
+work remain closed.
 
 ## 12. Target A/B/C/D comparison
 
@@ -1077,12 +1113,12 @@ display, audio, wireless and DRM integration without a complete provider. It has
 of better Netflix capability and may lose the current 4K/audio path. The modern hybrid captures
 the application/framework benefit of ARM64 without paying that subsystem-rewrite cost.
 
-**Overall confidence: HIGH for the completed ARM32 r3 offline composition; MEDIUM for its first
-runtime and for the end-state hybrid.** The r1/r2 runtime progression proves cgroups, mounted
-APEX init content and service managers; r5 closes same-lineage 5.4.302 wireless preservation;
-exact r7 source and r3 outputs prove the kernel floor and bounded QPR0 product/config/offline
-closure. Runtime beyond QPR0 bpfloader remains unproven, so Gate 2 is not PASS. Prototype B
-remains unjustified until the offline-checked ARM32 r3 later physically passes.
+**Overall confidence: HIGH for ARM32 r3 core architecture viability; MEDIUM for formal candidate
+closure and the end-state hybrid.** The r1/r2 progression proves early runtime, r5 closes the
+same-lineage 5.4.302 wireless checkpoint, exact r7/r3 outputs close the bounded offline contract,
+and r3 with a runtime EGL override now proves Android 16/zygote32/system_server/Mali composition.
+The override dependency plus HDMI/audio failures and untested Wi-Fi association keep Gate 2 open.
+Prototype B remains unjustified until a no-runtime-intervention Prototype A candidate passes.
 
 ## 15. Go / No-Go decisions and remaining decisive gates
 
@@ -1090,10 +1126,10 @@ remains unjustified until the offline-checked ARM32 r3 later physically passes.
 
 | Question | Decision | Reason |
 |---|---|---|
-| Recommended modern Android target | **PROTOTYPE A r3 OFFLINE CHECKED / REQUEST PHYSICAL DECISION NEXT** | r4/25Q4 has an intentional 5.10 floor; r5 closes 5.4.302 wireless preservation; exact QPR0 r7 and the bounded r3 offline result close expected deltas |
+| Recommended modern Android target | **PATH A CORE VIABILITY PHYSICALLY PROVEN / FORMAL CANDIDATE CLOSURE PENDING** | r3 reaches Android 16/zygote32/system_server/Mali with runtime EGL override; persistent EGL plus HDMI/audio/input/Wi-Fi-association gates remain |
 | Android 16 r4 / 25Q4 | **NO-GO with retained 5.4** | Physical and source evidence agree on the 5.10/5.10.210 requirement |
-| Android 16 QPR0 / 25Q2 | **SELECTED / r3 OFFLINE CHECKED** | Exact r7 requires 5.4.277+ for non-GKI 5.4; physical-pass 5.4.302 qualifies and the minimum config/product deltas close in the actual output |
-| Mixed ARM64/ARM32 userspace | **CLOSED PENDING PROTOTYPE A PHYSICAL PASS** | Exact paired Mali provider exists, but the common A16 ARM32 bootstrap base has not run on the board |
+| Android 16 QPR0 / 25Q2 | **SELECTED / CORE RUNTIME PROVEN WITH EGL OVERRIDE** | Exact r7 requires 5.4.277+; r3 physically proves the ARM32 base through Mali composition, but not formal image closure |
+| Mixed ARM64/ARM32 userspace | **CLOSED PENDING NO-OVERRIDE PROTOTYPE A PASS** | Exact paired Mali provider exists, but Prototype A still needs persistent EGL and hardware closure |
 | Full ARM64 userspace | **NO-GO** | Would convert/replace working proprietary service stack for little user value |
 | Kernel 5.4 as final architecture | **CLOSED / PASS AT 5.4.302 r5** | Boot/HDMI/remote/Wi-Fi/ADB and physical wireless reinitialization pass after restoring the working FMAC address contract |
 | Kernel 5.10+ migration | **NO-GO IN THIS PHASE** | No complete exact-SoC/board Android provider; regression surface is a new BSP port |
@@ -1107,9 +1143,11 @@ remains unjustified until the offline-checked ARM32 r3 later physically passes.
    Path-A config additions, two display HAL declarations and one-line `fuseblk` deferral.
 2. Continue to carry the sole inherited full-VINTF NFS conformance exception; never report exit
    65 as PASS. The actual r3 linker/ELF/APEX/split-SELinux/AVB/LP reruns are complete.
-3. Any r3 physical boot/flash requires separate explicit authorization and must prove QPR0
-   bpfloader, zygote32, system_server, SurfaceFlinger/HWC and preserved hardware behavior.
-4. Prototype B and mixed graphics proof remain closed until an authorized Prototype A passes.
+3. **Completed to the current boundary:** local r3 validation proves QPR0 bpfloader progression,
+   zygote32, system_server and Mali-G31 composition with a pre-existing runtime EGL override.
+4. Remaining closure requires persistent EGL selection plus stable HDMI/audio, Android OK mapping
+   and credential-capable Wi-Fi association; Prototype B remains closed until those pass without
+   runtime intervention.
 
 ## 16. Direct route to the target
 
@@ -1129,10 +1167,12 @@ remains unjustified until the offline-checked ARM32 r3 later physically passes.
 6. **Completed — ARM32 QPR0 build/offline proof:** build the exact r7 system and Path-A kernel,
    package one exact-board r3, then close ELF/APEX/VNDK/linker/SELinux/AVB/LP/outer preservation
    while strictly carrying the sole inherited NFS exception.
-7. **Current next action — separate physical decision:** request explicit authorization before
-   any UART-first r3 test. Only after a physical pass may the minimal `zygote64_32` product with
-   lawful paired graphics provider be considered.
-8. **Final acceptance:** sustained daily-use regression, 4K30-or-1080p evidence-led media
+7. **Completed — local r3 physical boundary:** prove core ARM32 A16 runtime with the pre-existing
+   EGL override and record HDMI/audio/input/Wi-Fi-association failures or untested boundaries.
+8. **Current next action — bounded closure candidate:** persist `ro.hardware.egl=mali`, map IR
+   scanCode 352, and select evidence-led HDMI/audio deltas; then obtain separate physical
+   authorization. Mixed `zygote64_32` remains closed.
+9. **Final acceptance:** sustained daily-use regression, 4K30-or-1080p evidence-led media
    ceiling, recovery rehearsal and a hash-locked accepted architecture image.
 
 ## 17. Sources and provenance

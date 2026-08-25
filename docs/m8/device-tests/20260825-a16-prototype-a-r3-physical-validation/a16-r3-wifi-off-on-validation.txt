@@ -1,0 +1,44 @@
+=== PRE OFF ===
+2026-08-25 15:42:49.503653319
+Wifi is enabled
+Wifi scanning is only available when wifi is enabled
+==== ClientModeManager instance: ConcreteClientModeManager{id=1731645 iface=wlan0 role=ROLE_CLIENT_PRIMARY} ====
+Wifi is not connected
+178: wlan0: <NO-CARRIER,BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state DORMANT mode DORMANT group default qlen 1000
+    link/ether <redacted-mac> brd <redacted-mac>
+aic8800_fdrv 286720 0 - Live 0x0000000000000000 (O)
+aic8800_btlpm 32768 0 - Live 0x0000000000000000 (O)
+aic8800_bsp 77824 1 aic8800_fdrv, Live 0x0000000000000000 (O)
+sunxi_rfkill 36864 2 aic8800_fdrv,aic8800_bsp, Live 0x0000000000000000
+=== DISABLE ===
+2026-08-25 15:42:55.724093530
+Wifi is disabled
+Wifi scanning is only available when wifi is enabled
+Device "wlan0" does not exist.
+aic8800_btlpm 32768 0 - Live 0x0000000000000000 (O)
+aic8800_bsp 77824 0 - Live 0x0000000000000000 (O)
+sunxi_rfkill 36864 1 aic8800_bsp, Live 0x0000000000000000
+=== ENABLE ===
+2026-08-25 15:43:05.933195910
+Wifi is enabled
+Wifi scanning is only available when wifi is enabled
+==== ClientModeManager instance: ConcreteClientModeManager{id=4121312 iface=wlan0 role=ROLE_CLIENT_PRIMARY} ====
+Wifi is not connected
+179: wlan0: <NO-CARRIER,BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state DORMANT mode DORMANT group default qlen 1000
+    link/ether <redacted-mac> brd <redacted-mac>
+aic8800_fdrv 286720 0 - Live 0x0000000000000000 (O)
+aic8800_btlpm 32768 0 - Live 0x0000000000000000 (O)
+aic8800_bsp 77824 1 aic8800_fdrv, Live 0x0000000000000000 (O)
+sunxi_rfkill 36864 2 aic8800_fdrv,aic8800_bsp, Live 0x0000000000000000
+=== POST ENABLE SCAN ===
+    BSSID              Frequency      RSSI           Age(sec)     SSID                                 Flags
+  <redacted-mac>       5785        -88              5.961    <redacted-ssid>                  [RSN-SAE-CCMP-128][ESS][MFPR][MFPC]
+  <redacted-mac>       5805        -54              5.885    <redacted-ssid>                      [WPA2-PSK-CCMP-128][RSN-PSK-CCMP-128][ESS][WPS][MFPC]
+  <redacted-mac>       5785        -88              5.963    <redacted-ssid>                   [WPA2-PSK-CCMP-128][RSN-PSK+SAE-CCMP-128][ESS][MFPC]
+  <redacted-mac>       2437        -54              7.119                                     <redacted-ssid> [WPA2-PSK-CCMP-128][RSN-PSK-CCMP-128][ESS]
+  <redacted-mac>       2437        -53              7.122    <redacted-ssid>                      [WPA2-PSK-CCMP-128][RSN-PSK-CCMP-128][ESS][WPS][MFPC]
+  <redacted-mac>       2467        -62              6.931    <redacted-ssid>                  [WPA2-PSK-CCMP-128][RSN-PSK-CCMP-128][ESS][WPS][MFPC]
+  <redacted-mac>       5785        -88              5.962                                     <redacted-ssid> [WPA2-PSK-CCMP-128][RSN-PSK-CCMP-128][ESS]
+  <redacted-mac>       5805        -54              5.884                                     <redacted-ssid> [WPA2-PSK-CCMP-128][RSN-PSK-CCMP-128][ESS]
+  <redacted-mac>       5785        -88              5.962                                     <redacted-ssid> [WPA2-PSK-CCMP-128][RSN-PSK-CCMP-128][ESS]
+=== OLD BSP BLOCKER ===

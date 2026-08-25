@@ -1,0 +1,93 @@
+=== ORIGINAL R3 GRAPHICS BOUNDARY (USER-PROVIDED PRE-VALIDATION EVIDENCE) ===
+persist.graphics.egl: absent
+ro.hardware.egl: absent
+ro.board.platform: apollo
+SurfaceFlinger: Failed to load drivers from property ro.board.platform with value apollo
+
+Classification: original r3 graphics selection FAIL. These lines predate this capture and are
+included with their user-provided provenance; the current log ring had rotated them out.
+
+=== CURRENT GRAPHICS STATE WITH PRE-EXISTING RUNTIME OVERRIDE ===
+[persist.graphics.egl]
+mali
+[ro.hardware.egl]
+
+[ro.board.platform]
+apollo
+GLES: ARM, Mali-G31, OpenGL ES 3.2 v1.r20p0-01rel0.9f6475d0baffb05079096179e1278b1d
+
+Classification: architecture/runtime graphics path PASS WITH OVERRIDE. Formal image integration
+of ro.hardware.egl=mali is NOT IMPLEMENTED and NOT PHYSICALLY VALIDATED.
+
+=== FRAMEWORK / ARCHITECTURE ===
+sys.boot_completed=1
+Android 16 / API 36 / BP2A.250805.034 / UBOX10_A16_QPR0_R3
+ro.product.cpu.abi=armeabi-v7a
+ro.product.cpu.abilist64=<empty>
+ro.zygote=zygote32
+Linux 5.4.302+
+servicemanager=running; hwservicemanager=running; vndservicemanager=running
+zygote=running; surfaceflinger=running; system_server and SystemUI present
+CONFIG_BLK_CGROUP=y
+CONFIG_CPUSETS=y
+CONFIG_PROC_PID_CPUSET=y
+CONFIG_NET_CLS_MATCHALL=y
+CONFIG_NET_ACT_POLICE=y
+CONFIG_NET_ACT_BPF=y
+
+Classification: core Path-A ARM32 architecture viability PROVEN.
+
+=== HDMI PHYSICAL OUTPUT ===
+User observation: about 1 second of picture, then about 5 seconds black, repeating.
+45-second framework monitor: SurfaceFlinger/system_server/audio PIDs stable; display state ON.
+42-second extcon sampling: HDMI=1 throughout.
+20-second display sampling: unblank, error=0, 3840x2160 YUV444, mode 34, about 60.5 fps;
+interrupt counter continued increasing and skip/error counters did not change.
+Kernel history also contains repeated pairs such as:
+  sunxi-hdmi: HDMI cable is disconnected
+  sunxi-hdmi: HDMI cable is connected
+
+Classification: physical HDMI stability FAIL. The framework/HWC/HPD sampling does not explain
+the user-visible black interval; a lower timing/link/receiver-lock boundary is plausible, but the
+exact black-cycle root cause is NOT PROVEN.
+
+=== AUDIO HAL CRASH ===
+Fatal signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x0
+Cause: null pointer dereference
+#00 pc 00000000 <unknown>
+#01 android.hardware.audio@7.0-impl.so Device::getAudioPortImpl<audio_port_v7>(...)+128
+#02 Device::getAudioPort(...)+112
+#03 PrimaryDevice::getAudioPort(...)+68
+DeviceHalHidl getAudioPort: DEAD_OBJECT
+HalDeathHandler: HAL server crashed, audio server is restarting
+
+At 15:33:21, the captured order is display reconnect handling, AudioService connect=1024,
+adev_set_parameters connect=1024, then the same null-pointer crash. A similar sequence exists at
+15:31. Plain dumpsys media.audio_flinger/media.audio_policy queries did not independently add a
+crash during the isolation window.
+
+Classification: vendor HIDL audio HAL stability FAIL. Observed HDMI status transitions trigger
+the crashing getAudioPort path; a null function pointer/callback inside the legacy implementation
+is HIGH CONFIDENCE, but the exact source-level defect is NOT PROVEN. Automatic service recovery
+PASS. Audible output is NOT TESTED because the attached monitor has no audio output.
+
+=== WI-FI ===
+AIC8800 fdrv/btlpm/bsp and sunxi_rfkill loaded; wlan0 present; framework enabled.
+Active scan returned 9 APs; old timeout/wifi-start/1037/1038 filter was empty.
+OFF: wlan0 absent and fdrv removed while bsp/btlpm/rfkill remained.
+ON: a new wlan0/ClientModeManager instance and fdrv appeared; scan again returned APs.
+
+Classification: BSP/framework/scan and OFF-to-ON reinitialization PASS. Association, DHCP,
+validated L3 and DNS are NOT TESTED because no saved network/input path was available.
+
+=== PHYSICAL IR REMOTE ===
+UP/DOWN/LEFT/RIGHT/OK/BACK/HOME/MENU/VOLUMEUP/VOLUMEDOWN/MUTE/POWER each produced EV_KEY
+DOWN and UP. Linux KEY_OK is scanCode 352. Android InputReader recorded:
+  keyCode=UNKNOWN(0), scanCode=352
+Generic.kl contains:
+  # key 352 "KEY_OK"
+  key 353   DPAD_CENTER
+
+Classification: Linux IR events PASS; Android OK mapping FAIL with root cause PROVEN. Mapping
+352 to DPAD_CENTER is NOT IMPLEMENTED. Volume/mute framework effects PASS; audible effect is
+NOT TESTED.

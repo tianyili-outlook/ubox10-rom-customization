@@ -1,0 +1,184 @@
+--------- beginning of crash
+08-25 12:01:05.004 12896 13581 F libc    : Fatal signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x0 in tid 13581 (HwBinder:12896_), pid 12896 (audio.service)
+08-25 12:01:05.180 13694 13694 F DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+08-25 12:01:05.180 13694 13694 F DEBUG   : Build fingerprint: 'UBOX10Research/ubox10_ceiling_arm/generic:16/BP2A.250805.034/UBOX10_A16_QPR0_R3:userdebug/test-keys'
+08-25 12:01:05.180 13694 13694 F DEBUG   : Revision: '0'
+08-25 12:01:05.180 13694 13694 F DEBUG   : ABI: 'arm'
+08-25 12:01:05.180 13694 13694 F DEBUG   : Timestamp: 2026-08-25 12:01:05.060892131+0000
+08-25 12:01:05.180 13694 13694 F DEBUG   : Process uptime: 0s
+08-25 12:01:05.181 13694 13694 F DEBUG   : Cmdline: /vendor/bin/hw/android.hardware.audio.service
+08-25 12:01:05.181 13694 13694 F DEBUG   : pid: 12896, tid: 13581, name: HwBinder:12896_  >>> /vendor/bin/hw/android.hardware.audio.service <<<
+08-25 12:01:05.181 13694 13694 F DEBUG   : uid: 1041
+08-25 12:01:05.181 13694 13694 F DEBUG   : signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x00000000
+08-25 12:01:05.181 13694 13694 F DEBUG   : Cause: null pointer dereference
+08-25 12:01:05.181 13694 13694 F DEBUG   :     r0  f6540850  r1  f525fec0  r2  00000000  r3  00000000
+08-25 12:01:05.181 13694 13694 F DEBUG   :     r4  f5262ac8  r5  f6f821a8  r6  f7447390  r7  f525fec0
+08-25 12:01:05.181 13694 13694 F DEBUG   :     r8  f5262a28  r9  f7acbbf4  r10 f7acbbf4  r11 0000000f
+08-25 12:01:05.181 13694 13694 F DEBUG   :     ip  f7aabdbc  sp  f525fd90  lr  f6a18f53  pc  00000000
+08-25 12:01:05.181 13694 13694 F DEBUG   : 14 total frames
+08-25 12:01:05.181 13694 13694 F DEBUG   : backtrace:
+08-25 12:01:05.181 13694 13694 F DEBUG   :       #00 pc 00000000  <unknown>
+08-25 12:01:05.181 13694 13694 F DEBUG   :       #01 pc 00015f51  /vendor/lib/hw/android.hardware.audio@7.0-impl.so (android::hardware::Return<void> android::hardware::audio::V7_0::implementation::Device::getAudioPortImpl<audio_port_v7>(android::hardware::audio::common::V7_0::AudioPort const&, std::__1::function<void (android::hardware::audio::V7_0::Result, android::hardware::audio::common::V7_0::AudioPort const&)>, int (*)(audio_hw_device*, audio_port_v7*), char const*)+128) (BuildId: 24bb9072069ca0c589325285f4aa7ca6)
+08-25 12:01:05.181 13694 13694 F DEBUG   :       #02 pc 00015e6d  /vendor/lib/hw/android.hardware.audio@7.0-impl.so (android::hardware::audio::V7_0::implementation::Device::getAudioPort(android::hardware::audio::common::V7_0::AudioPort const&, std::__1::function<void (android::hardware::audio::V7_0::Result, android::hardware::audio::common::V7_0::AudioPort const&)>)+112) (BuildId: 24bb9072069ca0c589325285f4aa7ca6)
+08-25 12:01:05.181 13694 13694 F DEBUG   :       #03 pc 00018e89  /vendor/lib/hw/android.hardware.audio@7.0-impl.so (android::hardware::audio::V7_0::implementation::PrimaryDevice::getAudioPort(android::hardware::audio::common::V7_0::AudioPort const&, std::__1::function<void (android::hardware::audio::V7_0::Result, android::hardware::audio::common::V7_0::AudioPort const&)>)+68) (BuildId: 24bb9072069ca0c589325285f4aa7ca6)
+08-25 12:01:05.181 13694 13694 F DEBUG   :       #04 pc 0003745f  /vendor/lib/android.hardware.audio@7.0.so (android::hardware::audio::V7_0::BnHwDevice::_hidl_getAudioPort(android::hidl::base::V1_0::BnHwBase*, android::hardware::Parcel const&, android::hardware::Parcel*, std::__1::function<void (android::hardware::Parcel&)>)+222) (BuildId: b14eff7680107294e1d03d8dd4c8cb1e)
+08-25 12:01:05.181 13694 13694 F DEBUG   :       #05 pc 0004f733  /vendor/lib/android.hardware.audio@7.0.so (android::hardware::audio::V7_0::BnHwPrimaryDevice::onTransact(unsigned int, android::hardware::Parcel const&, android::hardware::Parcel*, unsigned int, std::__1::function<void (android::hardware::Parcel&)>)+1814) (BuildId: b14eff7680107294e1d03d8dd4c8cb1e)
+08-25 12:01:05.181 13694 13694 F DEBUG   :       #06 pc 0004ccf1  /apex/com.android.vndk.v31/lib/libhidlbase.so (android::hardware::BHwBinder::transact(unsigned int, android::hardware::Parcel const&, android::hardware::Parcel*, unsigned int, std::__1::function<void (android::hardware::Parcel&)>)+96) (BuildId: 6ac8b852c0afd34947114de5bd655c00)
+08-25 12:01:05.182 13694 13694 F DEBUG   :       #07 pc 0004bcbf  /apex/com.android.vndk.v31/lib/libhidlbase.so (android::hardware::IPCThreadState::getAndExecuteCommand()+974) (BuildId: 6ac8b852c0afd34947114de5bd655c00)
+08-25 12:01:05.182 13694 13694 F DEBUG   :       #08 pc 0004b851  /apex/com.android.vndk.v31/lib/libhidlbase.so (android::hardware::IPCThreadState::joinThreadPool(bool)+56) (BuildId: 6ac8b852c0afd34947114de5bd655c00)
+08-25 12:01:05.183 13694 13694 F DEBUG   :       #09 pc 0004b811  /apex/com.android.vndk.v31/lib/libhidlbase.so (android::hardware::PoolThread::threadLoop()+12) (BuildId: 6ac8b852c0afd34947114de5bd655c00)
+08-25 12:01:05.183 13694 13694 F DEBUG   :       #10 pc 0000d305  /apex/com.android.vndk.v31/lib/libutils.so (android::Thread::_threadLoop(void*)+168) (BuildId: 0a6bbca9da4d1b8c3306ec97f554c6e5)
+08-25 12:01:05.183 13694 13694 F DEBUG   :       #11 pc 0000ce3f  /apex/com.android.vndk.v31/lib/libutils.so (thread_data_t::trampoline(thread_data_t const*)+262) (BuildId: 0a6bbca9da4d1b8c3306ec97f554c6e5)
+08-25 12:01:05.183 13694 13694 F DEBUG   :       #12 pc 00056fbb  /apex/com.android.runtime/lib/bionic/libc.so (__pthread_start(void*)+40) (BuildId: 7d235b6338c4b882df4142eacc7d417f)
+08-25 12:01:05.184 13694 13694 F DEBUG   :       #13 pc 0004e10b  /apex/com.android.runtime/lib/bionic/libc.so (__start_thread+30) (BuildId: 7d235b6338c4b882df4142eacc7d417f)
+08-25 12:03:24.528 13727 13739 F libc    : Fatal signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x0 in tid 13739 (HwBinder:13727_), pid 13727 (audio.service)
+08-25 12:03:24.692 14370 14370 F DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+08-25 12:03:24.692 14370 14370 F DEBUG   : Build fingerprint: 'UBOX10Research/ubox10_ceiling_arm/generic:16/BP2A.250805.034/UBOX10_A16_QPR0_R3:userdebug/test-keys'
+08-25 12:03:24.692 14370 14370 F DEBUG   : Revision: '0'
+08-25 12:03:24.692 14370 14370 F DEBUG   : ABI: 'arm'
+08-25 12:03:24.692 14370 14370 F DEBUG   : Timestamp: 2026-08-25 12:03:24.573565864+0000
+08-25 12:03:24.692 14370 14370 F DEBUG   : Process uptime: 0s
+08-25 12:03:24.692 14370 14370 F DEBUG   : Cmdline: /vendor/bin/hw/android.hardware.audio.service
+08-25 12:03:24.692 14370 14370 F DEBUG   : pid: 13727, tid: 13739, name: HwBinder:13727_  >>> /vendor/bin/hw/android.hardware.audio.service <<<
+08-25 12:03:24.692 14370 14370 F DEBUG   : uid: 1041
+08-25 12:03:24.692 14370 14370 F DEBUG   : signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x00000000
+08-25 12:03:24.692 14370 14370 F DEBUG   : Cause: null pointer dereference
+08-25 12:03:24.692 14370 14370 F DEBUG   :     r0  e93c4210  r1  e9580ec0  r2  00000000  r3  00000000
+08-25 12:03:24.692 14370 14370 F DEBUG   :     r4  e9583ac8  r5  e9e031a8  r6  ea987570  r7  e9580ec0
+08-25 12:03:24.692 14370 14370 F DEBUG   :     r8  e9583a28  r9  ea8dcbf4  r10 ea8dcbf4  r11 0000000f
+08-25 12:03:24.692 14370 14370 F DEBUG   :     ip  ea8bcdbc  sp  e9580d90  lr  e9b67f53  pc  00000000
+08-25 12:03:24.692 14370 14370 F DEBUG   : 14 total frames
+08-25 12:03:24.692 14370 14370 F DEBUG   : backtrace:
+08-25 12:03:24.692 14370 14370 F DEBUG   :       #00 pc 00000000  <unknown>
+08-25 12:03:24.692 14370 14370 F DEBUG   :       #01 pc 00015f51  /vendor/lib/hw/android.hardware.audio@7.0-impl.so (android::hardware::Return<void> android::hardware::audio::V7_0::implementation::Device::getAudioPortImpl<audio_port_v7>(android::hardware::audio::common::V7_0::AudioPort const&, std::__1::function<void (android::hardware::audio::V7_0::Result, android::hardware::audio::common::V7_0::AudioPort const&)>, int (*)(audio_hw_device*, audio_port_v7*), char const*)+128) (BuildId: 24bb9072069ca0c589325285f4aa7ca6)
+08-25 12:03:24.692 14370 14370 F DEBUG   :       #02 pc 00015e6d  /vendor/lib/hw/android.hardware.audio@7.0-impl.so (android::hardware::audio::V7_0::implementation::Device::getAudioPort(android::hardware::audio::common::V7_0::AudioPort const&, std::__1::function<void (android::hardware::audio::V7_0::Result, android::hardware::audio::common::V7_0::AudioPort const&)>)+112) (BuildId: 24bb9072069ca0c589325285f4aa7ca6)
+08-25 12:03:24.692 14370 14370 F DEBUG   :       #03 pc 00018e89  /vendor/lib/hw/android.hardware.audio@7.0-impl.so (android::hardware::audio::V7_0::implementation::PrimaryDevice::getAudioPort(android::hardware::audio::common::V7_0::AudioPort const&, std::__1::function<void (android::hardware::audio::V7_0::Result, android::hardware::audio::common::V7_0::AudioPort const&)>)+68) (BuildId: 24bb9072069ca0c589325285f4aa7ca6)
+08-25 12:03:24.692 14370 14370 F DEBUG   :       #04 pc 0003745f  /vendor/lib/android.hardware.audio@7.0.so (android::hardware::audio::V7_0::BnHwDevice::_hidl_getAudioPort(android::hidl::base::V1_0::BnHwBase*, android::hardware::Parcel const&, android::hardware::Parcel*, std::__1::function<void (android::hardware::Parcel&)>)+222) (BuildId: b14eff7680107294e1d03d8dd4c8cb1e)
+08-25 12:03:24.692 14370 14370 F DEBUG   :       #05 pc 0004f733  /vendor/lib/android.hardware.audio@7.0.so (android::hardware::audio::V7_0::BnHwPrimaryDevice::onTransact(unsigned int, android::hardware::Parcel const&, android::hardware::Parcel*, unsigned int, std::__1::function<void (android::hardware::Parcel&)>)+1814) (BuildId: b14eff7680107294e1d03d8dd4c8cb1e)
+08-25 12:03:24.692 14370 14370 F DEBUG   :       #06 pc 0004ccf1  /apex/com.android.vndk.v31/lib/libhidlbase.so (android::hardware::BHwBinder::transact(unsigned int, android::hardware::Parcel const&, android::hardware::Parcel*, unsigned int, std::__1::function<void (android::hardware::Parcel&)>)+96) (BuildId: 6ac8b852c0afd34947114de5bd655c00)
+08-25 12:03:24.693 14370 14370 F DEBUG   :       #07 pc 0004bcbf  /apex/com.android.vndk.v31/lib/libhidlbase.so (android::hardware::IPCThreadState::getAndExecuteCommand()+974) (BuildId: 6ac8b852c0afd34947114de5bd655c00)
+08-25 12:03:24.693 14370 14370 F DEBUG   :       #08 pc 0004b851  /apex/com.android.vndk.v31/lib/libhidlbase.so (android::hardware::IPCThreadState::joinThreadPool(bool)+56) (BuildId: 6ac8b852c0afd34947114de5bd655c00)
+08-25 12:03:24.695 14370 14370 F DEBUG   :       #09 pc 0004b811  /apex/com.android.vndk.v31/lib/libhidlbase.so (android::hardware::PoolThread::threadLoop()+12) (BuildId: 6ac8b852c0afd34947114de5bd655c00)
+08-25 12:03:24.695 14370 14370 F DEBUG   :       #10 pc 0000d305  /apex/com.android.vndk.v31/lib/libutils.so (android::Thread::_threadLoop(void*)+168) (BuildId: 0a6bbca9da4d1b8c3306ec97f554c6e5)
+08-25 12:03:24.695 14370 14370 F DEBUG   :       #11 pc 0000ce3f  /apex/com.android.vndk.v31/lib/libutils.so (thread_data_t::trampoline(thread_data_t const*)+262) (BuildId: 0a6bbca9da4d1b8c3306ec97f554c6e5)
+08-25 12:03:24.695 14370 14370 F DEBUG   :       #12 pc 00056fbb  /apex/com.android.runtime/lib/bionic/libc.so (__pthread_start(void*)+40) (BuildId: 7d235b6338c4b882df4142eacc7d417f)
+08-25 12:03:24.695 14370 14370 F DEBUG   :       #13 pc 0004e10b  /apex/com.android.runtime/lib/bionic/libc.so (__start_thread+30) (BuildId: 7d235b6338c4b882df4142eacc7d417f)
+08-25 14:56:36.034 14378 14378 F libc    : Fatal signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x0 in tid 14378 (audio.service), pid 14378 (audio.service)
+08-25 14:56:36.179 14494 14494 F DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+08-25 14:56:36.179 14494 14494 F DEBUG   : Build fingerprint: 'UBOX10Research/ubox10_ceiling_arm/generic:16/BP2A.250805.034/UBOX10_A16_QPR0_R3:userdebug/test-keys'
+08-25 14:56:36.179 14494 14494 F DEBUG   : Revision: '0'
+08-25 14:56:36.179 14494 14494 F DEBUG   : ABI: 'arm'
+08-25 14:56:36.179 14494 14494 F DEBUG   : Timestamp: 2026-08-25 14:56:36.070463996+0000
+08-25 14:56:36.179 14494 14494 F DEBUG   : Process uptime: 0s
+08-25 14:56:36.179 14494 14494 F DEBUG   : Cmdline: /vendor/bin/hw/android.hardware.audio.service
+08-25 14:56:36.179 14494 14494 F DEBUG   : pid: 14378, tid: 14378, name: audio.service  >>> /vendor/bin/hw/android.hardware.audio.service <<<
+08-25 14:56:36.179 14494 14494 F DEBUG   : uid: 1041
+08-25 14:56:36.179 14494 14494 F DEBUG   : signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x00000000
+08-25 14:56:36.179 14494 14494 F DEBUG   : Cause: null pointer dereference
+08-25 14:56:36.179 14494 14494 F DEBUG   :     r0  f40818d0  r1  ffc667b8  r2  00000000  r3  00000000
+08-25 14:56:36.179 14494 14494 F DEBUG   :     r4  ffc693c0  r5  f49821a8  r6  f5607480  r7  ffc667b8
+08-25 14:56:36.179 14494 14494 F DEBUG   :     r8  ffc69320  r9  f53fbbf4  r10 f53fbbf4  r11 0000000f
+08-25 14:56:36.179 14494 14494 F DEBUG   :     ip  f53dbdbc  sp  ffc66688  lr  f451cf53  pc  00000000
+08-25 14:56:36.179 14494 14494 F DEBUG   : 11 total frames
+08-25 14:56:36.179 14494 14494 F DEBUG   : backtrace:
+08-25 14:56:36.180 14494 14494 F DEBUG   :       #00 pc 00000000  <unknown>
+08-25 14:56:36.180 14494 14494 F DEBUG   :       #01 pc 00015f51  /vendor/lib/hw/android.hardware.audio@7.0-impl.so (android::hardware::Return<void> android::hardware::audio::V7_0::implementation::Device::getAudioPortImpl<audio_port_v7>(android::hardware::audio::common::V7_0::AudioPort const&, std::__1::function<void (android::hardware::audio::V7_0::Result, android::hardware::audio::common::V7_0::AudioPort const&)>, int (*)(audio_hw_device*, audio_port_v7*), char const*)+128) (BuildId: 24bb9072069ca0c589325285f4aa7ca6)
+08-25 14:56:36.180 14494 14494 F DEBUG   :       #02 pc 00015e6d  /vendor/lib/hw/android.hardware.audio@7.0-impl.so (android::hardware::audio::V7_0::implementation::Device::getAudioPort(android::hardware::audio::common::V7_0::AudioPort const&, std::__1::function<void (android::hardware::audio::V7_0::Result, android::hardware::audio::common::V7_0::AudioPort const&)>)+112) (BuildId: 24bb9072069ca0c589325285f4aa7ca6)
+08-25 14:56:36.180 14494 14494 F DEBUG   :       #03 pc 00018e89  /vendor/lib/hw/android.hardware.audio@7.0-impl.so (android::hardware::audio::V7_0::implementation::PrimaryDevice::getAudioPort(android::hardware::audio::common::V7_0::AudioPort const&, std::__1::function<void (android::hardware::audio::V7_0::Result, android::hardware::audio::common::V7_0::AudioPort const&)>)+68) (BuildId: 24bb9072069ca0c589325285f4aa7ca6)
+08-25 14:56:36.180 14494 14494 F DEBUG   :       #04 pc 0003745f  /vendor/lib/android.hardware.audio@7.0.so (android::hardware::audio::V7_0::BnHwDevice::_hidl_getAudioPort(android::hidl::base::V1_0::BnHwBase*, android::hardware::Parcel const&, android::hardware::Parcel*, std::__1::function<void (android::hardware::Parcel&)>)+222) (BuildId: b14eff7680107294e1d03d8dd4c8cb1e)
+08-25 14:56:36.180 14494 14494 F DEBUG   :       #05 pc 0004f733  /vendor/lib/android.hardware.audio@7.0.so (android::hardware::audio::V7_0::BnHwPrimaryDevice::onTransact(unsigned int, android::hardware::Parcel const&, android::hardware::Parcel*, unsigned int, std::__1::function<void (android::hardware::Parcel&)>)+1814) (BuildId: b14eff7680107294e1d03d8dd4c8cb1e)
+08-25 14:56:36.180 14494 14494 F DEBUG   :       #06 pc 0004ccf1  /apex/com.android.vndk.v31/lib/libhidlbase.so (android::hardware::BHwBinder::transact(unsigned int, android::hardware::Parcel const&, android::hardware::Parcel*, unsigned int, std::__1::function<void (android::hardware::Parcel&)>)+96) (BuildId: 6ac8b852c0afd34947114de5bd655c00)
+08-25 14:56:36.180 14494 14494 F DEBUG   :       #07 pc 0004bcbf  /apex/com.android.vndk.v31/lib/libhidlbase.so (android::hardware::IPCThreadState::getAndExecuteCommand()+974) (BuildId: 6ac8b852c0afd34947114de5bd655c00)
+08-25 14:56:36.180 14494 14494 F DEBUG   :       #08 pc 0004b851  /apex/com.android.vndk.v31/lib/libhidlbase.so (android::hardware::IPCThreadState::joinThreadPool(bool)+56) (BuildId: 6ac8b852c0afd34947114de5bd655c00)
+08-25 14:56:36.183 14494 14494 F DEBUG   :       #09 pc 00002667  /vendor/bin/hw/android.hardware.audio.service (main+2502) (BuildId: 914b75aeaa96ad06a20a53266e4a97c2)
+08-25 14:56:36.183 14494 14494 F DEBUG   :       #10 pc 00048a61  /apex/com.android.runtime/lib/bionic/libc.so (__libc_init+72) (BuildId: 7d235b6338c4b882df4142eacc7d417f)
+08-25 15:05:58.735 14501 14501 F libc    : Fatal signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x0 in tid 14501 (audio.service), pid 14501 (audio.service)
+08-25 15:05:58.878 14782 14782 F DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+08-25 15:05:58.878 14782 14782 F DEBUG   : Build fingerprint: 'UBOX10Research/ubox10_ceiling_arm/generic:16/BP2A.250805.034/UBOX10_A16_QPR0_R3:userdebug/test-keys'
+08-25 15:05:58.878 14782 14782 F DEBUG   : Revision: '0'
+08-25 15:05:58.878 14782 14782 F DEBUG   : ABI: 'arm'
+08-25 15:05:58.878 14782 14782 F DEBUG   : Timestamp: 2026-08-25 15:05:58.770454014+0000
+08-25 15:05:58.878 14782 14782 F DEBUG   : Process uptime: 0s
+08-25 15:05:58.878 14782 14782 F DEBUG   : Cmdline: /vendor/bin/hw/android.hardware.audio.service
+08-25 15:05:58.878 14782 14782 F DEBUG   : pid: 14501, tid: 14501, name: audio.service  >>> /vendor/bin/hw/android.hardware.audio.service <<<
+08-25 15:05:58.878 14782 14782 F DEBUG   : uid: 1041
+08-25 15:05:58.878 14782 14782 F DEBUG   : signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x00000000
+08-25 15:05:58.878 14782 14782 F DEBUG   : Cause: null pointer dereference
+08-25 15:05:58.878 14782 14782 F DEBUG   :     r0  e85c18d0  r1  ffdf68b8  r2  00000000  r3  00000000
+08-25 15:05:58.878 14782 14782 F DEBUG   :     r4  ffdf94c0  r5  e93821a8  r6  ea087ba0  r7  ffdf68b8
+08-25 15:05:58.878 14782 14782 F DEBUG   :     r8  ffdf9420  r9  e9ba1bf4  r10 e9ba1bf4  r11 0000000f
+08-25 15:05:58.878 14782 14782 F DEBUG   :     ip  e9b81dbc  sp  ffdf6788  lr  e8d1af53  pc  00000000
+08-25 15:05:58.878 14782 14782 F DEBUG   : 11 total frames
+08-25 15:05:58.879 14782 14782 F DEBUG   : backtrace:
+08-25 15:05:58.879 14782 14782 F DEBUG   :       #00 pc 00000000  <unknown>
+08-25 15:05:58.879 14782 14782 F DEBUG   :       #01 pc 00015f51  /vendor/lib/hw/android.hardware.audio@7.0-impl.so (android::hardware::Return<void> android::hardware::audio::V7_0::implementation::Device::getAudioPortImpl<audio_port_v7>(android::hardware::audio::common::V7_0::AudioPort const&, std::__1::function<void (android::hardware::audio::V7_0::Result, android::hardware::audio::common::V7_0::AudioPort const&)>, int (*)(audio_hw_device*, audio_port_v7*), char const*)+128) (BuildId: 24bb9072069ca0c589325285f4aa7ca6)
+08-25 15:05:58.879 14782 14782 F DEBUG   :       #02 pc 00015e6d  /vendor/lib/hw/android.hardware.audio@7.0-impl.so (android::hardware::audio::V7_0::implementation::Device::getAudioPort(android::hardware::audio::common::V7_0::AudioPort const&, std::__1::function<void (android::hardware::audio::V7_0::Result, android::hardware::audio::common::V7_0::AudioPort const&)>)+112) (BuildId: 24bb9072069ca0c589325285f4aa7ca6)
+08-25 15:05:58.879 14782 14782 F DEBUG   :       #03 pc 00018e89  /vendor/lib/hw/android.hardware.audio@7.0-impl.so (android::hardware::audio::V7_0::implementation::PrimaryDevice::getAudioPort(android::hardware::audio::common::V7_0::AudioPort const&, std::__1::function<void (android::hardware::audio::V7_0::Result, android::hardware::audio::common::V7_0::AudioPort const&)>)+68) (BuildId: 24bb9072069ca0c589325285f4aa7ca6)
+08-25 15:05:58.879 14782 14782 F DEBUG   :       #04 pc 0003745f  /vendor/lib/android.hardware.audio@7.0.so (android::hardware::audio::V7_0::BnHwDevice::_hidl_getAudioPort(android::hidl::base::V1_0::BnHwBase*, android::hardware::Parcel const&, android::hardware::Parcel*, std::__1::function<void (android::hardware::Parcel&)>)+222) (BuildId: b14eff7680107294e1d03d8dd4c8cb1e)
+08-25 15:05:58.879 14782 14782 F DEBUG   :       #05 pc 0004f733  /vendor/lib/android.hardware.audio@7.0.so (android::hardware::audio::V7_0::BnHwPrimaryDevice::onTransact(unsigned int, android::hardware::Parcel const&, android::hardware::Parcel*, unsigned int, std::__1::function<void (android::hardware::Parcel&)>)+1814) (BuildId: b14eff7680107294e1d03d8dd4c8cb1e)
+08-25 15:05:58.879 14782 14782 F DEBUG   :       #06 pc 0004ccf1  /apex/com.android.vndk.v31/lib/libhidlbase.so (android::hardware::BHwBinder::transact(unsigned int, android::hardware::Parcel const&, android::hardware::Parcel*, unsigned int, std::__1::function<void (android::hardware::Parcel&)>)+96) (BuildId: 6ac8b852c0afd34947114de5bd655c00)
+08-25 15:05:58.879 14782 14782 F DEBUG   :       #07 pc 0004bcbf  /apex/com.android.vndk.v31/lib/libhidlbase.so (android::hardware::IPCThreadState::getAndExecuteCommand()+974) (BuildId: 6ac8b852c0afd34947114de5bd655c00)
+08-25 15:05:58.879 14782 14782 F DEBUG   :       #08 pc 0004b851  /apex/com.android.vndk.v31/lib/libhidlbase.so (android::hardware::IPCThreadState::joinThreadPool(bool)+56) (BuildId: 6ac8b852c0afd34947114de5bd655c00)
+08-25 15:05:58.880 14782 14782 F DEBUG   :       #09 pc 00002667  /vendor/bin/hw/android.hardware.audio.service (main+2502) (BuildId: 914b75aeaa96ad06a20a53266e4a97c2)
+08-25 15:05:58.880 14782 14782 F DEBUG   :       #10 pc 00048a61  /apex/com.android.runtime/lib/bionic/libc.so (__libc_init+72) (BuildId: 7d235b6338c4b882df4142eacc7d417f)
+08-25 15:31:01.498 14790 14796 F libc    : Fatal signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x0 in tid 14796 (HwBinder:14790_), pid 14790 (audio.service)
+08-25 15:31:01.644 15030 15030 F DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+08-25 15:31:01.644 15030 15030 F DEBUG   : Build fingerprint: 'UBOX10Research/ubox10_ceiling_arm/generic:16/BP2A.250805.034/UBOX10_A16_QPR0_R3:userdebug/test-keys'
+08-25 15:31:01.644 15030 15030 F DEBUG   : Revision: '0'
+08-25 15:31:01.644 15030 15030 F DEBUG   : ABI: 'arm'
+08-25 15:31:01.644 15030 15030 F DEBUG   : Timestamp: 2026-08-25 15:31:01.534898981+0000
+08-25 15:31:01.644 15030 15030 F DEBUG   : Process uptime: 0s
+08-25 15:31:01.644 15030 15030 F DEBUG   : Cmdline: /vendor/bin/hw/android.hardware.audio.service
+08-25 15:31:01.644 15030 15030 F DEBUG   : pid: 14790, tid: 14796, name: HwBinder:14790_  >>> /vendor/bin/hw/android.hardware.audio.service <<<
+08-25 15:31:01.644 15030 15030 F DEBUG   : uid: 1041
+08-25 15:31:01.644 15030 15030 F DEBUG   : signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x00000000
+08-25 15:31:01.644 15030 15030 F DEBUG   : Cause: null pointer dereference
+08-25 15:31:01.644 15030 15030 F DEBUG   :     r0  ef2c5290  r1  ef90cec0  r2  00000000  r3  00000000
+08-25 15:31:01.644 15030 15030 F DEBUG   :     r4  ef90fac8  r5  f00821a8  r6  f0d47840  r7  ef90cec0
+08-25 15:31:01.644 15030 15030 F DEBUG   :     r8  ef90fa28  r9  f07ebbf4  r10 f07ebbf4  r11 0000000f
+08-25 15:31:01.644 15030 15030 F DEBUG   :     ip  f07cbdbc  sp  ef90cd90  lr  efa95f53  pc  00000000
+08-25 15:31:01.644 15030 15030 F DEBUG   : 14 total frames
+08-25 15:31:01.644 15030 15030 F DEBUG   : backtrace:
+08-25 15:31:01.645 15030 15030 F DEBUG   :       #00 pc 00000000  <unknown>
+08-25 15:31:01.645 15030 15030 F DEBUG   :       #01 pc 00015f51  /vendor/lib/hw/android.hardware.audio@7.0-impl.so (android::hardware::Return<void> android::hardware::audio::V7_0::implementation::Device::getAudioPortImpl<audio_port_v7>(android::hardware::audio::common::V7_0::AudioPort const&, std::__1::function<void (android::hardware::audio::V7_0::Result, android::hardware::audio::common::V7_0::AudioPort const&)>, int (*)(audio_hw_device*, audio_port_v7*), char const*)+128) (BuildId: 24bb9072069ca0c589325285f4aa7ca6)
+08-25 15:31:01.645 15030 15030 F DEBUG   :       #02 pc 00015e6d  /vendor/lib/hw/android.hardware.audio@7.0-impl.so (android::hardware::audio::V7_0::implementation::Device::getAudioPort(android::hardware::audio::common::V7_0::AudioPort const&, std::__1::function<void (android::hardware::audio::V7_0::Result, android::hardware::audio::common::V7_0::AudioPort const&)>)+112) (BuildId: 24bb9072069ca0c589325285f4aa7ca6)
+08-25 15:31:01.645 15030 15030 F DEBUG   :       #03 pc 00018e89  /vendor/lib/hw/android.hardware.audio@7.0-impl.so (android::hardware::audio::V7_0::implementation::PrimaryDevice::getAudioPort(android::hardware::audio::common::V7_0::AudioPort const&, std::__1::function<void (android::hardware::audio::V7_0::Result, android::hardware::audio::common::V7_0::AudioPort const&)>)+68) (BuildId: 24bb9072069ca0c589325285f4aa7ca6)
+08-25 15:31:01.645 15030 15030 F DEBUG   :       #04 pc 0003745f  /vendor/lib/android.hardware.audio@7.0.so (android::hardware::audio::V7_0::BnHwDevice::_hidl_getAudioPort(android::hidl::base::V1_0::BnHwBase*, android::hardware::Parcel const&, android::hardware::Parcel*, std::__1::function<void (android::hardware::Parcel&)>)+222) (BuildId: b14eff7680107294e1d03d8dd4c8cb1e)
+08-25 15:31:01.645 15030 15030 F DEBUG   :       #05 pc 0004f733  /vendor/lib/android.hardware.audio@7.0.so (android::hardware::audio::V7_0::BnHwPrimaryDevice::onTransact(unsigned int, android::hardware::Parcel const&, android::hardware::Parcel*, unsigned int, std::__1::function<void (android::hardware::Parcel&)>)+1814) (BuildId: b14eff7680107294e1d03d8dd4c8cb1e)
+08-25 15:31:01.645 15030 15030 F DEBUG   :       #06 pc 0004ccf1  /apex/com.android.vndk.v31/lib/libhidlbase.so (android::hardware::BHwBinder::transact(unsigned int, android::hardware::Parcel const&, android::hardware::Parcel*, unsigned int, std::__1::function<void (android::hardware::Parcel&)>)+96) (BuildId: 6ac8b852c0afd34947114de5bd655c00)
+08-25 15:31:01.645 15030 15030 F DEBUG   :       #07 pc 0004bcbf  /apex/com.android.vndk.v31/lib/libhidlbase.so (android::hardware::IPCThreadState::getAndExecuteCommand()+974) (BuildId: 6ac8b852c0afd34947114de5bd655c00)
+08-25 15:31:01.645 15030 15030 F DEBUG   :       #08 pc 0004b851  /apex/com.android.vndk.v31/lib/libhidlbase.so (android::hardware::IPCThreadState::joinThreadPool(bool)+56) (BuildId: 6ac8b852c0afd34947114de5bd655c00)
+08-25 15:31:01.647 15030 15030 F DEBUG   :       #09 pc 0004b811  /apex/com.android.vndk.v31/lib/libhidlbase.so (android::hardware::PoolThread::threadLoop()+12) (BuildId: 6ac8b852c0afd34947114de5bd655c00)
+08-25 15:31:01.647 15030 15030 F DEBUG   :       #10 pc 0000d305  /apex/com.android.vndk.v31/lib/libutils.so (android::Thread::_threadLoop(void*)+168) (BuildId: 0a6bbca9da4d1b8c3306ec97f554c6e5)
+08-25 15:31:01.647 15030 15030 F DEBUG   :       #11 pc 0000ce3f  /apex/com.android.vndk.v31/lib/libutils.so (thread_data_t::trampoline(thread_data_t const*)+262) (BuildId: 0a6bbca9da4d1b8c3306ec97f554c6e5)
+08-25 15:31:01.647 15030 15030 F DEBUG   :       #12 pc 00056fbb  /apex/com.android.runtime/lib/bionic/libc.so (__pthread_start(void*)+40) (BuildId: 7d235b6338c4b882df4142eacc7d417f)
+08-25 15:31:01.648 15030 15030 F DEBUG   :       #13 pc 0004e10b  /apex/com.android.runtime/lib/bionic/libc.so (__start_thread+30) (BuildId: 7d235b6338c4b882df4142eacc7d417f)
+08-25 15:33:21.378 15037 15037 F libc    : Fatal signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x0 in tid 15037 (audio.service), pid 15037 (audio.service)
+08-25 15:33:21.520 15110 15110 F DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+08-25 15:33:21.520 15110 15110 F DEBUG   : Build fingerprint: 'UBOX10Research/ubox10_ceiling_arm/generic:16/BP2A.250805.034/UBOX10_A16_QPR0_R3:userdebug/test-keys'
+08-25 15:33:21.520 15110 15110 F DEBUG   : Revision: '0'
+08-25 15:33:21.521 15110 15110 F DEBUG   : ABI: 'arm'
+08-25 15:33:21.521 15110 15110 F DEBUG   : Timestamp: 2026-08-25 15:33:21.413549214+0000
+08-25 15:33:21.521 15110 15110 F DEBUG   : Process uptime: 0s
+08-25 15:33:21.521 15110 15110 F DEBUG   : Cmdline: /vendor/bin/hw/android.hardware.audio.service
+08-25 15:33:21.521 15110 15110 F DEBUG   : pid: 15037, tid: 15037, name: audio.service  >>> /vendor/bin/hw/android.hardware.audio.service <<<
+08-25 15:33:21.521 15110 15110 F DEBUG   : uid: 1041
+08-25 15:33:21.521 15110 15110 F DEBUG   : signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x00000000
+08-25 15:33:21.521 15110 15110 F DEBUG   : Cause: null pointer dereference
+08-25 15:33:21.521 15110 15110 F DEBUG   :     r0  f15c3190  r1  ffad8258  r2  00000000  r3  00000000
+08-25 15:33:21.521 15110 15110 F DEBUG   :     r4  ffadae60  r5  f1f021a8  r6  f2b87390  r7  ffad8258
+08-25 15:33:21.521 15110 15110 F DEBUG   :     r8  ffadadc0  r9  f2833bf4  r10 f2833bf4  r11 0000000f
+08-25 15:33:21.521 15110 15110 F DEBUG   :     ip  f2813dbc  sp  ffad8128  lr  f1918f53  pc  00000000
+08-25 15:33:21.521 15110 15110 F DEBUG   : 11 total frames
+08-25 15:33:21.521 15110 15110 F DEBUG   : backtrace:
+08-25 15:33:21.521 15110 15110 F DEBUG   :       #00 pc 00000000  <unknown>
+08-25 15:33:21.521 15110 15110 F DEBUG   :       #01 pc 00015f51  /vendor/lib/hw/android.hardware.audio@7.0-impl.so (android::hardware::Return<void> android::hardware::audio::V7_0::implementation::Device::getAudioPortImpl<audio_port_v7>(android::hardware::audio::common::V7_0::AudioPort const&, std::__1::function<void (android::hardware::audio::V7_0::Result, android::hardware::audio::common::V7_0::AudioPort const&)>, int (*)(audio_hw_device*, audio_port_v7*), char const*)+128) (BuildId: 24bb9072069ca0c589325285f4aa7ca6)
+08-25 15:33:21.521 15110 15110 F DEBUG   :       #02 pc 00015e6d  /vendor/lib/hw/android.hardware.audio@7.0-impl.so (android::hardware::audio::V7_0::implementation::Device::getAudioPort(android::hardware::audio::common::V7_0::AudioPort const&, std::__1::function<void (android::hardware::audio::V7_0::Result, android::hardware::audio::common::V7_0::AudioPort const&)>)+112) (BuildId: 24bb9072069ca0c589325285f4aa7ca6)
+08-25 15:33:21.521 15110 15110 F DEBUG   :       #03 pc 00018e89  /vendor/lib/hw/android.hardware.audio@7.0-impl.so (android::hardware::audio::V7_0::implementation::PrimaryDevice::getAudioPort(android::hardware::audio::common::V7_0::AudioPort const&, std::__1::function<void (android::hardware::audio::V7_0::Result, android::hardware::audio::common::V7_0::AudioPort const&)>)+68) (BuildId: 24bb9072069ca0c589325285f4aa7ca6)
+08-25 15:33:21.521 15110 15110 F DEBUG   :       #04 pc 0003745f  /vendor/lib/android.hardware.audio@7.0.so (android::hardware::audio::V7_0::BnHwDevice::_hidl_getAudioPort(android::hidl::base::V1_0::BnHwBase*, android::hardware::Parcel const&, android::hardware::Parcel*, std::__1::function<void (android::hardware::Parcel&)>)+222) (BuildId: b14eff7680107294e1d03d8dd4c8cb1e)
+08-25 15:33:21.521 15110 15110 F DEBUG   :       #05 pc 0004f733  /vendor/lib/android.hardware.audio@7.0.so (android::hardware::audio::V7_0::BnHwPrimaryDevice::onTransact(unsigned int, android::hardware::Parcel const&, android::hardware::Parcel*, unsigned int, std::__1::function<void (android::hardware::Parcel&)>)+1814) (BuildId: b14eff7680107294e1d03d8dd4c8cb1e)
+08-25 15:33:21.521 15110 15110 F DEBUG   :       #06 pc 0004ccf1  /apex/com.android.vndk.v31/lib/libhidlbase.so (android::hardware::BHwBinder::transact(unsigned int, android::hardware::Parcel const&, android::hardware::Parcel*, unsigned int, std::__1::function<void (android::hardware::Parcel&)>)+96) (BuildId: 6ac8b852c0afd34947114de5bd655c00)
+08-25 15:33:21.521 15110 15110 F DEBUG   :       #07 pc 0004bcbf  /apex/com.android.vndk.v31/lib/libhidlbase.so (android::hardware::IPCThreadState::getAndExecuteCommand()+974) (BuildId: 6ac8b852c0afd34947114de5bd655c00)
+08-25 15:33:21.521 15110 15110 F DEBUG   :       #08 pc 0004b851  /apex/com.android.vndk.v31/lib/libhidlbase.so (android::hardware::IPCThreadState::joinThreadPool(bool)+56) (BuildId: 6ac8b852c0afd34947114de5bd655c00)
+08-25 15:33:21.524 15110 15110 F DEBUG   :       #09 pc 00002667  /vendor/bin/hw/android.hardware.audio.service (main+2502) (BuildId: 914b75aeaa96ad06a20a53266e4a97c2)
+08-25 15:33:21.524 15110 15110 F DEBUG   :       #10 pc 00048a61  /apex/com.android.runtime/lib/bionic/libc.so (__libc_init+72) (BuildId: 7d235b6338c4b882df4142eacc7d417f)

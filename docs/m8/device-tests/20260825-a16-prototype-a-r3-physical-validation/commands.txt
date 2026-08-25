@@ -1,0 +1,68 @@
+# Host context: PowerShell 7, C:\platform-tools
+Set-Location -LiteralPath C:\platform-tools
+.\adb.exe start-server
+.\adb.exe connect 192.168.1.9:7896
+.\adb.exe devices -l
+.\adb.exe -s 192.168.1.9:7896 shell id
+.\adb.exe -s 192.168.1.9:7896 shell su 0 id
+
+# Identity, framework, APEX and kernel contract
+.\adb.exe -s 192.168.1.9:7896 shell getprop
+.\adb.exe -s 192.168.1.9:7896 shell ps -A
+.\adb.exe -s 192.168.1.9:7896 shell uname -a
+.\adb.exe -s 192.168.1.9:7896 shell getprop sys.boot_completed
+.\adb.exe -s 192.168.1.9:7896 shell getprop init.svc.zygote
+.\adb.exe -s 192.168.1.9:7896 shell getprop init.svc.surfaceflinger
+.\adb.exe -s 192.168.1.9:7896 shell getprop apex.all.ready
+.\adb.exe -s 192.168.1.9:7896 shell getprop apexd.status
+.\adb.exe -s 192.168.1.9:7896 shell ls -ld /apex/com.android.art /apex/com.android.runtime /apex/com.android.vndk.v31
+.\adb.exe -s 192.168.1.9:7896 shell su 0 sh -c "zcat /proc/config.gz | grep -E 'CONFIG_(BLK_CGROUP|CPUSETS|PROC_PID_CPUSET|NET_CLS_MATCHALL|NET_ACT_POLICE|NET_ACT_BPF)='"
+
+# Graphics, display, TV and IME
+.\adb.exe -s 192.168.1.9:7896 shell getprop persist.graphics.egl
+.\adb.exe -s 192.168.1.9:7896 shell getprop ro.hardware.egl
+.\adb.exe -s 192.168.1.9:7896 shell getprop ro.board.platform
+.\adb.exe -s 192.168.1.9:7896 shell dumpsys SurfaceFlinger
+.\adb.exe -s 192.168.1.9:7896 shell wm size
+.\adb.exe -s 192.168.1.9:7896 shell dumpsys window windows
+.\adb.exe -s 192.168.1.9:7896 shell pm list features
+.\adb.exe -s 192.168.1.9:7896 shell cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.HOME
+.\adb.exe -s 192.168.1.9:7896 shell ime list -s
+.\adb.exe -s 192.168.1.9:7896 shell settings get secure default_input_method
+.\adb.exe -s 192.168.1.9:7896 shell su 0 cat /sys/class/extcon/extcon0/state
+.\adb.exe -s 192.168.1.9:7896 shell su 0 cat /sys/class/disp/disp/attr/sys
+
+# Ethernet and Wi-Fi
+.\adb.exe -s 192.168.1.9:7896 shell ip addr show eth0
+.\adb.exe -s 192.168.1.9:7896 shell cat /sys/class/net/eth0/operstate
+.\adb.exe -s 192.168.1.9:7896 shell cat /sys/class/net/eth0/carrier
+.\adb.exe -s 192.168.1.9:7896 shell ping -c 4 192.168.1.1
+.\adb.exe -s 192.168.1.9:7896 shell ping -c 4 8.8.8.8
+.\adb.exe -s 192.168.1.9:7896 shell ping -c 4 www.google.com
+.\adb.exe -s 192.168.1.9:7896 shell cmd wifi status
+.\adb.exe -s 192.168.1.9:7896 shell cmd wifi list-networks
+.\adb.exe -s 192.168.1.9:7896 shell cmd wifi start-scan
+.\adb.exe -s 192.168.1.9:7896 shell cmd wifi list-scan-results
+.\adb.exe -s 192.168.1.9:7896 shell svc wifi disable
+.\adb.exe -s 192.168.1.9:7896 shell svc wifi enable
+.\adb.exe -s 192.168.1.9:7896 shell ip link show wlan0
+.\adb.exe -s 192.168.1.9:7896 shell su 0 cat /proc/modules
+
+# Physical remote, audio and logs
+.\adb.exe -s 192.168.1.9:7896 shell su 0 getevent -lt /dev/input/event0
+.\adb.exe -s 192.168.1.9:7896 shell dumpsys input
+.\adb.exe -s 192.168.1.9:7896 shell su 0 cat /system/usr/keylayout/Generic.kl
+.\adb.exe -s 192.168.1.9:7896 shell dumpsys audio
+.\adb.exe -s 192.168.1.9:7896 shell dumpsys media.audio_flinger
+.\adb.exe -s 192.168.1.9:7896 shell dumpsys media.audio_policy
+.\adb.exe -s 192.168.1.9:7896 shell su 0 tinyplay /data/local/tmp/a16-r3-audio-test.wav -D 3 -d 0
+.\adb.exe -s 192.168.1.9:7896 shell rm -f /data/local/tmp/a16-r3-audio-test.wav
+.\adb.exe -s 192.168.1.9:7896 shell input keyevent 164
+.\adb.exe -s 192.168.1.9:7896 logcat -b crash -d
+.\adb.exe -s 192.168.1.9:7896 logcat -b all -d
+.\adb.exe -s 192.168.1.9:7896 shell su 0 dmesg
+
+# Notes
+# - The tinyplay fixture completed, but the attached monitor has no audio output; no audible PASS is claimed.
+# - input keyevent 164 was cleanup only, restoring mute after the physical MUTE test.
+# - Wi-Fi association commands were not run because no saved network/input path was available.

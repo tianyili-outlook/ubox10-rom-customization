@@ -1,0 +1,24 @@
+2026-08-25 15:43:37.559298842
+1
+running
+system       12914     1     174392  55920 do_epoll_wait       0 S surfaceflinger
+system       13049 12895    2405412 288880 do_epoll_wait       0 S system_server
+audioserver  15116     1      60312  23112 binder_thread_read  0 S audioserver
+audioserver  15117     1      38824   9424 binder_thread_read  0 S android.hardware.audio.service
+Wifi is enabled
+Wifi scanning is only available when wifi is enabled
+==== ClientModeManager instance: ConcreteClientModeManager{id=4121312 iface=wlan0 role=ROLE_CLIENT_PRIMARY} ====
+Wifi is not connected
+12: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    inet 192.168.1.9/24 brd 192.168.1.255 scope global eth0
+       valid_lft forever preferred_lft forever
+HDMI=1
+screen 0:
+de_rate 696000000 hz, ref_fps:60
+mgr0: 3840x2160 fmt[yuv444] cs[0x101] range[limit] eotf[0x4] bits[8bits] err[0] force_sync[247] unblank direct_show[false] iommu[1]
+dmabuf: cache[2] cache max[2] umap skip[0] umap skip max[0]
+	hdmi output mode(34)	fps:60.6	3840x2160
+	err:0	skip:3	irq:249700	vsync:315	vsync_skip:0
+   BUF    enable ch[0] lyr[0] z[0] prem[Y] a[globl 255] fmt[  1] fb[1920,1080; 960, 540; 960, 540] align[  64,   0,   0] crop[   0,   0,1920,1080] frame[   0,   0,3840,2160] addr[ff000000,ff1fa400,ff278d00] flags[0x       0] trd[0,0]
+depth[ 0] transf[0]
+disp[0]all:989, sub:989, cur:989, free:974, skip:0

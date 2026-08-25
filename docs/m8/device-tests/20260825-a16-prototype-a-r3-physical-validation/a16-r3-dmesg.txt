@@ -1,0 +1,420 @@
+[ 3397.833220] type=1400 audit(1787671852.360:88465): avc:  denied  { create } for  comm="RenderThread" name="com.android.opengl.shaders_cache" scontext=u:r:platform_app:s0:c512,c768 tcontext=u:object_r:app_data_file:s0:c512,c768 tclass=file permissive=1 app=com.android.systemui
+[ 3397.833307] type=1400 audit(1787671852.360:88466): avc:  denied  { setattr } for  comm="RenderThread" name="com.android.opengl.shaders_cache" dev="mmcblk0p26" ino=2732 scontext=u:r:platform_app:s0:c512,c768 tcontext=u:object_r:app_data_file:s0:c512,c768 tclass=file permissive=1 app=com.android.systemui
+[ 3405.782232] HDMI cable is disconnected
+[ 3405.784093] type=1400 audit(1787671860.312:88467): avc:  denied  { read } for  comm="audio.service" scontext=u:r:hal_audio_default:s0 tcontext=u:r:hal_audio_default:s0 tclass=netlink_kobject_uevent_socket permissive=1
+[ 3406.778141] HDMI cable is connected
+[ 3407.073466] logd: logdr: UID=1041 GID=1005 PID=15030 n tail=500 logMask=8 pid=14790 start=0ns deadline=0ns
+[ 3407.090206] logd: logdr: UID=1041 GID=1005 PID=15030 n tail=500 logMask=1 pid=14790 start=0ns deadline=0ns
+[ 3407.146533] init: Untracked pid 15030 exited with status 0
+[ 3407.146564] init: Untracked pid 15030 did not have an associated service entry and will not be reaped
+[ 3407.148519] binder: release 14790:14796 transaction 129931 in, still active
+[ 3407.148531] binder: send failed reply for transaction 129931 to 14789:14820
+[ 3407.149106] init: Untracked pid 15032 exited with status 0
+[ 3407.149131] init: Untracked pid 15032 did not have an associated service entry and will not be reaped
+[ 3407.149245] init: Service 'vendor.audio-hal' (pid 14790) received signal 11
+[ 3407.149278] init: Sending signal 9 to service 'vendor.audio-hal' (pid 14790) process group...
+[ 3407.149914] libprocessgroup: Removed cgroup /sys/fs/cgroup/system/uid_1041/pid_14790
+[ 3407.150231] init: Sending signal 9 to service 'audioserver' (pid 14789) process group...
+[ 3407.158430] binder: release 14789:14820 transaction 129922 in, still active
+[ 3407.158442] binder: send failed reply for transaction 129922 to 13049:13401
+[ 3407.159817] binder: undelivered death notification, 00000000f3587720
+[ 3407.161425] libprocessgroup: Removed cgroup /sys/fs/cgroup/system/uid_1041/pid_14789
+[ 3407.163630] init: Service 'audioserver' (pid 14789) received signal 9
+[ 3407.352241] servicemanager: Caller(pid=15036,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.core.IModule/default in the VINTF manifest. No alternative instances declared in VINTF.
+[ 3407.353486] servicemanager: Caller(pid=15036,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.effect.IFactory/default in the VINTF manifest. No alternative instances declared in VINTF.
+[ 3407.364467] servicemanager: Caller(pid=15036,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.effect.IFactory/default in the VINTF manifest. No alternative instances declared in VINTF.
+[ 3407.365647] servicemanager: Caller(pid=15036,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.core.IModule/default in the VINTF manifest. No alternative instances declared in VINTF.
+[ 3407.401897] type=1400 audit(1787671861.928:88468): avc:  denied  { read } for  comm="audio.service" name="u:object_r:vendor_audio_prop:s0" dev="tmpfs" ino=1412 scontext=u:r:hal_audio_default:s0 tcontext=u:object_r:vendor_audio_prop:s0 tclass=file permissive=1
+[ 3407.402023] type=1400 audit(1787671861.928:88469): avc:  denied  { open } for  comm="audio.service" path="/dev/__properties__/u:object_r:vendor_audio_prop:s0" dev="tmpfs" ino=1412 scontext=u:r:hal_audio_default:s0 tcontext=u:object_r:vendor_audio_prop:s0 tclass=file permissive=1
+[ 3407.402108] type=1400 audit(1787671861.928:88470): avc:  denied  { getattr } for  comm="audio.service" path="/dev/__properties__/u:object_r:vendor_audio_prop:s0" dev="tmpfs" ino=1412 scontext=u:r:hal_audio_default:s0 tcontext=u:object_r:vendor_audio_prop:s0 tclass=file permissive=1
+[ 3407.402237] type=1400 audit(1787671861.928:88471): avc:  denied  { map } for  comm="audio.service" path="/dev/__properties__/u:object_r:vendor_audio_prop:s0" dev="tmpfs" ino=1412 scontext=u:r:hal_audio_default:s0 tcontext=u:object_r:vendor_audio_prop:s0 tclass=file permissive=1
+[ 3407.409364] audit: audit_lost=14149 audit_rate_limit=5 audit_backlog_limit=64
+[ 3407.409373] audit: rate limit exceeded
+[ 3407.409459] type=1400 audit(1787671861.936:88472): avc:  denied  { create } for  comm="audio.service" scontext=u:r:hal_audio_default:s0 tcontext=u:r:hal_audio_default:s0 tclass=netlink_kobject_uevent_socket permissive=1
+[ 3407.409581] type=1400 audit(1787671861.936:88473): avc:  denied  { setopt } for  comm="audio.service" scontext=u:r:hal_audio_default:s0 tcontext=u:r:hal_audio_default:s0 tclass=netlink_kobject_uevent_socket permissive=1
+[ 3407.415391] servicemanager: Caller(pid=15036,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.effect.IFactory/default in the VINTF manifest. No alternative instances declared in VINTF.
+[ 3407.416474] servicemanager: Caller(pid=15036,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.core.IModule/default in the VINTF manifest. No alternative instances declared in VINTF.
+[ 3407.427145] servicemanager: Caller(pid=15036,uid=1041,sid=u:r:audioserver:s0) Found android.system.suspend.ISystemSuspend/default in framework VINTF manifest.
+[ 3407.473406] servicemanager: Caller(pid=15036,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.effect.IFactory/default in the VINTF manifest. No alternative instances declared in VINTF.
+[ 3407.474602] servicemanager: Caller(pid=15036,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.core.IModule/default in the VINTF manifest. No alternative instances declared in VINTF.
+[ 3469.544116] type=1400 audit(1787671924.072:88475): avc:  denied  { search } for  comm="EventThread" name="extcon" dev="sysfs" ino=18169 scontext=u:r:hal_tv_cec_default:s0 tcontext=u:object_r:sysfs_extcon:s0 tclass=dir permissive=1
+[ 3476.844035] logd: logdr: UID=0 GID=0 PID=15100 n tail=0 logMask=10 pid=0 start=0ns deadline=0ns
+[ 3545.658233] HDMI cable is disconnected
+[ 3545.661067] type=1400 audit(1787672000.188:88476): avc:  denied  { read } for  comm="audio.service" scontext=u:r:hal_audio_default:s0 tcontext=u:r:hal_audio_default:s0 tclass=netlink_kobject_uevent_socket permissive=1
+[ 3546.658231] HDMI cable is connected
+[ 3546.950162] logd: logdr: UID=1041 GID=1005 PID=15110 n tail=500 logMask=8 pid=15037 start=0ns deadline=0ns
+[ 3546.966596] logd: logdr: UID=1041 GID=1005 PID=15110 n tail=500 logMask=1 pid=15037 start=0ns deadline=0ns
+[ 3547.021821] init: Untracked pid 15110 exited with status 0
+[ 3547.021854] init: Untracked pid 15110 did not have an associated service entry and will not be reaped
+[ 3547.022865] binder: release 15037:15037 transaction 132897 in, still active
+[ 3547.022878] binder: send failed reply for transaction 132897 to 15036:15036
+[ 3547.023395] init: Service 'vendor.audio-hal' (pid 15037) received signal 11
+[ 3547.023439] init: Sending signal 9 to service 'vendor.audio-hal' (pid 15037) process group...
+[ 3547.024759] libprocessgroup: Removed cgroup /sys/fs/cgroup/system/uid_1041/pid_15037
+[ 3547.025054] init: Sending signal 9 to service 'audioserver' (pid 15036) process group...
+[ 3547.031310] binder: release 15036:15036 transaction 132888 in, still active
+[ 3547.031323] binder: send failed reply for transaction 132888 to 13049:13401
+[ 3547.032156] binder: undelivered death notification, 00000000f27c6e60
+[ 3547.033274] libprocessgroup: Removed cgroup /sys/fs/cgroup/system/uid_1041/pid_15036
+[ 3547.034722] init: Service 'audioserver' (pid 15036) exited with status 1
+[ 3547.034757] init: Sending signal 9 to service 'audioserver' (pid 15036) process group...
+[ 3547.034887] libprocessgroup: Failed to open /sys/fs/cgroup/system/uid_1041/pid_15036/cgroup.procs: No such file or directory
+[ 3547.227419] servicemanager: Caller(pid=15116,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.core.IModule/default in the VINTF manifest. No alternative instances declared in VINTF.
+[ 3547.228702] servicemanager: Caller(pid=15116,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.effect.IFactory/default in the VINTF manifest. No alternative instances declared in VINTF.
+[ 3547.240118] servicemanager: Caller(pid=15116,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.effect.IFactory/default in the VINTF manifest. No alternative instances declared in VINTF.
+[ 3547.241331] servicemanager: Caller(pid=15116,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.core.IModule/default in the VINTF manifest. No alternative instances declared in VINTF.
+[ 3547.279382] type=1400 audit(1787672001.808:88477): avc:  denied  { read } for  comm="audio.service" name="u:object_r:vendor_audio_prop:s0" dev="tmpfs" ino=1412 scontext=u:r:hal_audio_default:s0 tcontext=u:object_r:vendor_audio_prop:s0 tclass=file permissive=1
+[ 3547.279509] type=1400 audit(1787672001.808:88478): avc:  denied  { open } for  comm="audio.service" path="/dev/__properties__/u:object_r:vendor_audio_prop:s0" dev="tmpfs" ino=1412 scontext=u:r:hal_audio_default:s0 tcontext=u:object_r:vendor_audio_prop:s0 tclass=file permissive=1
+[ 3547.279595] type=1400 audit(1787672001.808:88479): avc:  denied  { getattr } for  comm="audio.service" path="/dev/__properties__/u:object_r:vendor_audio_prop:s0" dev="tmpfs" ino=1412 scontext=u:r:hal_audio_default:s0 tcontext=u:object_r:vendor_audio_prop:s0 tclass=file permissive=1
+[ 3547.279680] type=1400 audit(1787672001.808:88480): avc:  denied  { map } for  comm="audio.service" path="/dev/__properties__/u:object_r:vendor_audio_prop:s0" dev="tmpfs" ino=1412 scontext=u:r:hal_audio_default:s0 tcontext=u:object_r:vendor_audio_prop:s0 tclass=file permissive=1
+[ 3547.287373] type=1400 audit(1787672001.816:88481): avc:  denied  { create } for  comm="audio.service" scontext=u:r:hal_audio_default:s0 tcontext=u:r:hal_audio_default:s0 tclass=netlink_kobject_uevent_socket permissive=1
+[ 3547.287511] type=1400 audit(1787672001.816:88482): avc:  denied  { setopt } for  comm="audio.service" scontext=u:r:hal_audio_default:s0 tcontext=u:r:hal_audio_default:s0 tclass=netlink_kobject_uevent_socket permissive=1
+[ 3547.287594] type=1400 audit(1787672001.816:88483): avc:  denied  { bind } for  comm="audio.service" scontext=u:r:hal_audio_default:s0 tcontext=u:r:hal_audio_default:s0 tclass=netlink_kobject_uevent_socket permissive=1
+[ 3547.296676] servicemanager: Caller(pid=15116,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.effect.IFactory/default in the VINTF manifest. No alternative instances declared in VINTF.
+[ 3547.297965] servicemanager: Caller(pid=15116,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.core.IModule/default in the VINTF manifest. No alternative instances declared in VINTF.
+[ 3547.309868] servicemanager: Caller(pid=15116,uid=1041,sid=u:r:audioserver:s0) Found android.system.suspend.ISystemSuspend/default in framework VINTF manifest.
+[ 3547.369750] servicemanager: Caller(pid=15116,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.effect.IFactory/default in the VINTF manifest. No alternative instances declared in VINTF.
+[ 3547.371185] servicemanager: Caller(pid=15116,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.core.IModule/default in the VINTF manifest. No alternative instances declared in VINTF.
+[ 3556.660098] type=1400 audit(1787672011.188:88484): avc:  denied  { search } for  comm="EventThread" name="extcon" dev="sysfs" ino=18169 scontext=u:r:hal_tv_cec_default:s0 tcontext=u:object_r:sysfs_extcon:s0 tclass=dir permissive=1
+[ 3594.308584] >>> rwnx_cfg80211_scan()
+[ 3594.308594] >>> rwnx_send_scanu_req()
+[ 3594.990401] >>> rwnx_rx_scanu_start_cfm()
+[ 3595.032784] >>> rwnx_cfg80211_scan()
+[ 3595.032792] >>> rwnx_send_scanu_req()
+[ 3596.582207] >>> rwnx_rx_scanu_start_cfm()
+[ 3600.067405] [BT_LPM] bluesleep_outgoing_data: tx was sleeping, wakeup it
+[ 3603.068688] [BT_LPM] bluesleep_tx_allow_sleep: Tx has been idle
+
+[ 3603.068798] [BT_LPM] bluesleep_sleep_work: going to sleep...
+[ 3605.077025] >>> rwnx_cfg80211_scan()
+[ 3605.077033] >>> rwnx_send_scanu_req()
+[ 3606.627053] >>> rwnx_rx_scanu_start_cfm()
+[ 3615.120935] >>> rwnx_cfg80211_scan()
+[ 3615.120943] >>> rwnx_send_scanu_req()
+[ 3616.671598] >>> rwnx_rx_scanu_start_cfm()
+[ 3625.131969] >>> rwnx_cfg80211_scan()
+[ 3625.131976] >>> rwnx_send_scanu_req()
+[ 3626.681683] >>> rwnx_rx_scanu_start_cfm()
+[ 3630.706803] logd: logdr: UID=0 GID=0 PID=15185 n tail=0 logMask=bf pid=0 start=1787671740000000000ns deadline=0ns
+[ 3635.147931] >>> rwnx_cfg80211_scan()
+[ 3635.147940] >>> rwnx_send_scanu_req()
+[ 3636.697773] >>> rwnx_rx_scanu_start_cfm()
+[ 3645.192434] >>> rwnx_cfg80211_scan()
+[ 3645.192442] >>> rwnx_send_scanu_req()
+[ 3646.743249] >>> rwnx_rx_scanu_start_cfm()
+[ 3655.236425] >>> rwnx_cfg80211_scan()
+[ 3655.236433] >>> rwnx_send_scanu_req()
+[ 3656.784650] >>> rwnx_rx_scanu_start_cfm()
+[ 3665.279938] >>> rwnx_cfg80211_scan()
+[ 3665.279946] >>> rwnx_send_scanu_req()
+[ 3666.829809] >>> rwnx_rx_scanu_start_cfm()
+[ 3673.743711] logd: logdr: UID=0 GID=0 PID=15200 n tail=0 logMask=bf pid=0 start=0ns deadline=0ns
+[ 3675.283751] >>> rwnx_cfg80211_scan()
+[ 3675.283760] >>> rwnx_send_scanu_req()
+[ 3676.835207] >>> rwnx_rx_scanu_start_cfm()
+[ 3685.304038] >>> rwnx_cfg80211_scan()
+[ 3685.304046] >>> rwnx_send_scanu_req()
+[ 3686.852095] >>> rwnx_rx_scanu_start_cfm()
+[ 3695.348587] >>> rwnx_cfg80211_scan()
+[ 3695.348595] >>> rwnx_send_scanu_req()
+[ 3696.898356] >>> rwnx_rx_scanu_start_cfm()
+[ 3705.383784] >>> rwnx_cfg80211_scan()
+[ 3705.383793] >>> rwnx_send_scanu_req()
+[ 3706.933493] >>> rwnx_rx_scanu_start_cfm()
+[ 3715.399863] >>> rwnx_cfg80211_scan()
+[ 3715.399871] >>> rwnx_send_scanu_req()
+[ 3716.949451] >>> rwnx_rx_scanu_start_cfm()
+[ 3725.443874] >>> rwnx_cfg80211_scan()
+[ 3725.443882] >>> rwnx_send_scanu_req()
+[ 3726.994645] >>> rwnx_rx_scanu_start_cfm()
+[ 3735.472074] >>> rwnx_cfg80211_scan()
+[ 3735.472082] >>> rwnx_send_scanu_req()
+[ 3737.021923] >>> rwnx_rx_scanu_start_cfm()
+[ 3745.516778] >>> rwnx_cfg80211_scan()
+[ 3745.516787] >>> rwnx_send_scanu_req()
+[ 3747.068457] >>> rwnx_rx_scanu_start_cfm()
+[ 3755.551926] >>> rwnx_cfg80211_scan()
+[ 3755.551934] >>> rwnx_send_scanu_req()
+[ 3757.101602] >>> rwnx_rx_scanu_start_cfm()
+[ 3765.587696] >>> rwnx_cfg80211_scan()
+[ 3765.587704] >>> rwnx_send_scanu_req()
+[ 3767.137473] >>> rwnx_rx_scanu_start_cfm()
+[ 3775.632417] >>> rwnx_cfg80211_scan()
+[ 3775.632425] >>> rwnx_send_scanu_req()
+[ 3777.182151] >>> rwnx_rx_scanu_start_cfm()
+[ 3781.004587] logd: logdr: UID=0 GID=0 PID=15234 b tail=0 logMask=bf pid=0 start=0ns deadline=0ns
+[ 3785.669133] >>> rwnx_cfg80211_scan()
+[ 3785.669142] >>> rwnx_send_scanu_req()
+[ 3787.218805] >>> rwnx_rx_scanu_start_cfm()
+[ 3795.696776] >>> rwnx_cfg80211_scan()
+[ 3795.696784] >>> rwnx_send_scanu_req()
+[ 3797.246861] >>> rwnx_rx_scanu_start_cfm()
+[ 3805.742306] >>> rwnx_cfg80211_scan()
+[ 3805.742313] >>> rwnx_send_scanu_req()
+[ 3807.294488] >>> rwnx_rx_scanu_start_cfm()
+[ 3815.748402] >>> rwnx_cfg80211_scan()
+[ 3815.748410] >>> rwnx_send_scanu_req()
+[ 3817.298372] >>> rwnx_rx_scanu_start_cfm()
+[ 3825.793242] >>> rwnx_cfg80211_scan()
+[ 3825.793250] >>> rwnx_send_scanu_req()
+[ 3827.342921] >>> rwnx_rx_scanu_start_cfm()
+[ 3835.836274] >>> rwnx_cfg80211_scan()
+[ 3835.836283] >>> rwnx_send_scanu_req()
+[ 3837.386671] >>> rwnx_rx_scanu_start_cfm()
+[ 3845.853963] >>> rwnx_cfg80211_scan()
+[ 3845.853971] >>> rwnx_send_scanu_req()
+[ 3847.406549] >>> rwnx_rx_scanu_start_cfm()
+[ 3855.866271] >>> rwnx_cfg80211_scan()
+[ 3855.866280] >>> rwnx_send_scanu_req()
+[ 3857.416726] >>> rwnx_rx_scanu_start_cfm()
+[ 3865.899959] >>> rwnx_cfg80211_scan()
+[ 3865.899968] >>> rwnx_send_scanu_req()
+[ 3867.449652] >>> rwnx_rx_scanu_start_cfm()
+[ 3875.943917] >>> rwnx_cfg80211_scan()
+[ 3875.943927] >>> rwnx_send_scanu_req()
+[ 3877.494735] >>> rwnx_rx_scanu_start_cfm()
+[ 3885.967432] >>> rwnx_cfg80211_scan()
+[ 3885.967441] >>> rwnx_send_scanu_req()
+[ 3887.517403] >>> rwnx_rx_scanu_start_cfm()
+[ 3896.012478] >>> rwnx_cfg80211_scan()
+[ 3896.012487] >>> rwnx_send_scanu_req()
+[ 3897.562552] >>> rwnx_rx_scanu_start_cfm()
+[ 3906.056404] >>> rwnx_cfg80211_scan()
+[ 3906.056413] >>> rwnx_send_scanu_req()
+[ 3907.606230] >>> rwnx_rx_scanu_start_cfm()
+[ 3916.100846] >>> rwnx_cfg80211_scan()
+[ 3916.100854] >>> rwnx_send_scanu_req()
+[ 3917.651065] >>> rwnx_rx_scanu_start_cfm()
+[ 3926.132925] >>> rwnx_cfg80211_scan()
+[ 3926.132934] >>> rwnx_send_scanu_req()
+[ 3927.683201] >>> rwnx_rx_scanu_start_cfm()
+[ 3936.176108] >>> rwnx_cfg80211_scan()
+[ 3936.176117] >>> rwnx_send_scanu_req()
+[ 3937.725879] >>> rwnx_rx_scanu_start_cfm()
+[ 3946.203435] >>> rwnx_cfg80211_scan()
+[ 3946.203443] >>> rwnx_send_scanu_req()
+[ 3947.753717] >>> rwnx_rx_scanu_start_cfm()
+[ 3956.249273] >>> rwnx_cfg80211_scan()
+[ 3956.249281] >>> rwnx_send_scanu_req()
+[ 3957.798962] >>> rwnx_rx_scanu_start_cfm()
+[ 3966.293029] >>> rwnx_cfg80211_scan()
+[ 3966.293038] >>> rwnx_send_scanu_req()
+[ 3967.842802] >>> rwnx_rx_scanu_start_cfm()
+[ 3976.337440] >>> rwnx_cfg80211_scan()
+[ 3976.337449] >>> rwnx_send_scanu_req()
+[ 3977.887875] >>> rwnx_rx_scanu_start_cfm()
+[ 3986.351853] >>> rwnx_cfg80211_scan()
+[ 3986.351861] >>> rwnx_send_scanu_req()
+[ 3987.901567] >>> rwnx_rx_scanu_start_cfm()
+[ 3996.396189] >>> rwnx_cfg80211_scan()
+[ 3996.396197] >>> rwnx_send_scanu_req()
+[ 3997.945852] >>> rwnx_rx_scanu_start_cfm()
+[ 4006.427773] >>> rwnx_cfg80211_scan()
+[ 4006.427781] >>> rwnx_send_scanu_req()
+[ 4007.975667] >>> rwnx_rx_scanu_start_cfm()
+[ 4016.472826] >>> rwnx_cfg80211_scan()
+[ 4016.472834] >>> rwnx_send_scanu_req()
+[ 4018.022524] >>> rwnx_rx_scanu_start_cfm()
+[ 4026.507612] >>> rwnx_cfg80211_scan()
+[ 4026.507620] >>> rwnx_send_scanu_req()
+[ 4028.057236] >>> rwnx_rx_scanu_start_cfm()
+[ 4036.552426] >>> rwnx_cfg80211_scan()
+[ 4036.552435] >>> rwnx_send_scanu_req()
+[ 4038.102699] >>> rwnx_rx_scanu_start_cfm()
+[ 4046.596000] >>> rwnx_cfg80211_scan()
+[ 4046.596008] >>> rwnx_send_scanu_req()
+[ 4048.147497] >>> rwnx_rx_scanu_start_cfm()
+[ 4049.431791] binder: release 16128:16131 transaction 141747 out, still active
+[ 4049.439334] binder: 13049:14177 transaction failed 29189/0, size 4-0 line 3069
+[ 4049.439347] binder: send failed reply for transaction 141747, target dead
+[ 4056.640087] >>> rwnx_cfg80211_scan()
+[ 4056.640096] >>> rwnx_send_scanu_req()
+[ 4058.189789] >>> rwnx_rx_scanu_start_cfm()
+[ 4066.659550] >>> rwnx_cfg80211_scan()
+[ 4066.659559] >>> rwnx_send_scanu_req()
+[ 4068.209179] >>> rwnx_rx_scanu_start_cfm()
+[ 4076.687915] >>> rwnx_cfg80211_scan()
+[ 4076.687923] >>> rwnx_send_scanu_req()
+[ 4078.242684] >>> rwnx_rx_scanu_start_cfm()
+[ 4082.081777] type=1400 audit(1787672536.608:88485): avc:  denied  { search } for  comm="RenderThread" name="com.android.systemui" dev="mmcblk0p26" ino=1148 scontext=u:r:platform_app:s0:c512,c768 tcontext=u:object_r:app_data_file:s0:c512,c768 tclass=dir permissive=1 app=com.android.systemui
+[ 4082.081951] type=1400 audit(1787672536.608:88486): avc:  denied  { open } for  comm="RenderThread" path="/data/user_de/0/com.android.systemui/cache/com.android.skia.shaders_cache" dev="mmcblk0p26" ino=2733 scontext=u:r:platform_app:s0:c512,c768 tcontext=u:object_r:app_data_file:s0:c512,c768 tclass=file permissive=1 app=com.android.systemui
+[ 4083.175450] binder: release 16144:16147 transaction 143617 out, still active
+[ 4083.181598] binder: 13049:13174 transaction failed 29189/0, size 4-0 line 3069
+[ 4083.181611] binder: send failed reply for transaction 143617, target dead
+[ 4086.703891] >>> rwnx_cfg80211_scan()
+[ 4086.703899] >>> rwnx_send_scanu_req()
+[ 4086.706138] aicsdio: write retry:  20
+[ 4088.255196] >>> rwnx_rx_scanu_start_cfm()
+[ 4096.719948] >>> rwnx_cfg80211_scan()
+[ 4096.719957] >>> rwnx_send_scanu_req()
+[ 4098.269477] >>> rwnx_rx_scanu_start_cfm()
+[ 4106.735626] >>> rwnx_cfg80211_scan()
+[ 4106.735634] >>> rwnx_send_scanu_req()
+[ 4108.287868] >>> rwnx_rx_scanu_start_cfm()
+[ 4115.150651] Exit. P2P interface stopped
+[ 4115.150851] del_iface: 0000000085477341, f3
+[ 4115.269872] >>> rwnx_close()
+[ 4115.269890] aicwf_sdio mmc2:f11e:1 wlan0: CLOSE
+[ 4115.270923] >>> rwnx_send_remove_if()
+[ 4115.270930] >>> rwnx_send_msg1()
+[ 4115.273273] >>> rwnx_send_coex_req()
+[ 4115.273447] >>> rwnx_send_reset()
+[ 4115.274656] >>> rwnx_send_me_config_req()
+[ 4115.274670] ieee80211 phy0: HT supp 1, VHT supp 1, HE supp 1
+[ 4115.274858] >>> rwnx_send_me_chan_config_req()
+[ 4115.280399] >>> rwnx_cfg80211_del_key()
+[ 4115.280408] >>> rwnx_send_key_del()
+[ 4115.281495] >>> rwnx_cfg80211_del_key()
+[ 4115.281501] >>> rwnx_send_key_del()
+[ 4115.281695] >>> rwnx_cfg80211_del_key()
+[ 4115.281698] >>> rwnx_send_key_del()
+[ 4115.281893] >>> rwnx_cfg80211_del_key()
+[ 4115.281896] >>> rwnx_send_key_del()
+[ 4115.282081] >>> rwnx_cfg80211_del_key()
+[ 4115.282084] >>> rwnx_send_key_del()
+[ 4115.283062] >>> rwnx_cfg80211_del_key()
+[ 4115.283068] >>> rwnx_send_key_del()
+[ 4115.283356] >>> rwnx_send_me_chan_config_req()
+[ 4115.303683] init: Service 'wpa_supplicant' (pid 14684) exited with status 0 oneshot service took 2383.093018 seconds in background
+[ 4115.303723] init: Sending signal 9 to service 'wpa_supplicant' (pid 14684) process group...
+[ 4115.304369] libprocessgroup: Removed cgroup /sys/fs/cgroup/system/uid_0/pid_14684
+[ 4115.331312] >>> rwnx_mod_exit()
+[ 4115.331956] rwnx_unregister_hostwake_irq(220)
+[ 4115.331961] >>> rwnx_platform_deinit()
+[ 4115.331965] >>> rwnx_cfg80211_deinit()
+[ 4115.332298] type=1400 audit(1787672569.860:88487): avc:  denied  { read } for  comm="audio.service" scontext=u:r:hal_audio_default:s0 tcontext=u:r:hal_audio_default:s0 tclass=netlink_kobject_uevent_socket permissive=1
+[ 4115.332817] del_iface: 00000000ff3b5f2d, f2
+[ 4115.332829] aicwf_sdio mmc2:f11e:1 wlan0: Remove Interface
+[ 4115.373778] type=1400 audit(1787672569.900:88488): avc:  denied  { search } for  comm="EventThread" name="extcon" dev="sysfs" ino=18169 scontext=u:r:hal_tv_cec_default:s0 tcontext=u:object_r:sysfs_extcon:s0 tclass=dir permissive=1
+[ 4115.442805] aicsdio: aicwf_sdio_remove
+[ 4115.442814] aicsdio: aicwf_sdio_release
+[ 4115.442947] aicwf_bus_deinit
+[ 4115.442951] aicsdio: aicwf_sdio_bus_stop
+[ 4115.442958] aicsdio: exit aicwf_sdio_bus_stop
+[ 4115.442981] sdio_err:<sdio_bustx_thread,1017>: sdio bustx thread stop
+[ 4115.443000] exit aicwf_bus_deinit
+[ 4115.443007] aicbsp: aicbsp_resv_mem_kfree_skb, free resv_mem_txdata succuss, id: 0, size: 98304
+[ 4115.443011] txrx: aicwf_rx_deinit
+[ 4115.443014] txrx: sdio rx thread
+[ 4115.443036] sdio_err:<sdio_busrx_thread,1045>: sdio busrx thread stop
+[ 4115.443145] txrx: exit aicwf_rx_deinit
+[ 4115.443164] sdio_err:<aicwf_sdio_pwrctl_thread,1066>: sdio pwrctl thread stop
+[ 4115.443182] aicsdio: aicwf_sdio_release:pwrctl stopped
+[ 4115.443187] q_sz/max:  0 /  8 - next tkn: 84
+[ 4115.443190] >>> cmd_mgr_drain()
+[ 4115.443194] q_sz/max:  0 /  8 - next tkn: 84
+[ 4115.443249] aicsdio: exit aicwf_sdio_release
+[ 4115.443289] aicsdio: aicwf_sdio_remove done
+[ 4115.443814] aicbsp: aicbsp_set_subsys, subsys: AIC_WIFI, state to: 0
+[ 4115.443818] aicbsp: aicbsp_set_subsys, power state no need to change, current: 1
+[ 4121.328822] >>> rwnx_mod_init()
+[ 4121.328830] rwnx 20221108-004-6.4.3.0 - - 241c091M (master)
+[ 4121.328833] Driver Release Tag: aic-rwnx-compatible(sdio)-20221108-004
+[ 4121.328841] aicbsp: aicbsp_set_subsys, subsys: AIC_WIFI, state to: 1
+[ 4121.328844] aicbsp: aicbsp_set_subsys, power state no need to change, current: 1
+[ 4121.329015] aicsdio: aicwf_sdio_probe:1
+[ 4121.329116] sunxi-mmc 4021000.sdmmc: sdc set ios:clk 70000000Hz bm PP pm ON vdd 21 width 4 timing LEGACY(SDR12) dt B
+[ 4121.329187] aicsdio: Set SDIO Clock 66 MHz
+[ 4121.334294] aicbsp: aicbsp_resv_mem_alloc_skb, alloc resv_mem_txdata succuss, id: 0, size: 98304
+[ 4121.334765] >>> rwnx_platform_init()
+[ 4121.334768] >>> rwnx_cfg80211_init()
+[ 4121.334820] >>> rwnx_init_aic()
+[ 4121.334825] >>> rwnx_cmd_mgr_init()
+[ 4121.335479] is 5g support = 1, vendor_info = 0x21
+[ 4121.335645] Firmware Version: di Oct 08 2022 19:31:43 - gb01a3750m
+[ 4121.335648] >>> rwnx_platform_on()
+[ 4121.335651] >>> rwnx_plat_fmac_load()
+[ 4121.335816] userconfig file path:aic_userconfig.txt
+
+[ 4121.336372] rwnx_plat_userconfig_parsing, enable = 1
+[ 4121.336376] rwnx_plat_userconfig_parsing, dsss = 10
+[ 4121.336381] rwnx_plat_userconfig_parsing, ofdmlowrate_2g4 = 11
+[ 4121.336386] rwnx_plat_userconfig_parsing, ofdm64qam_2g4 = 10
+[ 4121.336391] rwnx_plat_userconfig_parsing, ofdm256qam_2g4 = 10
+[ 4121.336397] rwnx_plat_userconfig_parsing, ofdm1024qam_2g4 = 9
+[ 4121.336403] rwnx_plat_userconfig_parsing, ofdmlowrate_5g = 11
+[ 4121.336410] rwnx_plat_userconfig_parsing, ofdm64qam_5g = 10
+[ 4121.336417] rwnx_plat_userconfig_parsing, ofdm256qam_5g = 10
+[ 4121.336425] rwnx_plat_userconfig_parsing, ofdm1024qam_5g = 9
+[ 4121.336471] rwnx_plat_userconfig_parsing, ofst_enable = 1
+[ 4121.336495] rwnx_plat_userconfig_parsing, ofst_chan_1_4 = -5
+[ 4121.336519] rwnx_plat_userconfig_parsing, ofst_chan_5_9 = -2
+[ 4121.336545] rwnx_plat_userconfig_parsing, ofst_chan_10_13 = -2
+[ 4121.336571] rwnx_plat_userconfig_parsing, ofst_chan_36_64 = -5
+[ 4121.336597] rwnx_plat_userconfig_parsing, ofst_chan_100_120 = -6
+[ 4121.336624] rwnx_plat_userconfig_parsing, ofst_chan_122_140 = -6
+[ 4121.336652] rwnx_plat_userconfig_parsing, ofst_chan_142_165 = 4
+[ 4121.336663] >>> rwnx_send_rf_calib_req()
+[ 4121.759762] >>> rwnx_send_txpwr_idx_req()
+[ 4121.760602] >>> rwnx_send_txpwr_ofst_req()
+[ 4121.760822] get macaddr: <redacted-mac>
+
+[ 4121.760826] >>> rwnx_send_reset()
+[ 4121.762072] >>> rwnx_send_version_req()
+[ 4121.762520] >>> rwnx_set_vers()
+[ 4121.762536] >>> rwnx_send_me_config_req()
+[ 4121.762548] ieee80211 phy1: HT supp 1, VHT supp 1, HE supp 1
+[ 4121.763236] >>> rwnx_send_me_chan_config_req()
+[ 4121.763777] >>> rwnx_send_me_chan_config_req()
+[ 4121.763970] rwnx_interface_add: wlan%d, 2, 10
+[ 4121.764038] interface add:b8 4c 4c 81 26 f2
+[ 4121.775539] ieee80211 phy1: New interface create wlan0
+[ 4121.775984] rwnx_register_hostwake_irq(201)
+[ 4121.783303] >>> rwnx_open()
+[ 4121.783312] >>> rwnx_send_start()
+[ 4121.784045] >>> rwnx_send_coex_req()
+[ 4121.784213] >>> rwnx_send_add_if()
+[ 4121.825656] init: starting service 'wpa_supplicant'...
+[ 4121.826967] init: Created socket '/dev/socket/wpa_wlan0', mode 660, user 1010, group 1010
+[ 4121.831127] init: Activation of cgroup controller +memory failed in path /sys/fs/cgroup/system/uid_0: Invalid argument
+[ 4121.834021] init: ... started service 'wpa_supplicant' has pid 16195
+[ 4121.834085] init: Control message: Processed ctl.interface_start for 'android.hardware.wifi.supplicant@1.0::ISupplicant/default' from pid: 267 (/system/system_ext/bin/hwservicemanager)
+[ 4121.835209] init: service 'wpa_supplicant' requested start, but it is already running (flags: 134)
+[ 4121.835245] init: Control message: Processed ctl.interface_start for 'android.hardware.wifi.supplicant@1.0::ISupplicant/default' from pid: 267 (/system/system_ext/bin/hwservicemanager)
+[ 4121.959724] rwnx_virtual_interface_add: 10, p2p-dev-wlan0
+[ 4121.959737] rwnx_virtual_interface_add, ifname=p2p-dev-wlan0, wdev=000000004c10f2ab, vif_idx=1
+[ 4121.959744] p2p dev addr=b8 4c 4c 81 26 f3
+[ 4121.963834] P2P interface started
+[ 4121.995983] android_priv_cmd: Android private cmd "SETSUSPENDMODE 1" on wlan0
+[ 4121.996011] >>> rwnx_send_me_set_lp_level()
+[ 4122.000671] set suspend mode 1
+[ 4122.012787] >>> rwnx_cfg80211_scan()
+[ 4122.012795] >>> rwnx_send_scanu_req()
+[ 4122.021387] android_priv_cmd: Android private cmd "BTCOEXSCAN-STOP" on wlan0
+[ 4122.021407] wrong cmd:(null) in handle_private_cmd
+[ 4122.022027] android_priv_cmd: Android private cmd "RXFILTER-STOP" on wlan0
+[ 4122.022039] wrong cmd:(null) in handle_private_cmd
+[ 4122.022483] android_priv_cmd: Android private cmd "RXFILTER-ADD 2" on wlan0
+[ 4122.022492] wrong cmd:(null) in handle_private_cmd
+[ 4122.022713] android_priv_cmd: Android private cmd "RXFILTER-START" on wlan0
+[ 4122.022718] wrong cmd:(null) in handle_private_cmd
+[ 4122.022912] android_priv_cmd: Android private cmd "RXFILTER-STOP" on wlan0
+[ 4122.022917] wrong cmd:(null) in handle_private_cmd
+[ 4122.023108] android_priv_cmd: Android private cmd "RXFILTER-ADD 3" on wlan0
+[ 4122.023112] wrong cmd:(null) in handle_private_cmd
+[ 4122.023307] android_priv_cmd: Android private cmd "RXFILTER-START" on wlan0
+[ 4122.023311] wrong cmd:(null) in handle_private_cmd
+[ 4122.023552] android_priv_cmd: Android private cmd "SETSUSPENDMODE 1" on wlan0
+[ 4122.023558] >>> rwnx_send_me_set_lp_level()
+[ 4122.023905] set suspend mode 1
+[ 4122.034649] android_priv_cmd: Android private cmd "SETSUSPENDMODE 0" on wlan0
+[ 4122.034673] >>> rwnx_send_me_set_lp_level()
+[ 4122.034984] set suspend mode 0
+[ 4122.039302] android_priv_cmd: Android private cmd "SETSUSPENDMODE 0" on wlan0
+[ 4122.039325] >>> rwnx_send_me_set_lp_level()
+[ 4122.039632] set suspend mode 0
+[ 4122.586315] >>> rwnx_rx_scanu_start_cfm()
+[ 4122.619131] >>> rwnx_cfg80211_scan()
+[ 4122.619139] >>> rwnx_send_scanu_req()
+[ 4124.167754] >>> rwnx_rx_scanu_start_cfm()
+[ 4131.516246] >>> rwnx_cfg80211_scan()
+[ 4131.516254] >>> rwnx_send_scanu_req()
+[ 4133.065872] >>> rwnx_rx_scanu_start_cfm()
+[ 4142.714875] >>> rwnx_cfg80211_scan()
+[ 4142.714883] >>> rwnx_send_scanu_req()
+[ 4144.266370] >>> rwnx_rx_scanu_start_cfm()
+[ 4152.751836] >>> rwnx_cfg80211_scan()
+[ 4152.751844] >>> rwnx_send_scanu_req()
+[ 4154.301571] >>> rwnx_rx_scanu_start_cfm()
+[ 4162.012685] logd: logdr: UID=0 GID=0 PID=16217 n tail=0 logMask=bf pid=0 start=0ns deadline=0ns
+[ 4162.524694] logd: logdr: UID=0 GID=0 PID=16220 n tail=0 logMask=10 pid=0 start=0ns deadline=0ns

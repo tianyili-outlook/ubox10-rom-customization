@@ -1,9 +1,11 @@
 # Android 16 QPR0 Prototype A r3 candidate
 
-Status: **OFFLINE CHECKED / READY TO REQUEST PHYSICAL VALIDATION**. This is an offline
-eligibility result, not a flash authorization and not a runtime PASS. No physical UBOX action,
-ADB connection, reboot, bootarg change, PhoenixCard operation or UART test occurred while
-building or auditing r3. Prototype B remains closed.
+Status: **PHYSICALLY BOOTED WITH PRE-EXISTING RUNTIME EGL OVERRIDE / FORMAL CANDIDATE CLOSURE
+PENDING**. The original image's EGL selection is physically failed because neither
+`persist.graphics.egl` nor `ro.hardware.egl` was supplied. With the user's pre-existing runtime
+`persist.graphics.egl=mali` override, Android 16/zygote32/system_server/SurfaceFlinger and Mali
+GLES are physically proven. This validation did not flash, reboot, rebuild or repack r3.
+Prototype B remains closed.
 
 ## Exact source and product
 
@@ -142,12 +144,58 @@ The r3-focused suite passes 5/5, the combined r3/kernel-preservation focus passe
 full repository suite passes all 101 tests with 25 expected skips for absent ignored historical
 fixtures. The exact r7 source audit, Python/shell syntax checks and `git diff --check` also pass.
 
+## Physical validation result — 2026-08-25
+
+Evidence: `docs/m8/device-tests/20260825-a16-prototype-a-r3-physical-validation/`.
+
+The Ethernet-ADB validation proved Android 16/API 36/BP2A, ARM32-only `zygote32`, Linux
+5.4.302+, all six Path-A kernel options, boot completion, active runtime/VNDK APEX mounts, three
+service managers, system_server, SystemUI, TV/Leanback launcher and LeanbackIME. The old
+bootstrap/bpfloader fatal filters are empty.
+
+The original r3 graphics state had neither EGL selector. The user-provided pre-validation log
+records SurfaceFlinger failing to load drivers from `ro.board.platform=apollo`. Before this
+evidence session the user had already set `persist.graphics.egl=mali`; with that override present,
+SurfaceFlinger reports ARM Mali-G31 / OpenGL ES 3.2 and composed layers. This is direct proof that
+Path A's core ARM32 architecture is viable, but not proof that the unmodified r3 image closes the
+graphics contract. The formal next integration direction is `ro.hardware.egl=mali` while
+preserving `ro.board.platform=apollo`; it is **NOT IMPLEMENTED / NOT BUILT / NOT PHYSICALLY
+VALIDATED** here.
+
+Hardware preservation is mixed:
+
+- Ethernet, gateway/IP/DNS connectivity and Ethernet ADB PASS.
+- AIC modules, wlan0, framework enable, active scan and clean Wi-Fi OFF→ON reinitialization PASS;
+  association/DHCP/L3/DNS are **NOT TESTED** because no saved network or credential input path
+  was available.
+- Every requested IR key emits Linux DOWN/UP events. UP/DOWN/LEFT/RIGHT navigation is physically
+  accepted, while OK FAILS at Android mapping: scanCode 352 becomes `KEYCODE_UNKNOWN` because
+  `Generic.kl` maps only 353 to DPAD_CENTER. The 352 mapping is **NOT IMPLEMENTED**.
+- TV/Leanback/launcher/IME inventory and runtime focus PASS. Text entry itself is not claimed.
+- Physical HDMI stability FAILS: the monitor repeatedly shows about one second of picture then
+  about five seconds black. During bounded sampling SurfaceFlinger/system_server stayed alive,
+  extcon remained `HDMI=1`, and the display engine stayed unblanked at 3840x2160 YUV444 mode 34
+  with advancing interrupts and no skip/error increment. Kernel history also contains HDMI
+  disconnect/connect transitions. The precise physical black-cycle root cause is not proven.
+- ALSA/Apollo/AudioFlinger topology reaches `ahubhdmi` / `AUDIO_HDMI`, physical volume and mute
+  update framework state, and automatic service recovery works. The legacy HIDL vendor audio HAL
+  repeatedly null-dereferences in `Device::getAudioPortImpl`; observed HDMI status transitions
+  enter that crashing path. Plain AudioFlinger/AudioPolicy dumps did not independently trigger a
+  new crash in the isolation window. HAL stability is FAIL. Basic/HDMI audible output is **NOT
+  TESTED** because the attached monitor has no audio output; a completed `tinyplay` call is not
+  relabeled as audible proof.
+
 ## Decision and boundary
 
-The exact decision is **OFFLINE CHECKED / READY TO REQUEST PHYSICAL VALIDATION**. Gate 2 is
-**UNBLOCKED / AWAITING EXPLICIT PHYSICAL VALIDATION DECISION**, not PASS. The exact next action
-is to request a separate user decision for one UART-first Prototype A r3 physical validation.
-Until that separate authorization exists, do not flash, reboot, connect ADB, change bootargs or
-make any boot/zygote/system_server/SurfaceFlinger/HWC runtime claim. Prototype B,
-`zygote64_32`, secondary ABI and ARM64 Mali/mapper integration remain closed until Prototype A
-r3 physically passes.
+The exact decision is **CORE PATH-A ARCHITECTURE VIABILITY PHYSICALLY PROVEN / FORMAL CANDIDATE
+CLOSURE PENDING**. Gate 2 is **NOT CLOSED**: the proof currently depends on a runtime EGL
+override, physical HDMI is unstable, the vendor audio HAL is unstable, Wi-Fi association was not
+tested, and enforcing SELinux is not proven. Do not represent r3 as an unqualified runtime PASS.
+
+The next GCP image may integrate only evidence-led bounded changes: add
+`ro.hardware.egl=mali` without replacing `ro.board.platform=apollo`, map sunxi-ir scanCode 352 to
+DPAD_CENTER, and diagnose the observed 4K60 YUV444 HDMI/link plus HIDL `getAudioPort` transition
+path before choosing a display/audio change. Wi-Fi BSP/HAL must remain unchanged on this evidence;
+association requires a later credential-capable physical validation. Prototype B,
+`zygote64_32`, secondary ABI and ARM64 Mali/mapper integration remain closed until a no-runtime-
+intervention Prototype A candidate passes the required physical gates.

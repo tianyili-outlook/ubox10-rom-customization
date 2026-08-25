@@ -1,0 +1,1513 @@
+Verbose logging is on
+mVerboseLoggingLevel 0
+Stay-awake conditions: 1
+mInIdleMode false
+mScanPending false
+SupportedFeatures: [WIFI_FEATURE_INFRA, WIFI_FEATURE_PASSPOINT, WIFI_FEATURE_P2P, WIFI_FEATURE_MOBILE_HOTSPOT, WIFI_FEATURE_MKEEP_ALIVE, WIFI_FEATURE_WPA3_SAE, WIFI_FEATURE_OWE, WIFI_FEATURE_DPP, WIFI_FEATURE_AP_RAND_MAC, WIFI_FEATURE_MBO, WIFI_FEATURE_SAE_PK, WIFI_FEATURE_DPP_ENROLLEE_RESPONDER, WIFI_FEATURE_PASSPOINT_TERMS_AND_CONDITIONS, WIFI_FEATURE_WFD_R2, WIFI_FEATURE_DECORATED_IDENTITY, WIFI_FEATURE_WEP, WIFI_FEATURE_WPA_PERSONAL]
+SettingsStore:
+WifiState 1
+AirplaneModeOn false
+ScanAlwaysAvailable false
+WifiScoringState true
+WifiPasspointState true
+WifiMultiInternetMode 0
+WifiStateApm false
+WifiStateBt false
+WifiStateUser 0
+AirplaneModeEnhancementEnabled true
+SatelliteModeOn false
+Dump of WifiActiveModeWarden
+Current wifi mode: EnabledState
+Wi-Fi is enabled
+NumActiveModeManagers: 1
+mIsMultiplePrimaryBugreportTaken: false
+WifiController:
+ total records=5
+ rec[0]: time=08-25 15:03:06.183 processed=DisabledState org=DisabledState dest=EnabledState what=CMD_WIFI_TOGGLED 0 0 num ClientModeManagers:1 num SoftApManagers:0 WorkSource{0 com.android.shell}
+ rec[1]: time=08-25 15:29:20.347 processed=EnabledState org=EnabledState dest=<null> what=CMD_WIFI_TOGGLED 0 0 num ClientModeManagers:1 num SoftApManagers:0 WorkSource{0 com.android.shell}
+ rec[2]: time=08-25 15:42:49.636 processed=EnabledState org=EnabledState dest=<null> what=CMD_WIFI_TOGGLED 0 0 num ClientModeManagers:1 num SoftApManagers:0 WorkSource{0 com.android.shell}
+ rec[3]: time=08-25 15:42:50.517 processed=EnabledState org=EnabledState dest=DisabledState what=CMD_STA_STOPPED 0 0 num ClientModeManagers:0 num SoftApManagers:0
+ rec[4]: time=08-25 15:42:55.849 processed=DisabledState org=DisabledState dest=EnabledState what=CMD_WIFI_TOGGLED 0 0 num ClientModeManagers:1 num SoftApManagers:0 WorkSource{0 com.android.shell}
+curState=EnabledState
+Dump of ClientModeManager id=4121312
+current StateMachine mode: ConnectModeState
+mRole: ROLE_CLIENT_PRIMARY
+mPreviousRole: null
+mTargetRoleChangeInfo: Role: ROLE_CLIENT_PRIMARY, RequestorWs: WorkSource{0 com.android.shell}, ModeListener: com.android.server.wifi.ActiveModeWarden$ClientListener@d95440a
+mClientInterfaceName: wlan0
+mIfaceIsUp: true
+mSecondaryInternet: false
+mIsDbs: false
+WifiClientModeManager:
+ total records=2
+ rec[0]: time=08-25 15:42:56.345 processed=IdleState org=IdleState dest=StartedState what=CMD_START 0 0 Role: ROLE_CLIENT_PRIMARY, RequestorWs: WorkSource{0 com.android.shell}, ModeListener: com.android.server.wifi.ActiveModeWarden$ClientListener@d95440a
+ rec[1]: time=08-25 15:42:56.511 processed=StartedState org=StartedState dest=ConnectModeState what=CMD_SWITCH_TO_CONNECT_MODE 0 0 Role: ROLE_CLIENT_PRIMARY, RequestorWs: WorkSource{0 com.android.shell}, ModeListener: com.android.server.wifi.ActiveModeWarden$ClientListener@d95440a
+curState=ConnectModeState
+
+Dump of ClientModeImpl id=4121975
+WifiClientModeImpl:
+ total records=6
+ rec[0]: time=08-25 15:42:56.560 processed=ConnectableState org=DisconnectedState dest=<null> what=CMD_IPCLIENT_CREATED screen=on 2 0
+ rec[1]: time=08-25 15:42:56.563 processed=ConnectableState org=DisconnectedState dest=<null> what=CMD_SCREEN_STATE_CHANGED screen=on 1 0
+ rec[2]: time=08-25 15:42:56.564 processed=ConnectableState org=DisconnectedState dest=<null> what=CMD_ENABLE_RSSI_POLL screen=on 1 0
+ rec[3]: time=08-25 15:42:56.566 processed=ConnectableState org=DisconnectedState dest=<null> what=CMD_SET_SUSPEND_OPT_ENABLED screen=on 0 0
+ rec[4]: time=08-25 15:42:56.568 processed=ConnectableState org=DisconnectedState dest=<null> what=CMD_ENABLE_RSSI_POLL screen=on 1 0
+ rec[5]: time=08-25 15:42:56.570 processed=ConnectableState org=DisconnectedState dest=<null> what=CMD_SET_SUSPEND_OPT_ENABLED screen=on 0 0
+curState=DisconnectedState
+SupplicantStateTracker:
+ total records=0
+curState=UninitializedState
+mAuthFailureInSupplicantBroadcast false
+mAuthFailureReason 0
+
+mLinkProperties {LinkAddresses: [ ] DnsAddresses: [ ] Domains: null MTU: 0 Routes: [ ]}
+mWifiInfo SSID:<redacted-ssid>, BSSID: <redacted-mac>, MAC: <redacted-mac>, IP: null, Security type: -1, Supplicant state: DISCONNECTED, Wi-Fi standard: unknown, RSSI: -127, Link speed: -1Mbps, Tx Link speed: -1Mbps, Max Supported Tx Link speed: -1Mbps, Rx Link speed: -1Mbps, Max Supported Rx Link speed: -1Mbps, Frequency: -1MHz, Net ID: -1, Metered hint: false, score: 0, isUsable: true, CarrierMerged: false, SubscriptionId: -1, IsPrimary: 0, Trusted: false, Restricted: false, Ephemeral: false, OEM paid: false, OEM private: false, OSU AP: false, FQDN: <none>, Provider friendly name: <none>, Requesting package name: <none><none>MLO Information: , Is TID-To-Link negotiation supported by the AP: false, AP MLD Address: <none>, AP MLO Link Id: <none>, AP MLO Affiliated links: <none>, Vendor Data: <none>
+mDhcpResultsParcelable baseConfiguration nullleaseDuration 0mtu 0serverAddress nullserverHostName nullvendorInfo null
+mLastSignalLevel -1
+mLastTxKbps -1
+mLastRxKbps -1
+mLastBssid <redacted-mac>
+mLastNetworkId -1
+mLastSubId -1
+mLastSimBasedConnectionCarrierName null
+mSuspendOptimizationsEnabled true
+mSuspendOptNeedsDisabled 4
+mPowerSaveDisableRequests 0
+IpClient logs have moved to dumpsys network_stack
+WifiScoreReport:
+time,session,netid,rssi,filtered_rssi,rssi_threshold,freq,txLinkSpeed,rxLinkSpeed,txTput,rxTput,bcnCnt,tx_good,tx_retry,tx_bad,rx_pps,nudrq,nuds,s1,s2,score,{linkId,linkRssi,linkFreq,txLinkSpeed,rxLinkSpeed,linkBcnCnt,linkTxGood,linkTxRetry,linkTxBad,linkRxGood,linkMloState,linkUsageState}
+externalScorerActive=false
+mShouldReduceNetworkScore=false
+QosPolicyRequestHandler:
+mQosRequestDialogToken: 0
+mNumQosPoliciesInRequest: 0
+mQosResourcesAvailable: false
+mQosPolicyStatusList size: 0
+mQosPolicyRequestQueue size: 0
+
+Dump of ConcreteClientModeManager.Graveyard
+Stopped ClientModeImpls: 0 total
+
+
+Dump of ActiveModeWarden.Graveyard
+Stopped ClientModeManagers: 1 total
+Dump of ClientModeManager id=1731645
+current StateMachine mode: StateMachine not active
+mRole: null
+mPreviousRole: ROLE_CLIENT_PRIMARY
+mTargetRoleChangeInfo: null
+mClientInterfaceName: null
+mIfaceIsUp: false
+mSecondaryInternet: false
+mIsDbs: false
+WifiClientModeManager:
+ total records=3
+ rec[0]: time=08-25 15:03:06.723 processed=IdleState org=IdleState dest=StartedState what=CMD_START 0 0 Role: ROLE_CLIENT_PRIMARY, RequestorWs: WorkSource{0 com.android.shell}, ModeListener: com.android.server.wifi.ActiveModeWarden$ClientListener@5d83504
+ rec[1]: time=08-25 15:03:06.966 processed=StartedState org=StartedState dest=ConnectModeState what=CMD_SWITCH_TO_CONNECT_MODE 0 0 Role: ROLE_CLIENT_PRIMARY, RequestorWs: WorkSource{0 com.android.shell}, ModeListener: com.android.server.wifi.ActiveModeWarden$ClientListener@5d83504
+ rec[2]: time=08-25 15:29:20.347 processed=ConnectModeState org=ConnectModeState dest=<null> what=CMD_SWITCH_TO_CONNECT_MODE 0 0 Role: ROLE_CLIENT_PRIMARY, RequestorWs: WorkSource{0 com.android.shell}, ModeListener: null
+curState=ConnectModeState
+
+No active ClientModeImpl instance
+Dump of ConcreteClientModeManager.Graveyard
+Stopped ClientModeImpls: 1 total
+Dump of ClientModeImpl id=1732432
+WifiClientModeImpl:
+ total records=8
+ rec[0]: time=08-25 15:03:07.032 processed=ConnectableState org=DisconnectedState dest=<null> what=CMD_IPCLIENT_CREATED screen=on 1 0
+ rec[1]: time=08-25 15:03:07.035 processed=ConnectableState org=DisconnectedState dest=<null> what=CMD_SCREEN_STATE_CHANGED screen=on 1 0
+ rec[2]: time=08-25 15:03:07.035 processed=ConnectableState org=DisconnectedState dest=<null> what=CMD_ENABLE_RSSI_POLL screen=on 1 0
+ rec[3]: time=08-25 15:03:07.040 processed=ConnectableState org=DisconnectedState dest=<null> what=CMD_SET_SUSPEND_OPT_ENABLED screen=on 0 0
+ rec[4]: time=08-25 15:03:07.042 processed=ConnectableState org=DisconnectedState dest=<null> what=CMD_ENABLE_RSSI_POLL screen=on 1 0
+ rec[5]: time=08-25 15:03:07.043 processed=ConnectableState org=DisconnectedState dest=<null> what=CMD_SET_SUSPEND_OPT_ENABLED screen=on 0 0
+ rec[6]: time=08-25 15:03:18.163 processed=ConnectableState org=DisconnectedState dest=<null> what=CMD_ONESHOT_RSSI_POLL screen=on 0 0 <unknown ssid> rssi=-127 f=-1 sc=0 link=-1 tx=0.0, 0.0, 0.0 rx=0.0 bcn=0 [on:0 tx:0 rx:0 period:1] from screen [on:0 period:963803027] score=0
+ rec[7]: time=08-25 15:26:54.783 processed=ConnectableState org=DisconnectedState dest=<null> what=CMD_ONESHOT_RSSI_POLL screen=on 0 0 <unknown ssid> rssi=-127 f=-1 sc=0 link=-1 tx=0.0, 0.0, 0.0 rx=0.0 bcn=0 [on:0 tx:0 rx:0 period:0] from screen [on:0 period:965219647] score=0
+curState=DisconnectedState
+SupplicantStateTracker:
+ total records=0
+curState=<QUIT>
+mAuthFailureInSupplicantBroadcast false
+mAuthFailureReason 0
+
+mLinkProperties {LinkAddresses: [ ] DnsAddresses: [ ] Domains: null MTU: 0 Routes: [ ]}
+mWifiInfo SSID:<redacted-ssid>, BSSID: <redacted-mac>, MAC: <redacted-mac>, IP: null, Security type: -1, Supplicant state: DISCONNECTED, Wi-Fi standard: unknown, RSSI: -127, Link speed: -1Mbps, Tx Link speed: -1Mbps, Max Supported Tx Link speed: -1Mbps, Rx Link speed: -1Mbps, Max Supported Rx Link speed: -1Mbps, Frequency: -1MHz, Net ID: -1, Metered hint: false, score: 0, isUsable: true, CarrierMerged: false, SubscriptionId: -1, IsPrimary: 0, Trusted: false, Restricted: false, Ephemeral: false, OEM paid: false, OEM private: false, OSU AP: false, FQDN: <none>, Provider friendly name: <none>, Requesting package name: <none><none>MLO Information: , Is TID-To-Link negotiation supported by the AP: false, AP MLD Address: <none>, AP MLO Link Id: <none>, AP MLO Affiliated links: <none>, Vendor Data: <none>
+mDhcpResultsParcelable baseConfiguration nullleaseDuration 0mtu 0serverAddress nullserverHostName nullvendorInfo null
+mLastSignalLevel -1
+mLastTxKbps -1
+mLastRxKbps -1
+mLastBssid <redacted-mac>
+mLastNetworkId -1
+mLastSubId -1
+mLastSimBasedConnectionCarrierName null
+mSuspendOptimizationsEnabled true
+mSuspendOptNeedsDisabled 4
+mPowerSaveDisableRequests 0
+WifiScoreReport:
+time,session,netid,rssi,filtered_rssi,rssi_threshold,freq,txLinkSpeed,rxLinkSpeed,txTput,rxTput,bcnCnt,tx_good,tx_retry,tx_bad,rx_pps,nudrq,nuds,s1,s2,score,{linkId,linkRssi,linkFreq,txLinkSpeed,rxLinkSpeed,linkBcnCnt,linkTxGood,linkTxRetry,linkTxBad,linkRxGood,linkMloState,linkUsageState}
+externalScorerActive=false
+mShouldReduceNetworkScore=false
+QosPolicyRequestHandler:
+mQosRequestDialogToken: 0
+mNumQosPoliciesInRequest: 0
+mQosResourcesAvailable: false
+mQosPolicyStatusList size: 0
+mQosPolicyRequestQueue size: 0
+
+
+
+Stopped SoftApManagers: 0 total
+
+STA + STA Concurrency Supported: false
+STA + AP Concurrency Supported: false
+Dump of HalDeviceManager:
+  mManagerStatusListeners: [com.android.server.wifi.HalDeviceManager$ManagerStatusListenerProxy@ecb0d1c]
+  mInterfaceInfoCache: {Pair{wlan0 0}={name=wlan0, type=0, destroyedListeners.size()=1, RequestorWs=WorkSource{0 com.android.shell}, creationTime=4121791}}
+  mDebugChipsInfo: [{chipId=0, availableModes=[{id=0, availableCombinations=[{limits=[{maxIfaces=1, types=[0]}, {maxIfaces=1, types=[3]}]}]}, {id=1, availableCombinations=[{limits=[{maxIfaces=1, types=[1]}]}]}], currentModeIdValid=true, currentModeId=0, chipCapabilities={}, radioCombinations=null, bandCombinations=null, ifaces[1].length=0, ifaces[0].length=1, ifaces[2].length=0, ifaces[3].length=0}]
+Wifi handler thread overruns
+2026-08-25T12:01:02.372992 - WifiService#checkAndStartWifi was running for 174
+2026-08-25T12:01:05.585109 - WifiService#handleBootCompleted was running for 204
+2026-08-25T12:01:06.892215 - WifiService#handleUserUnlock was running for 268
+2026-08-25T15:03:06.723434 - ConcreteClientModeManager.ConcreteClientModeManager$ClientModeStateMachine$IdleState.CMD_START was running for 539 ms
+2026-08-25T15:03:06.966579 - ConcreteClientModeManager.ConcreteClientModeManager$ClientModeStateMachine$StartedState.CMD_SWITCH_TO_CONNECT_MODE was running for 240 ms
+2026-08-25T15:03:18.162331 - WifiService#dump was running for 302
+2026-08-25T15:26:54.782577 - WifiService#dump was running for 244
+2026-08-25T15:42:50.500041 - ConcreteClientModeManager.ConcreteClientModeManager$ClientModeStateMachine$StartedState.Exit was running for 854 ms
+2026-08-25T15:42:56.345337 - ConcreteClientModeManager.ConcreteClientModeManager$ClientModeStateMachine$IdleState.CMD_START was running for 496 ms
+2026-08-25T15:42:56.511710 - ConcreteClientModeManager.ConcreteClientModeManager$ClientModeStateMachine$StartedState.CMD_SWITCH_TO_CONNECT_MODE was running for 165 ms
+Dump of MakeBeforeBreakManager
+mMakeBeforeBreakInfo=null
+mInternalState MBB_STATE_NONE
+
+dump of InterfaceConflictManager:
+  mUserApprovalNeeded=false
+  mUserApprovalNeededOverride=false
+  mUserApprovalNeededOverrideValue=false
+  mUserApprovalPending=false
+  mUserApprovalPendingTag=null
+  mUserJustApproved=false
+  mUserApprovalNotRequireForDisconnectedP2p=false
+
+mTxPkts 0
+mRxPkts 0
+mLastActivity -1
+mRegisteredCallbacks 1
+
+Locks held:
+Locks acquired: 0 full high perf, 0 full low latency
+Locks released: 0 full high perf, 0 full low latency
+
+Locks held:
+
+mMulticastEnabled 0
+mMulticastDisabled 0
+Active lock owners: {}
+Inactive lock owners: {}
+Multicast Locks held:
+
+WifiScoreCard:
+
+WifiMetrics:
+mConnectionEvents:
+mWifiLogProto.numSavedNetworks=0
+mWifiLogProto.numSavedNetworksWithMacRandomization=0
+mWifiLogProto.numOpenNetworks=0
+mWifiLogProto.numLegacyPersonalNetworks=0
+mWifiLogProto.numLegacyEnterpriseNetworks=0
+mWifiLogProto.numEnhancedOpenNetworks=0
+mWifiLogProto.numWpa3PersonalNetworks=0
+mWifiLogProto.numWpa3EnterpriseNetworks=0
+mWifiLogProto.numWapiPersonalNetworks=0
+mWifiLogProto.numWapiEnterpriseNetworks=0
+mWifiLogProto.numHiddenNetworks=0
+mWifiLogProto.numPasspointNetworks=0
+mWifiLogProto.isLocationEnabled=false
+mWifiLogProto.isScanningAlwaysEnabled=false
+mWifiLogProto.isVerboseLoggingEnabled=true
+mWifiLogProto.isEnhancedMacRandomizationForceEnabled=false
+mWifiLogProto.isWifiWakeEnabled=false
+mWifiLogProto.numNetworksAddedByUser=0
+mWifiLogProto.numNetworksAddedByApps=0
+mWifiLogProto.numNonEmptyScanResults=59
+mWifiLogProto.numEmptyScanResults=0
+mWifiLogProto.numConnecitvityOneshotScans=0
+mWifiLogProto.numOneshotScans=60
+mWifiLogProto.numOneshotHasDfsChannelScans=58
+mWifiLogProto.numBackgroundScans=0
+mWifiLogProto.numExternalAppOneshotScanRequests=0
+mWifiLogProto.numExternalForegroundAppOneshotScanRequestsThrottled=0
+mWifiLogProto.numExternalBackgroundAppOneshotScanRequestsThrottled=0
+mWifiLogProto.meteredNetworkStatsSaved=
+num_metered: 0
+num_override_metered: 0
+num_override_unmetered: 0
+num_unmetered: 0
+
+mWifiLogProto.meteredNetworkStatsSuggestion=
+num_metered: 0
+num_override_metered: 0
+num_override_unmetered: 0
+num_unmetered: 0
+
+mScanReturnEntries:
+  SCAN_UNKNOWN: 0
+  SCAN_SUCCESS: 60
+  SCAN_FAILURE_INTERRUPTED: 0
+  SCAN_FAILURE_INVALID_CONFIGURATION: 0
+  FAILURE_WIFI_DISABLED: 0
+mSystemStateEntries: <state><screenOn> : <scansInitiated>
+  WIFI_UNKNOWN       ON: 0
+  WIFI_DISABLED      ON: 1
+  WIFI_DISCONNECTED  ON: 59
+  WIFI_ASSOCIATED    ON: 0
+  WIFI_UNKNOWN      OFF: 0
+  WIFI_DISABLED     OFF: 0
+  WIFI_DISCONNECTED OFF: 0
+  WIFI_ASSOCIATED   OFF: 0
+mWifiLogProto.numConnectivityWatchdogPnoGood=0
+mWifiLogProto.numConnectivityWatchdogPnoBad=0
+mWifiLogProto.numConnectivityWatchdogBackgroundGood=0
+mWifiLogProto.numConnectivityWatchdogBackgroundBad=0
+mWifiLogProto.numLastResortWatchdogTriggers=0
+mWifiLogProto.numLastResortWatchdogBadAssociationNetworksTotal=0
+mWifiLogProto.numLastResortWatchdogBadAuthenticationNetworksTotal=0
+mWifiLogProto.numLastResortWatchdogBadDhcpNetworksTotal=0
+mWifiLogProto.numLastResortWatchdogBadOtherNetworksTotal=0
+mWifiLogProto.numLastResortWatchdogAvailableNetworksTotal=0
+mWifiLogProto.numLastResortWatchdogTriggersWithBadAssociation=0
+mWifiLogProto.numLastResortWatchdogTriggersWithBadAuthentication=0
+mWifiLogProto.numLastResortWatchdogTriggersWithBadDhcp=0
+mWifiLogProto.numLastResortWatchdogTriggersWithBadOther=0
+mWifiLogProto.numLastResortWatchdogSuccesses=0
+mWifiLogProto.watchdogTotalConnectionFailureCountAfterTrigger=0
+mWifiLogProto.watchdogTriggerToConnectionSuccessDurationMs=-1
+mWifiLogProto.recordDurationSec=3311
+mWifiLogProto.rssiPollCount: {}
+mWifiLogProto.rssiPollDeltaCount: Printing counts for [-127, 127]
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+mWifiLogProto.linkSpeedCounts:
+mWifiLogProto.alertReasonCounts=()
+mWifiLogProto.numTotalScanResults=0
+mWifiLogProto.numOpenNetworkScanResults=0
+mWifiLogProto.numLegacyPersonalNetworkScanResults=0
+mWifiLogProto.numLegacyEnterpriseNetworkScanResults=0
+mWifiLogProto.numEnhancedOpenNetworkScanResults=0
+mWifiLogProto.numWpa3PersonalNetworkScanResults=0
+mWifiLogProto.numWpa3EnterpriseNetworkScanResults=0
+mWifiLogProto.numWapiPersonalNetworkScanResults=0
+mWifiLogProto.numWapiEnterpriseNetworkScanResults=0
+mWifiLogProto.numHiddenNetworkScanResults=0
+mWifiLogProto.numHotspot2R1NetworkScanResults=0
+mWifiLogProto.numHotspot2R2NetworkScanResults=0
+mWifiLogProto.numHotspot2R3NetworkScanResults=0
+mWifiLogProto.numMboSupportedNetworkScanResults=0
+mWifiLogProto.numMboCellularDataAwareNetworkScanResults=0
+mWifiLogProto.numOceSupportedNetworkScanResults=0
+mWifiLogProto.numFilsSupportedNetworkScanResults=0
+mWifiLogProto.num11AxNetworkScanResults=0
+mWifiLogProto.num6GNetworkScanResults0
+mWifiLogProto.num6GPscNetworkScanResults0
+mWifiLogProto.numBssidFilteredDueToMboAssocDisallowInd=0
+mWifiLogProto.numConnectToNetworkSupportingMbo=0
+mWifiLogProto.numConnectToNetworkSupportingOce=0
+mWifiLogProto.numSteeringRequest=0
+mWifiLogProto.numForceScanDueToSteeringRequest=0
+mWifiLogProto.numMboCellularSwitchRequest=0
+mWifiLogProto.numSteeringRequestIncludingMboAssocRetryDelay=0
+mWifiLogProto.numConnectRequestWithFilsAkm=0
+mWifiLogProto.numL2ConnectionThroughFilsAuthentication=0
+mWifiLogProto.recentFailureAssociationStatus={}
+mWifiLogProto.numScans=0
+mWifiLogProto.WifiScoreCount: [0, 60]
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+mWifiLogProto.WifiUsabilityScoreCount: [0, 100]
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+mWifiLogProto.SoftApManagerReturnCodeCounts:
+  SUCCESS: 0
+  FAILED_GENERAL_ERROR: 0
+  FAILED_NO_CHANNEL: 0
+  FAILED_UNSUPPORTED_CONFIGURATION: 0
+
+mWifiLogProto.numHalCrashes=0
+mWifiLogProto.numWificondCrashes=0
+mWifiLogProto.numSupplicantCrashes=0
+mWifiLogProto.numHostapdCrashes=0
+mWifiLogProto.numSetupClientInterfaceFailureDueToHal=0
+mWifiLogProto.numSetupClientInterfaceFailureDueToWificond=0
+mWifiLogProto.numSetupClientInterfaceFailureDueToSupplicant=0
+mWifiLogProto.numSetupSoftApInterfaceFailureDueToHal=0
+mWifiLogProto.numSetupSoftApInterfaceFailureDueToWificond=0
+mWifiLogProto.numSetupSoftApInterfaceFailureDueToHostapd=0
+StaEventList:
+08-25 15:03:07.031 WIFI_ENABLED screenOn=true cellularData=false adaptiveConnectivity=true totalTxBytes=977976 totalRxBytes=901986 interfaceName=wlan0 interfaceRole=ROLE_CLIENT_PRIMARY
+08-25 15:42:50.501 WIFI_DISABLED screenOn=true cellularData=false adaptiveConnectivity=true totalTxBytes=9396255 totalRxBytes=2330394 interfaceName=wlan0 interfaceRole=ROLE_CLIENT_PRIMARY
+08-25 15:42:56.559 WIFI_ENABLED screenOn=true cellularData=false adaptiveConnectivity=true totalTxBytes=9413681 totalRxBytes=2340990 interfaceName=wlan0 interfaceRole=ROLE_CLIENT_PRIMARY
+UserActionEvents:
+8-25 15:3:6.181 eventType=EVENT_TOGGLE_WIFI_ON startTimeMillis=1731644
+WifiStatus: isConnected=false isValidated=false lastRssi=0 estimatedTxKbps=0 estimatedRxKbps=0 isStuckDueToUserConnectChoice=false
+8-25 15:29:20.346 eventType=EVENT_TOGGLE_WIFI_ON startTimeMillis=3305810
+WifiStatus: isConnected=false isValidated=false lastRssi=0 estimatedTxKbps=0 estimatedRxKbps=0 isStuckDueToUserConnectChoice=false
+8-25 15:42:49.627 eventType=EVENT_TOGGLE_WIFI_OFF startTimeMillis=4115091
+WifiStatus: isConnected=false isValidated=false lastRssi=0 estimatedTxKbps=0 estimatedRxKbps=0 isStuckDueToUserConnectChoice=false
+8-25 15:42:55.848 eventType=EVENT_TOGGLE_WIFI_ON startTimeMillis=4121311
+WifiStatus: isConnected=false isValidated=false lastRssi=0 estimatedTxKbps=0 estimatedRxKbps=0 isStuckDueToUserConnectChoice=false
+mWifiLogProto.numPasspointProviders=0
+mWifiLogProto.numPasspointProviderInstallation=0
+mWifiLogProto.numPasspointProviderInstallSuccess=0
+mWifiLogProto.numPasspointProviderUninstallation=0
+mWifiLogProto.numPasspointProviderUninstallSuccess=0
+mWifiLogProto.numPasspointProvidersSuccessfullyConnected=0
+mWifiLogProto.installedPasspointProfileTypeForR1:{}
+mWifiLogProto.installedPasspointProfileTypeForR2:{}
+mWifiLogProto.passpointProvisionStats.numProvisionSuccess=0
+mWifiLogProto.passpointProvisionStats.provisionFailureCount:{}
+mWifiLogProto.totalNumberOfPasspointConnectionsWithVenueUrl=0
+mWifiLogProto.totalNumberOfPasspointConnectionsWithTermsAndConditionsUrl=0
+mWifiLogProto.totalNumberOfPasspointAcceptanceOfTermsAndConditions=0
+mWifiLogProto.totalNumberOfPasspointProfilesWithDecoratedIdentity=0
+mWifiLogProto.passpointDeauthImminentScope={}
+mWifiLogProto.numRadioModeChangeToMcc=0
+mWifiLogProto.numRadioModeChangeToScc=0
+mWifiLogProto.numRadioModeChangeToSbs=0
+mWifiLogProto.numRadioModeChangeToDbs=0
+mWifiLogProto.numSoftApUserBandPreferenceUnsatisfied=0
+mTotalSsidsInScanHistogram:{}
+mTotalBssidsInScanHistogram:{}
+mAvailableOpenSsidsInScanHistogram:{}
+mAvailableOpenBssidsInScanHistogram:{}
+mAvailableSavedSsidsInScanHistogram:{}
+mAvailableSavedBssidsInScanHistogram:{}
+mAvailableOpenOrSavedSsidsInScanHistogram:{}
+mAvailableOpenOrSavedBssidsInScanHistogram:{}
+mAvailableSavedPasspointProviderProfilesInScanHistogram:{}
+mAvailableSavedPasspointProviderBssidsInScanHistogram:{}
+mWifiLogProto.partialAllSingleScanListenerResults=0
+mWifiLogProto.fullBandAllSingleScanListenerResults=0
+mWifiAwareMetrics:
+mLastEnableUsageMs:0
+mLastEnableUsageInThisSampleWindowMs:0
+mAvailableTimeMs:0
+mHistogramAwareAvailableDurationMs:
+mLastEnableAwareMs:0
+mLastEnableAwareInThisSampleWindowMs:0
+mEnabledTimeMs:0
+mHistogramAwareEnabledDurationMs:
+mAttachDataByUid:
+mAttachStatusData:
+mHistogramAttachDuration:
+mMaxPublishInApp:0
+mMaxSubscribeInApp:0
+mMaxDiscoveryInApp:0
+mMaxPublishInSystem:0
+mMaxSubscribeInSystem:0
+mMaxDiscoveryInSystem:0
+mPublishStatusData:
+mSubscribeStatusData:
+mHistogramPublishDuration:
+mHistogramSubscribeDuration:
+mAppsWithDiscoverySessionResourceFailure:
+mMaxPublishWithRangingInApp:0
+mMaxSubscribeWithRangingInApp:0
+mMaxPublishWithRangingInSystem:0
+mMaxSubscribeWithRangingInSystem:0
+mHistogramSubscribeGeofenceMin:
+mHistogramSubscribeGeofenceMax:
+mNumSubscribesWithRanging:0
+mNumMatchesWithRanging:0
+mNumMatchesWithoutRangingForRangingEnabledSubscribes:0
+mMaxNdiInApp:0
+mMaxNdpInApp:0
+mMaxSecureNdpInApp:0
+mMaxNdiInSystem:0
+mMaxNdpInSystem:0
+mMaxSecureNdpInSystem:0
+mMaxNdpPerNdi:0
+mInBandNdpStatusData:
+mOutOfBandNdpStatusData:
+mNdpCreationTimeDuration:
+mNdpCreationTimeMin:-1
+mNdpCreationTimeMax:0
+mNdpCreationTimeSum:0
+mNdpCreationTimeSumSq:0
+mNdpCreationTimeNumSamples:0
+mHistogramNdpDuration:
+mNdpRequestType:
+mRttMetrics:
+RTT Metrics:
+mNumStartRangingCalls:0
+mOverallStatusHistogram:{}
+mMeasurementDurationApOnlyHistogram{}
+mMeasurementDurationWithAwareHistogram{}
+AP:numCalls=0, numIndividualCalls=0, perUidInfo={}, numRequestsHistogram={}, requestGapHistogram={}, statusHistogram={}, measuredDistanceHistogram={}
+AWARE:numCalls=0, numIndividualCalls=0, perUidInfo={}, numRequestsHistogram={}, requestGapHistogram={}, statusHistogram={}, measuredDistanceHistogram={}
+mPnoScanMetrics.numPnoScanAttempts=0
+mPnoScanMetrics.numPnoScanFailed=0
+mPnoScanMetrics.numPnoScanStartedOverOffload=0
+mPnoScanMetrics.numPnoScanFailedOverOffload=0
+mPnoScanMetrics.numPnoFoundNetworkEvents=0
+mWifiLinkLayerUsageStats.loggingDurationMs=0
+mWifiLinkLayerUsageStats.radioOnTimeMs=0
+mWifiLinkLayerUsageStats.radioTxTimeMs=0
+mWifiLinkLayerUsageStats.radioRxTimeMs=0
+mWifiLinkLayerUsageStats.radioScanTimeMs=0
+mWifiLinkLayerUsageStats.radioNanScanTimeMs=0
+mWifiLinkLayerUsageStats.radioBackgroundScanTimeMs=0
+mWifiLinkLayerUsageStats.radioRoamScanTimeMs=0
+mWifiLinkLayerUsageStats.radioPnoScanTimeMs=0
+mWifiLinkLayerUsageStats.radioHs20ScanTimeMs=0
+mWifiLinkLayerUsageStats per Radio Stats:
+mWifiLogProto.connectToNetworkNotificationCount={}
+mWifiLogProto.connectToNetworkNotificationActionCount={}
+mWifiLogProto.openNetworkRecommenderBlocklistSize=0
+mWifiLogProto.isWifiNetworksAvailableNotificationOn=true
+mWifiLogProto.numOpenNetworkRecommendationUpdates=0
+mWifiLogProto.numOpenNetworkConnectMessageFailedToSend=0
+mWifiLogProto.observedHotspotR1ApInScanHistogram={}
+mWifiLogProto.observedHotspotR2ApInScanHistogram={}
+mWifiLogProto.observedHotspotR3ApInScanHistogram={}
+mWifiLogProto.observedHotspotR1EssInScanHistogram={}
+mWifiLogProto.observedHotspotR2EssInScanHistogram={}
+mWifiLogProto.observedHotspotR3EssInScanHistogram={}
+mWifiLogProto.observedHotspotR1ApsPerEssInScanHistogram={}
+mWifiLogProto.observedHotspotR2ApsPerEssInScanHistogram={}
+mWifiLogProto.observedHotspotR3ApsPerEssInScanHistogram={}
+mWifiLogProto.observed80211mcSupportingApsInScanHistogram{}
+mWifiLogProto.bssidBlocklistStats:
+networkSelectionFilteredBssidCount={}
+mBlockedBssidPerReasonCount={}
+mBlockedConfigurationPerReasonCount={}, highMovementMultipleScansFeatureEnabled=true, numHighMovementConnectionSkipped=0, numHighMovementConnectionStarted=0, mBlockedBssidPerReasonCount={}, mBlockedConfigurationPerReasonCount={}
+mSoftApTetheredEvents:
+mSoftApLocalOnlyEvents:
+-------WifiWake metrics-------
+mTotalSessions: 0
+mTotalWakeups: 0
+mIgnoredStarts: 0
+mIsInSession: false
+Stored Sessions: 0
+----end of WifiWake metrics----
+mWifiLogProto.isMacRandomizationOn=false
+mWifiLogProto.scoreExperimentId=
+mExperimentValues.wifiDataStallMinTxBad=1
+mExperimentValues.wifiDataStallMinTxSuccessWithoutRx=50
+mExperimentValues.linkSpeedCountsLoggingEnabled=true
+mExperimentValues.dataStallDurationMs=1500
+mExperimentValues.dataStallTxTputThrKbps=2000
+mExperimentValues.dataStallRxTputThrKbps=2000
+mExperimentValues.dataStallTxPerThr=90
+mExperimentValues.dataStallCcaLevelThr=256
+WifiIsUnusableEventList:
+Hardware Version:
+mWifiUsabilityStatsEntriesRingBuffer:
+mWifiUsabilityStatsTrainingExamples:
+mMobilityStatePnoStatsMap:
+device_mobility_state=0,num_times_entered_state=1,total_duration_ms=0,pno_duration_ms=0
+WifiP2pMetrics:
+mConnectionEvents:
+mGroupEvents:
+mWifiP2pStatsProto.numPersistentGroup=0
+mWifiP2pStatsProto.numTotalPeerScans=0
+mWifiP2pStatsProto.numTotalServiceScans=0
+mDppMetrics:
+---Easy Connect/DPP metrics---
+mWifiDppLogProto.numDppConfiguratorInitiatorRequests=0
+mWifiDppLogProto.numDppEnrolleeInitiatorRequests=0
+mWifiDppLogProto.numDppEnrolleeResponderRequests=0
+mWifiDppLogProto.numDppEnrolleeResponderSuccess=0
+mWifiDppLogProto.numDppEnrolleeSuccess=0
+mWifiDppLogProto.numDppR1CapableEnrolleeResponderDevices=0
+mWifiDppLogProto.numDppR2CapableEnrolleeResponderDevices=0
+mWifiDppLogProto.numDppR2EnrolleeResponderIncompatibleConfiguration=0
+---End of Easy Connect/DPP metrics---
+mWifiConfigStoreReadDurationHistogram:{0=2}
+mWifiConfigStoreWriteDurationHistogram:{0=3, 1=1}
+mLinkProbeSuccessRssiCounts:{}
+mLinkProbeFailureRssiCounts:{}
+mLinkProbeSuccessLinkSpeedCounts:{}
+mLinkProbeFailureLinkSpeedCounts:{}
+mLinkProbeSuccessSecondsSinceLastTxSuccessHistogram:{}
+mLinkProbeFailureSecondsSinceLastTxSuccessHistogram:{}
+mLinkProbeSuccessElapsedTimeMsHistogram:{}
+mLinkProbeFailureReasonCounts:{}
+mLinkProbeExperimentProbeCounts:{}
+mNetworkSelectionExperimentPairNumChoicesCounts:{}
+mLinkProbeStaEventCount:0
+mWifiNetworkRequestApiLog:
+num_apps: 0
+num_concurrent_connection: 0
+num_connect_on_primary_iface: 0
+num_connect_on_secondary_iface: 0
+num_connect_success_on_primary_iface: 0
+num_connect_success_on_secondary_iface: 0
+num_request: 0
+num_user_approval_bypass: 0
+num_user_reject: 0
+
+mWifiNetworkRequestApiMatchSizeHistogram:
+{}
+mWifiNetworkRequestApiConnectionDurationSecOnPrimaryIfaceHistogram:
+{}
+mWifiNetworkRequestApiConnectionDurationSecOnSecondaryIfaceHistogram:
+{}
+mWifiNetworkRequestApiConcurrentConnectionDurationSecHistogram:
+{}
+mWifiNetworkSuggestionApiLog:
+num_connect_failure: 0
+num_connect_success: 0
+num_modification: 0
+num_multiple_suggestions: 0
+num_priority_groups: 0
+num_saved_networks_with_configured_suggestion: 0
+user_revoke_app_suggestion_permission: 0
+
+mWifiNetworkSuggestionApiMatchSizeHistogram:
+{}
+mWifiNetworkSuggestionApiAppTypeCounter:
+{}
+mWifiNetworkSuggestionPriorityGroups:
+{}
+mWifiNetworkSuggestionCoexistSavedNetworks:
+{}
+mUserApprovalSuggestionAppUiUserReaction:
+mUserApprovalCarrierUiUserReaction:
+mNetworkIdToNominatorId:
+{}
+mWifiLockStats:
+high_perf_active_time_ms: 0
+low_latency_active_time_ms: 0
+
+mWifiLockHighPerfAcqDurationSecHistogram:
+{}
+mWifiLockLowLatencyAcqDurationSecHistogram:
+{}
+mWifiLockHighPerfActiveSessionDurationSecHistogram:
+{}
+mWifiLockLowLatencyActiveSessionDurationSecHistogram:
+{}
+mWifiToggleStats:
+num_toggle_off_normal: 0
+num_toggle_off_privileged: 1
+num_toggle_on_normal: 0
+num_toggle_on_privileged: 3
+
+mWifiLogProto.numAddOrUpdateNetworkCalls=0
+mWifiLogProto.numEnableNetworkCalls=0
+mWifiLogProto.txLinkSpeedCount2g={}
+mWifiLogProto.txLinkSpeedCount5gLow={}
+mWifiLogProto.txLinkSpeedCount5gMid={}
+mWifiLogProto.txLinkSpeedCount5gHigh={}
+mWifiLogProto.txLinkSpeedCount6gLow={}
+mWifiLogProto.txLinkSpeedCount6gMid={}
+mWifiLogProto.txLinkSpeedCount6gHigh={}
+mWifiLogProto.rxLinkSpeedCount2g={}
+mWifiLogProto.rxLinkSpeedCount5gLow={}
+mWifiLogProto.rxLinkSpeedCount5gMid={}
+mWifiLogProto.rxLinkSpeedCount5gHigh={}
+mWifiLogProto.rxLinkSpeedCount6gLow={}
+mWifiLogProto.rxLinkSpeedCount6gMid={}
+mWifiLogProto.rxLinkSpeedCount6gHigh={}
+mWifiLogProto.numIpRenewalFailure=0
+mWifiLogProto.connectionDurationStats=connectionDurationSufficientThroughputMs=0, connectionDurationInSufficientThroughputMs=0, connectionDurationInSufficientThroughputDefaultWifiMs=0, connectionDurationCellularDataOffMs=0
+mWifiLogProto.isExternalWifiScorerOn=false
+mWifiLogProto.wifiOffMetrics=numWifiOff=1, numWifiOffDeferring=0, numWifiOffDeferringTimeout=0, wifiOffDeferringTimeHistogram={}
+mWifiLogProto.softApConfigLimitationMetrics=numSecurityTypeResetToDefault=0, numMaxClientSettingResetToDefault=0, numClientControlByUserResetToDefault=0, maxClientSettingWhenReachHistogram={}
+mChannelUtilizationHistogram2G:
+{}
+mChannelUtilizationHistogramAbove2G:
+{}
+mTxThroughputMbpsHistogram2G:
+{}
+mRxThroughputMbpsHistogram2G:
+{}
+mTxThroughputMbpsHistogramAbove2G:
+{}
+mRxThroughputMbpsHistogramAbove2G:
+{}
+mCarrierWifiMetrics:
+numConnectionSuccess=0, numConnectionAuthFailure=0, numConnectionNonAuthFailure0
+FirstConnectAfterBootStats{wifiEnabledAtBoot=Attempt{timestampSinceBootMillis=852720,isSuccess=false},firstNetworkSelectionAttempt=null,firstL2ConnectionAttempt=null,firstL3ConnectionAttempt=null}
+WifiToWifiSwitchStats{isMakeBeforeBreakSupported=false,wifiToWifiSwitchTriggerCount=0,makeBeforeBreakTriggerCount=0,makeBeforeBreakNoInternetCount=0,makeBeforeBreakRecoverPrimaryCount=0,makeBeforeBreakInternetValidatedCount=0,makeBeforeBreakSuccessCount=0,makeBeforeBreakLingerCompletedCount=0,makeBeforeBreakLingeringDurationSeconds={}}
+mInitPartialScanTotalCount:
+0
+mInitPartialScanSuccessCount:
+0
+mInitPartialScanFailureCount:
+0
+mInitPartialScanSuccessHistogram:
+{}
+mInitPartialScanFailureHistogram:
+{}
+
+Dump of WifiNetworkSuggestionsManager
+WifiNetworkSuggestionsManager - Networks Begin ----
+WifiNetworkSuggestionsManager - Networks End ----
+
+Dump of WifiBackupRestore
+
+Dump of BackupRestoreController
+mLastBackupDataRetrievedTimestamp: N/A
+mLastBackupDataRestoredTimestamp: N/A
+
+ScoringParams: rssi2=-83:-80:-73:-60,rssi5=-80:-77:-70:-57,rssi6=-80:-77:-70:-57,pps=0:16:100,horizon=15,nud=8,expid=0
+
+
+Dump of WifiSettingsConfigStore
+Settings:
+wifi_native_extended_supported_features=[J@23edbe2
+wifi_wiphy_11be_supported=false
+wifi_native_supported_sta_bands=3
+wifi_p2p_pending_factory_reset=false
+wifi_p2p_device_name=null
+wifi_scan_always_enabled=false
+wifi_sta_factory_mac_address=<redacted-mac>
+wifi_static_chip_info=[{"chipId":0,"availableModes":[{"id":0,"availableCombinations":[{"limits":[{"maxIfaces":1,"types":[0]},{"maxIfaces":1,"types":[3]}]}]},{"id":1,"availableCombinations":[{"limits":[{"maxIfaces":1,"types":[1]}]}]}]}]
+wifi_scan_throttle_enabled=true
+wifi_verbose_logging_enabled=false
+Migration data:
+wifi_p2p_device_name=null
+wifi_p2p_pending_factory_reset=false
+wifi_scan_always_enabled=false
+wifi_scan_throttle_enabled=true
+wifi_verbose_logging_enabled=false
+
+
+mRevertCountryCodeOnCellularLoss: false
+DefaultCountryCode(system property): null
+DefaultCountryCode(config store): null
+mTelephonyCountryCode: null
+mTelephonyCountryTimestamp: 08-25 15:42:56.520
+mOverrideCountryCode: null
+mAllCmmReadyTimestamp: 08-25 15:42:56.519
+isAllCmmReady: true
+mAmmToReadyForChangeMap: {ConcreteClientModeManager{id=4121312 iface=wlan0 role=ROLE_CLIENT_PRIMARY}=true}
+mDisconnectWifiToForceUpdateCount: 0
+mDriverCountryCode: null
+mDriverCountryCodeUpdatedTimestamp: 08-25 15:42:50.513
+mFrameworkCountryCode: null
+mFrameworkCountryCodeUpdatedTimestamp: N/A
+isDriverSupportedRegChangedEvent: false
+providerId=5, ScoreFilter=Score(Policies : 0), Filter=[ Transports: WIFI Capabilities: NOT_METERED&INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_ROAMING&NOT_CONGESTED&NOT_SUSPENDED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED LinkUpBandwidth>=1048576Kbps LinkDnBandwidth>=1048576Kbps Specifier: <android.net.MatchAllNetworkSpecifier@0> UnderlyingNetworks: Null], requests=0
+WifiNetworkFactory: mGenericConnectionReqCount 0
+WifiNetworkFactory: mActiveSpecificNetworkRequest null
+WifiNetworkFactory: mUserApprovedAccessPointMap {}
+providerId=6, ScoreFilter=Score(Policies : 0), Filter=[ Transports: WIFI Capabilities: NOT_METERED&INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_ROAMING&NOT_CONGESTED&NOT_SUSPENDED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED LinkUpBandwidth>=1048576Kbps LinkDnBandwidth>=1048576Kbps Specifier: <android.net.MatchAllNetworkSpecifier@0> UnderlyingNetworks: Null], requests=15
+  {NetworkRequest [ REQUEST id=1, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=16, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 1073 RequestorUid: 1073 RequestorPkg: com.android.networkstack UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=7, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 1000 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=14, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 1000 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=20, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10038 RequestorUid: 10038 RequestorPkg: com.android.systemui UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=22, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 1000 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=25, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10038 RequestorUid: 10038 RequestorPkg: com.android.systemui UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=27, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10038 RequestorUid: 10038 RequestorPkg: com.android.systemui UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=31, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10038 RequestorUid: 10038 RequestorPkg: com.android.systemui UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=35, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10040 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=37, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10052 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=41, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10048 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=45, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10037 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=49, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 1000 RequestorUid: 1000 RequestorPkg: com.android.tv.settings UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=52, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 1000 RequestorUid: 1000 RequestorPkg: com.android.tv.settings UnderlyingNetworks: Null] ], requested=true}
+UntrustedWifiNetworkFactory: mConnectionReqCount 0
+providerId=8, ScoreFilter=Score(Policies : 0), Filter=[ Transports: WIFI Capabilities: NOT_METERED&INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_ROAMING&NOT_CONGESTED&NOT_SUSPENDED&OEM_PAID&OEM_PRIVATE&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED LinkUpBandwidth>=1048576Kbps LinkDnBandwidth>=1048576Kbps Specifier: <android.net.MatchAllNetworkSpecifier@0> UnderlyingNetworks: Null], requests=15
+  {NetworkRequest [ REQUEST id=1, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=16, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 1073 RequestorUid: 1073 RequestorPkg: com.android.networkstack UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=7, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 1000 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=14, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 1000 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=20, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10038 RequestorUid: 10038 RequestorPkg: com.android.systemui UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=22, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 1000 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=25, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10038 RequestorUid: 10038 RequestorPkg: com.android.systemui UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=27, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10038 RequestorUid: 10038 RequestorPkg: com.android.systemui UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=31, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10038 RequestorUid: 10038 RequestorPkg: com.android.systemui UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=35, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10040 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=37, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10052 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=41, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10048 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=45, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10037 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=49, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 1000 RequestorUid: 1000 RequestorPkg: com.android.tv.settings UnderlyingNetworks: Null] ], requested=true}
+  {NetworkRequest [ REQUEST id=52, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 1000 RequestorUid: 1000 RequestorPkg: com.android.tv.settings UnderlyingNetworks: Null] ], requested=true}
+OemPaidWifiNetworkFactory: mOemPaidConnectionReqCount 0
+OemPaidWifiNetworkFactory: mOemPrivateConnectionReqCount 0
+providerId=7, ScoreFilter=Score(Policies : 0), Filter=[ Transports: WIFI Capabilities: NOT_METERED&INTERNET&TRUSTED&NOT_VPN&NOT_ROAMING&NOT_CONGESTED&NOT_SUSPENDED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED LinkUpBandwidth>=1048576Kbps LinkDnBandwidth>=1048576Kbps Specifier: <android.net.MatchAllNetworkSpecifier@0> UnderlyingNetworks: Null], requests=0
+RestrictedWifiNetworkFactory: mConnectionReqCount 0
+providerId=9, ScoreFilter=Score(Policies : 0), Filter=[ Transports: WIFI Capabilities: NOT_METERED&INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_ROAMING&NOT_CONGESTED&NOT_SUSPENDED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED LinkUpBandwidth>=1048576Kbps LinkDnBandwidth>=1048576Kbps Specifier: <android.net.MatchAllNetworkSpecifier@0> UnderlyingNetworks: Null], requests=15
+  {NetworkRequest [ REQUEST id=1, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ], requested=false}
+  {NetworkRequest [ REQUEST id=16, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 1073 RequestorUid: 1073 RequestorPkg: com.android.networkstack UnderlyingNetworks: Null] ], requested=false}
+  {NetworkRequest [ REQUEST id=7, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 1000 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ], requested=false}
+  {NetworkRequest [ REQUEST id=14, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 1000 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ], requested=false}
+  {NetworkRequest [ REQUEST id=20, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10038 RequestorUid: 10038 RequestorPkg: com.android.systemui UnderlyingNetworks: Null] ], requested=false}
+  {NetworkRequest [ REQUEST id=22, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 1000 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ], requested=false}
+  {NetworkRequest [ REQUEST id=25, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10038 RequestorUid: 10038 RequestorPkg: com.android.systemui UnderlyingNetworks: Null] ], requested=false}
+  {NetworkRequest [ REQUEST id=27, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10038 RequestorUid: 10038 RequestorPkg: com.android.systemui UnderlyingNetworks: Null] ], requested=false}
+  {NetworkRequest [ REQUEST id=31, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10038 RequestorUid: 10038 RequestorPkg: com.android.systemui UnderlyingNetworks: Null] ], requested=false}
+  {NetworkRequest [ REQUEST id=35, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10040 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ], requested=false}
+  {NetworkRequest [ REQUEST id=37, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10052 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ], requested=false}
+  {NetworkRequest [ REQUEST id=41, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10048 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ], requested=false}
+  {NetworkRequest [ REQUEST id=45, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 10037 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ], requested=false}
+  {NetworkRequest [ REQUEST id=49, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 1000 RequestorUid: 1000 RequestorPkg: com.android.tv.settings UnderlyingNetworks: Null] ], requested=false}
+  {NetworkRequest [ REQUEST id=52, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED Uid: 1000 RequestorUid: 1000 RequestorPkg: com.android.tv.settings UnderlyingNetworks: Null] ], requested=false}
+Dump of MultiInternetWifiNetworkFactory
+Dump of MultiInternetManager
+WifiMultiInternet: mStaConcurrencyMultiInternetMode 0
+Dump of SsidTranslator
+mCurrentLocaleCharset: null
+mCharsetsPerLocaleLanguage Begin ---
+mCharsetsPerLocaleLanguage End ---
+mTranslatedBssids Begin ---
+mTranslatedBssids End ---
+mUntranslatedBssids Begin ---
+mUntranslatedBssids End ---
+Wlan Wake Reasons: totalCmdEventWake 10 totalDriverFwLocalWake 0 totalRxDataWake 0 rxUnicast 0 rxMulticast 0 rxBroadcast 0 icmp 0 icmp6 0 icmp6Ra 0 icmp6Na 0 icmp6Ns 0 ipv4RxMulticast 0 ipv6Multicast 0 otherRxMulticast 0
+
+Dump of WifiConfigManager
+WifiConfigManager - Log Begin ----
+2026-08-25T12:01:02.210791 - clearInternalData: Clearing all internal data
+WifiConfigManager - Log End ----
+WifiConfigManager - Configured networks Begin ----
+WifiConfigManager - Configured networks End ----
+WifiConfigManager - ConfigurationMap Begin ----
+mPerId={}
+mPerIDForCurrentUser={}
+mScanResultMatchInfoMapForCurrentUser={}
+mCurrentUserId=0
+WifiConfigManager - ConfigurationMap End ----
+WifiConfigManager - Next network ID to be allocated 0
+WifiConfigManager - Last selected network ID -1
+WifiConfigManager - PNO scan frequency culling enabled = true
+WifiConfigManager - PNO scan recency sorting enabled = true
+Dump of WifiConfigStore
+WifiConfigStore - Store File Begin ----
+Name: /data/misc/apexdata/com.android.wifi/WifiConfigStore.xml, File Id: 0, Credentials encrypted: false
+Name: /data/misc/apexdata/com.android.wifi/WifiConfigStoreSoftAp.xml, File Id: 1, Credentials encrypted: false
+Name: /data/misc_ce/0/apexdata/com.android.wifi/WifiConfigStore.xml, File Id: 2, Credentials encrypted: false
+Name: /data/misc_ce/0/apexdata/com.android.wifi/WifiConfigStoreNetworkSuggestions.xml, File Id: 3, Credentials encrypted: false
+WifiConfigStore - Store Data Begin ----
+StoreData => Name: WifiCarrierInfoStoreManagerDataStores, File Id: 0, File Name: WifiConfigStore.xml
+StoreData => Name: ImsiPrivacyProtectionExemptionMap, File Id: 2, File Name: WifiConfigStore.xml
+StoreData => Name: NetworkList, File Id: 0, File Name: WifiConfigStore.xml
+StoreData => Name: NetworkList, File Id: 2, File Name: WifiConfigStore.xml
+StoreData => Name: MacAddressMap, File Id: 0, File Name: WifiConfigStore.xml
+StoreData => Name: Settings, File Id: 0, File Name: WifiConfigStore.xml
+StoreData => Name: NetworkSuggestionMap, File Id: 3, File Name: WifiConfigStoreNetworkSuggestions.xml
+StoreData => Name: PasspointConfigData, File Id: 2, File Name: WifiConfigStore.xml
+StoreData => Name: PasspointConfigData, File Id: 0, File Name: WifiConfigStore.xml
+StoreData => Name: OpenNetworkNotifierBlacklistConfigData, File Id: 2, File Name: WifiConfigStore.xml
+StoreData => Name: NetworkRequestMap, File Id: 2, File Name: WifiConfigStore.xml
+StoreData => Name: SoftAp, File Id: 1, File Name: WifiConfigStoreSoftAp.xml
+StoreData => Name: WakeupConfigStoreData, File Id: 2, File Name: WifiConfigStore.xml
+StoreData => Name: RoamingPolicies, File Id: 0, File Name: WifiConfigStore.xml
+WifiConfigStore - Store Data End ----
+WifiCarrierInfoManager:
+mImsiEncryptionInfoAvailable={}
+mImsiPrivacyProtectionExemptionMap={}
+mMergedCarrierNetworkOffloadMap={}
+mSubIdToSimInfoSparseArray={}
+mActiveSubInfos=null
+mCachedCarrierConfigPerSubId={}
+mCarrierAutoJoinResetCheckedForOobPseudonym=false
+mCarrierPrivilegedPackagesBySimSlot=[
+]
+NonCarrierMergedNetworksStatusTracker - Log Begin ----
+mSubscriptionId=-1
+dumpTimeMs=4162710
+mDisableStartTimeMs=0
+mMinDisableDurationMs=0
+mMaxDisableDurationMs=0
+mTemporarilyDisabledNonCarrierMergedListAtStart=
+NonCarrierMergedNetworksStatusTracker - Log End ----
+
+WifiApConfigStore config: ssid = "<redacted-ssid>"
+ Passphrase = <redacted>
+ HiddenSsid = false
+ Channels = {1=0}
+ SecurityType = 1
+ MaxClient = 0
+ AutoShutdownEnabled = true
+ ShutdownTimeoutMillis = -1
+ ClientControlByUser = false
+ BlockedClientList = []
+ AllowedClientList= []
+ MacRandomizationSetting = 2
+ BridgedModeInstanceOpportunisticEnabled = true
+ BridgedModeOpportunisticShutdownTimeoutMillis = -1
+ Ieee80211axEnabled = true
+ Ieee80211beEnabled = true
+ isUserConfiguration = false
+ vendorElements = []
+ mPersistentRandomizedMacAddress = <redacted-mac>
+ mAllowedAcsChannels2g = []
+ mAllowedAcsChannels5g = []
+ mAllowedAcsChannels6g = []
+ mMaxChannelBandwidth = -1
+ mVendorData = []
+ mIsClientIsolationEnabled = false
+
+Dump of PasspointManager
+mEnabled: true
+PasspointManager - Providers Begin ---
+PasspointManager - Providers End ---
+PasspointManager - Next provider ID to be assigned 0
+Last sweep 0:00:46.735 ago.
+ANQPRequestManager - Begin ---
+ANQPRequestManager - End ---
+Dump of PasspointNetworkNominateHelper
+PasspointNetworkNominateHelper --- end ---
+
+Chipset information :-----------------------------------------------
+FW Version is: 6.4.3.1
+Driver Version is: rwnx 20221108-004-6.4.3.0 - - 241c091M (master)
+Supported Feature set: -1
+--------------------------------------------------------------------
+Bug dump 0
+system time = 8-25 15:3:17.924
+kernel time = 1743.388
+reason = 7
+kernel log:
+--------- beginning of kernel
+08-25 14:56:36.220     1     1 I init    : Sending signal 9 to service 'vendor.audio-hal' (pid 14378) process group...
+08-25 14:56:36.220     1     1 I libprocessgroup: Removed cgroup /sys/fs/cgroup/system/uid_1041/pid_14378
+08-25 14:56:36.221     1     1 I init    : Sending signal 9 to service 'audioserver' (pid 14377) process group...
+08-25 14:56:36.226  9578  9578 I binder  : release 14377:14406 transaction 115765 in, still active
+08-25 14:56:36.226  9578  9578 I binder  : send failed reply for transaction 115765 to 13049:13401
+08-25 14:56:36.227  9578  9578 I binder  : undelivered death notification, 00000000ea3472c0
+08-25 14:56:36.229     1     1 I libprocessgroup: Removed cgroup /sys/fs/cgroup/system/uid_1041/pid_14377
+08-25 14:56:36.230     1     1 I init    : Service 'audioserver' (pid 14377) exited with status 1
+08-25 14:56:36.230     1     1 I init    : Sending signal 9 to service 'audioserver' (pid 14377) process group...
+08-25 14:56:36.230     1     1 E libprocessgroup: Failed to open /sys/fs/cgroup/system/uid_1041/pid_14377/cgroup.procs: No such file or directory
+08-25 14:56:36.425   266   266 I servicemanager: Caller(pid=14500,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.core.IModule/default in the VINTF manifest. No alternative instances declared in VINTF.
+08-25 14:56:36.426   266   266 I servicemanager: Caller(pid=14500,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.effect.IFactory/default in the VINTF manifest. No alternative instances declared in VINTF.
+08-25 14:56:36.437   266   266 I servicemanager: Caller(pid=14500,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.effect.IFactory/default in the VINTF manifest. No alternative instances declared in VINTF.
+08-25 14:56:36.438   266   266 I servicemanager: Caller(pid=14500,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.core.IModule/default in the VINTF manifest. No alternative instances declared in VINTF.
+08-25 14:56:36.488   266   266 I servicemanager: Caller(pid=14500,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.effect.IFactory/default in the VINTF manifest. No alternative instances declared in VINTF.
+08-25 14:56:36.489   266   266 I servicemanager: Caller(pid=14500,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.core.IModule/default in the VINTF manifest. No alternative instances declared in VINTF.
+08-25 14:56:36.500   266   266 I servicemanager: Caller(pid=14500,uid=1041,sid=u:r:audioserver:s0) Found android.system.suspend.ISystemSuspend/default in framework VINTF manifest.
+08-25 14:56:36.547   266   266 I servicemanager: Caller(pid=14500,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.effect.IFactory/default in the VINTF manifest. No alternative instances declared in VINTF.
+08-25 14:56:36.548   266   266 I servicemanager: Caller(pid=14500,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.core.IModule/default in the VINTF manifest. No alternative instances declared in VINTF.
+08-25 15:00:54.950   270   270 I logd    : logdr: UID=2000 GID=2000 PID=14575 n tail=0 logMask=bf pid=0 start=0ns deadline=0ns
+08-25 15:01:05.423   270   270 I logd    : logdr: UID=2000 GID=2000 PID=14580 n tail=0 logMask=bf pid=0 start=0ns deadline=0ns
+08-25 15:01:46.912   270   270 I logd    : logdr: UID=2000 GID=2000 PID=14612 n tail=0 logMask=bf pid=0 start=0ns deadline=0ns
+08-25 15:01:58.462   266   266 E SELinux : avc:  denied  { find } for pid=14616 uid=2000 name=apexservice scontext=u:r:shell:s0 tcontext=u:object_r:apex_service:s0 tclass=service_manager permissive=1
+08-25 15:02:17.846     1     1 I init    : Service 'adbd' (pid 628) exited with status 0
+08-25 15:02:17.846     1     1 I init    : Sending signal 9 to service 'adbd' (pid 628) process group...
+08-25 15:02:17.846     1     1 I libprocessgroup: Removed cgroup /sys/fs/cgroup/system/uid_0/pid_628
+08-25 15:02:17.847     1     1 I init    : starting service 'adbd'...
+08-25 15:02:17.848     1     1 I init    : Created socket '/dev/socket/adbd', mode 660, user 1000, group 1000
+08-25 15:02:17.851     1     1 W init    : Activation of cgroup controller +memory failed in path /sys/fs/cgroup/system/uid_0: Invalid argument
+08-25 15:02:17.853     1     1 I init    : ... started service 'adbd' has pid 14635
+08-25 15:02:17.895  9578  9578 I android_work: did not send uevent (0 0 0000000000000000)
+08-25 15:02:17.895 14639 14639 I         : read descriptors
+08-25 15:02:17.895 14639 14639 I         : read strings
+08-25 15:03:06.203 13441 13441 D         : >>> rwnx_mod_init()
+08-25 15:03:06.203 13441 13441 D         : rwnx 20221108-004-6.4.3.0 - - 241c091M (master)
+08-25 15:03:06.203 13441 13441 D         : Driver Release Tag: aic-rwnx-compatible(sdio)-20221108-004
+08-25 15:03:06.203 13441 13441 D aicbsp  : aicbsp_set_subsys, subsys: AIC_WIFI, state to: 1
+08-25 15:03:06.203 13441 13441 D aicbsp  : aicbsp_set_subsys, power state no need to change, current: 1
+08-25 15:03:06.203 13441 13441 D aicsdio : aicwf_sdio_probe:1
+08-25 15:03:06.204 13441 13441 I sunxi-mmc 4021000.sdmmc: sdc set ios:clk 70000000Hz bm PP pm ON vdd 21 width 4 timing LEGACY(SDR12) dt B
+08-25 15:03:06.204 13441 13441 D aicsdio : Set SDIO Clock 66 MHz
+08-25 15:03:06.209 13441 13441 D aicbsp  : aicbsp_resv_mem_alloc_skb, alloc resv_mem_txdata succuss, id: 0, size: 98304
+08-25 15:03:06.209 13441 13441 D         : >>> rwnx_platform_init()
+08-25 15:03:06.209 13441 13441 D         : >>> rwnx_cfg80211_init()
+08-25 15:03:06.209 13441 13441 D         : >>> rwnx_init_aic()
+08-25 15:03:06.209 13441 13441 D         : >>> rwnx_cmd_mgr_init()
+08-25 15:03:06.210 13441 13441 D         : is 5g support = 1, vendor_info = 0x21
+08-25 15:03:06.210 13441 13441 D Firmware Version: di Oct 08 2022 19:31:43 - gb01a3750m
+08-25 15:03:06.210 13441 13441 D         : >>> rwnx_platform_on()
+08-25 15:03:06.210 13441 13441 D         : >>> rwnx_plat_fmac_load()
+08-25 15:03:06.211 13441 13441 D         : userconfig file path:aic_userconfig.txt
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, enable = 1
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, dsss = 10
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofdmlowrate_2g4 = 11
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofdm64qam_2g4 = 10
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofdm256qam_2g4 = 10
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofdm1024qam_2g4 = 9
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofdmlowrate_5g = 11
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofdm64qam_5g = 10
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofdm256qam_5g = 10
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofdm1024qam_5g = 9
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofst_enable = 1
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofst_chan_1_4 = -5
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofst_chan_5_9 = -2
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofst_chan_10_13 = -2
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofst_chan_36_64 = -5
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofst_chan_100_120 = -6
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofst_chan_122_140 = -6
+08-25 15:03:06.212 13441 13441 D         : rwnx_plat_userconfig_parsing, ofst_chan_142_165 = 4
+08-25 15:03:06.212 13441 13441 D         : >>> rwnx_send_rf_calib_req()
+08-25 15:03:06.629 13441 13441 D         : >>> rwnx_send_txpwr_idx_req()
+08-25 15:03:06.630 13441 13441 D         : >>> rwnx_send_txpwr_ofst_req()
+08-25 15:03:06.630 13441 13441 D get macaddr: <redacted-mac>
+08-25 15:03:06.630 13441 13441 D         : >>> rwnx_send_reset()
+08-25 15:03:06.632 13441 13441 D         : >>> rwnx_send_version_req()
+08-25 15:03:06.632 13441 13441 D         : >>> rwnx_set_vers()
+08-25 15:03:06.632 13441 13441 D         : >>> rwnx_send_me_config_req()
+08-25 15:03:06.632 13441 13441 I ieee80211 phy0: HT supp 1, VHT supp 1, HE supp 1
+08-25 15:03:06.633 13441 13441 D         : >>> rwnx_send_me_chan_config_req()
+08-25 15:03:06.633 13441 13441 D         : >>> rwnx_send_me_chan_config_req()
+08-25 15:03:06.633 13441 13441 D rwnx_interface_add: wlan%d, 2, 10
+08-25 15:03:06.633 13441 13441 D interface add: b8 4c 4c 81 26 f2
+08-25 15:03:06.647 13441 13441 I ieee80211 phy0: New interface create wlan0
+08-25 15:03:06.647 13441 13441 D         : rwnx_register_hostwake_irq(201)
+08-25 15:03:06.675 13441 13441 D         : >>> rwnx_open()
+08-25 15:03:06.675 13441 13441 D         : >>> rwnx_send_start()
+08-25 15:03:06.676 13441 13441 D         : >>> rwnx_send_coex_req()
+08-25 15:03:06.676 13441 13441 D         : >>> rwnx_send_add_if()
+08-25 15:03:06.742     1     1 I init    : starting service 'wpa_supplicant'...
+08-25 15:03:06.743     1     1 I init    : Created socket '/dev/socket/wpa_wlan0', mode 660, user 1010, group 1010
+08-25 15:03:06.746     1     1 W init    : Activation of cgroup controller +memory failed in path /sys/fs/cgroup/system/uid_0: Invalid argument
+08-25 15:03:06.750     1     1 I init    : ... started service 'wpa_supplicant' has pid 14684
+08-25 15:03:06.750     1     1 I init    : Control message: Processed ctl.interface_start for 'android.hardware.wifi.supplicant@1.0::ISupplicant/default' from pid: 267 (/system/system_ext/bin/hwservicemanager)
+08-25 15:03:06.751     1     1 I init    : service 'wpa_supplicant' requested start, but it is already running (flags: 134)
+08-25 15:03:06.751     1     1 I init    : Control message: Processed ctl.interface_start for 'android.hardware.wifi.supplicant@1.0::ISupplicant/default' from pid: 267 (/system/system_ext/bin/hwservicemanager)
+08-25 15:03:06.868 14684 14684 I capability: warning: `wpa_supplicant' uses 32-bit capabilities (legacy support in use)
+08-25 15:03:06.947 14684 14684 D rwnx_virtual_interface_add: 10, p2p-dev-wlan0
+08-25 15:03:06.947 14684 14684 D         : rwnx_virtual_interface_add, ifname=p2p-dev-wlan0, wdev=0000000085477341, vif_idx=1
+08-25 15:03:06.947 14684 14684 D         : p2p dev addr=b8 4c 4c 81 26 f3
+08-25 15:03:06.949 14684 14684 D         : P2P interface started
+08-25 15:03:06.997 14684 14684 D android_priv_cmd: Android private cmd "SETSUSPENDMODE 1" on wlan0
+08-25 15:03:06.997 14684 14684 D         : >>> rwnx_send_me_set_lp_level()
+08-25 15:03:07.000 14684 14684 D         : set suspend mode 1
+08-25 15:03:07.025 14684 14684 D android_priv_cmd: Android private cmd "BTCOEXSCAN-STOP" on wlan0
+08-25 15:03:07.025 14684 14684 D wrong cmd: (null) in handle_private_cmd
+08-25 15:03:07.025 14684 14684 D android_priv_cmd: Android private cmd "RXFILTER-STOP" on wlan0
+08-25 15:03:07.025 14684 14684 D wrong cmd: (null) in handle_private_cmd
+08-25 15:03:07.025 14684 14684 D android_priv_cmd: Android private cmd "RXFILTER-ADD 2" on wlan0
+08-25 15:03:07.025 14684 14684 D wrong cmd: (null) in handle_private_cmd
+08-25 15:03:07.026 14684 14684 D android_priv_cmd: Android private cmd "RXFILTER-START" on wlan0
+08-25 15:03:07.026 14684 14684 D wrong cmd: (null) in handle_private_cmd
+08-25 15:03:07.026 14684 14684 D android_priv_cmd: Android private cmd "RXFILTER-STOP" on wlan0
+08-25 15:03:07.026 14684 14684 D wrong cmd: (null) in handle_private_cmd
+08-25 15:03:07.026 14684 14684 D android_priv_cmd: Android private cmd "RXFILTER-ADD 3" on wlan0
+08-25 15:03:07.026 14684 14684 D wrong cmd: (null) in handle_private_cmd
+08-25 15:03:07.026 14684 14684 D android_priv_cmd: Android private cmd "RXFILTER-START" on wlan0
+08-25 15:03:07.026 14684 14684 D wrong cmd: (null) in handle_private_cmd
+08-25 15:03:07.027 14684 14684 D android_priv_cmd: Android private cmd "SETSUSPENDMODE 1" on wlan0
+08-25 15:03:07.027 14684 14684 D         : >>> rwnx_send_me_set_lp_level()
+08-25 15:03:07.029 14684 14684 D         : set suspend mode 1
+08-25 15:03:07.042 14684 14684 D android_priv_cmd: Android private cmd "SETSUSPENDMODE 0" on wlan0
+08-25 15:03:07.042 14684 14684 D         : >>> rwnx_send_me_set_lp_level()
+08-25 15:03:07.046 14684 14684 D         : set suspend mode 0
+08-25 15:03:07.049 14684 14684 D android_priv_cmd: Android private cmd "SETSUSPENDMODE 0" on wlan0
+08-25 15:03:07.049 14684 14684 D         : >>> rwnx_send_me_set_lp_level()
+08-25 15:03:07.049 14684 14684 D         : set suspend mode 0
+08-25 15:03:17.961   270   270 I logd    : logdr: UID=1000 GID=1000 PID=14696 n tail=127 logMask=19 pid=0 start=0ns deadline=0ns
+
+system log:
+
+ring-buffer = aicwf_ring_buffer0
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+Bug dump 1
+system time = 8-25 15:26:54.553
+kernel time = 3160.17
+reason = 7
+kernel log:
+--------- beginning of kernel
+08-25 15:03:06.209 13441 13441 D         : >>> rwnx_cfg80211_init()
+08-25 15:03:06.209 13441 13441 D         : >>> rwnx_init_aic()
+08-25 15:03:06.209 13441 13441 D         : >>> rwnx_cmd_mgr_init()
+08-25 15:03:06.210 13441 13441 D         : is 5g support = 1, vendor_info = 0x21
+08-25 15:03:06.210 13441 13441 D Firmware Version: di Oct 08 2022 19:31:43 - gb01a3750m
+08-25 15:03:06.210 13441 13441 D         : >>> rwnx_platform_on()
+08-25 15:03:06.210 13441 13441 D         : >>> rwnx_plat_fmac_load()
+08-25 15:03:06.211 13441 13441 D         : userconfig file path:aic_userconfig.txt
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, enable = 1
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, dsss = 10
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofdmlowrate_2g4 = 11
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofdm64qam_2g4 = 10
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofdm256qam_2g4 = 10
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofdm1024qam_2g4 = 9
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofdmlowrate_5g = 11
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofdm64qam_5g = 10
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofdm256qam_5g = 10
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofdm1024qam_5g = 9
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofst_enable = 1
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofst_chan_1_4 = -5
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofst_chan_5_9 = -2
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofst_chan_10_13 = -2
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofst_chan_36_64 = -5
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofst_chan_100_120 = -6
+08-25 15:03:06.211 13441 13441 D         : rwnx_plat_userconfig_parsing, ofst_chan_122_140 = -6
+08-25 15:03:06.212 13441 13441 D         : rwnx_plat_userconfig_parsing, ofst_chan_142_165 = 4
+08-25 15:03:06.212 13441 13441 D         : >>> rwnx_send_rf_calib_req()
+08-25 15:03:06.629 13441 13441 D         : >>> rwnx_send_txpwr_idx_req()
+08-25 15:03:06.630 13441 13441 D         : >>> rwnx_send_txpwr_ofst_req()
+08-25 15:03:06.630 13441 13441 D get macaddr: <redacted-mac>
+08-25 15:03:06.630 13441 13441 D         : >>> rwnx_send_reset()
+08-25 15:03:06.632 13441 13441 D         : >>> rwnx_send_version_req()
+08-25 15:03:06.632 13441 13441 D         : >>> rwnx_set_vers()
+08-25 15:03:06.632 13441 13441 D         : >>> rwnx_send_me_config_req()
+08-25 15:03:06.632 13441 13441 I ieee80211 phy0: HT supp 1, VHT supp 1, HE supp 1
+08-25 15:03:06.633 13441 13441 D         : >>> rwnx_send_me_chan_config_req()
+08-25 15:03:06.633 13441 13441 D         : >>> rwnx_send_me_chan_config_req()
+08-25 15:03:06.633 13441 13441 D rwnx_interface_add: wlan%d, 2, 10
+08-25 15:03:06.633 13441 13441 D interface add: b8 4c 4c 81 26 f2
+08-25 15:03:06.647 13441 13441 I ieee80211 phy0: New interface create wlan0
+08-25 15:03:06.647 13441 13441 D         : rwnx_register_hostwake_irq(201)
+08-25 15:03:06.675 13441 13441 D         : >>> rwnx_open()
+08-25 15:03:06.675 13441 13441 D         : >>> rwnx_send_start()
+08-25 15:03:06.676 13441 13441 D         : >>> rwnx_send_coex_req()
+08-25 15:03:06.676 13441 13441 D         : >>> rwnx_send_add_if()
+08-25 15:03:06.742     1     1 I init    : starting service 'wpa_supplicant'...
+08-25 15:03:06.743     1     1 I init    : Created socket '/dev/socket/wpa_wlan0', mode 660, user 1010, group 1010
+08-25 15:03:06.746     1     1 W init    : Activation of cgroup controller +memory failed in path /sys/fs/cgroup/system/uid_0: Invalid argument
+08-25 15:03:06.750     1     1 I init    : ... started service 'wpa_supplicant' has pid 14684
+08-25 15:03:06.750     1     1 I init    : Control message: Processed ctl.interface_start for 'android.hardware.wifi.supplicant@1.0::ISupplicant/default' from pid: 267 (/system/system_ext/bin/hwservicemanager)
+08-25 15:03:06.751     1     1 I init    : service 'wpa_supplicant' requested start, but it is already running (flags: 134)
+08-25 15:03:06.751     1     1 I init    : Control message: Processed ctl.interface_start for 'android.hardware.wifi.supplicant@1.0::ISupplicant/default' from pid: 267 (/system/system_ext/bin/hwservicemanager)
+08-25 15:03:06.868 14684 14684 I capability: warning: `wpa_supplicant' uses 32-bit capabilities (legacy support in use)
+08-25 15:03:06.947 14684 14684 D rwnx_virtual_interface_add: 10, p2p-dev-wlan0
+08-25 15:03:06.947 14684 14684 D         : rwnx_virtual_interface_add, ifname=p2p-dev-wlan0, wdev=0000000085477341, vif_idx=1
+08-25 15:03:06.947 14684 14684 D         : p2p dev addr=b8 4c 4c 81 26 f3
+08-25 15:03:06.949 14684 14684 D         : P2P interface started
+08-25 15:03:06.997 14684 14684 D android_priv_cmd: Android private cmd "SETSUSPENDMODE 1" on wlan0
+08-25 15:03:06.997 14684 14684 D         : >>> rwnx_send_me_set_lp_level()
+08-25 15:03:07.000 14684 14684 D         : set suspend mode 1
+08-25 15:03:07.025 14684 14684 D android_priv_cmd: Android private cmd "BTCOEXSCAN-STOP" on wlan0
+08-25 15:03:07.025 14684 14684 D wrong cmd: (null) in handle_private_cmd
+08-25 15:03:07.025 14684 14684 D android_priv_cmd: Android private cmd "RXFILTER-STOP" on wlan0
+08-25 15:03:07.025 14684 14684 D wrong cmd: (null) in handle_private_cmd
+08-25 15:03:07.025 14684 14684 D android_priv_cmd: Android private cmd "RXFILTER-ADD 2" on wlan0
+08-25 15:03:07.025 14684 14684 D wrong cmd: (null) in handle_private_cmd
+08-25 15:03:07.026 14684 14684 D android_priv_cmd: Android private cmd "RXFILTER-START" on wlan0
+08-25 15:03:07.026 14684 14684 D wrong cmd: (null) in handle_private_cmd
+08-25 15:03:07.026 14684 14684 D android_priv_cmd: Android private cmd "RXFILTER-STOP" on wlan0
+08-25 15:03:07.026 14684 14684 D wrong cmd: (null) in handle_private_cmd
+08-25 15:03:07.026 14684 14684 D android_priv_cmd: Android private cmd "RXFILTER-ADD 3" on wlan0
+08-25 15:03:07.026 14684 14684 D wrong cmd: (null) in handle_private_cmd
+08-25 15:03:07.026 14684 14684 D android_priv_cmd: Android private cmd "RXFILTER-START" on wlan0
+08-25 15:03:07.026 14684 14684 D wrong cmd: (null) in handle_private_cmd
+08-25 15:03:07.027 14684 14684 D android_priv_cmd: Android private cmd "SETSUSPENDMODE 1" on wlan0
+08-25 15:03:07.027 14684 14684 D         : >>> rwnx_send_me_set_lp_level()
+08-25 15:03:07.029 14684 14684 D         : set suspend mode 1
+08-25 15:03:07.042 14684 14684 D android_priv_cmd: Android private cmd "SETSUSPENDMODE 0" on wlan0
+08-25 15:03:07.042 14684 14684 D         : >>> rwnx_send_me_set_lp_level()
+08-25 15:03:07.046 14684 14684 D         : set suspend mode 0
+08-25 15:03:07.049 14684 14684 D android_priv_cmd: Android private cmd "SETSUSPENDMODE 0" on wlan0
+08-25 15:03:07.049 14684 14684 D         : >>> rwnx_send_me_set_lp_level()
+08-25 15:03:07.049 14684 14684 D         : set suspend mode 0
+08-25 15:03:17.961   270   270 I logd    : logdr: UID=1000 GID=1000 PID=14696 n tail=127 logMask=19 pid=0 start=0ns deadline=0ns
+08-25 15:03:18.069   270   270 I logd    : logdr: UID=1000 GID=1000 PID=14700 n tail=127 logMask=80 pid=0 start=0ns deadline=0ns
+08-25 15:03:18.156 10809 10809 I binder  : release 14690:14693 transaction 119918 out, still active
+08-25 15:03:18.165   266   266 I servicemanager: Caller(pid=13049,uid=1000,sid=u:r:system_server:s0) Could not find android.hardware.wifi.hostapd.IHostapd/default in the VINTF manifest. No alternative instances declared in VINTF.
+08-25 15:03:18.168 14499 14499 I binder  : 13049:14499 transaction failed 29189/0, size 4-0 line 3069
+08-25 15:03:18.168 14499 14499 I binder  : send failed reply for transaction 119918, target dead
+08-25 15:04:14.599   528   528 D [BT_LPM] bluesleep_outgoing_data: tx was sleeping, wakeup it
+08-25 15:04:17.603 13811 13811 D [BT_LPM] bluesleep_tx_allow_sleep: Tx has been idle
+08-25 15:04:17.603 11735 11735 D [BT_LPM] bluesleep_sleep_work: going to sleep...
+08-25 15:04:33.297   270   270 I logd    : logdr: UID=0 GID=0 PID=14755 n tail=0 logMask=bf pid=0 start=0ns deadline=0ns
+08-25 15:04:47.115   270   270 I logd    : logdr: UID=0 GID=0 PID=14763 n tail=0 logMask=bf pid=0 start=0ns deadline=0ns
+08-25 15:04:52.592   270   270 I logd    : logdr: UID=0 GID=0 PID=14775 n tail=0 logMask=10 pid=0 start=0ns deadline=0ns
+08-25 15:05:57.554   125   125 I         : HDMI cable is disconnected
+08-25 15:05:58.550   125   125 I         : HDMI cable is connected
+08-25 15:05:58.843   270   270 I logd    : logdr: UID=1041 GID=1005 PID=14782 n tail=500 logMask=8 pid=14501 start=0ns deadline=0ns
+08-25 15:05:58.860   270   270 I logd    : logdr: UID=1041 GID=1005 PID=14782 n tail=500 logMask=1 pid=14501 start=0ns deadline=0ns
+08-25 15:05:58.914     1     1 I init    : Untracked pid 14782 exited with status 0
+08-25 15:05:58.914     1     1 I init    : Untracked pid 14782 did not have an associated service entry and will not be reaped
+08-25 15:05:58.916  9578  9578 I binder  : release 14501:14501 transaction 120454 in, still active
+08-25 15:05:58.916  9578  9578 I binder  : send failed reply for transaction 120454 to 14500:14529
+08-25 15:05:58.916     1     1 I init    : Untracked pid 14784 exited with status 0
+08-25 15:05:58.916     1     1 I init    : Untracked pid 14784 did not have an associated service entry and will not be reaped
+08-25 15:05:58.917     1     1 I init    : Service 'vendor.audio-hal' (pid 14501) received signal 11
+08-25 15:05:58.917     1     1 I init    : Sending signal 9 to service 'vendor.audio-hal' (pid 14501) process group...
+08-25 15:05:58.917     1     1 I libprocessgroup: Removed cgroup /sys/fs/cgroup/system/uid_1041/pid_14501
+08-25 15:05:58.918     1     1 I init    : Sending signal 9 to service 'audioserver' (pid 14500) process group...
+08-25 15:05:58.924  9578  9578 I binder  : release 14500:14529 transaction 120445 in, still active
+08-25 15:05:58.924  9578  9578 I binder  : send failed reply for transaction 120445 to 13049:13401
+08-25 15:05:58.925  9578  9578 I binder  : undelivered death notification, 00000000ea9c6d20
+08-25 15:05:58.926     1     1 I libprocessgroup: Removed cgroup /sys/fs/cgroup/system/uid_1041/pid_14500
+08-25 15:05:58.928     1     1 I init    : Service 'audioserver' (pid 14500) exited with status 1
+08-25 15:05:59.123   266   266 I servicemanager: Caller(pid=14789,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.core.IModule/default in the VINTF manifest. No alternative instances declared in VINTF.
+08-25 15:05:59.125   266   266 I servicemanager: Caller(pid=14789,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.effect.IFactory/default in the VINTF manifest. No alternative instances declared in VINTF.
+08-25 15:05:59.136   266   266 I servicemanager: Caller(pid=14789,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.effect.IFactory/default in the VINTF manifest. No alternative instances declared in VINTF.
+08-25 15:05:59.137   266   266 I servicemanager: Caller(pid=14789,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.core.IModule/default in the VINTF manifest. No alternative instances declared in VINTF.
+08-25 15:05:59.187   266   266 I servicemanager: Caller(pid=14789,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.effect.IFactory/default in the VINTF manifest. No alternative instances declared in VINTF.
+08-25 15:05:59.188   266   266 I servicemanager: Caller(pid=14789,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.core.IModule/default in the VINTF manifest. No alternative instances declared in VINTF.
+08-25 15:05:59.199   266   266 I servicemanager: Caller(pid=14789,uid=1041,sid=u:r:audioserver:s0) Found android.system.suspend.ISystemSuspend/default in framework VINTF manifest.
+08-25 15:05:59.246   266   266 I servicemanager: Caller(pid=14789,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.effect.IFactory/default in the VINTF manifest. No alternative instances declared in VINTF.
+08-25 15:05:59.247   266   266 I servicemanager: Caller(pid=14789,uid=1041,sid=u:r:audioserver:s0) Could not find android.hardware.audio.core.IModule/default in the VINTF manifest. No alternative instances declared in VINTF.
+08-25 15:06:31.591     0     0 I [    C0] nf_conntrack: default automatic helper assignment has been turned off for security reasons and CT-based  firewall rule not found. Use the iptables CT target to attach helpers instead.
+08-25 15:26:53.817   270   270 I logd    : logdr: UID=0 GID=0 PID=14853 n tail=0 logMask=bf pid=0 start=0ns deadline=0ns
+08-25 15:26:54.343   270   270 I logd    : logdr: UID=0 GID=0 PID=14856 n tail=0 logMask=10 pid=0 start=0ns deadline=0ns
+08-25 15:26:54.589   270   270 I logd    : logdr: UID=1000 GID=1000 PID=14865 n tail=127 logMask=19 pid=0 start=0ns deadline=0ns
+
+system log:
+
+ring-buffer = aicwf_ring_buffer0
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+Bug dump 2
+system time = 8-25 15:43:37.247
+kernel time = 4162.711
+reason = 7
+kernel log:
+--------- beginning of kernel
+08-25 15:42:49.979 13441 13441 D aicsdio : exit aicwf_sdio_bus_stop
+08-25 15:42:49.979 14676 14676 E sdio_err: <sdio_bustx_thread,1017>: sdio bustx thread stop
+08-25 15:42:49.979 13441 13441 D         : exit aicwf_bus_deinit
+08-25 15:42:49.979 13441 13441 D aicbsp  : aicbsp_resv_mem_kfree_skb, free resv_mem_txdata succuss, id: 0, size: 98304
+08-25 15:42:49.979 13441 13441 D txrx    : aicwf_rx_deinit
+08-25 15:42:49.979 13441 13441 D txrx    : sdio rx thread
+08-25 15:42:49.979 14677 14677 E sdio_err: <sdio_busrx_thread,1045>: sdio busrx thread stop
+08-25 15:42:49.979 13441 13441 D txrx    : exit aicwf_rx_deinit
+08-25 15:42:49.979 14675 14675 E sdio_err: <aicwf_sdio_pwrctl_thread,1066>: sdio pwrctl thread stop
+08-25 15:42:49.979 13441 13441 D aicsdio : aicwf_sdio_release:pwrctl stopped
+08-25 15:42:49.979 13441 13441 D q_sz/max: 0 /  8 - next tkn: 84
+08-25 15:42:49.979 13441 13441 D         : >>> cmd_mgr_drain()
+08-25 15:42:49.979 13441 13441 D q_sz/max: 0 /  8 - next tkn: 84
+08-25 15:42:49.979 13441 13441 D aicsdio : exit aicwf_sdio_release
+08-25 15:42:49.979 13441 13441 D aicsdio : aicwf_sdio_remove done
+08-25 15:42:49.980 13441 13441 D aicbsp  : aicbsp_set_subsys, subsys: AIC_WIFI, state to: 0
+08-25 15:42:49.980 13441 13441 D aicbsp  : aicbsp_set_subsys, power state no need to change, current: 1
+08-25 15:42:55.865 13441 13441 D         : >>> rwnx_mod_init()
+08-25 15:42:55.865 13441 13441 D         : rwnx 20221108-004-6.4.3.0 - - 241c091M (master)
+08-25 15:42:55.865 13441 13441 D         : Driver Release Tag: aic-rwnx-compatible(sdio)-20221108-004
+08-25 15:42:55.865 13441 13441 D aicbsp  : aicbsp_set_subsys, subsys: AIC_WIFI, state to: 1
+08-25 15:42:55.865 13441 13441 D aicbsp  : aicbsp_set_subsys, power state no need to change, current: 1
+08-25 15:42:55.865 13441 13441 D aicsdio : aicwf_sdio_probe:1
+08-25 15:42:55.865 13441 13441 I sunxi-mmc 4021000.sdmmc: sdc set ios:clk 70000000Hz bm PP pm ON vdd 21 width 4 timing LEGACY(SDR12) dt B
+08-25 15:42:55.865 13441 13441 D aicsdio : Set SDIO Clock 66 MHz
+08-25 15:42:55.870 13441 13441 D aicbsp  : aicbsp_resv_mem_alloc_skb, alloc resv_mem_txdata succuss, id: 0, size: 98304
+08-25 15:42:55.871 13441 13441 D         : >>> rwnx_platform_init()
+08-25 15:42:55.871 13441 13441 D         : >>> rwnx_cfg80211_init()
+08-25 15:42:55.871 13441 13441 D         : >>> rwnx_init_aic()
+08-25 15:42:55.871 13441 13441 D         : >>> rwnx_cmd_mgr_init()
+08-25 15:42:55.872 13441 13441 D         : is 5g support = 1, vendor_info = 0x21
+08-25 15:42:55.872 13441 13441 D Firmware Version: di Oct 08 2022 19:31:43 - gb01a3750m
+08-25 15:42:55.872 13441 13441 D         : >>> rwnx_platform_on()
+08-25 15:42:55.872 13441 13441 D         : >>> rwnx_plat_fmac_load()
+08-25 15:42:55.872 13441 13441 D         : userconfig file path:aic_userconfig.txt
+08-25 15:42:55.872 13441 13441 D         : rwnx_plat_userconfig_parsing, enable = 1
+08-25 15:42:55.872 13441 13441 D         : rwnx_plat_userconfig_parsing, dsss = 10
+08-25 15:42:55.872 13441 13441 D         : rwnx_plat_userconfig_parsing, ofdmlowrate_2g4 = 11
+08-25 15:42:55.872 13441 13441 D         : rwnx_plat_userconfig_parsing, ofdm64qam_2g4 = 10
+08-25 15:42:55.872 13441 13441 D         : rwnx_plat_userconfig_parsing, ofdm256qam_2g4 = 10
+08-25 15:42:55.872 13441 13441 D         : rwnx_plat_userconfig_parsing, ofdm1024qam_2g4 = 9
+08-25 15:42:55.872 13441 13441 D         : rwnx_plat_userconfig_parsing, ofdmlowrate_5g = 11
+08-25 15:42:55.872 13441 13441 D         : rwnx_plat_userconfig_parsing, ofdm64qam_5g = 10
+08-25 15:42:55.872 13441 13441 D         : rwnx_plat_userconfig_parsing, ofdm256qam_5g = 10
+08-25 15:42:55.872 13441 13441 D         : rwnx_plat_userconfig_parsing, ofdm1024qam_5g = 9
+08-25 15:42:55.873 13441 13441 D         : rwnx_plat_userconfig_parsing, ofst_enable = 1
+08-25 15:42:55.873 13441 13441 D         : rwnx_plat_userconfig_parsing, ofst_chan_1_4 = -5
+08-25 15:42:55.873 13441 13441 D         : rwnx_plat_userconfig_parsing, ofst_chan_5_9 = -2
+08-25 15:42:55.873 13441 13441 D         : rwnx_plat_userconfig_parsing, ofst_chan_10_13 = -2
+08-25 15:42:55.873 13441 13441 D         : rwnx_plat_userconfig_parsing, ofst_chan_36_64 = -5
+08-25 15:42:55.873 13441 13441 D         : rwnx_plat_userconfig_parsing, ofst_chan_100_120 = -6
+08-25 15:42:55.873 13441 13441 D         : rwnx_plat_userconfig_parsing, ofst_chan_122_140 = -6
+08-25 15:42:55.873 13441 13441 D         : rwnx_plat_userconfig_parsing, ofst_chan_142_165 = 4
+08-25 15:42:55.873 13441 13441 D         : >>> rwnx_send_rf_calib_req()
+08-25 15:42:56.296 13441 13441 D         : >>> rwnx_send_txpwr_idx_req()
+08-25 15:42:56.297 13441 13441 D         : >>> rwnx_send_txpwr_ofst_req()
+08-25 15:42:56.297 13441 13441 D get macaddr: <redacted-mac>
+08-25 15:42:56.297 13441 13441 D         : >>> rwnx_send_reset()
+08-25 15:42:56.298 13441 13441 D         : >>> rwnx_send_version_req()
+08-25 15:42:56.299 13441 13441 D         : >>> rwnx_set_vers()
+08-25 15:42:56.299 13441 13441 D         : >>> rwnx_send_me_config_req()
+08-25 15:42:56.299 13441 13441 I ieee80211 phy1: HT supp 1, VHT supp 1, HE supp 1
+08-25 15:42:56.299 13441 13441 D         : >>> rwnx_send_me_chan_config_req()
+08-25 15:42:56.300 13441 13441 D         : >>> rwnx_send_me_chan_config_req()
+08-25 15:42:56.300 13441 13441 D rwnx_interface_add: wlan%d, 2, 10
+08-25 15:42:56.300 13441 13441 D interface add: b8 4c 4c 81 26 f2
+08-25 15:42:56.312 13441 13441 I ieee80211 phy1: New interface create wlan0
+08-25 15:42:56.312 13441 13441 D         : rwnx_register_hostwake_irq(201)
+08-25 15:42:56.319 13441 13441 D         : >>> rwnx_open()
+08-25 15:42:56.319 13441 13441 D         : >>> rwnx_send_start()
+08-25 15:42:56.320 13441 13441 D         : >>> rwnx_send_coex_req()
+08-25 15:42:56.320 13441 13441 D         : >>> rwnx_send_add_if()
+08-25 15:42:56.362     1     1 I init    : starting service 'wpa_supplicant'...
+08-25 15:42:56.363     1     1 I init    : Created socket '/dev/socket/wpa_wlan0', mode 660, user 1010, group 1010
+08-25 15:42:56.367     1     1 W init    : Activation of cgroup controller +memory failed in path /sys/fs/cgroup/system/uid_0: Invalid argument
+08-25 15:42:56.370     1     1 I init    : ... started service 'wpa_supplicant' has pid 16195
+08-25 15:42:56.370     1     1 I init    : Control message: Processed ctl.interface_start for 'android.hardware.wifi.supplicant@1.0::ISupplicant/default' from pid: 267 (/system/system_ext/bin/hwservicemanager)
+08-25 15:42:56.371     1     1 I init    : service 'wpa_supplicant' requested start, but it is already running (flags: 134)
+08-25 15:42:56.371     1     1 I init    : Control message: Processed ctl.interface_start for 'android.hardware.wifi.supplicant@1.0::ISupplicant/default' from pid: 267 (/system/system_ext/bin/hwservicemanager)
+08-25 15:42:56.496 16195 16195 D rwnx_virtual_interface_add: 10, p2p-dev-wlan0
+08-25 15:42:56.496 16195 16195 D         : rwnx_virtual_interface_add, ifname=p2p-dev-wlan0, wdev=000000004c10f2ab, vif_idx=1
+08-25 15:42:56.496 16195 16195 D         : p2p dev addr=b8 4c 4c 81 26 f3
+08-25 15:42:56.500 16195 16195 D         : P2P interface started
+08-25 15:42:56.532 16195 16195 D android_priv_cmd: Android private cmd "SETSUSPENDMODE 1" on wlan0
+08-25 15:42:56.532 16195 16195 D         : >>> rwnx_send_me_set_lp_level()
+08-25 15:42:56.537 16195 16195 D         : set suspend mode 1
+08-25 15:42:56.549 12878 12878 D         : >>> rwnx_cfg80211_scan()
+08-25 15:42:56.549 12878 12878 D         : >>> rwnx_send_scanu_req()
+08-25 15:42:56.557 16195 16195 D android_priv_cmd: Android private cmd "BTCOEXSCAN-STOP" on wlan0
+08-25 15:42:56.557 16195 16195 D wrong cmd: (null) in handle_private_cmd
+08-25 15:42:56.558 16195 16195 D android_priv_cmd: Android private cmd "RXFILTER-STOP" on wlan0
+08-25 15:42:56.558 16195 16195 D wrong cmd: (null) in handle_private_cmd
+08-25 15:42:56.559 16195 16195 D android_priv_cmd: Android private cmd "RXFILTER-ADD 2" on wlan0
+08-25 15:42:56.559 16195 16195 D wrong cmd: (null) in handle_private_cmd
+08-25 15:42:56.559 16195 16195 D android_priv_cmd: Android private cmd "RXFILTER-START" on wlan0
+08-25 15:42:56.559 16195 16195 D wrong cmd: (null) in handle_private_cmd
+08-25 15:42:56.559 16195 16195 D android_priv_cmd: Android private cmd "RXFILTER-STOP" on wlan0
+08-25 15:42:56.559 16195 16195 D wrong cmd: (null) in handle_private_cmd
+08-25 15:42:56.559 16195 16195 D android_priv_cmd: Android private cmd "RXFILTER-ADD 3" on wlan0
+08-25 15:42:56.559 16195 16195 D wrong cmd: (null) in handle_private_cmd
+08-25 15:42:56.559 16195 16195 D android_priv_cmd: Android private cmd "RXFILTER-START" on wlan0
+08-25 15:42:56.559 16195 16195 D wrong cmd: (null) in handle_private_cmd
+08-25 15:42:56.560 16195 16195 D android_priv_cmd: Android private cmd "SETSUSPENDMODE 1" on wlan0
+08-25 15:42:56.560 16195 16195 D         : >>> rwnx_send_me_set_lp_level()
+08-25 15:42:56.560 16195 16195 D         : set suspend mode 1
+08-25 15:42:56.571 16195 16195 D android_priv_cmd: Android private cmd "SETSUSPENDMODE 0" on wlan0
+08-25 15:42:56.571 16195 16195 D         : >>> rwnx_send_me_set_lp_level()
+08-25 15:42:56.571 16195 16195 D         : set suspend mode 0
+08-25 15:42:56.575 16195 16195 D android_priv_cmd: Android private cmd "SETSUSPENDMODE 0" on wlan0
+08-25 15:42:56.575 16195 16195 D         : >>> rwnx_send_me_set_lp_level()
+08-25 15:42:56.576 16195 16195 D         : set suspend mode 0
+08-25 15:42:57.122 16187 16187 D         : >>> rwnx_rx_scanu_start_cfm()
+08-25 15:42:57.155 12878 12878 D         : >>> rwnx_cfg80211_scan()
+08-25 15:42:57.155 12878 12878 D         : >>> rwnx_send_scanu_req()
+08-25 15:42:58.704 16187 16187 D         : >>> rwnx_rx_scanu_start_cfm()
+08-25 15:43:06.052 12878 12878 D         : >>> rwnx_cfg80211_scan()
+08-25 15:43:06.052 12878 12878 D         : >>> rwnx_send_scanu_req()
+08-25 15:43:07.602 16187 16187 D         : >>> rwnx_rx_scanu_start_cfm()
+08-25 15:43:17.251 12878 12878 D         : >>> rwnx_cfg80211_scan()
+08-25 15:43:17.251 12878 12878 D         : >>> rwnx_send_scanu_req()
+08-25 15:43:18.802 16187 16187 D         : >>> rwnx_rx_scanu_start_cfm()
+08-25 15:43:27.288 12878 12878 D         : >>> rwnx_cfg80211_scan()
+08-25 15:43:27.288 12878 12878 D         : >>> rwnx_send_scanu_req()
+08-25 15:43:28.838 16187 16187 D         : >>> rwnx_rx_scanu_start_cfm()
+08-25 15:43:36.549   270   270 I logd    : logdr: UID=0 GID=0 PID=16217 n tail=0 logMask=bf pid=0 start=0ns deadline=0ns
+08-25 15:43:37.061   270   270 I logd    : logdr: UID=0 GID=0 PID=16220 n tail=0 logMask=10 pid=0 start=0ns deadline=0ns
+08-25 15:43:37.284   270   270 I logd    : logdr: UID=1000 GID=1000 PID=16228 n tail=127 logMask=19 pid=0 start=0ns deadline=0ns
+
+system log:
+
+ring-buffer = aicwf_ring_buffer0
+
+--------------------------------------------------------------------
+Last Flush Time: {}
+--------------------------------------------------------------------
+No fates fetched for "Last failed connection fates"
+HAL provided zero fates for "Latest fates"
+No last mile log for "Last failed last-mile log"
+No last mile log for "Latest last-mile log"
+--------------------------------------------------------------------
+Dump of WifiConnectivityManager
+WifiConnectivityManager - Log Begin ----
+mIsLocationModeEnabled: true
+mPnoScanEnabledByFramework: true
+mEnablePnoScanAfterWifiToggle: true
+mMultiInternetConnectionState 0
+2026-08-25T12:01:05.420752 - handleScreenStateChanged: screenOn=true
+2026-08-25T12:01:05.425763 - startConnectivityScan: screenOn=true wifiState=unknown scanImmediately=false wifiEnabled=false mAutoJoinEnabled=false mAutoJoinEnabledExternal=true mAutoJoinEnabledExternalSetByDeviceAdmin=false mPnoScanEnabledByFramework=true mEnablePnoScanAfterWifiToggle=true mSpecificNetworkRequestInProgress=false mTrustedConnectionAllowed=false isSufficiencyCheckEnabled=true isAssociatedNetworkSelectionEnabled=false noPotentialNetworkAvailable=false
+2026-08-25T12:01:05.609073 - setTrustedConnectionAllowed: allowed=true
+2026-08-25T12:01:05.609698 - Stopping WifiConnectivityManager
+2026-08-25T12:01:05.610126 - startConnectivityScan: screenOn=true wifiState=unknown scanImmediately=true wifiEnabled=false mAutoJoinEnabled=true mAutoJoinEnabledExternal=true mAutoJoinEnabledExternalSetByDeviceAdmin=false mPnoScanEnabledByFramework=true mEnablePnoScanAfterWifiToggle=true mSpecificNetworkRequestInProgress=false mTrustedConnectionAllowed=true isSufficiencyCheckEnabled=true isAssociatedNetworkSelectionEnabled=false noPotentialNetworkAvailable=false
+2026-08-25T14:52:21.058346 - setTrustedConnectionAllowed: allowed=false
+2026-08-25T14:52:21.058516 - Stopping WifiConnectivityManager
+2026-08-25T14:52:21.058700 - startConnectivityScan: screenOn=true wifiState=unknown scanImmediately=true wifiEnabled=false mAutoJoinEnabled=false mAutoJoinEnabledExternal=true mAutoJoinEnabledExternalSetByDeviceAdmin=false mPnoScanEnabledByFramework=true mEnablePnoScanAfterWifiToggle=true mSpecificNetworkRequestInProgress=false mTrustedConnectionAllowed=false isSufficiencyCheckEnabled=true isAssociatedNetworkSelectionEnabled=false noPotentialNetworkAvailable=false
+2026-08-25T15:03:06.181139 - Set auto join enabled
+2026-08-25T15:03:06.983335 - Set WiFi enabled
+2026-08-25T15:03:06.983424 - Stopping WifiConnectivityManager
+2026-08-25T15:03:07.000967 - handleConnectionStateChanged: state=disconnected
+2026-08-25T15:03:07.001595 - startConnectivityScan: screenOn=true wifiState=disconnected scanImmediately=true wifiEnabled=true mAutoJoinEnabled=false mAutoJoinEnabledExternal=true mAutoJoinEnabledExternalSetByDeviceAdmin=false mPnoScanEnabledByFramework=true mEnablePnoScanAfterWifiToggle=true mSpecificNetworkRequestInProgress=false mTrustedConnectionAllowed=false isSufficiencyCheckEnabled=true isAssociatedNetworkSelectionEnabled=false noPotentialNetworkAvailable=false
+2026-08-25T15:29:20.346741 - Set auto join enabled
+2026-08-25T15:42:50.500526 - handleConnectionStateChanged: state=transitioning
+2026-08-25T15:42:50.500788 - startConnectivityScan: screenOn=true wifiState=transitioning scanImmediately=false wifiEnabled=true mAutoJoinEnabled=false mAutoJoinEnabledExternal=true mAutoJoinEnabledExternalSetByDeviceAdmin=false mPnoScanEnabledByFramework=true mEnablePnoScanAfterWifiToggle=true mSpecificNetworkRequestInProgress=false mTrustedConnectionAllowed=false isSufficiencyCheckEnabled=true isAssociatedNetworkSelectionEnabled=false noPotentialNetworkAvailable=false
+2026-08-25T15:42:50.512406 - Set WiFi disabled
+2026-08-25T15:42:50.512753 - Stopping WifiConnectivityManager
+2026-08-25T15:42:55.848517 - Set auto join enabled
+2026-08-25T15:42:56.517802 - Set WiFi enabled
+2026-08-25T15:42:56.517885 - Stopping WifiConnectivityManager
+2026-08-25T15:42:56.540696 - handleConnectionStateChanged: state=disconnected
+2026-08-25T15:42:56.541063 - startConnectivityScan: screenOn=true wifiState=disconnected scanImmediately=true wifiEnabled=true mAutoJoinEnabled=false mAutoJoinEnabledExternal=true mAutoJoinEnabledExternalSetByDeviceAdmin=false mPnoScanEnabledByFramework=true mEnablePnoScanAfterWifiToggle=true mSpecificNetworkRequestInProgress=false mTrustedConnectionAllowed=false isSufficiencyCheckEnabled=true isAssociatedNetworkSelectionEnabled=false noPotentialNetworkAvailable=false
+WifiConnectivityManager - Log End ----
+WifiOpenNetworkNotifier:
+mSettingEnabled true
+currentTime: 1787672617473
+mNotificationRepeatTime: 0
+mState: 0
+mBlocklistedSsids: {}
+Dump of WifiBlocklistMonitor
+WifiBlocklistMonitor - Bssid <redacted-mac> begin ----
+WifiBlocklistMonitor - Bssid <redacted-mac> end ----
+Dump of BSSID <redacted-mac> Affiliated BSSID <redacted-mac>
+WifiBlocklistMonitor - Bssid <redacted-mac> logs begin ----
+List of SSIDs to never block:
+WifiBlocklistMonitor - Bssid <redacted-mac> logs end ----
+Dump of ExternalPnoScanRequestManager
+ExternalPnoScanRequestManager - Log Begin ----
+No external PNO scan request set.
+mCurrentRequestOnPnoNetworkFoundCount: 0
+ExternalPnoScanRequestManager - Log End ----
+Dump of WifiConnectivityHelper
+WifiConnectivityHelper - Log Begin ----
+mFirmwareRoamingSupported: false
+mMaxNumBlocklistBssid: <redacted-ssid>
+mMaxNumAllowlistSsid: <redacted-ssid>
+WifiConnectivityHelper - Log End ----
+Dump of WifiHealthMonitor
+WifiHealthMonitor - Log Begin ----
+System Info Stats
+
+currScanStats: last scan time: 1787672608839 APs found at 2G: 5 APs found above 2g: 3
+prevScanStats: last scan time: -1 APs found at 2G: 0 APs found above 2g: 0
+configured network connection stats
+networks with failure increase:
+
+networks with failure drop:
+
+networks with high failure without previous stats:
+
+WifiHealthMonitor - Log End ----
+Dump of WifiScoreCard
+current SSID(s):{iface=wlan0,ssid=}
+ BW Estimation Stats
+2G
+ Tx
+ Count
+ 0 0 0 0 0
+ AvgKbps
+ 0 0 0 0 0
+ BwEst error
+ 0 0 0 0 0
+ L2 error
+ 0 0 0 0 0
+ Rx
+ Count
+ 0 0 0 0 0
+ AvgKbps
+ 0 0 0 0 0
+ BwEst error
+ 0 0 0 0 0
+ L2 error
+ 0 0 0 0 0
+5G
+ Tx
+ Count
+ 0 0 0 0 0
+ AvgKbps
+ 0 0 0 0 0
+ BwEst error
+ 0 0 0 0 0
+ L2 error
+ 0 0 0 0 0
+ Rx
+ Count
+ 0 0 0 0 0
+ AvgKbps
+ 0 0 0 0 0
+ BwEst error
+ 0 0 0 0 0
+ L2 error
+ 0 0 0 0 0
+
+Dump of WakeupController
+USE_PLATFORM_WIFI_WAKE: true
+mWifiWakeupEnabled: false
+isOnboarded: false
+configStore hasBeenRead: true
+mIsActive: false
+mNumScansHandled: 0
+WakeupLock:
+mNumScans: 0
+mIsInitialized: false
+Locked networks: 0
+Dump of WifiLastResortWatchdog
+WifiLastResortWatchdog - Log Begin ----
+WifiLastResortWatchdog - Log End ----
+Dump of AdaptiveConnectivityEnabledSettingObserver
+mAdaptiveConnectivityEnabled=true
+Dump of WifiGlobals
+mPollRssiIntervalMillis=3000
+mIsPollRssiIntervalOverridden=false
+mPollRssiShortIntervalMillis=3000
+mPollRssiLongIntervalMillis=6000
+mIpReachabilityDisconnectEnabled=true
+mIsBluetoothConnected=false
+mIsWpa3SaeUpgradeOffloadEnabled=false
+mIsUsingExternalScorer=false
+mIsWepAllowed=true
+mDisableFirmwareRoamingInIdleMode=false
+IsD2dSupportedWhenInfraStaDisabled=false
+mIsWpa3SaeH2eSupported=false
+carrierId=1839, eapFailureCode=0, displayNotification=false, threshold=1, durationMs=14400000
+carrierId=1839, eapFailureCode=1026, displayNotification=false, threshold=1, durationMs=14400000
+carrierId=1839, eapFailureCode=1031, displayNotification=true, threshold=1, durationMs=86400000
+carrierId=1839, eapFailureCode=16384, displayNotification=false, threshold=1, durationMs=300000
+carrierId=1839, eapFailureCode=16385, displayNotification=false, threshold=3, durationMs=7200000
+mSendDhcpHostnameRestriction=0
+Dump of SarManager
+isSarSupported: false
+isSarVoiceCallSupported: false
+isSarSoftApSupported: false
+
+Dump of SarInfo
+Current values:
+    Voice Call state is: false
+    Wifi Client state is: true
+    Wifi Soft AP state is: false
+    Wifi ScanOnly state is: false
+    Earpiece state is : false
+Last reported values:
+    Soft AP state is: false
+    Voice Call state is: false
+    Earpiece state is: false
+Last reported scenario: -2
+Reported 1787672617 seconds ago
+
+Dump of LastCallerInfoManager
+API key=1 API name=ScanningEnabled: tid=13381 uid=1000 pid=13049 packageName=android toggleState=true
+API key=2 API name=WifiEnabled: tid=13182 uid=0 pid=16181 packageName=com.android.shell toggleState=true
+API key=19 API name=API_START_SCAN: tid=13515 uid=1000 pid=13049 packageName=com.android.tv.settings toggleState=true
+API key=33 API name=API_WIFI_SCANNER_START_SCAN: tid=13381 uid=1000 pid=13049 packageName=com.android.tv.settings toggleState=true
+
+Dump of WifiNative
+mIsLocationModeEnabled: true
+mLastLocationModeEnabledTimeMs: 856016
+Dump of HostapdHal
+AIDL service declared: false
+HIDL service declared: true
+Initialized: false
+
+
+Dump of WifiRoamingConfigStore
+DEVICE_ADMIN_POLICIES
+
+NON_ADMIN_POLICIES
+
+Dump of WifiResourceCache
+WifiResourceCache - resource value Begin ----
+Resource Name: config_wifiSoftapMacAddressCustomizationSupported, value: true
+Resource Name: config_wifi_revert_country_code_on_cellular_loss, value: false
+Resource Name: config_wifi_connected_mac_randomization_supported, value: false
+Resource Name: config_wifiDisableFirmwareRoamingInIdleMode, value: false
+Resource Name: config_wifi6ghzSupport, value: false
+Resource Name: config_wifi_softap_sae_supported, value: false
+Resource Name: config_wifiStaWithBridgedSoftApConcurrencySupported, value: false
+Resource Name: config_wifiAfcSupported, value: false
+Resource Name: config_wifiPollRssiIntervalMilliseconds, value: 3000
+Resource Name: config_wifiSaeUpgradeOffloadEnabled, value: false
+Resource Name: config_wifiHardwareSoftapMaxClientCount, value: 16
+Resource Name: config_wifiSaveFactoryMacToWifiConfigStore, value: true
+Resource Name: config_wifi60ghzSupport, value: false
+Resource Name: config_wifi_ap_mac_randomization_supported, value: true
+Resource Name: config_wifi24ghzSupport, value: true
+Resource Name: wifi_tether_configure_ssid_default, value: AndroidAP
+Resource Name: config_wifiWepDeprecated, value: false
+Resource Name: config_wifiBridgedSoftApSupported, value: false
+Resource Name: config_wifiInterfaceAddedSelfRecoveryEnabled, value: false
+Resource Name: config_wifiForceDisableMacRandomizationSsidPrefixList, value: []
+Resource Name: config_wifiPollRssiLongIntervalMilliseconds, value: 6000
+Resource Name: config_wifiWpaPersonalDeprecated, value: false
+Resource Name: config_wifiFlushAnqpCacheOnWifiToggleOffEvent, value: true
+Resource Name: config_wifiSoftap24ghzSupported, value: true
+Resource Name: config_wifiSoftApMaxNumberMLDSupported, value: 0
+Resource Name: config_wifiVerboseLoggingAlwaysOnLevel, value: 1
+Resource Name: config_wifiSaeH2eSupported, value: false
+Resource Name: config_wifiSofapClientForceDisconnectSupported, value: true
+Resource Name: config_wifiSoftapIeee80211beSupported, value: false
+Resource Name: config_wifiSoftapOweTransitionSupported, value: false
+Resource Name: config_wifi5ghzSupport, value: false
+Resource Name: config_wifiSoftapIeee80211axSupported, value: false
+Resource Name: config_wifiDriverSupportedNl80211RegChangedEvent, value: false
+Resource Name: config_wifi_p2p_mac_randomization_supported, value: false
+Resource Name: config_wifiAfcServerUrlsForCountry, value: []
+Resource Name: config_wifiConfigurationWifiRunnerThresholdInMs, value: 100
+Resource Name: config_wifiSoftapAutoAppendLowerBandsToBandConfigurationEnabled, value: true
+Resource Name: config_wifiDriverWorldModeCountryCode, value: 00
+Resource Name: config_wifiSoftapOweSupported, value: false
+Resource Name: config_wifiScanHiddenNetworksScanOnlyMode, value: false
+Resource Name: config_wifiAllowInsecureEnterpriseConfigurationsForSettingsAndSUW, value: false
+Resource Name: config_wifiD2dAllowedControlSupportedWhenInfraStaDisabled, value: false
+Resource Name: config_wifi_turn_off_during_emergency_call, value: false
+Resource Name: config_wifi_softap_acs_supported, value: false
+Resource Name: config_wifiEapFailureConfig, value: [1839, 0, 0, 1, 240, 1839, 16384, 0, 1, 5, 1839, 1026, 0, 1, 240, 1839, 1031, 1, 1, 1440, 1839, 16385, 0, 3, 120]
+WifiResourceCache - resource value End ----
+boundToExternalScorer=failure, lastScorerBindingState=-1

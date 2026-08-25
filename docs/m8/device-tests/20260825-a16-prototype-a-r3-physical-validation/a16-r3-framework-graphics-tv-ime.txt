@@ -1,0 +1,135 @@
+=== FRAMEWORK IDENTITY ===
+[sys.boot_completed]
+1
+[ro.build.version.release]
+16
+[ro.build.version.sdk]
+36
+[ro.build.id]
+BP2A.250805.034
+[ro.build.version.incremental]
+UBOX10_A16_QPR0_R3
+[ro.build.version.security_patch]
+2025-08-05
+[ro.product.cpu.abi]
+armeabi-v7a
+[ro.product.cpu.abilist]
+armeabi-v7a,armeabi
+[ro.product.cpu.abilist64]
+
+[ro.zygote]
+zygote32
+Linux localhost 5.4.302+ #1 SMP PREEMPT Thu Aug 13 22:30:00 +08 2026 armv8l Toybox
+=== CORE SERVICES ===
+[servicemanager]
+running
+[hwservicemanager]
+running
+[vndservicemanager]
+running
+[zygote]
+running
+[surfaceflinger]
+running
+[system_server]
+13049
+[SystemUI]
+13475
+=== OLD BLOCKERS (expected empty) ===
+=== SEVERE CRASHES (last 200) ===
+08-25 12:01:05.004 12896 13581 F libc    : Fatal signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x0 in tid 13581 (HwBinder:12896_), pid 12896 (audio.service)
+08-25 12:03:24.528 13727 13739 F libc    : Fatal signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x0 in tid 13739 (HwBinder:13727_), pid 13727 (audio.service)
+08-25 14:56:36.034 14378 14378 F libc    : Fatal signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x0 in tid 14378 (audio.service), pid 14378 (audio.service)
+08-25 15:05:58.735 14501 14501 F libc    : Fatal signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x0 in tid 14501 (audio.service), pid 14501 (audio.service)
+=== GRAPHICS PROPERTIES ===
+[persist.graphics.egl]
+mali
+[ro.hardware.egl]
+
+[ro.board.platform]
+apollo
+=== GRAPHICS LOG ===
+08-25 12:01:05.298 12914 12916 I SurfaceFlinger: Boot is finished (24308 ms)
+08-25 12:01:06.952 13864 13864 D nativeloader: InitLlndkLibrariesProduct: libEGL.so:libGLESv1_CM.so:libGLESv2.so:libGLESv3.so:libRS.so:libandroid_net.so:libapexsupport.so:libavf.so:libbinder_ndk.so:libc.so:libcgrouprc.so:libclang_rt.asan-arm-android.so:libcom.android.tethering.connectivity_native.so:libdl.so:libft2.so:liblog.so:libm.so:libmediandk.so:libnativewindow.so:libneuralnetworks.so:libselinux.so:libsync.so:libvendorsupport.so:libvndksupport.so:libvulkan.so
+08-25 12:01:07.341 13907 13907 D nativeloader: InitLlndkLibrariesProduct: libEGL.so:libGLESv1_CM.so:libGLESv2.so:libGLESv3.so:libRS.so:libandroid_net.so:libapexsupport.so:libavf.so:libbinder_ndk.so:libc.so:libcgrouprc.so:libclang_rt.asan-arm-android.so:libcom.android.tethering.connectivity_native.so:libdl.so:libft2.so:liblog.so:libm.so:libmediandk.so:libnativewindow.so:libneuralnetworks.so:libselinux.so:libsync.so:libvendorsupport.so:libvndksupport.so:libvulkan.so
+08-25 12:01:07.805 13962 13962 D nativeloader: InitLlndkLibrariesProduct: libEGL.so:libGLESv1_CM.so:libGLESv2.so:libGLESv3.so:libRS.so:libandroid_net.so:libapexsupport.so:libavf.so:libbinder_ndk.so:libc.so:libcgrouprc.so:libclang_rt.asan-arm-android.so:libcom.android.tethering.connectivity_native.so:libdl.so:libft2.so:liblog.so:libm.so:libmediandk.so:libnativewindow.so:libneuralnetworks.so:libselinux.so:libsync.so:libvendorsupport.so:libvndksupport.so:libvulkan.so
+=== DISPLAY ===
+Physical size: 1920x1080
+Physical density: 320
+  mCurrentFocus=Window{15ef901 u0 com.example.sampleleanbacklauncher/com.example.sampleleanbacklauncher.LauncherActivity}
+  mFocusedApp=ActivityRecord{222311660 u0 com.example.sampleleanbacklauncher/.LauncherActivity t5}
+=== SURFACE LIST ===
+RequestedLayerState{com.android.systemui.wallpapers.ImageWallpaper#63 parentId=61}
+RequestedLayerState{Surface(name=31efdce InputMethod)/@0xbe6e285 - animation-leash of insets_animation#81 parentId=66}
+RequestedLayerState{WindowedMagnification:0:31#3 parentId=47}
+RequestedLayerState{HideDisplayCutout:0:14#4 parentId=3}
+RequestedLayerState{OneHanded:0:14#5 parentId=4}
+RequestedLayerState{AppZoomOut:0:0#6 parentId=5}
+RequestedLayerState{Leaf:0:0#7 parentId=6}
+RequestedLayerState{Leaf:1:1#8 parentId=5 z=1}
+RequestedLayerState{AppZoomOut:2:14#9 parentId=5 z=2}
+RequestedLayerState{DefaultTaskDisplayArea#10 parentId=9}
+RequestedLayerState{Leaf:3:12#11 parentId=9 z=1}
+RequestedLayerState{ImePlaceholder:13:14#12 parentId=9 z=2}
+RequestedLayerState{ImeContainer#13 parentId=73 relativeParentId=74 z=1}
+RequestedLayerState{OneHanded:15:15#14 parentId=3 z=1}
+RequestedLayerState{Leaf:15:15#15 parentId=14}
+RequestedLayerState{HideDisplayCutout:16:16#16 parentId=3 z=2}
+RequestedLayerState{OneHanded:16:16#17 parentId=16}
+RequestedLayerState{AppZoomOut:16:16#18 parentId=17}
+RequestedLayerState{Leaf:16:16#19 parentId=18}
+RequestedLayerState{OneHanded:17:17#20 parentId=3 z=3}
+RequestedLayerState{Leaf:17:17#21 parentId=20}
+RequestedLayerState{HideDisplayCutout:18:23#22 parentId=3 z=4}
+RequestedLayerState{OneHanded:18:23#23 parentId=22}
+RequestedLayerState{AppZoomOut:18:18#24 parentId=23}
+RequestedLayerState{Leaf:18:18#25 parentId=24}
+RequestedLayerState{Leaf:19:19#26 parentId=23 z=1}
+RequestedLayerState{AppZoomOut:20:21#27 parentId=23 z=2}
+RequestedLayerState{Leaf:20:21#28 parentId=27}
+RequestedLayerState{Leaf:22:22#29 parentId=23 z=3}
+RequestedLayerState{AppZoomOut:23:23#30 parentId=23 z=4}
+RequestedLayerState{Leaf:23:23#31 parentId=30}
+RequestedLayerState{Leaf:24:25#32 parentId=3 z=5}
+RequestedLayerState{HideDisplayCutout:26:31#33 parentId=3 z=6}
+RequestedLayerState{OneHanded:26:31#34 parentId=33}
+RequestedLayerState{AppZoomOut:26:31#35 parentId=34}
+RequestedLayerState{Leaf:26:31#36 parentId=35}
+RequestedLayerState{HideDisplayCutout:32:35#37 parentId=47 z=1}
+RequestedLayerState{OneHanded:32:32#38 parentId=37}
+RequestedLayerState{AppZoomOut:32:32#39 parentId=38}
+RequestedLayerState{Leaf:32:32#40 parentId=39}
+RequestedLayerState{AppZoomOut:33:33#41 parentId=37 z=1}
+RequestedLayerState{Leaf:33:33#42 parentId=41}
+RequestedLayerState{OneHanded:34:35#43 parentId=37 z=2}
+RequestedLayerState{AppZoomOut:34:35#44 parentId=43}
+RequestedLayerState{Leaf:34:35#45 parentId=44}
+RequestedLayerState{Leaf:36:36#46 parentId=47 z=2}
+RequestedLayerState{Display 0 name="Built-in Screen"#47}
+RequestedLayerState{Display Overlays#48 parentId=47 z=2147483647}
+RequestedLayerState{Input Overlays#49 parentId=47 z=2147483646}
+RequestedLayerState{Accessibility Overlays#50 parentId=47 z=2147483645}
+RequestedLayerState{Task=1#51 parentId=10}
+RequestedLayerState{home_task_overlay_container#52 parentId=51 z=2147483647}
+RequestedLayerState{Task=2#53 z=1}
+RequestedLayerState{ActivityRecord{222311660 u0 com.example.sampleleanbacklauncher/.LauncherActivity#73 parentId=72}
+RequestedLayerState{Task=3#55}
+RequestedLayerState{31efdce InputMethod#69 parentId=81}
+RequestedLayerState{WallpaperWindowToken{d9dc5a0 showWhenLocked=false}#57 parentId=8}
+RequestedLayerState{Task=5#72 parentId=51 z=1}
+RequestedLayerState{com.example.sampleleanbacklauncher/com.example.sampleleanbacklauncher.LauncherActivity#75 parentId=74}
+RequestedLayerState{Wallpaper BBQ wrapper#64 parentId=63}
+RequestedLayerState{3788f66 com.android.systemui.wallpapers.ImageWallpaper#61 parentId=57}
+RequestedLayerState{ded2b9f ActivityRecordInputSink com.example.sampleleanbacklauncher/.LauncherActivity#77 parentId=73 z=-2147483648}
+RequestedLayerState{WindowToken{bcf206c type=2011 android.os.Binder@dfe951f}#66 parentId=13}
+RequestedLayerState{15ef901 com.example.sampleleanbacklauncher/com.example.sampleleanbacklauncher.LauncherActivity#74 parentId=73}
+=== TV / LAUNCHER ===
+feature:android.hardware.type.television
+feature:android.software.leanback
+feature:android.software.leanback_only
+priority=2 preferredOrder=0 match=0x108000 specificIndex=-1 isDefault=true
+com.example.sampleleanbacklauncher/.LauncherActivity
+      topResumedActivity=ActivityRecord{222311660 u0 com.example.sampleleanbacklauncher/.LauncherActivity t5}
+=== IME ===
+com.android.inputmethod.leanback/.service.LeanbackImeService
+com.android.inputmethod.leanback/.service.LeanbackImeService

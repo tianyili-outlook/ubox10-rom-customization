@@ -1,0 +1,21 @@
+=== MONITOR START ===
+2026-08-25 15:37:15.355323409
+ 15:37:15 up  1:03,  0 users,  load average: 0.03, 0.04, 0.00
+=== INITIAL SERVICES ===
+system       12914     1     174392  55888 do_epoll_wait       0 S surfaceflinger
+system       13049 12895    2403912 293100 do_epoll_wait       0 S system_server
+audioserver  15116     1      60312  23112 binder_thread_read  0 S audioserver
+audioserver  15117     1      38824   9424 binder_thread_read  0 S android.hardware.audio.service
+1
+
+=== MONITOR END ===
+2026-08-25 15:38:00.561389598
+=== FINAL SERVICES ===
+system       12914     1     174392  55888 do_epoll_wait       0 S surfaceflinger
+system       13049 12895    2403992 295432 do_epoll_wait       0 S system_server
+audioserver  15116     1      60312  23112 binder_thread_read  0 S audioserver
+audioserver  15117     1      38824   9424 binder_thread_read  0 S android.hardware.audio.service
+1
+=== DISPLAY STATE ===
+
+No 15:37-15:38 SurfaceFlinger/HWC/display/audio crash, reconnect, hotplug, or state transition was present in the monitored log window.
