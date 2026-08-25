@@ -278,8 +278,9 @@ Ethernet ADB 对现场已运行的 r3 采证。完整脱敏证据位于
 `sys.boot_completed=1`，Android 16/API36/BP2A、ARM32-only ABI、`zygote32`、Linux 5.4.302+、
 六项 Path-A config、APEX ready/mount、三个 service manager、system_server/SystemUI、TV/
 Leanback launcher 与 LeanbackIME 均已运行时证明。旧 bootstrap/bpfloader fatal filter 为空。
-原始 r3 没有 `persist.graphics.egl` 或 `ro.hardware.egl`，用户提供的 pre-validation 证据记录
-SurfaceFlinger 无法从 `ro.board.platform=apollo` 选择驱动；在本次采证前用户已设置 runtime
+原始 r3 的首个 physical blocker 是 EGL driver selection：没有 `persist.graphics.egl` 或
+`ro.hardware.egl`，用户提供的 pre-validation 证据记录 SurfaceFlinger 无法从
+`ro.board.platform=apollo` 选择驱动；在本次采证前用户已设置 runtime
 `persist.graphics.egl=mali`，当前 SurfaceFlinger 报告 ARM Mali-G31 / GLES 3.2 并有 composition
 layers。正式方向是保持 `ro.board.platform=apollo` 并加入 `ro.hardware.egl=mali`；该变化本次
 **NOT IMPLEMENTED / NOT BUILT / NOT PHYSICALLY VALIDATED**。
@@ -531,7 +532,7 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - r10 已在实机完成 framework boot；r9 Lights/Watchdog/llkd 方向保持关闭，不再修改。
 - r13 是当前 GOLDEN BASELINE；Projectivy、provisioning、遥控和 Power sleep/wake/shutdown 均以实机 UART 为准。
 - M8B native rc-core 遥控迁移已在 r5 设备验收并关闭；Mouse mode intentionally dropped，legacy multi_ir 工件保留为 inert reference，其 Android 12 清理已随 freeze 延期。
-- 当前 board、DT 与 runtime 证据识别为 H616。历史 A16 ARM32 r2 稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛；历史 kernel r1-r4 AIC failure 已收敛到错误 `0x00110000` FMAC contract。r5 恢复 working BSP `0x00120000` 后物理 boot/HDMI/remote/Wi-Fi/ADB 与 Wi-Fi OFF→ON reinitialization PASS，两次旧 error-signature filter 均为空；preservation checkpoint **CLOSED / PASS**。Exact QPR0 r7 audit 证明 5.4.302 超过 5.4.277 floor；r3 已 build/offline-audit 并可申请独立物理授权，但尚未物理测试。AArch64 Prototype B 不启动。
+- 当前 board、DT 与 runtime 证据识别为 H616。历史 A16 ARM32 r2 稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛；历史 kernel r1-r4 AIC failure 已收敛到错误 `0x00110000` FMAC contract。r5 恢复 working BSP `0x00120000` 后物理 boot/HDMI/remote/Wi-Fi/ADB 与 Wi-Fi OFF→ON reinitialization PASS，两次旧 error-signature filter 均为空；preservation checkpoint **CLOSED / PASS**。Exact QPR0 r7 audit 证明 5.4.302 超过 5.4.277 floor；r3 已 build/offline-audit 并完成 local physical validation。原始 r3 EGL selection **PHYSICAL FAIL**；用户预先设置 runtime `persist.graphics.egl=mali` 后 core Path-A runtime PASS，但 HDMI/audio/input/Wi-Fi association 尚未闭合。Gate 2 **NOT CLOSED**，AArch64 Prototype B 不启动。
 - `m8b-audio-r2` 只启用产品级 Treble/VNDK 合同；未修改 VNDK payload、mixer、audio platform XML、DTS、machine driver 或已验收功能，现已设备验收为 AUDIO PASS。
 - 2026-08-16 ADB-only 补验未刷机、未重启且未修改 ROM/device properties：VP9 为 Allwinner OMX/Cedar hardware-runtime PASS；Widevine 为可操作 L3，HDCP `NONE`，无 secure decoder 要求。物理画面/逐帧质量与商业服务认证或播放仍未证明。
 - 遥控器 Menu 与 Settings 当前均打开 Projectivy menu。两键语义分离为独立延期项，不回改已验收的 rc-core、keylayout 选择或其他按键行为。
@@ -539,4 +540,22 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 
 ## Next action
 
-保持 frozen `m8b-remote-r1`、Test8r2、stock rollback、A16 r1-r3 与 kernel r1-r5 artifacts 不变。下一项只能在 GCP 构建一个 evidence-led bounded 后继：保持 `ro.board.platform=apollo`，持久集成 `ro.hardware.egl=mali`，把 sunxi-ir scanCode 352 映射为 DPAD_CENTER，并先基于现有 4K60 YUV444/HDMI status 与 HIDL `getAudioPort` 证据确定最小 display/audio delta；不得因 Wi-Fi association 未测试而修改已通过 scan/reinit 的 BSP/HAL。任何后继 image 仍需离线审计及单独物理授权。Gate 2 为 **NOT CLOSED**；只有无 runtime intervention 的 Prototype A 通过 boot/graphics、稳定 HDMI、输入、Wi-Fi association 和必要 audio stability gates 后才可重新评估 Prototype B。`zygote64_32`、secondary ABI 与 ARM64 Mali/mapper integration 继续关闭。
+保持 frozen `m8b-remote-r1`、Test8r2、stock rollback、A16 r1-r3 与 kernel r1-r5 artifacts 不变。本次 handover 只锁定计划，**没有实现或构建后继候选**。后续严格按顺序执行：
+
+1. 下一轮 GCP candidate 的 bounded graphics delta 只加入 `ro.hardware.egl=mali`，保留
+   `ro.board.platform=apollo`，不得依赖 runtime `setprop`。
+2. Bounded input delta 只把 sunxi-ir scanCode 352 映射到 DPAD_CENTER，其他已验证按键保持
+   不变；当前 Android OK mapping 仍未修复。
+3. 以当前 3840x2160 YUV444 mode 34 / 60 Hz evidence 先收敛 HDMI timing、link 与
+   receiver-lock boundary；framework/display counter 稳定不等于 physical PASS，证据不足时
+   不任意替换 display stack。
+4. 调查 HDMI transition 进入 legacy HIDL `getAudioPort` null-pointer SIGSEGV 的 exact path；
+   source-level root cause 未证明前不声称修复。后续 physical acceptance 必须改用有音频输出的
+   HDMI sink，分别完成 basic 与 HDMI 实际听音。
+5. 保持当前 AIC BSP/modules、Wi-Fi HAL 与 firmware；安排可输入凭据的 association、DHCP、
+   validated L3 与 DNS-over-Wi-Fi 验证，不把 scan/reinit PASS 扩张为连接 PASS。
+6. 后继候选必须保留 rollback 与 exact hash，并同时满足：无 runtime EGL intervention、稳定
+   HDMI、physical remote OK、Wi-Fi association、vendor audio HAL stability、真实 audio sink
+   听音；完成前 Gate 2 **NOT CLOSED**。
+7. Prototype B、`zygote64_32`、secondary ABI 与 ARM64 Mali/mapper integration 在无 runtime
+   intervention 的 Prototype A 完成 Gate 2 前继续 **CLOSED**。

@@ -1,7 +1,7 @@
 # Android 16 QPR0 Prototype A r3 candidate
 
 Status: **PHYSICALLY BOOTED WITH PRE-EXISTING RUNTIME EGL OVERRIDE / FORMAL CANDIDATE CLOSURE
-PENDING**. The original image's EGL selection is physically failed because neither
+PENDING**. The original image's first physical blocker is EGL driver selection: neither
 `persist.graphics.egl` nor `ro.hardware.egl` was supplied. With the user's pre-existing runtime
 `persist.graphics.egl=mali` override, Android 16/zygote32/system_server/SurfaceFlinger and Mali
 GLES are physically proven. This validation did not flash, reboot, rebuild or repack r3.
@@ -199,3 +199,26 @@ path before choosing a display/audio change. Wi-Fi BSP/HAL must remain unchanged
 association requires a later credential-capable physical validation. Prototype B,
 `zygote64_32`, secondary ABI and ARM64 Mali/mapper integration remain closed until a no-runtime-
 intervention Prototype A candidate passes the required physical gates.
+
+## Ordered next-step plan
+
+This handover records the plan only; no successor property, keylayout, display, audio or Wi-Fi
+change is implemented, built or physically validated.
+
+1. For the next bounded GCP candidate, integrate `ro.hardware.egl=mali`, preserve
+   `ro.board.platform=apollo`, and make graphics boot without runtime `setprop` intervention.
+2. Map only sunxi-ir scanCode 352 to DPAD_CENTER; preserve every other physically verified key.
+3. Starting from the observed 3840x2160 YUV444 mode 34 / 60 Hz state, isolate the HDMI timing,
+   link and receiver-lock boundary. Stable framework/display counters do not make the physical
+   one-second-picture/five-second-black cycle pass; do not replace the display stack arbitrarily.
+4. Trace the HDMI-transition path into the legacy HIDL `getAudioPort` null-pointer SIGSEGV.
+   A null callback/function pointer is high-confidence/likely, but the exact source-level cause
+   is not proven and no fix may be claimed yet. Later acceptance requires an HDMI sink with
+   actual audio output for basic and HDMI audible playback tests.
+5. Preserve the current AIC BSP/modules, Wi-Fi HAL and firmware. Use a credential-capable later
+   session to test association, DHCP, validated L3 and DNS over Wi-Fi.
+6. Accept a successor only when it preserves rollback and an exact artifact hash and passes with
+   no runtime EGL intervention, stable physical HDMI, physical remote OK, Wi-Fi association,
+   vendor audio HAL stability and real audio-sink playback.
+7. Keep Gate 2 not closed and Prototype B, `zygote64_32`, secondary ABI and ARM64 Mali/mapper
+   work closed until Prototype A meets that no-intervention acceptance contract.
