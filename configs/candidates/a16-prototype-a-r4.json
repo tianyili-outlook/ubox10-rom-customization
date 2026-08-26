@@ -1,0 +1,277 @@
+{
+  "id": "a16-prototype-a-r4",
+  "purpose": "Strict r3 successor with exactly two source-level functional deltas: read-only Mali EGL suffix selection and the sunxi-ir KEY_OK 352 to DPAD_CENTER mapping; kernel and all unrelated hardware authority are byte-preserved.",
+  "base_candidate": {
+    "path": "/work/projects/ubox10-rom-customization/out/candidates/a16-prototype-a-r3/x12-a16-prototype-a-r3.img",
+    "size": 1239738368,
+    "sha256": "FA47939654B4E2A7E14FE963C7819296157338D33355E75D89E8086356071F1B"
+  },
+  "rollback": {
+    "path": "/work/ubox10-a16-prototype-a-inputs/incoming/x12-test8r2-restore-contacts-provider.img",
+    "size": 2005954560,
+    "sha256": "6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8"
+  },
+  "verified_root": "/work/projects/ubox10-rom-customization/out/candidates/a16-prototype-a-r3",
+  "accepted": {
+    "boot": {
+      "relative": "boot.fex",
+      "size": 67108864,
+      "sha256": "527CF878B015CFAE4E8600BD750C7C73F45F4290B5CFEFEDBD1AD9AC347B8063",
+      "kernel_size": 23498760,
+      "kernel_sha256": "287A82F799982FB58D02ADE88150A9EAB22D4C0956BE3CE50765F6FD1DB24F40",
+      "ramdisk_size": 12752798,
+      "ramdisk_sha256": "BE091606E285405F9FF018AE4E4BB286A380682280E72DD056B4FEB1F120A328",
+      "header_version": 3,
+      "os_version": "12.0.0",
+      "os_patch_level": "2022-02",
+      "cmdline": "console=ttyS0,115200n8 ignore_loglevel",
+      "avb_partition_name": "boot",
+      "avb_partition_size": 67108864,
+      "avb_salt": "c52f504c468b5668e4a5e443f424a3dc26800dc95881d9562cb7cc56594b04f6",
+      "fingerprint": "Unblocktech/apollo_p1/apollo-p1:12/SP1A.211105.004/hush10241757:userdebug/test-keys",
+      "os_version_prop": "12"
+    },
+    "super_sparse": {
+      "relative": "super.fex",
+      "size": 1059940312,
+      "sha256": "C2C2EC7538225CA5FE40CE65AA7DE84BE5D4BCED166E96868A29BC076F1FCE52"
+    },
+    "super_raw": {
+      "relative": "super.raw.img",
+      "size": 3221225472,
+      "sha256": "A33CB59F20B5272F34148C385FD68679ED989925E190512BCF06B383CA803749"
+    },
+    "logical": {
+      "system_a": {
+        "relative": "candidate-logical/system_a.img",
+        "size": 1651167232,
+        "sha256": "0B320FAB8050026BA359CD16E76165ABC2B4D26001805EA62B93958B66138E77"
+      },
+      "vendor_a": {
+        "relative": "candidate-logical/vendor_a.img",
+        "size": 119066624,
+        "sha256": "BB91A8B7ED4AC0145F434F89FD76865EB4311F234AA46D67C8373A7CD5B4929A"
+      },
+      "product_a": {
+        "relative": "candidate-logical/product_a.img",
+        "size": 272629760,
+        "sha256": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974"
+      },
+      "vendor_dlkm_a": {
+        "relative": "candidate-logical/vendor_dlkm_a.img",
+        "size": 6680576,
+        "sha256": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07"
+      }
+    },
+    "protected_outer": {
+      "vendor_boot.fex": {
+        "relative": "/work/ubox10-a16-prototype-a-inputs/verified/m8b-remote-r1/outer/vendor_boot.fex",
+        "size": 33554432,
+        "sha256": "AAF77E65F6D882754015C7963E7A3D533282E1BCFA76F35220DB9FCAF4ED7E72"
+      },
+      "vbmeta.fex": {
+        "relative": "/work/ubox10-a16-prototype-a-inputs/verified/m8b-remote-r1/outer/vbmeta.fex",
+        "size": 4096,
+        "sha256": "888229653FF0FD701C97CA7C0BBAFC0042AF7C63D7F671BF5F7162349D283F17"
+      }
+    }
+  },
+  "android16": {
+    "source_tag": "android-security-16.0.0_r7",
+    "manifest_commit": "ebea28d151539ecf0730b1a4ab92ac33edc17ac9",
+    "build_id": "BP2A.250805.034",
+    "release": "bp2a",
+    "build_number": "UBOX10_A16_QPR0_R4",
+    "system_relative": "out-ceiling/target/product/generic/system.img",
+    "system": {
+      "size": 931934208,
+      "sha256": "471C20FC1C925F24C6A7990FA6904E78A769F2B9E02EED2C45E3F0873B43BB07"
+    },
+    "device_matrix_relative": "configs/aosp/architecture-ceiling-a16/device/ubox/ceiling/compatibility_matrix.xml",
+    "tracked_inputs": {
+      "configs/aosp/architecture-ceiling-a16/device/ubox/ceiling/AndroidProducts.mk": "E92DABAE4D3C574BC529C190DC36E68074EB01778A9A742231FDC53138268FD6",
+      "configs/aosp/architecture-ceiling-a16/device/ubox/ceiling/ubox10_ceiling_arm.mk": "BF21FEC0D698A5AF512016DA4C1DC97BA0CC29ED9C2C5EEE45EA2CF044A4EF7F",
+      "configs/aosp/architecture-ceiling-a16/device/ubox/ceiling/compatibility_matrix.xml": "C21AD73999305E6F8258DB806EB3CFE3652C1D8D9F01B9E6FD6CEA64094CDDB8",
+      "configs/aosp/architecture-ceiling-a16/device/ubox/ceiling/sunxi-ir.kl": "6064DF44874430600B9EF08D51609B56D34EDAA6CF0E24AD106019CD2171AD76",
+      "configs/aosp/architecture-ceiling-a16/patches/0002-sepolicy-defer-fuseblk-label-to-api31-vendor.patch": "09903FCD713A12E828EF2C351C9CF84BEF869E86E5A0FD5E4CC701A5410DAFAF"
+    },
+    "avb": {
+      "partition_size": 1651167232,
+      "salt": "6131362d70726f746f747970652d612d7234",
+      "rollback_index": 1644019200,
+      "rollback_index_location": 1,
+      "key_relative": "tools/testkey_rsa2048.pem",
+      "key_sha256": "F1D5765A2BDFB92FB08AEE021107C7AC1A7A3F590DAFD853771C85375EF0FBD7",
+      "algorithm": "SHA256_RSA2048",
+      "fec": "none"
+    }
+  },
+  "kernel_build": {
+    "evidence_dir": "/work/build-logs/ubox10-a16-prototype-a-r3/20260825T024351Z/kernel-path-a",
+    "build_root": "/work/kernel-builds/a16-prototype-a-r3-path-a",
+    "image": {
+      "relative": "build-result/Image",
+      "size": 23498760,
+      "sha256": "287A82F799982FB58D02ADE88150A9EAB22D4C0956BE3CE50765F6FD1DB24F40"
+    },
+    "preservation_config": {
+      "relative": "build-result/preservation.config",
+      "size": 141140,
+      "sha256": "FA73240A16B52569D28EADF4AFD59834F05AEDD6B69F573863A611B3E359A75D"
+    },
+    "path_a_config": {
+      "relative": "build-result/path-a.config",
+      "size": 141228,
+      "sha256": "2A159B7EAF3ED96988F169A022A927B440A5D786F20C490D7AF004760F4B4F29"
+    },
+    "offline_audit": {
+      "relative": "offline-audit.json",
+      "size": 39271,
+      "sha256": "3FDBAD6FA9FFB3E12DC597E8A2FFEBA612CA419B8FA240A88DEACE98911BFC37"
+    },
+    "hardware_audit": {
+      "relative": "path-a-hardware-audit.json",
+      "size": 1817,
+      "sha256": "CF44A1D2AD848B6FE07980151033ABE1F6C70354D4D82141FAB8F56C26181577"
+    },
+    "module_release": "5.4.302+"
+  },
+  "integration": {
+    "strategy": "retained synthetic-base Android-common three-way merge plus accepted r5 AIC deltas",
+    "commit": "027EF79E8FACB73CB2419B4A08C0BD3F13A2206E",
+    "tree": "B328C32712D65F8DA98E013BC74944D68C05552B",
+    "vendor_commit": "9AB7A758149D3C9B721878A0C18B3F9C5D6C93E6",
+    "android_common_5_4_302": "2443ACB8671F5EAEAC985E70446726278ED014AE"
+  },
+  "vendor_dlkm": {
+    "partition_size": 6680576,
+    "filesystem_size": 6492160,
+    "filesystem_block_size": 4096,
+    "filesystem_blocks": 1585,
+    "accepted_free_blocks": 1,
+    "host_module_allocated_blocks": 1564,
+    "candidate_module_inode_blocks": 1563,
+    "candidate_free_blocks": 1,
+    "avb_partition_name": "vendor_dlkm",
+    "avb_salt": "523caf2a432189513d46cde728abaf1825f66e083ba17a9d812baa50d017820b",
+    "fec_num_roots": 2,
+    "fingerprint": "Unblocktech/apollo_p1/apollo-p1:12/SP1A.211105.004/hush10241757:userdebug/test-keys",
+    "os_version_prop": "12",
+    "module_mode": "0100644",
+    "module_uid": 0,
+    "module_gid": 0,
+    "module_timestamp": "0x6537951e",
+    "module_crtime": "0x65379525",
+    "selinux_label": "u:object_r:vendor_file:s0\\0"
+  },
+  "super": {
+    "sector_size": 512,
+    "system_first_sector": 2048,
+    "system_sector_count": 3224936,
+    "vendor_dlkm_first_sector": 3993600,
+    "vendor_dlkm_sector_count": 13048,
+    "metadata_version": "10.2",
+    "metadata_slots": 3,
+    "header_flags": "virtual_ab_device"
+  },
+  "container": {
+    "total_entries": 50,
+    "preserved_entries": 46,
+    "replacements": [
+      "super.fex",
+      "vbmeta_system.fex"
+    ],
+    "companions": [
+      "Vsuper.fex",
+      "Vvbmeta_system.fex"
+    ]
+  },
+  "known_vintf_exception": {
+    "kernel_version": "5.4.302",
+    "kernel_fcm": 6,
+    "actual": "CONFIG_NFS_FS=y",
+    "required": "CONFIG_NFS_FS=n",
+    "classification": "Inherited conformance exception; full VINTF is not represented as a pass."
+  },
+  "r3_baseline": {
+    "candidate": {
+      "path": "/work/projects/ubox10-rom-customization/out/candidates/a16-prototype-a-r3/x12-a16-prototype-a-r3.img",
+      "size": 1239738368,
+      "sha256": "FA47939654B4E2A7E14FE963C7819296157338D33355E75D89E8086356071F1B"
+    },
+    "system": {
+      "size": 1651167232,
+      "sha256": "0B320FAB8050026BA359CD16E76165ABC2B4D26001805EA62B93958B66138E77"
+    },
+    "boot": {
+      "size": 67108864,
+      "sha256": "527CF878B015CFAE4E8600BD750C7C73F45F4290B5CFEFEDBD1AD9AC347B8063"
+    },
+    "vendor_dlkm": {
+      "size": 6680576,
+      "sha256": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07"
+    },
+    "super_raw": {
+      "size": 3221225472,
+      "sha256": "A33CB59F20B5272F34148C385FD68679ED989925E190512BCF06B383CA803749"
+    }
+  },
+  "system_tree_delta": {
+    "added": [
+      "system/usr/keylayout/sunxi-ir.kl"
+    ],
+    "removed": [],
+    "changed": [
+      "system/build.prop",
+      "system/etc/NOTICE.xml.gz",
+      "system/product/etc/build.prop",
+      "system/system_ext/etc/build.prop"
+    ],
+    "classification": {
+      "functional": [
+        "system/build.prop adds exactly ro.hardware.egl=mali",
+        "system/usr/keylayout/sunxi-ir.kl is added with exactly scanCode 352 -> DPAD_CENTER"
+      ],
+      "release_generated_metadata": [
+        "system/build.prop, product build.prop and system_ext build.prop advance build number/date/fingerprint from r3 to r4",
+        "system/etc/NOTICE.xml.gz adds only the generated notice-file association for sunxi-ir.kl"
+      ],
+      "unrelated_functional_delta": "NONE"
+    }
+  },
+  "functional_delta": [
+    "ro.hardware.egl=mali in the source-generated system build.prop; ro.board.platform=apollo remains in accepted vendor",
+    "device-specific sunxi-ir.kl equal to r7 Generic.kl except scanCode 352 maps to DPAD_CENTER"
+  ],
+  "expected_result": {
+    "firmware": {
+      "size": 1239746560,
+      "sha256": "E125DD8FFB9F5B4A7B2B9B86DD8377367409AB00D1B29BE1E719CE25768E2111"
+    },
+    "system": {
+      "size": 1651167232,
+      "sha256": "F6437E0F7EDBAACF10B316A4DFCFEF916570766F9B0AAA4E72421C10C10D9001"
+    },
+    "boot": {
+      "size": 67108864,
+      "sha256": "527CF878B015CFAE4E8600BD750C7C73F45F4290B5CFEFEDBD1AD9AC347B8063"
+    },
+    "vendor_dlkm": {
+      "size": 6680576,
+      "sha256": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07"
+    },
+    "super": {
+      "size": 1059948504,
+      "sha256": "02C9DCDF8E1E03EBC2639B652F39B21A1A39305F2767DC29E85EEE6C822461BA"
+    },
+    "vbmeta_system": {
+      "size": 1472,
+      "sha256": "755A8901BBBD0BECCF30D758607825E2422DB2B4D78D1A28FDF7183CAD4D633F"
+    },
+    "offline_audit": {
+      "size": 11634,
+      "sha256": "4C44694AE23B1D84EB6D842228351AB63AACE6B304C0D6C3917BA79FF24FE765"
+    },
+    "decision": "OFFLINE CHECKED / READY TO REQUEST PHYSICAL VALIDATION"
+  }
+}

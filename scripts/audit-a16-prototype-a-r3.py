@@ -188,10 +188,8 @@ class Auditor:
             "--odm_path", str(self.root / "odm"),
         ]
         info = self.root / "apex/apex-info-list.xml"
-        if not self.args.resume:
+        if not info.is_file():
             self.run(command, output=self.audit / "apexd-host.log")
-        elif not info.is_file():
-            raise RuntimeError("resume is missing the completed apexd_host output")
         apex_infos = ET.parse(info).getroot().findall("apex-info")
         if len(apex_infos) != len(apex_files):
             raise RuntimeError("activated APEX count differs from installed APEX count")
@@ -299,7 +297,7 @@ class Auditor:
             command.extend(["--partition", f"{name}={path}"])
         command.extend([
             "--csv", str(csv_path), "--summary", str(summary),
-            "--label", "a16-prototype-a-r3 exact-board candidate",
+            "--label", f"{self.build_result['id']} exact-board candidate",
         ])
         self.run(command, output=self.audit / "elf-inventory.log")
         rows = list(csv.DictReader(csv_path.open(encoding="utf-8")))

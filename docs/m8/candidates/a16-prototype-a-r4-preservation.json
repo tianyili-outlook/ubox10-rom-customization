@@ -1,0 +1,123 @@
+{
+  "schema": 1,
+  "candidate": {
+    "id": "a16-prototype-a-r4",
+    "size": 1239746560,
+    "sha256": "E125DD8FFB9F5B4A7B2B9B86DD8377367409AB00D1B29BE1E719CE25768E2111"
+  },
+  "baseline": {
+    "id": "a16-prototype-a-r3",
+    "size": 1239738368,
+    "sha256": "FA47939654B4E2A7E14FE963C7819296157338D33355E75D89E8086356071F1B"
+  },
+  "decision": "OFFLINE CHECKED / READY TO REQUEST PHYSICAL VALIDATION",
+  "physical_status": "NOT_YET_VALIDATED",
+  "physical_device_actions_performed": false,
+  "functional_delta": [
+    "ro.hardware.egl=mali; ro.board.platform=apollo retained; no default persist.graphics.egl",
+    "sunxi-ir scanCode 352 maps to DPAD_CENTER / Android keyCode 23"
+  ],
+  "system_tree_delta": {
+    "added": [
+      "system/usr/keylayout/sunxi-ir.kl"
+    ],
+    "removed": [],
+    "changed": [
+      "system/build.prop",
+      "system/etc/NOTICE.xml.gz",
+      "system/product/etc/build.prop",
+      "system/system_ext/etc/build.prop"
+    ],
+    "classification": {
+      "functional": [
+        "system/build.prop adds ro.hardware.egl=mali",
+        "sunxi-ir.kl adds the device-specific 352 to DPAD_CENTER mapping"
+      ],
+      "release_generated": [
+        "r3 to r4 build number/date/fingerprint fields in three build.prop files",
+        "NOTICE.xml.gz adds only the sunxi-ir.kl notice association"
+      ],
+      "unrelated_functional_delta": "NONE"
+    }
+  },
+  "preserved": {
+    "boot": {
+      "size": 67108864,
+      "sha256": "527CF878B015CFAE4E8600BD750C7C73F45F4290B5CFEFEDBD1AD9AC347B8063",
+      "byte_exact_r3": true
+    },
+    "kernel": {
+      "release": "5.4.302+",
+      "size": 23498760,
+      "sha256": "287A82F799982FB58D02ADE88150A9EAB22D4C0956BE3CE50765F6FD1DB24F40",
+      "rebuilt": false
+    },
+    "vendor_dlkm_a": {
+      "size": 6680576,
+      "sha256": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07",
+      "module_count": 22,
+      "byte_exact_r3": true,
+      "rebuilt": false
+    },
+    "vendor_a": {
+      "size": 119066624,
+      "sha256": "BB91A8B7ED4AC0145F434F89FD76865EB4311F234AA46D67C8373A7CD5B4929A",
+      "byte_exact_r3": true
+    },
+    "product_a": {
+      "size": 272629760,
+      "sha256": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974",
+      "byte_exact_r3": true
+    },
+    "hardware_authority": [
+      "vendor_boot and accepted ramdisk",
+      "DT and DTBO",
+      "TEE, DRM, factory and security partitions",
+      "bootloader, top-level vbmeta, rollback and recovery",
+      "Wi-Fi firmware/HAL/BSP, Ethernet, audio HAL and display vendor binaries",
+      "all unrelated IMAGEWTY payloads"
+    ]
+  },
+  "metadata_consequences": {
+    "system_a": {
+      "size": 1651167232,
+      "sha256": "F6437E0F7EDBAACF10B316A4DFCFEF916570766F9B0AAA4E72421C10C10D9001"
+    },
+    "super_sparse": {
+      "size": 1059948504,
+      "sha256": "02C9DCDF8E1E03EBC2639B652F39B21A1A39305F2767DC29E85EEE6C822461BA"
+    },
+    "vbmeta_system": {
+      "size": 1472,
+      "sha256": "755A8901BBBD0BECCF30D758607825E2422DB2B4D78D1A28FDF7183CAD4D633F"
+    },
+    "outer_changed_payloads": [
+      "Vsuper.fex",
+      "Vvbmeta_system.fex",
+      "super.fex",
+      "vbmeta_system.fex"
+    ],
+    "outer_preserved_payload_count": 46,
+    "lp_metadata_geometry_exact_r3": true,
+    "super_bytes_outside_system_a_exact_r3": true
+  },
+  "audit": {
+    "offline_report": {
+      "size": 11634,
+      "sha256": "4C44694AE23B1D84EB6D842228351AB63AACE6B304C0D6C3917BA79FF24FE765"
+    },
+    "full_vintf": {
+      "exit": 65,
+      "result": "INCOMPATIBLE",
+      "only_exception": "CONFIG_NFS_FS=y; FCM-6 requires n"
+    },
+    "unexpected_new_incompatibilities": 0
+  },
+  "subsystem_status": {
+    "HDMI": "UNCHANGED_OPEN",
+    "audio": "UNCHANGED_OPEN",
+    "Wi-Fi": "UNCHANGED_ASSOCIATION_REQUIRES_PHYSICAL_VALIDATION",
+    "Ethernet": "UNCHANGED_PRESERVATION_EXPECTED"
+  },
+  "gate2": "NOT_CLOSED_PENDING_R4_PHYSICAL_VALIDATION"
+}

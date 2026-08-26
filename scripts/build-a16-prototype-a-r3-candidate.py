@@ -138,7 +138,7 @@ class R3Builder(BASE.Builder):
             "ro.build.id=BP2A.250805.034",
             "ro.build.version.sdk=36",
             "ro.build.version.security_patch=2025-08-05",
-            "ro.build.version.incremental=UBOX10_A16_QPR0_R3",
+            f"ro.build.version.incremental={self.android['build_number']}",
             "ro.product.cpu.abi=armeabi-v7a",
             "ro.product.cpu.abi2=armeabi",
             "ro.system.product.cpu.abilist=armeabi-v7a,armeabi",

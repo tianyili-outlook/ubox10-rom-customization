@@ -18,6 +18,24 @@ PRODUCT_BUILD_PVMFW_IMAGE := false
 DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE += \
     device/ubox/ceiling/compatibility_matrix.xml
 
+# The accepted vendor keeps the Apollo platform identity for gralloc/HWC but
+# names its ARM32 GLES implementation libGLES_mali.so.  Use the read-only EGL
+# suffix contract proven by the r3 field diagnosis; do not bake the temporary
+# persist.graphics.egl override into the image.
+PRODUCT_SYSTEM_PROPERTIES += \
+    ro.hardware.egl=mali
+
+# EventHub canonicalizes the physical input device name "sunxi-ir" to this
+# device-specific layout.  It is the exact r7 Generic.kl mapping set plus the
+# one proven KEY_OK correction (Linux scanCode 352 -> DPAD_CENTER).
+PRODUCT_COPY_FILES += \
+    device/ubox/ceiling/sunxi-ir.kl:system/usr/keylayout/sunxi-ir.kl
+
+# This product deliberately contributes the one board-specific layout to the
+# inherited ATV GSI system artifact set.
+PRODUCT_ARTIFACT_PATH_REQUIREMENT_ALLOWED_LIST += \
+    system/usr/keylayout/sunxi-ir.kl
+
 PRODUCT_NAME := ubox10_ceiling_arm
 PRODUCT_DEVICE := generic
 PRODUCT_BRAND := UBOX10Research
