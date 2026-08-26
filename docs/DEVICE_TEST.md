@@ -2,8 +2,8 @@
 
 ## 当前状态
 
-- 最后报告的物理验收镜像：`out/candidates/m8-kernel-5.4.302-r5/x12-m8-kernel-5.4.302-r5.img`
-- 当前项目状态：**ANDROID 16 PATH-A CORE VIABILITY PHYSICALLY PROVEN / FORMAL CANDIDATE CLOSURE PENDING**。QPR0 r3 在用户预先设置的 runtime `persist.graphics.egl=mali` override 下达到 Android 16/zygote32/system_server/SurfaceFlinger/Mali-G31；原始 image 缺 EGL selector。Ethernet、TV/Leanback/IME、Wi-Fi scan 与 OFF→ON reinit PASS；Wi-Fi association 未测试。HDMI 实际输出周期性黑屏 FAIL，vendor audio HAL `getAudioPort` null-pointer stability FAIL，scanCode 352 的 Android OK mapping FAIL。Gate 2 **NOT CLOSED**。
+- 最后报告的物理验收镜像：`out/candidates/a16-prototype-a-r4/x12-a16-prototype-a-r4.img`，1,239,746,560 bytes / SHA-256 `E125DD8FFB9F5B4A7B2B9B86DD8377367409AB00D1B29BE1E719CE25768E2111`
+- 当前项目状态：**ANDROID 16 PATH-A FUNCTIONAL PHYSICAL PASS / GATE 2 HOLD**。QPR0 r4 无 UART/runtime EGL intervention 即 boot complete；source-level EGL、Mali-G31/UI、Remote OK、stable HDMI、Wi-Fi association/DHCP/validated L3、direct HDMI audible audio 和 VLC video/audio 均 PASS。Boot-time legacy audio HAL `getAudioPort` null-address SIGSEGV 仍复现并 auto-recover；依照既有 vendor-audio-stability criterion，Gate 2 仅在该项 HOLD。r4 是 exact ARM32 control，尚未冻结为 accepted Android 16 architecture baseline；Prototype B build readiness HOLD。
 - 保留的设备验收基线：`out/candidates/m8b-remote-r1/x12-m8b-remote-r1.img`，状态 **DEVICE ACCEPTED / REMOTE PASS**（继承 **AUDIO PASS / IME PASS**）。
 - 大小 / SHA-256：1031723008 bytes / `F3B09E5565AC4ED4E5EE326D392622E7B036A8519B8444B966E77CC4751B814A`
 - 用户当前在设备现场，可执行物理交互、重启、suspend/resume、HDMI 观察与恢复；任何新候选刷写仍需该候选的单独明确授权。
@@ -25,6 +25,28 @@ C:\platform-tools\adb.exe -s 192.168.1.8:7896 logcat -d -b all
 ```
 
 accepted baseline 已确认 Treble/VNDK、primary HAL/output、HEVC+AAC HDMI 音频、VP9 Allwinner/Cedar hardware runtime、Widevine 16.1.0 L3、LeanbackIME，以及 official Google TV iPhone Remote discovery/pair/navigation/phone text。刷入任何新候选仍须先获得该候选的单独明确授权。
+
+## Gate 2 physical result: a16-prototype-a-r4
+
+Evidence：`docs/m8/device-tests/20260826-a16-prototype-a-r4-physical-validation/`。Original raw
+r4 captures 未存在于本 VM；tracked record 是 reviewed external user confirmation，不伪造 raw
+file/hash。本任务未重做物理测试。
+
+| 阶段/功能 | r4 结果 |
+|---|---|
+| Android/EGL | **PASS**：Android16/API36/`zygote32`/5.4.302+/boot complete；无 UART/`setprop`；`persist.graphics.egl` empty、`ro.hardware.egl=mali`、`ro.board.platform=apollo`；Mali/UI PASS |
+| Remote | **PASS / PHYSICALLY PROVEN**：`sunxi-ir.kl`；scanCode 352→`DPAD_CENTER(23)`；UP/DOWN/LEFT/RIGHT/OK/BACK/HOME PASS |
+| HDMI | **PASS / STABLE IN THIS VALIDATION**：r3 black-cycle **NOT REPRODUCED**；r4 无 display delta，旧 root cause **NOT PROVEN** |
+| Wi-Fi | **PASS**：module/scan/association/WPA/DHCP/IPv4/DNS/Android VALIDATED/real use；本轮 OFF→ON 因 Wi-Fi ADB transport self-disconnect **NOT COMPLETED / NOT FAIL** |
+| Ethernet | **NOT RETESTED / NO ACTIVE CARRIER**：r4 exact preservation + prior physical PASS 保持 control |
+| Direct HDMI audio | **PASS / AUDIBLE**：48 kHz/16-bit/stereo WAV 经 `tinyplay`/`ahubhdmi` 在 HDMI TV 物理听到 |
+| VLC video/audio | **PASS / AUDIBLE**：normal picture/TV audio；AudioFlinger writes/session；service PIDs playback 前后稳定；clean interval crash buffer empty |
+| Boot audio HAL | **KNOWN OPEN / REPRODUCED / AUTO-RECOVERED**：`getAudioPortImpl`/`getAudioPort` null-address SIGSEGV；steady-state impact not observed；exact source root cause not proven |
+
+Formal result：**GATE 2 HOLD — SINGLE MINIMUM REMAINING GATE: BOOT-TIME VENDOR AUDIO HAL
+STABILITY**。Enforcing SELinux 属 later release hardening；full VINTF 仍因 inherited
+`CONFIG_NFS_FS=y` 对 FCM-6 `n` exit 65，不称 PASS。下一步只允许先做该 crash 的 bounded
+source/provenance diagnosis；不授权 broad r5 或 Prototype B build。
 
 ## Gate 2 physical result: a16-prototype-a-r3
 

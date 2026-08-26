@@ -2,9 +2,9 @@
 
 ## Freeze decision
 
-`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为 Android 16 架构工作的稳定回退与功能对照。当前不再实施 Android 12 M8B feature、P1/P2 修复或清理；以下未完成项全部 **DEFERRED pending Android 16 architecture outcome**。活跃架构开发位于 `codex/m8-architecture-ceiling`。
+`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为 Android 16 架构工作的稳定回退与功能对照。当前不再实施 Android 12 M8B feature、P1/P2 修复或清理；以下未完成项全部 **DEFERRED pending Android 16 architecture outcome**。活跃架构开发位于 `codex/m8-architecture-ceiling`。`a16-prototype-a-r4` 已完成物理功能验收，但因 boot-time vendor audio HAL stability gate 未满足，当前只是 exact ARM32 control，**尚未冻结为 accepted Android 16 architecture baseline**。
 
-## Android 16 Gate 1 — Prototype A ARM32
+## Android 16 Gate 1 / Gate 2 — Prototype A ARM32
 
 - [x] 保持 Prototype A、ARM32 产品定义、relative `OUT_DIR`、VNDK 31 与 `systemimage` 目标不变。
 - [x] 在 native GCP Ubuntu 24.04 / ext4 / 8 vCPU / 62.8 GiB RAM / no-swap 主机完成 `m -j8 systemimage`；未使用 cgroup、taskset、WSL wrapper 或 `SOONG_GOMEMLIMIT` patch。
@@ -50,11 +50,14 @@
 - [x] 完成 r3 local physical validation/evidence capture：未 flash/reboot/build/image mutation。Android 16/API36、ARM32-only `zygote32`、Linux 5.4.302+、六项 Path-A config、APEX、service managers、system_server/SystemUI、TV/Leanback/IME 与 Ethernet 已运行时证明。原始 r3 first blocker 是缺少 EGL driver selector；在用户预先设置的 `persist.graphics.egl=mali` override 下 Mali-G31 GLES 3.2 composition PASS。结论 **CORE PATH-A ARCHITECTURE VIABILITY PHYSICALLY PROVEN / FORMAL CANDIDATE CLOSURE PENDING**。
 - [x] 收敛本轮 hardware 边界：Wi-Fi modules/wlan0/scan/OFF→ON reinit PASS，association/DHCP/L3/DNS 因无法输入凭据为 NOT TESTED；IR Linux events PASS，但 scanCode 352 在 Android 为 UNKNOWN，`Generic.kl` 353→DPAD_CENTER root cause PROVEN；HDMI monitor 约 1 秒画面/约 5 秒黑屏为 physical FAIL；legacy HIDL audio HAL 在 observed HDMI transition 的 `getAudioPort` path null-pointer crash，HAL stability FAIL。Monitor 无音频输出，实际听音 NOT TESTED。
 - [x] **1 — bounded r4 source delta：**source product 只加入 `ro.hardware.egl=mali` 并保留 accepted vendor `ro.board.platform=apollo`；新增 device-specific `sunxi-ir.kl`，与 r7 Generic 仅 scanCode 352→DPAD_CENTER 一行不同。未加入 default `persist.graphics.egl`，其他遥控映射不变。
-- [x] **2 — r4 build/offline audit：**唯一 `a16-prototype-a-r4` 为 1,239,746,560 bytes / `E125DD8FFB9F5B4A7B2B9B86DD8377367409AB00D1B29BE1E719CE25768E2111`。ext4、AVB、LP、IMAGEWTY、ARM32 ELF、35 APEX、VNDK31/linker、split SELinux、Path-A kernel/22 modules 与 exact preservation close；full VINTF 仍只有 inherited NFS exit-65 exception。状态 **OFFLINE CHECKED / READY TO REQUEST PHYSICAL VALIDATION**。
+- [x] **2 — r4 build/offline audit：**唯一 `a16-prototype-a-r4` 为 1,239,746,560 bytes / `E125DD8FFB9F5B4A7B2B9B86DD8377367409AB00D1B29BE1E719CE25768E2111`。ext4、AVB、LP、IMAGEWTY、ARM32 ELF、35 APEX、VNDK31/linker、split SELinux、Path-A kernel/22 modules 与 exact preservation close；full VINTF 仍只有 inherited NFS exit-65 exception。该历史离线时点状态为 **OFFLINE CHECKED / READY TO REQUEST PHYSICAL VALIDATION**；后续 physical result 见第 4–6 项。
 - [x] **3 — strict preservation：**kernel/boot/vendor_dlkm/vendor/product、HDMI/audio/Wi-Fi/Ethernet hardware authority 未修改；outer 50 项仅 system/vbmeta consequences 四项改变，46 项 exact。r3→r4 system tree 无删除，功能语义 delta 只有 EGL property 与 Remote OK mapping。
-- [ ] **4 — r4 FIX physical validation：**另行授权 fresh flash；无 UART/`setprop` intervention 首启自动证明 Mali-G31、stable SurfaceFlinger、`sys.boot_completed=1`，`persist.graphics.egl` 空、`ro.hardware.egl=mali`、`ro.board.platform=apollo`；真实遥控 UP/DOWN/LEFT/RIGHT/OK/BACK/HOME 与 `dumpsys input` 352→DPAD_CENTER/keyCode 23。
-- [ ] **5 — unchanged subsystem regression：**HDMI **UNCHANGED / OPEN**；audio **UNCHANGED / OPEN**；Wi-Fi **UNCHANGED / association-DHCP-L3-DNS requires physical validation**；Ethernet **UNCHANGED / preservation expected**。不得把 r4 两项 fix 扩张为这些 subsystem 的修复。
-- [ ] **6 — architecture boundary：**Gate 2 **NOT CLOSED / PENDING r4 PHYSICAL VALIDATION**。Prototype B、`zygote64_32`、secondary ABI 与 ARM64 Mali/mapper integration 保持 **CLOSED**。
+- [x] **4 — r4 FIX physical validation：**fresh exact r4 无 UART/`setprop` intervention 即到达 Mali-G31、stable SurfaceFlinger、Android UI 与 `sys.boot_completed=1`；`persist.graphics.egl` 空、`ro.hardware.egl=mali`、`ro.board.platform=apollo`。真实遥控 UP/DOWN/LEFT/RIGHT/OK/BACK/HOME PASS，InputManager 证明 `sunxi-ir.kl` scanCode 352→`DPAD_CENTER(23)`；EGL 和 Remote OK **PHYSICALLY PROVEN**。
+- [x] **5 — unchanged subsystem regression：**HDMI **PASS / STABLE IN THIS VALIDATION**，r3 black-cycle 未复现但 root cause 未证明；Wi-Fi module/scan/association/WPA/DHCP/IPv4/DNS/Android VALIDATED/real use PASS，OFF→ON 因 Wi-Fi ADB self-disconnect 未完成且不记 FAIL；Ethernet current session 无 carrier、NOT RETESTED，r4 preservation + prior PASS 保持。Direct `tinyplay` HDMI TV audible 与 VLC video/audio/AudioFlinger steady-state playback PASS。
+- [x] **6 — strict Gate 2 adjudication：**既有合同要求的 no-runtime EGL、Remote OK、stable HDMI、Wi-Fi association/L3 与 real audio sink playback 均 PASS；但 boot-time legacy HIDL `getAudioPort` null-address SIGSEGV 再次复现并 auto-recover，违反明确的 **vendor audio HAL stability** criterion。正式决定 **GATE 2 HOLD — SINGLE MINIMUM REMAINING GATE: BOOT-TIME VENDOR AUDIO HAL STABILITY**，不是 Path-A NO-GO。
+- [ ] **7 — single remaining Prototype A gate：**只做 bounded source/provenance diagnosis，证明 `getAudioPort` boot trigger 和具体 callback/function-pointer ownership；在 root cause 未证明前不得声称 fix，不做 broad r5 cleanup。只有 single-variable delta 成立后才可另行授权最小 successor，并 fresh-boot 证明零该 crash，同时复验 r4 已通过功能。
+- [x] **8 — Prototype B read-only readiness study：**exact r7 source、accepted vendor、public BPI H618/apollo commit `316cd80c...`、paired Mali、multilib mapper source、vendor-owned `ro.zygote`、mixed ABI/zygote init 和 AVB topology 已复核。AArch64 EGL/GLES + mapper/gralloc 为 boot-critical mandatory provider；Vulkan 为 B1 post-boot capability。未发现 structural NO-GO。
+- [ ] **9 — Prototype B build readiness：HOLD。**Gate 2 关闭前 policy 不允许 B build；之后仍须先指定 lawful local ARM64 Mali source（exact hash、blob 不进 Git、rights 不虚构）并锁定 multilib mapper/config、vendor `ro.zygote=zygote64_32`/mixed ABI、system+vendor AVB/outer manifest。满足后才可请求第一个 bounded B1；本轮未 build、未创建 candidate。
 
 ## 已验收基线
 
@@ -113,4 +116,4 @@
 - [x] 完成限定只读 system-quality audit：无 P0；stability、retry loop、audio residual、SELinux、CPU/thermal/idle、graphics 与 memory 证据见 `docs/m8/device-tests/20260816-m8b-system-quality-audit/`。
 - [ ] **DEFERRED / P2 / 不修：**Wi-Fi HAL link-layer statistics 每约 3 秒返回 `ERROR_UNKNOWN`；网络 ADB 稳定且 Wi-Fi 进程未重启。
 - [x] 保持 Mouse mode dropped；不重新引入 vendor mouse framework。
-- [x] architecture-ceiling study 已找到强匹配 paired AArch64 Mali 与 multilib mapper/gralloc provider 证据；ARM32 OMX/Cedar media 可进程隔离复用。Android 16 mixed AArch64/ARM32 为 **CONDITIONAL GO**，其 build/runtime gates 转到 `codex/m8-architecture-ceiling`，不在本 Android 12 分支执行。
+- [x] architecture-ceiling study 已复核 paired AArch64 Mali 与 multilib mapper/gralloc provider 证据；ARM32 OMX/Cedar media 可进程隔离复用。Android 16 mixed AArch64/ARM32 当前为 **BUILD READINESS HOLD**：先关闭 Prototype A boot-time audio stability gate，并锁定 lawful local Mali intake 与 exact mapper/vendor/AVB contract；不在本 Android 12 backlog 执行。

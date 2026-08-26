@@ -74,9 +74,34 @@ Updated: 2026-08-26
 
 ## Active architecture transition
 
-活跃架构开发位于 `codex/m8-architecture-ceiling` 的 Android 16 Path A；长期 mixed AArch64-primary / ARM32-secondary 目标继续 **HOLD**，Prototype B 不得启动。same-lineage Linux 5.4.302 r5 kernel/wireless preservation checkpoint 为 **CLOSED / PASS**，exact QPR0 r7 source audit 为 PASS。r3 已物理证明 Android 16/API36、ARM32-only `zygote32`、Path-A 六项 config、system_server/SurfaceFlinger/Mali-G31 core viability，但依赖用户预先设置的 runtime EGL override，且 Android OK 为 UNKNOWN。严格后继 `a16-prototype-a-r4` 现已 build、exact-board package 并完整离线审核；其唯一功能变化是 source-generated `ro.hardware.egl=mali`（保留 vendor `ro.board.platform=apollo`，无默认 `persist.graphics.egl`）与 device-specific `sunxi-ir` scanCode 352→`DPAD_CENTER`。Kernel/boot/22 modules/vendor/product 和 HDMI/audio/Wi-Fi/Ethernet authority 保持。r4 状态为 **OFFLINE CHECKED / READY TO REQUEST PHYSICAL VALIDATION**，尚未执行任何物理动作。Gate 2 **NOT CLOSED / PENDING r4 PHYSICAL VALIDATION**；HDMI 与 audio 仍 unchanged/open，Wi-Fi association 未测，Ethernet preservation expected。
+活跃架构开发位于 `codex/m8-architecture-ceiling` 的 Android 16 Path A。same-lineage Linux
+5.4.302 r5 kernel/wireless preservation checkpoint 为 **CLOSED / PASS**，exact QPR0 r7 source
+audit 为 PASS。r3 历史上以用户预先设置的 runtime EGL override 证明 Android 16/API36、
+ARM32-only `zygote32`、Path-A 六项 config、system_server/SurfaceFlinger/Mali-G31 core
+viability；其 HDMI 周期黑屏、Android OK unknown、Wi-Fi association 和真实音频输出边界保持为
+当时的历史事实。
 
-架构研究已经找到强匹配 provider 证据：同 lineage donor 的 ARM32 Mali 与 accepted UBOX 文件完全一致，并提供 paired AArch64 Mali 与 multilib mapper/gralloc source。该证据把“缺少匹配 graphics provider”从结构性阻塞收敛为 exact-board build/runtime gate；media 不要求先取得全套 AArch64 provider，可继续保留 ARM32 Allwinner OMX/Cedar 服务并通过进程边界复用。
+严格后继 `a16-prototype-a-r4` 已完成 exact-board build/offline audit 和 2026-08-26 physical
+validation。其唯一实现变化仍是 source-generated `ro.hardware.egl=mali`（保留 vendor
+`ro.board.platform=apollo`，无默认 `persist.graphics.egl`）与 device-specific `sunxi-ir`
+scanCode 352→`DPAD_CENTER`；kernel/boot/22 modules/vendor/product 和 HDMI/audio/Wi-Fi/Ethernet
+authority 未修改。Fresh r4 无 UART/`setprop` intervention 即 boot complete，Mali/UI、Remote OK、
+稳定 HDMI、Wi-Fi association/DHCP/validated L3、direct HDMI audible audio 与真实 VLC video/audio
+均物理 PASS。r3 黑屏循环未复现，但旧根因未证明。Boot 时 legacy audio HIDL
+`getAudioPort` null-address SIGSEGV 仍复现并自动恢复；clean steady-state VLC playback 未出现新
+crash。依照既有 Gate 2 对 **vendor audio HAL stability** 的明确要求，当前正式决定为
+**GATE 2 HOLD — SINGLE MINIMUM REMAINING GATE: BOOT-TIME VENDOR AUDIO HAL STABILITY**。这不是
+Path-A NO-GO；r4 保留为 exact ARM32 control，但尚不冻结为 accepted Android 16 architecture
+baseline。Prototype B build readiness 另行评估为 **HOLD**，不得启动 build。
+
+架构研究已重新核对强匹配 provider 证据：public BPI H618/apollo donor 的 ARM32 Mali 与
+accepted UBOX 文件 byte-identical，并提供 paired AArch64 Mali 与 `LOCAL_MULTILIB := both` 的
+mapper/gralloc source。该证据把“缺少匹配 graphics provider”从结构性阻塞收敛为 bounded
+exact-board test，但 adjacent H618 不是 exact H616 proof，proprietary Mali binary 的再分发权仍
+未证明。AArch64 SurfaceFlinger 的 EGL/GLES 和 passthrough mapper 是 B1 boot-critical
+same-process provider；Vulkan 在保留默认 GLES RenderEngine 的首屏 B1 中是 post-boot app
+capability。ARM32 Allwinner OMX/Cedar、SUNXI HWC、Apollo audio、Wi-Fi/BT/DRM/TEE 等成熟服务可
+继续隔离在既有 32-bit process 中。
 
 2026-08-21 Android 16 Gate 1 状态为 **OFFLINE CHECKED / SUCCESS**。Source 为 exact `android-16.0.0_r4` / `BP4A.251205.006`，manifest commit `15128c9e27cfa599c48d294babd39286ee8f1426`，pinned manifest SHA-256 `4E8BEB5D1B590DFF3D631B1DBB957138DBDA4E608A3183C625683DA4BC84918F`；Prototype A 为 `ubox10_ceiling_arm-bp4a-userdebug`、ARMv7-A NEON、无 secondary arch、shipping API 31、extra VNDK 31、pKVM off。GCP native Ubuntu 24.04 / ext4 / 8 vCPU / 62.8 GiB RAM / no swap 上使用 relative `OUT_DIR=out-ceiling`、`BUILD_NUMBER=DISPOSABLE_CEILING_R4`、unset `SOONG_GOMEMLIMIT GOMEMLIMIT` 和 `m -j8 systemimage`，123,197/123,197 actions 成功，wall 30,314 秒（8:25:14）。最低 available RAM 12,295,132 KiB；swap I/O 为 0；平均 CPU user/system 约 88.05%/9.48%、I/O wait 0.05%；`/work` 最低 free 231,671,357,440 bytes。完整 raw log 仅保留在 GCP ignored 路径，未进入 Git。
 
@@ -341,11 +366,122 @@ delta。完整记录与机器可读 preservation inventory 见
 `docs/m8/candidates/a16-prototype-a-r4.md` 和
 `docs/m8/candidates/a16-prototype-a-r4-preservation.json`。
 
-本轮未 flash、reboot、UART/ADB 操作或其他实机动作。EGL 与 Remote OK 均只是 offline
-assertion，**NOT YET PHYSICALLY VALIDATED**。HDMI **UNCHANGED / OPEN**；Audio **UNCHANGED /
-OPEN**；Wi-Fi **UNCHANGED / association requires physical validation**；Ethernet **UNCHANGED /
-preservation expected**。Gate 2 **NOT CLOSED / PENDING r4 PHYSICAL VALIDATION**，Prototype B
-继续 CLOSED。
+该 build/offline 阶段未 flash、reboot、UART/ADB 操作或其他实机动作；在该历史时点 EGL 与
+Remote OK 只是 offline assertion，HDMI/audio/Wi-Fi association 仍 open。后续物理证据和
+formal Gate 2 decision 由下一节追加，不改变这里记录的实现范围。
+
+### Android 16 QPR0 Prototype A r4 physical result and Gate 2 HOLD
+
+2026-08-26 用户已 flash 并测试 exact r4。原始 ADB/log captures 未出现在本 VM；tracked record
+严格区分外部 **USER PHYSICAL CONFIRMATION** 与仓库内 build/offline evidence，不伪造 raw file
+或 hash。完整结果矩阵见
+`docs/m8/device-tests/20260826-a16-prototype-a-r4-physical-validation/`。
+
+Fresh boot 无 UART、manual bootarg、runtime `setprop` 或 r3
+`persist.graphics.egl` workaround：Android 16/API36、incremental
+`UBOX10_A16_QPR0_R4`、Linux 5.4.302+、`zygote32`、core framework services 和
+`sys.boot_completed=1` PASS。Runtime `persist.graphics.egl` 为空、
+`ro.hardware.egl=mali`、`ro.board.platform=apollo`，Mali-G31/SurfaceFlinger/UI 物理 PASS；
+r4 source-level EGL integration 正式证明。
+
+InputManager 识别 `/dev/input/event0` `sunxi-ir` 并选择
+`/system/usr/keylayout/sunxi-ir.kl`；installed `key 352 DPAD_CENTER` 与 runtime
+scanCode 352→`DPAD_CENTER(23)` PASS，Linux KEY_OK DOWN/UP 保持。物理
+UP/DOWN/LEFT/RIGHT/OK/BACK/HOME 及正常遥控操作 PASS，Remote OK fix **PHYSICALLY PROVEN**。
+
+HDMI 为 **PASS / STABLE IN THIS VALIDATION**；r3 约 1 秒画面/约 5 秒黑屏循环
+**NOT REPRODUCED**。r4 未修改 display implementation，因此旧 transient root cause 仍
+**NOT PROVEN**，不得描述为“r4 修复 HDMI 根因”。Wi-Fi modules/`wlan0`/scan/association、
+WPA `COMPLETED`、DHCP/IPv4/DNS、Android `INTERNET`/`VALIDATED`/`TRUSTED` 与实际稳定使用均
+PASS。OFF→ON script 因测试 transport 本身为 Wi-Fi ADB 而断联，分类为 **NOT COMPLETED IN
+THIS SESSION / NOT FAIL**；separate kernel-r5 evidence 已独立证明一次 same-lineage OFF→ON
+reinitialization。Ethernet 本轮无 carrier，**NOT RETESTED**；r4 byte preservation 与 prior
+physical PASS 保持 reference。
+
+真实 48 kHz/16-bit/stereo WAV 经 ALSA card 3 `ahubhdmi`/`tinyplay` 在 HDMI TV 物理听到，
+direct hardware path PASS。ARM32 VLC 播放有效 H.264/AAC-style MP4，picture normal、HDMI TV
+audible audio、AudioFlinger session/writes/frames PASS；`audioserver` PID 1230 和 audio service
+PID 1232 在 playback 前后相同。播放前清 logcat 后的 clean interval crash buffer 为空，无新
+Fatal signal/SIGSEGV，steady-state Android application media playback PASS。
+
+但 boot 期 `/vendor/bin/hw/android.hardware.audio.service` 已再次出现 fault address 0 的
+SIGSEGV，stack 位于 `android.hardware.audio@7.0-impl.so`
+`Device::getAudioPortImpl<audio_port_v7>` / `Device::getAudioPort` /
+`PrimaryDevice::getAudioPort`；service 自动恢复，后续 playback impact 未观察到。Exact
+source-level root cause 仍 **NOT PROVEN**；null callback/function pointer 为 **HIGH CONFIDENCE /
+LIKELY**，不得把 steady-state PASS 改写为 boot defect 已修复。
+
+既有 r3/r4 acceptance contract 明确要求 no-runtime EGL、stable physical HDMI、physical
+Remote OK、Wi-Fi association、real audio sink playback 和 **vendor audio HAL stability**。
+前五项现均 PASS，但 boot-time audio SIGSEGV 直接违反最后一项。故不移动门槛，正式决定为：
+
+**GATE 2 HOLD — SINGLE MINIMUM REMAINING GATE: BOOT-TIME VENDOR AUDIO HAL STABILITY.**
+
+Enforcing SELinux 属 later stabilization/release-hardening，不是 Architecture Gate 2；full VINTF
+仍 exit 65 solely for inherited `CONFIG_NFS_FS=y` 对 FCM-6 `n` 的 non-boot-causal exception，
+不得称 PASS。Gate 2 HOLD 时 r4 仅为 exact current ARM32 control，**NOT YET FROZEN AS THE
+ACCEPTED ANDROID 16 ARCHITECTURE BASELINE**。Android 12 rollback `m8b-remote-r1` 继续 frozen。
+
+### Prototype B read-only readiness decision
+
+Fresh source/artifact/donor/AVB review finds no new structural NO-GO, but it does not authorize a
+build. The exact A16 r7 mixed product inherits `core_64_bit.mk`, which selects ARM64 primary + ARM32
+secondary, packages `init.zygote64_32.rc`, and starts `app_process64` as primary/system_server plus
+`app_process32` secondary. Accepted vendor still owns later-loaded `ro.zygote=zygote32` and only
+declares 32-bit ABI lists, so a system-only replacement is insufficient.
+
+The mandatory B1 graphics provider set is:
+
+1. `/vendor/lib64/egl/libGLES_mali.so` for AArch64 SurfaceFlinger/apps. Public donor commit
+   `316cd80ca43fa17b0385eacd7f6f3652bbd66b2a` supplies an ELF64/AArch64
+   `libGLES_mali.so`, 18,145,112 bytes /
+   `03333D495E3566C7D85CA2E000DA569A16CE8F022EA25C0EA61950C891D5C7F8`. Its paired ARM32
+   file is byte-identical to accepted UBOX
+   `fbffe5601a58d1f8d624ee37129f73b76d0a73eb21fc8a2487368d9ab47f14b7`; all 297 strong
+   imports are exported by its declared A16 VNDK31/LLNDK dependencies. This is **PROVEN provider
+   existence / HIGH lineage confidence / MEDIUM exact-H616 runtime confidence**. Binary
+   redistribution permission remains **UNPROVEN**.
+2. AArch64 `android.hardware.graphics.mapper@2.0-impl-2.1.so` and matching
+   `gralloc.apollo.so`, while retaining the exact ARM32 copies. Donor gralloc source is Apache-2.0,
+   `LOCAL_MULTILIB := both`, uses bitness-specific `/vendor/lib{,64}/egl` paths, HIDL mapper 2.1 /
+   allocator 2.0 and a cross-bitness fixed-width/native-handle layout. It is bounded and technically
+   defensible, but exact accepted-buffer ABI plus A16 `sphal` runtime remains a build/offline/physical
+   gate, not proven compatibility.
+
+Vulkan is a separate post-boot provider: r7 defaults SurfaceFlinger RenderEngine to GLES unless the
+Vulkan flag/backend is selected, and r4 physically proves GLES. Therefore an ARM64
+`vulkan.apollo.so` is required before claiming AArch64 Vulkan app capability, but not for the first
+B1 UI boot. SUNXI composer/HWC and allocator service may remain ARM32 over HwBinder; the
+passthrough mapper and EGL/GLES cannot because they load into the AArch64 consumer process.
+
+The minimum likely B1 byte/config delta is `system_a` (ARM64 primary + ARM32 secondary product,
+both zygote scripts and r4 EGL/keylayout/VINTF/SELinux composition), `vendor_a` (vendor-owned
+`ro.zygote=zygote64_32`, mixed ABI properties, the paired lib64 EGL/mapper/gralloc files and only
+required manifest/linker policy), `super.fex`, `vbmeta_system.fex`, `vbmeta_vendor.fex`, and their
+Allwinner `V*` companions. Actual AVB inspection proves vendor has its own hashtree and signed
+`vbmeta_vendor`; system has its own hashtree and signed `vbmeta_system`; top-level `vbmeta.fex`
+contains no chain descriptor and can remain byte-identical if the verified layout is preserved.
+Accepted product defines no zygote/ABI-list property and should remain exact r4 bytes. Boot,
+vendor_dlkm and all unrelated partitions also remain exact unless an offline audit proves one is
+unavoidably architecture-owned.
+
+The first B1 must preserve Linux 5.4.302 and its six Path-A additions; 22-module/AIC
+BSP/firmware/FMAC contract; Wi-Fi/Ethernet/audio policies and HALs; ARM32 SUNXI HWC, Allwinner
+OMX/Cedar, Apollo audio, Wi-Fi/BT, Widevine/ClearKey and TEE services; remote/keylayout; HDMI/display
+implementation; DT/DTBO, vendor_boot, bootloader, factory/security payloads and exact r4 rollback.
+No 5.10 port, 25Q4 Android tag, broad backport, full vendor rewrite or feature work belongs in B1.
+
+Required B1 physical gates are: no-intervention Android 16 boot and `sys.boot_completed=1`;
+simultaneous primary zygote64 and secondary zygote32; ELF64/AArch64 system_server and
+SurfaceFlinger; expected ARM64 framework/apps; intended vendor services still ELF32; ARM64
+SurfaceFlinger loading ARM64 Mali and mapper/gralloc; Mali-G31 stable HDMI UI; and preservation
+checks for remote, Wi-Fi, Ethernet, audio, real media playback, HDMI and vendor-service stability.
+Vulkan, Netflix/HDR/4K60 and GMS are explicitly outside the first architecture gate.
+
+Formal **PROTOTYPE B BUILD READINESS: HOLD**. Gate policy forbids starting B while Gate 2 is HOLD;
+additionally, a future B1 task must name a lawful local ARM64 Mali source without committing the
+blob and lock the exact multilib mapper/config/AVB integration contract. These are bounded
+prerequisites, not evidence of impossibility. No Prototype B candidate has been built or authorized.
 
 ## Accepted audio milestone
 
@@ -572,7 +708,7 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - r10 已在实机完成 framework boot；r9 Lights/Watchdog/llkd 方向保持关闭，不再修改。
 - r13 是当前 GOLDEN BASELINE；Projectivy、provisioning、遥控和 Power sleep/wake/shutdown 均以实机 UART 为准。
 - M8B native rc-core 遥控迁移已在 r5 设备验收并关闭；Mouse mode intentionally dropped，legacy multi_ir 工件保留为 inert reference，其 Android 12 清理已随 freeze 延期。
-- 当前 board、DT 与 runtime 证据识别为 H616。历史 A16 ARM32 r2 稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛；历史 kernel r1-r4 AIC failure 已收敛到错误 `0x00110000` FMAC contract。r5 恢复 working BSP `0x00120000` 后物理 boot/HDMI/remote/Wi-Fi/ADB 与 Wi-Fi OFF→ON reinitialization PASS，preservation checkpoint **CLOSED / PASS**。Exact QPR0 r7 audit 与 r3 core physical viability 已关闭 architecture blocker。r4 已离线集成正式 EGL selector 与 Android OK mapping，但尚未上机；HDMI/audio/Wi-Fi-association 仍 unchanged/open。Gate 2 **NOT CLOSED / PENDING r4 PHYSICAL VALIDATION**，AArch64 Prototype B 不启动。
+- 当前 board、DT 与 runtime 证据识别为 H616。历史 A16 ARM32 r2 稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛；历史 kernel r1-r4 AIC failure 已收敛到错误 `0x00110000` FMAC contract。r5 恢复 working BSP `0x00120000` 后物理 boot/HDMI/remote/Wi-Fi/ADB 与 Wi-Fi OFF→ON reinitialization PASS，preservation checkpoint **CLOSED / PASS**。Exact QPR0 r7 audit 与 r3 core viability 已关闭 architecture blocker。r4 现已物理证明 no-runtime EGL、Remote OK、稳定 HDMI、完整 Wi-Fi L3 与 real audible media；但 boot-time legacy audio HAL SIGSEGV 仍复现，故 Gate 2 **HOLD solely on vendor audio HAL stability**。Prototype B readiness 为 **HOLD**，不启动 build。
 - `m8b-audio-r2` 只启用产品级 Treble/VNDK 合同；未修改 VNDK payload、mixer、audio platform XML、DTS、machine driver 或已验收功能，现已设备验收为 AUDIO PASS。
 - 2026-08-16 ADB-only 补验未刷机、未重启且未修改 ROM/device properties：VP9 为 Allwinner OMX/Cedar hardware-runtime PASS；Widevine 为可操作 L3，HDCP `NONE`，无 secure decoder 要求。物理画面/逐帧质量与商业服务认证或播放仍未证明。
 - 遥控器 Menu 与 Settings 当前均打开 Projectivy menu。两键语义分离为独立延期项，不回改已验收的 rc-core、keylayout 选择或其他按键行为。
@@ -580,16 +716,23 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 
 ## Next action
 
-保持 frozen `m8b-remote-r1`、Test8r2、stock rollback、A16 r1-r4 与 kernel r1-r5 artifacts
-不变。下一步只请求一次独立授权的 r4 最短物理验收；当前任务本身未授权实机动作：
+保持 frozen `m8b-remote-r1`、Test8r2、stock rollback、exact r4 control、A16 r1-r3 与 kernel
+r1-r5 artifacts 不变。本轮不 build、不改 source/image、不接触设备。下一步按以下顺序执行：
 
-1. Fresh flash 后不得 UART intervention、`setprop` 或手改 property；首次启动必须自动到达
-   Android 16 UI、Mali-G31、稳定 SurfaceFlinger 与 `sys.boot_completed=1`。
-2. 证明 `persist.graphics.egl` 为空、`ro.hardware.egl=mali`、
-   `ro.board.platform=apollo`；这一步是 EGL fix validation，不等同 HDMI stability PASS。
-3. 用真实遥控验证 UP/DOWN/LEFT/RIGHT/OK/BACK/HOME；`dumpsys input` 保留 scanCode 352→
-   `DPAD_CENTER` / keyCode 23 evidence。
-4. 分开记录 preservation/known-open：HDMI 周期黑屏和 legacy audio HAL 仍 open；Wi-Fi 需
-   association/DHCP/L3/DNS；Ethernet 做 preservation regression。r4 没有修改这些 subsystem。
-5. Gate 2 在 r4 physical validation 前保持 **NOT CLOSED**。Prototype B、`zygote64_32`、
-   secondary ABI 与 ARM64 Mali/mapper integration 继续 **CLOSED**。
+1. 只围绕已复现的 boot-time legacy HIDL `getAudioPort` null-address SIGSEGV 做 bounded
+   source/provenance diagnosis；先证明具体 callback/function-pointer ownership 和 boot trigger，
+   不把 successful auto-recovery/steady-state playback 写成已修复，也不创建 broad r5 cleanup。
+2. 只有取得单变量因果 delta 后，另行授权一个最小 Prototype A successor；其 acceptance 只需
+   fresh boot 不再触发该 audio-service crash，同时复验 r4 已通过的 no-runtime EGL、Remote OK、
+   HDMI、Wi-Fi L3 与 real audible VLC media。若无可证明 delta，Gate 2 继续 HOLD。
+3. Gate 2 真正关闭后才能冻结 `a16-prototype-a-r4` 或其严格后继为 Android 16 ARM32
+   architecture baseline；目前 r4 仅是 exact control，Android 12 `m8b-remote-r1` 仍是 frozen
+   rollback。
+4. 在任何 B1 build 前，完成两个 bounded intake：指定 lawful local ARM64 Mali source（hash-lock、
+   不进 Git、再分发权不虚构），并锁定 ARM32+ARM64 mapper/gralloc、vendor-owned
+   `ro.zygote=zygote64_32`、mixed ABI property、system/vendor AVB 与 outer companion 的 exact
+   integration manifest。
+5. 上述 gate 全部满足后，下一轮才可请求第一个 bounded B1 build；范围仅为 r4 baseline +
+   ARM64 primary/ARM32 secondary + `zygote64_32` + ARM64 EGL/GLES + ARM64 mapper/gralloc +
+   minimum vendor/AVB consequences。Vulkan 可在首屏后验收；不得混入 5.10、25Q4、full vendor
+   64-bit rewrite、display/audio/Wi-Fi feature changes 或产品 polish。

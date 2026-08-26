@@ -1,6 +1,7 @@
 # Android 16 QPR0 Prototype A r4 candidate
 
-Status: **OFFLINE CHECKED / READY TO REQUEST PHYSICAL VALIDATION**.
+Status: **PHYSICAL VALIDATION COMPLETE / FUNCTIONAL PATH PASS / GATE 2 HOLD ON
+VENDOR AUDIO HAL STABILITY**.
 
 `a16-prototype-a-r4` is a strict successor to physically exercised r3. Its only authorized
 functional deltas are:
@@ -144,10 +145,10 @@ offline without a new delta, which is not an enforcing-runtime claim. System-onl
 full VINTF returns 65 / INCOMPATIBLE solely for the inherited `CONFIG_NFS_FS=y` versus FCM-6
 required `n`. No unexpected VINTF incompatibility appears and full VINTF is not called PASS.
 
-HDMI is **UNCHANGED / OPEN**. Audio is **UNCHANGED / OPEN**. Wi-Fi is **UNCHANGED** and
-association/DHCP/L3/DNS still require physical validation. Ethernet is **UNCHANGED / preservation
-expected**. No r4 physical action occurred, so EGL and Remote OK are not claimed as physical
-passes. Gate 2 is **NOT CLOSED / PENDING r4 PHYSICAL VALIDATION**; Prototype B remains closed.
+At the end of the build task, HDMI and audio were **UNCHANGED / OPEN**, Wi-Fi association was
+untested and Ethernet was preservation-only. Those statements are the historical offline boundary;
+the later physical result is recorded separately below and does not retroactively expand the r4
+implementation delta.
 
 Focused r4 tests pass 5/5 against the actual local candidate. r3 contract regression passes 5/5;
 kernel checkpoint/r5/outer-packer preservation tests pass 11/11. The full repository suite passes
@@ -155,23 +156,56 @@ kernel checkpoint/r5/outer-packer preservation tests pass 11/11. The full reposi
 post-build exact r7 source audit and `git diff --check` pass. No physical-action command exists in
 the build or audit paths.
 
-## Physical validation contract
+## Physical validation result and Gate 2 decision
 
-Any later test requires separate authorization. Flash r4 as a fresh candidate, then make no UART
-intervention, `setprop` or property edit. The first boot must automatically reach Android 16 UI,
-Mali-G31, stable SurfaceFlinger and `sys.boot_completed=1`. The minimal property checks are:
+The user subsequently flashed and tested the exact hash-pinned r4 image. The reviewed record is
+`docs/m8/device-tests/20260826-a16-prototype-a-r4-physical-validation/`. The original raw captures
+were not present on this VM, so the tracked record identifies external user physical confirmation
+separately from repository build/offline evidence and does not invent raw files or hashes.
 
-```sh
-adb shell getprop persist.graphics.egl
-adb shell getprop ro.hardware.egl
-adb shell getprop ro.board.platform
-adb shell getprop sys.boot_completed
-```
+Fresh r4 reaches Android 16/API36, `zygote32`, running framework services and
+`sys.boot_completed=1` without UART, bootarg or runtime property intervention.
+`persist.graphics.egl` is empty, `ro.hardware.egl=mali`, and `ro.board.platform=apollo`.
+Mali-G31, SurfaceFlinger and the Android UI pass physically. This closes the r3 runtime-override
+boundary and proves the r4 source-level EGL integration.
 
-Expected values are empty, `mali`, `apollo`, and `1`, respectively. Validate the real remote in
-this order: UP, DOWN, LEFT, RIGHT, OK, BACK, HOME. Then retain `adb shell dumpsys input` evidence
-that `sunxi-ir` scanCode 352 resolves to `DPAD_CENTER` / keyCode 23.
+InputManager selects `/system/usr/keylayout/sunxi-ir.kl`; Linux `KEY_OK` scanCode 352 dispatches as
+Android `DPAD_CENTER(23)`. UP/DOWN/LEFT/RIGHT/OK/BACK/HOME and normal remote operation pass. The
+r4 Remote OK delta is **PHYSICALLY PROVEN**.
 
-Separately regression-check HDMI, audio, Wi-Fi and Ethernet. Classify those as preservation or
-known-open results: r4 did not attempt to fix any of them. HDMI stability and the legacy audio HAL
-remain open; Wi-Fi association/DHCP/L3/DNS remains untested; Ethernet preservation is expected.
+HDMI output is **PASS / STABLE IN THIS VALIDATION** and the r3 approximately 1-second picture /
+5-second black cycle is **NOT REPRODUCED**. Because r4 changed no display implementation, the old
+transient's root cause remains **NOT PROVEN** and is not claimed fixed by r4.
+
+Wi-Fi modules, `wlan0`, scan, association, WPA completion, DHCP, IPv4, DNS and Android
+`INTERNET`/`VALIDATED`/`TRUSTED` all pass with stable real-world use. A later OFF→ON script
+disconnected its own Wi-Fi ADB transport, so reconnect is **NOT COMPLETED IN THIS SESSION**, not a
+failure; the separate kernel-r5 evidence already proves one same-lineage OFF→ON reinitialization.
+Ethernet had no active carrier and is **NOT RETESTED** in this Wi-Fi-primary session; its exact r4
+preservation plus prior physical PASS remain the control.
+
+Direct `tinyplay` of a real 48 kHz/16-bit/stereo WAV through ALSA card 3 `ahubhdmi` was audibly
+heard on the HDMI TV. ARM32 VLC then played valid H.264/AAC-style media with normal video and
+audible HDMI audio. AudioFlinger recorded the VLC session, writes and frames; `audioserver` PID
+1230 and audio service PID 1232 were unchanged before/after. After clearing logcat before this
+valid playback interval, the crash buffer remained empty and no new SIGSEGV occurred. Thus direct
+HDMI audio and steady-state Android application media playback are **PHYSICAL PASS**.
+
+The known legacy audio defect nevertheless reproduced once during boot before that clean interval:
+`/vendor/bin/hw/android.hardware.audio.service` faulted at address zero in
+`Device::getAudioPortImpl<audio_port_v7>` / `Device::getAudioPort` /
+`PrimaryDevice::getAudioPort`, then auto-recovered. Playback impact was not observed and exact
+source cause remains unproven, but the crash is not erased or called fixed.
+
+The pre-existing Gate 2 acceptance contract explicitly requires vendor audio HAL stability in
+addition to no-runtime EGL, stable HDMI, Remote OK, Wi-Fi association and real sink playback.
+Every listed functional condition now passes, but the reproduced boot-time SIGSEGV means that one
+criterion remains unmet. The formal decision is:
+
+**GATE 2 HOLD — SINGLE MINIMUM REMAINING GATE: BOOT-TIME VENDOR AUDIO HAL STABILITY.**
+
+Enforcing SELinux remains a later release-hardening gate. Full VINTF remains exit 65 solely for the
+inherited, non-boot-causal `CONFIG_NFS_FS=y` versus FCM-6 `n` exception and is not relabeled PASS.
+Because Gate 2 is HOLD, r4 is retained as the exact current ARM32 control but is **NOT YET FROZEN
+AS THE ACCEPTED ANDROID 16 ARCHITECTURE BASELINE**. No broad Prototype A r5 or Prototype B build is
+authorized by this record.
