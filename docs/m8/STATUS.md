@@ -109,6 +109,17 @@ AVB/outer 和 rollback contract 已锁定，详见
 `docs/m8/research/prototype-b-b0-readiness.md`。Vulkan 仍为 post-boot app capability；成熟 ARM32
 HWC/media/audio/Wi-Fi/BT/DRM/TEE services 保持进程隔离。
 
+首次 canonical `a16-prototype-b-r1` implementation attempt 已在 2026-08-26 的第一道强制
+pre-build gate 停止，状态为 **PRE-BUILD BLOCKED / NO CANDIDATE / LOCAL ARM64 MALI INTAKE
+MISSING**。锁定路径 `/work/local-proprietary/ubox10/prototype-b-b1/libGLES_mali.so` 不存在，
+对 `/work` 的 18,145,112-byte read-only search 也没有匹配文件；因此未启动 Soong/Ninja、未改
+AOSP/kernel/vendor source、未创建 system/vendor/super/outer artifact。Frozen r4 size/hash 与 exact
+r7 246,298-byte pinned manifest / `F52BA4...087E` 已重新 PASS。`/work` 当时仅余
+14,908,239,872 bytes，作为恢复 intake 后必须重新评估的 capacity warning，不被误报为已触发的
+build failure。Fail-closed checker、exact recovery identity 与所有 NOT RUN downstream gates 见
+`docs/m8/candidates/a16-prototype-b-r1.md`。B0 architecture readiness 仍为 GO，但 B1 execution 为
+**HOLD ON THE MISSING EXTERNAL INTAKE**；这不是 structural NO-GO。
+
 2026-08-21 Android 16 Gate 1 状态为 **OFFLINE CHECKED / SUCCESS**。Source 为 exact `android-16.0.0_r4` / `BP4A.251205.006`，manifest commit `15128c9e27cfa599c48d294babd39286ee8f1426`，pinned manifest SHA-256 `4E8BEB5D1B590DFF3D631B1DBB957138DBDA4E608A3183C625683DA4BC84918F`；Prototype A 为 `ubox10_ceiling_arm-bp4a-userdebug`、ARMv7-A NEON、无 secondary arch、shipping API 31、extra VNDK 31、pKVM off。GCP native Ubuntu 24.04 / ext4 / 8 vCPU / 62.8 GiB RAM / no swap 上使用 relative `OUT_DIR=out-ceiling`、`BUILD_NUMBER=DISPOSABLE_CEILING_R4`、unset `SOONG_GOMEMLIMIT GOMEMLIMIT` 和 `m -j8 systemimage`，123,197/123,197 actions 成功，wall 30,314 秒（8:25:14）。最低 available RAM 12,295,132 KiB；swap I/O 为 0；平均 CPU user/system 约 88.05%/9.48%、I/O wait 0.05%；`/work` 最低 free 231,671,357,440 bytes。完整 raw log 仅保留在 GCP ignored 路径，未进入 Git。
 
 唯一产物 `/work/src/ubox10-a16-ceiling/out-ceiling/target/product/generic/system.img` 为 946,765,824 bytes，SHA-256 `FD349F1D8073DFEB71E2CEA28915F1C755FA54E3EBA85616FCAA279063F3EDBE`。Raw ext4 `e2fsck -fn` clean；AVB SHA256_RSA2048 footer 与 system hashtree verify；staging 有 2,277 regular files、256 symlinks、997 个 ARM32 userspace ELF，另 7 个 ELF64 均为 Linux BPF object 而非 AArch64 userspace。36 个 installed APEX 全部可解析；`/system_ext/apex/com.android.vndk.v31.apex` 为 17,743,872 bytes / SHA-256 `FB94B4E2BA84BDEFDDFAF59729FDAE87B0195D2EEFD972FD69235DD7A12D705E`，含 ARM32 `libaudioroute.so` 与 v31 lists。A16 host linkerconfig 对实际 system/VNDK 生成 `[vendor]`、`/apex/com.android.vndk.v31/${LIB}` 和 `default→vndk` 的 `libaudioroute.so`；system-side `checkvintf --check-one` PASS，FCM 6 matrix 包含 5.4 kernel 分支；SELinux xattr、31.0 mapping 与 compiled policy 存在。只生成 `system.img`，未生成 boot/vendor/product/system_ext/super/userdata、IMAGEWTY 或可刷固件。
@@ -713,19 +724,19 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 ## Next action
 
 保持 frozen Android 12 `m8b-remote-r1`、frozen Android 16 ARM32 `a16-prototype-a-r4`、Test8r2/
-stock rollback、A16 r1-r3 与 kernel r1-r5 artifacts 不变。本轮不 build、不改 source/image、不接触
-设备。下一步是严格执行 `docs/m8/research/prototype-b-b0-readiness.md`：
+stock rollback、A16 r1-r3 与 kernel r1-r5 artifacts 不变。Canonical B1 ID 保持
+`a16-prototype-b-r1`，不得改名或创建 r2。下一步按顺序是：
 
-1. 下一任务只构建一个 bounded B1：r4 composition + ARM64 primary/ARM32 secondary +
+1. 由具有独立使用权的用户/custodian 把 exact 18,145,112-byte / `03333D49...C7F8` ARM64 Mali
+   regular file 放到 `/work/local-proprietary/ubox10/prototype-b-b1/libGLES_mali.so`；blob 不进 Git、
+   logs 或 evidence archive，rights 不推定。
+2. 运行 `python3 scripts/check-a16-prototype-b-r1-mali.py`；只有 size/SHA/ELF64/AArch64/SONAME/
+   Build ID/DT_NEEDED 全 PASS 才解除 pre-build HOLD。同时重新检查 `/work` capacity；当前 14.9 GB
+   只记 warning，不允许为腾空间删除 retained source/build/rollback workspace。
+3. 解除两项 preflight 后，继续同一个 bounded r1：r4 composition + ARM64 primary/ARM32 secondary +
    `zygote64_32` + exact ARM64 Mali/AOSP mapper/donor gralloc-1.x + 最小 vendor property、
-   system/vendor AVB/super consequences。
-2. Proprietary Mali 只允许从 outside-Git local path 做 size/hash/ELF/SONAME/Build-ID fail-closed
-   intake；rights 不推定、blob 不进 Git。新 ARM64 files 之外，accepted ARM32 provider 与成熟
-   process-isolated HAL 均保持。
-3. Flash authorization 前必须通过 B0 定义的 ELF/ABI/handle-layout/VNDK31/linker/VINTF、ext4、
+   system/vendor AVB/super consequences，不增加任何语义范围。
+4. Flash authorization 前必须通过 B0 定义的 ELF/ABI/handle-layout/VNDK31/linker/VINTF、ext4、
    AVB、LP、IMAGEWTY 与 exact r4 preservation checks；任何 expected-exact payload 变化即停。
-4. 首次 physical gate 只回答 mixed bitness/boot/graphics 与 r4 hardware preservation。已知一次性
-   auto-recovered audio boot crash 本身不使 B1 fail；restart loop、无音频、重复 runtime crash 或
-   playback failure 才是 material regression。
 5. Vulkan、GMS、5.10、25Q4、full vendor rewrite、Audio fix、SELinux/NFS/HDMI polish 与产品 feature
    均不得混入 B1。

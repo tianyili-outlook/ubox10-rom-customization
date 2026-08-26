@@ -70,6 +70,13 @@ is the next experiment, not a change to the frozen Prototype A contract. Keeping
 remains NO-GO; adopting a public H616
 5.10+ tree remains a new BSP port.
 
+The first `a16-prototype-b-r1` execution subsequently stopped before build at that contract's
+mandatory local-intake gate: the exact outside-Git ARM64 Mali file was absent and no exact-size
+copy existed under `/work`. This is **B1 EXECUTION HOLD / EXTERNAL INTAKE MISSING**, not a reversal
+of the B0 technical GO or evidence of an architecture contradiction. No source integration,
+Android build or candidate occurred; the same r1 may resume only after the hash-pinned intake and
+host-capacity checks pass.
+
 This is a modern hybrid, not a full port. Framework, `system_server`, SurfaceFlinger, and
 eligible apps become AArch64; legacy Allwinner media, audio, HWC/composer, DRM, Wi-Fi,
 Bluetooth, TEE and other HAL processes remain ARM32 behind stable Binder/HwBinder
@@ -956,6 +963,14 @@ Formal **PROTOTYPE B1 BUILD READINESS: GO FOR ONE BOUNDED, SEPARATELY EXECUTED B
 gate is mixed bitness/boot/graphics plus r4 hardware preservation; exact-board runtime is not
 pre-claimed. B0 did not build or create a candidate.
 
+The first implementation attempt then executed the mandatory intake check and found neither the
+locked `/work/local-proprietary/ubox10/prototype-b-b1/libGLES_mali.so` nor any exact-size file under
+`/work`. It therefore stopped before Soong or source mutation with **PRE-BUILD HOLD / NO
+CANDIDATE**. This external artifact absence does not invalidate the B0 provider analysis; it only
+blocks execution until the exact file is supplied outside Git and passes the tracked fail-closed
+identity checker. The 14,908,239,872-byte `/work` free-space sample is a second pre-build capacity
+warning to reassess after intake, not a measured partition-fit or compilation failure.
+
 #### Same-lineage Linux 5.4.302 preservation checkpoint
 
 The retained Orange Pi source is commit `9ab7a758149d3c9b721878a0c18b3f9c5d6c93e6`
@@ -1325,10 +1340,11 @@ MEDIUM until the one bounded experiment runs.
 10. **Completed — Prototype B0:** lock lawful-local fail-closed Mali intake, exact AOSP mapper +
     donor gralloc-1.x provider split, mixed ABI/zygote and vendor properties, VINTF/linker,
     system/vendor AVB/outer impact, rollback, offline checks and first physical gate.
-11. **Current next action — one bounded B1:** build r4 + mixed ABI/`zygote64_32` + the mandatory
-    AArch64 EGL/mapper/gralloc set only, then require the full B0 offline gate before any separately
-    authorized flash. First acceptance is bitness/boot/graphics plus hardware preservation; Vulkan,
-    the audio P1 and product polish remain outside the build delta.
+11. **Current next action — unblock the same bounded B1:** supply the exact outside-Git ARM64 Mali
+    file, pass the tracked identity/DT_NEEDED checker and re-establish safe host capacity. Then,
+    without renaming or creating r2, build r4 + mixed ABI/`zygote64_32` + the mandatory AArch64
+    EGL/mapper/gralloc set only and require the full B0 offline gate before any separately authorized
+    flash. Vulkan, the audio P1 and product polish remain outside the build delta.
 12. **Final acceptance:** sustained daily-use regression, 4K30-or-1080p evidence-led media
     ceiling, enforcing/release hardening, recovery rehearsal and a hash-locked accepted architecture
     image.

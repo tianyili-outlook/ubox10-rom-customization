@@ -58,7 +58,13 @@
 - [x] **7 — authorized Gate 2 policy closure：**用户明确决定 Architecture Gate 2 衡量 functional architecture viability，而非零缺陷 release maturity。r4 的 direct HDMI + real VLC audio/video、stable playback PIDs、auto-recovery 和 clean playback interval 足以关闭架构门；正式状态 **GATE 2 CLOSED / PASS**，r4 frozen。Boot crash 保持 **KNOWN / UNFIXED / POST-GATE P1**，不创建 Prototype A r5。
 - [x] **8 — Prototype B B0 complete：**exact r7 source、r4 logical/vendor/AVB、official BPI commit `316cd80c...`、paired Mali、AOSP passthrough mapper→gralloc-1.x loader、cross-bitness handle design、vendor property ownership、mixed ABI/zygote init、VINTF/linker 和全 partition impact 已复核。三个 ARM64 same-process files boot-critical；Vulkan 为 post-boot capability。详见 `docs/m8/research/prototype-b-b0-readiness.md`。
 - [x] **9 — Prototype B1 build readiness：GO。**允许下一任务构建 **一个** bounded B1：r4 + ARM64 primary/ARM32 secondary + `zygote64_32` + exact 三个 ARM64 graphics files + 最小 vendor property/system+vendor AVB consequences。Mali 只能从 `/work/local-proprietary/ubox10/prototype-b-b1/libGLES_mali.so` fail-closed intake（18,145,112 bytes / `03333D49...C7F8`），rights 不推定、blob 不进 Git；本轮没有 build/candidate。
-- [ ] **10 — next action / one bounded B1 build：**严格执行 B0 allowed/forbidden delta、offline acceptance、r4 preservation hash 和 rollback contract；先完成所有 offline gate，再另行请求一次 architecture-first physical validation。不得混入 Vulkan/GMS/5.10/25Q4、Audio fix、SELinux/NFS/HDMI polish 或 process-isolated HAL 64-bit conversion。
+- [ ] **10 — BLOCKED / canonical `a16-prototype-b-r1` pre-build gate：**锁定 local intake
+  `/work/local-proprietary/ubox10/prototype-b-b1/libGLES_mali.so` 缺失；全 `/work` exact-size search
+  无匹配，故严格在 Soong/source integration 前停止，未创建 candidate。恢复必须由有独立使用权的
+  custodian 放入 18,145,112-byte / `03333D49...C7F8` exact file，并通过
+  `python3 scripts/check-a16-prototype-b-r1-mali.py` 的 size/SHA/ELF64/AArch64/SONAME/Build-ID/
+  DT_NEEDED fail-closed gate。随后重新评估当前仅约 14.9 GB 的 `/work` free capacity，再继续同一个
+  r1；不得创建 r2、替代 blob 或扩展 B0 scope。
 
 ## Post-Gate stabilization / release hardening
 
