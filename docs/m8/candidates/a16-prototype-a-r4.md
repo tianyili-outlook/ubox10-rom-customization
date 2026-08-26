@@ -1,7 +1,7 @@
 # Android 16 QPR0 Prototype A r4 candidate
 
-Status: **PHYSICAL VALIDATION COMPLETE / FUNCTIONAL PATH PASS / GATE 2 HOLD ON
-VENDOR AUDIO HAL STABILITY**.
+Status: **PHYSICAL PASS / ACCEPTED ANDROID 16 ARM32 ARCHITECTURE BASELINE /
+FROZEN CONTROL / GATE 2 CLOSED**.
 
 `a16-prototype-a-r4` is a strict successor to physically exercised r3. Its only authorized
 functional deltas are:
@@ -197,15 +197,27 @@ The known legacy audio defect nevertheless reproduced once during boot before th
 `PrimaryDevice::getAudioPort`, then auto-recovered. Playback impact was not observed and exact
 source cause remains unproven, but the crash is not erased or called fixed.
 
-The pre-existing Gate 2 acceptance contract explicitly requires vendor audio HAL stability in
-addition to no-runtime EGL, stable HDMI, Remote OK, Wi-Fi association and real sink playback.
-Every listed functional condition now passes, but the reproduced boot-time SIGSEGV means that one
-criterion remains unmet. The formal decision is:
+The pre-existing Gate 2 acceptance contract explicitly required vendor audio HAL startup stability
+in addition to no-runtime EGL, stable HDMI, Remote OK, Wi-Fi association and real sink playback.
+That contract produced the evidence-based HOLD recorded in commit `1b2351f9...`; it is retained as
+the historical adjudication and was not silently waived.
 
-**GATE 2 HOLD — SINGLE MINIMUM REMAINING GATE: BOOT-TIME VENDOR AUDIO HAL STABILITY.**
+The user subsequently made an explicit project-governance change: Architecture Gate 2 now judges
+architecture and functional viability, not absolute zero-defect release maturity. R4 proves the
+complete functional path, including direct audible HDMI output and real Android application
+video/audio with stable steady-state AudioFlinger/vendor service PIDs and no new playback-interval
+crash. The one-shot boot `getAudioPort` crash auto-recovers, does not loop, has no observed playback
+impact, does not invalidate ARM32 audio process isolation, and need not be repaired before testing
+an ARM64 framework with that same ARM32 service. It is therefore reclassified as **KNOWN /
+UNFIXED / AUTO-RECOVERED / POST-GATE P1 STABILIZATION DEFECT**. It is not called fixed.
 
-Enforcing SELinux remains a later release-hardening gate. Full VINTF remains exit 65 solely for the
+Under that explicit policy, the formal decision is:
+
+**GATE 2 CLOSED / PASS — CORE PATH-A ARCHITECTURE VIABILITY PHYSICALLY PROVEN.**
+
+Enforcing SELinux remains later release hardening. Full VINTF remains exit 65 solely for the
 inherited, non-boot-causal `CONFIG_NFS_FS=y` versus FCM-6 `n` exception and is not relabeled PASS.
-Because Gate 2 is HOLD, r4 is retained as the exact current ARM32 control but is **NOT YET FROZEN
-AS THE ACCEPTED ANDROID 16 ARCHITECTURE BASELINE**. No broad Prototype A r5 or Prototype B build is
-authorized by this record.
+Exact r4 is now **FROZEN AS THE ACCEPTED ANDROID 16 ARM32 ARCHITECTURE BASELINE** and the mandatory
+rollback/control for future Prototype B work; it does not supersede the frozen Android 12
+`m8b-remote-r1` fallback. No Prototype A r5 is justified. The bounded B0/B1 contract is recorded in
+`docs/m8/research/prototype-b-b0-readiness.md`; this candidate record does not claim B1 was built.

@@ -23,5 +23,7 @@ WIFI_CREDENTIALS_RETAINED=no
 SECRETS_RETAINED=no
 
 physical_result=functional_path_pass
-gate2_result=hold
-single_remaining_gate=boot_time_vendor_audio_hal_stability
+gate2_policy_change=user_authorized_architecture_functional_viability
+gate2_result=closed_pass
+accepted_android16_arm32_baseline=a16-prototype-a-r4
+boot_time_audio_hal_defect=known_unfixed_auto_recovered_post_gate_p1

@@ -10,8 +10,8 @@ Image size: 1,239,746,560 bytes
 
 Image SHA-256: `E125DD8FFB9F5B4A7B2B9B86DD8377367409AB00D1B29BE1E719CE25768E2111`
 
-Result: **PHYSICAL VALIDATION COMPLETE / FUNCTIONAL PATH PASS / GATE 2 HOLD ON
-VENDOR AUDIO HAL STABILITY**.
+Result: **PHYSICAL PASS / ACCEPTED ANDROID 16 ARM32 ARCHITECTURE BASELINE /
+GATE 2 CLOSED**.
 
 ## Evidence boundary
 
@@ -64,14 +64,23 @@ PASS remains the control. Enforcing SELinux is a later release-hardening require
 full-VINTF `CONFIG_NFS_FS=y` versus FCM-6 `n` exit-65 result remains an explicit non-boot-causal
 exception and is not relabeled PASS.
 
-The pre-existing Gate 2 acceptance contract also explicitly requires **vendor audio HAL
-stability**. Because the boot-time `getAudioPort` SIGSEGV reproduced, that exact criterion is not
-met even though auto-recovery and steady-state real media playback pass. The formal result is:
+The pre-existing Gate 2 acceptance contract also explicitly required **vendor audio HAL startup
+stability**. Applying that contract produced the original evidence-based HOLD; that historical
+decision is not erased. The user then explicitly changed the project policy so Architecture Gate 2
+measures functional architecture viability rather than zero-defect release maturity. This record's
+direct audible HDMI and real Android application playback, stable playback PIDs, auto-recovery and
+absence of a new clean-interval crash satisfy that architecture gate.
 
-**GATE 2 HOLD — SINGLE MINIMUM REMAINING GATE: BOOT-TIME VENDOR AUDIO HAL STABILITY.**
+The boot-time `getAudioPort` SIGSEGV is consequently **KNOWN / UNFIXED / AUTO-RECOVERED /
+POST-GATE P1 STABILIZATION DEFECT**. It must remain tracked and be reopened if it becomes
+user-visible, loops, worsens under Prototype B, breaks HDMI hotplug or suspend/resume, or blocks the
+release-stability target. It is not described as fixed. The formal result under the authorized
+policy is:
 
-This is not a Path-A architecture contradiction and therefore is not NO-GO. It also does not
-authorize a broad r5 cleanup or any Prototype B build.
+**GATE 2 CLOSED / PASS — CORE PATH-A ARCHITECTURE VIABILITY PHYSICALLY PROVEN.**
+
+Exact r4 is the frozen Android 16 ARM32 architecture baseline and Prototype B rollback control. No
+Prototype A r5 was created or justified by this reclassification.
 
 ## Provenance
 

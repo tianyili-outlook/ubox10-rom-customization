@@ -6,12 +6,14 @@ Study branch/evidence base: `codex/m8-architecture-ceiling` / starting commit
 `f40a37b6fd488800b5a1ada89f2ce2cf687e8e33`, plus the hash-locked Linux 5.4.302
 checkpoint inputs and results recorded below
 
-Accepted rollback/runtime baseline: frozen `m8b-remote-r1`; latest physically accepted kernel
-checkpoint: `m8-kernel-5.4.302-r5`
+Accepted rollback/runtime baselines: frozen Android 12 `m8b-remote-r1` and frozen Android 16 ARM32
+architecture control `a16-prototype-a-r4`; latest physically accepted kernel checkpoint:
+`m8-kernel-5.4.302-r5`
 Scope: architecture decision, bounded offline prototypes, completed physical evidence through
 Linux 5.4.302 r5, exact QPR0 r7 source audit, the Prototype A r3/r4 build and physical evidence,
-formal Gate 2 adjudication, and a 2026-08-26 read-only Prototype B/mixed-ABI/provider/zygote/AVB
-readiness revalidation. No Prototype B build, source integration or candidate was performed.
+formal Gate 2 policy/closure, and the 2026-08-26 Prototype B B0 read-only
+mixed-ABI/provider/zygote/AVB preflight. No Prototype B build, source integration or candidate was
+performed.
 
 Confidence labels in this report have the following strict meanings: **PROVEN** is direct
 binary, build, runtime, repository, or authoritative-source evidence; **HIGH CONFIDENCE**
@@ -48,21 +50,22 @@ Wi-Fi association/DHCP/validated L3, direct audible HDMI output and normal audib
 r3's HDMI black cycle was not reproduced, but r4 changed no display implementation and the old
 root cause remains unproven.
 
-Gate 2 is formally **HOLD**, not PASS and not NO-GO. The pre-existing acceptance contract explicitly
-requires vendor audio HAL stability. The legacy audio service reproduced its boot-time null-address
-SIGSEGV in the HIDL `getAudioPort` path, then auto-recovered; clean steady-state VLC playback kept
-the same audio PIDs and produced no new crash. This satisfies functional audio playback but not the
-written stability criterion. The single minimum remaining Gate 2 condition is therefore
-**boot-time vendor audio HAL stability**. Enforcing SELinux remains release hardening rather than an
-architecture gate, and full VINTF remains an explicit inherited NFS exit-65 exception, not PASS.
+Gate 2 is formally **CLOSED / PASS**. The earlier contract explicitly required vendor audio HAL
+startup stability and therefore correctly produced HOLD when the legacy service reproduced its
+boot-time null-address `getAudioPort` SIGSEGV. After r4 proved direct audible HDMI and real Android
+application playback with stable steady-state service PIDs, the user explicitly changed project
+policy: Architecture Gate 2 now judges functional architecture viability, not zero-defect release
+maturity. The one-shot auto-recovered crash is **KNOWN / UNFIXED / POST-GATE P1 STABILIZATION
+DEBT**, not silently erased or described as fixed. Enforcing SELinux remains release hardening, and
+full VINTF remains an explicit inherited NFS exit-65 exception, not PASS.
 
-The possible final architecture still worth investigating remains **Android 16 for TV, mixed
+The next architecture experiment remains **Android 16 for TV, mixed
 ARM64/ARM32 userspace, `zygote64_32`, the Allwinner 5.4 hardware-facing BSP lineage, plus only
 the minimum matched ARM64 graphics client provider and bounded vendor zygote/AVB metadata
-changes**. Read-only readiness finds no structural blocker, but **Prototype B build readiness is
-HOLD** because policy does not permit B while Gate 2 is open and lawful local ARM64 Mali intake plus
-the exact multilib mapper/AVB manifest remain bounded prerequisites. That is a later conditional
-target, not the Prototype A contract. Keeping Android tag
+changes**. B0 has locked lawful-local fail-closed ARM64 Mali intake, the exact AOSP mapper + donor
+gralloc split, mixed ABI/vendor properties, linker/VINTF and partition/AVB consequences.
+**Prototype B1 build readiness is GO for one bounded, separately executed candidate build.** That
+is the next experiment, not a change to the frozen Prototype A contract. Keeping Android tag
 `android-16.0.0_r4`/25Q4 and backporting a 5.10-class BPF stack into a kernel still reporting 5.4
 remains NO-GO; adopting a public H616
 5.10+ tree remains a new BSP port.
@@ -71,9 +74,10 @@ This is a modern hybrid, not a full port. Framework, `system_server`, SurfaceFli
 eligible apps become AArch64; legacy Allwinner media, audio, HWC/composer, DRM, Wi-Fi,
 Bluetooth, TEE and other HAL processes remain ARM32 behind stable Binder/HwBinder
 interfaces. The current vendor, vendor_dlkm, TEE, boot and board-specific display/media
-implementation remain the hardware authority. The paired ARM64 Mali-G31 client library and
-multilib mapper/gralloc implementation found in the public Allwinner `apollo`/`sun50iw9p1`
-H618 BSP are the only new proprietary-provider class justified by present evidence.
+implementation remain the hardware authority. The paired ARM64 Mali-G31 client library is the only
+new proprietary provider; the exact r7 AOSP passthrough mapper and Apache-2.0 donor gralloc-1.x
+source complete the three-file ARM64 same-process set. Exact B0 identities and gates are in
+`prototype-b-b0-readiness.md`.
 
 The still-useful change from the earlier M8B ARM64 no-go is exact provenance evidence: the
 public donor's ARM32 `libGLES_mali.so` is byte-for-byte identical to the accepted UBOX10
@@ -81,7 +85,7 @@ library, and the same donor directory supplies its paired AArch64 library while 
 product itself selects `zygote64_32`. This does not prove a boot on H616, but it replaces a
 missing-provider structural blocker with a small, testable provider gate.
 
-If the ARM32 base eventually passes, the practical quality target remains a 1080p-rendered TV UI with **4K30-class local media as the
+With the ARM32 base physically accepted, the practical quality target remains a 1080p-rendered TV UI with **4K30-class local media as the
 reliability target and 4K60 HDMI output capability retained**. The live accepted firmware
 currently drives the attached display at 3840x2160@60 while composing a 1920x1080
 framebuffer. H.264, HEVC and VP9 hardware paths exist, but only 1080p H.264/HEVC and a small
@@ -171,7 +175,7 @@ success.
 | Mandatory function | Accepted implementation | Why mandatory in mixed mode | Provider evidence | Residual gate |
 |---|---|---|---|---|
 | EGL/GLES client | `/vendor/lib/egl/libGLES_mali.so`, ELF32, SHA-256 `fbffe5601a58d1f8d624ee37129f73b76d0a73eb21fc8a2487368d9ab47f14b7` | **BOOT-CRITICAL**; AArch64 SurfaceFlinger/apps load it in-process | Public BPI H618 donor has the exact same ARM32 hash and paired 18,145,112-byte ELF64/AArch64 library, SHA-256 `03333d495e3566c7d85ca2e000da569a16ce8f022ea25c0ea61950c891d5c7f8`; SONAME is `libGLES_mali.so`, and all 297 strong imports are exported by the declared exact r7 VNDK31/LLNDK dependencies | Lawful local source/distribution boundary, exact-H616 runtime, then one linker/boot/graphics test |
-| Mapper/gralloc | `android.hardware.graphics.mapper@2.0-impl-2.1.so` (`5d18bb597f91c90cc9a17bdad4cd3f525b33b903c7aa188a04d79b1273768be3`) plus `gralloc.apollo.so` (`7325bd8b0562f4a01cdf283daaa8db660aaff4e31f6fc7ad5d6dfabc4abf8aac`), both ELF32; manifest claims passthrough `arch="32+64"` although no `lib64` implementation exists | **BOOT-CRITICAL**; mapper is an SP-HAL loaded in SurfaceFlinger/apps and its handles cross to 32-bit HWC/media users | Same donor publishes Apache-2.0 Mali-Bifrost source with `LOCAL_MULTILIB := both`, explicit bitness paths, HIDL mapper 2.1/allocator 2.0 and fixed-width/native-handle padding; platform is adjacent `apollo`/G31/`sun50iw9p1` | Produce paired ELF64 output, lock exact handle/layout ABI and validate A16 `sphal`; source is defensible for one bounded test but exact-board runtime is not proven |
+| Mapper/gralloc | `android.hardware.graphics.mapper@2.0-impl-2.1.so` (`5d18bb597f91c90cc9a17bdad4cd3f525b33b903c7aa188a04d79b1273768be3`) plus `gralloc.apollo.so` (`7325bd8b0562f4a01cdf283daaa8db660aaff4e31f6fc7ad5d6dfabc4abf8aac`), both ELF32; manifest claims passthrough `arch="32+64"` although no `lib64` implementation exists | **BOOT-CRITICAL**; exact AOSP mapper adapter is loaded in SurfaceFlinger/apps, calls `hw_get_module()`, then loads board gralloc in-process; handles cross to ARM32 HWC/media users | Exact r7 builds the AOSP mapper for ARM64; donor Apache-2.0 gralloc defaults to 1.x, names `gralloc.apollo`, uses `LOCAL_MULTILIB := both` and fixed-width/native-handle padding; alternative donor 2.x mapper is not the accepted architecture | Build only the two matching ARM64 files, retain ARM32 peers, emit dual-ABI handle layout and validate A16 `sphal`/exact-board runtime |
 | Vulkan client | `/vendor/lib/hw/vulkan.apollo.so`, ELF32 and byte-identical to current Mali library | Needed only by AArch64 Vulkan apps, not by first UI boot | Donor supplies the paired AArch64 Mali library, but its product makefile does not independently prove a `/vendor/lib64/hw/vulkan.apollo.so` install | Treat Vulkan as a post-boot provider validation, not a boot gate |
 
 No other mandatory proprietary same-process ARM64 dependency was found. Vendor JNI or current
@@ -308,19 +312,21 @@ AArch64 and SONAME `libGLES_mali.so`. Its DT_NEEDED set is `libcutils.so`,
 all 297 strong imports. This is static linker eligibility, not runtime namespace or H616 proof.
 The donor's `arm64/lib/libGLES_mali.so` is actually ELF32/ARM and is not the 64-bit provider.
 
-Donor `product_config.mk` explicitly selects Mali-G31/GLES 3.2/Vulkan 1.1 and installs the
-paired lib64 EGL file when `TARGET_ARCH=arm64`. The gralloc `Android.mk` builds allocator and
-mapper with `LOCAL_MULTILIB := both`; its API-2.x path is allocator 2.0 / mapper 2.1 on modern
-SDKs, and bitness-specific paths point to `/vendor/lib/egl` and `/vendor/lib64/egl`. Its public
-buffer handle uses explicit `uint64_t`/padding unions around pointer/off_t-shaped fields and a
-fixed native-handle fd/int contract, making a cross-bitness test technically defensible. It does
-not prove byte compatibility with accepted closed mapper/gralloc, and the donor board remains H618
+Donor `product_config.mk` explicitly selects Mali-G31/GLES 3.2/Vulkan 1.1 and installs the paired
+lib64 EGL file when `TARGET_ARCH=arm64`. B0 further proved that accepted mapper is the exact AOSP
+passthrough adapter: it imports `hw_get_module` and loads the board-named gralloc module. The donor
+gralloc source defaults to API 1.x on modern SDKs, names `gralloc.apollo.so` and builds both
+bitnesses with `LOCAL_MULTILIB := both`; this is the matching B1 path. Its separate API-2.x mapper
+backend is not needed and must not replace the accepted AOSP adapter architecture. The public
+buffer handle uses explicit `uint64_t`/padding unions around pointer/off_t-shaped fields and a fixed
+native-handle fd/int contract, making a cross-bitness test technically defensible. It does not prove
+byte compatibility with the accepted closed gralloc, and the donor board remains H618
 `apollo`/`sun50iw9p1`, not exact H616.
 
 | Donor item | Provenance / identity | Technical confidence | Rights and permitted use in this project |
 |---|---|---|---|
 | Paired Mali ARM32/ARM64 binaries | Official public BPI commit and exact hashes above; accepted ARM32 identity byte-proven | **HIGH** lineage; **MEDIUM** exact-board runtime | Proprietary redistribution right **UNPROVEN**. May be hash/reference evidence. A future local experiment requires a separately established lawful local source; binary must not be committed to Git. |
-| Mali-Bifrost gralloc/mapper source | Official public commit; `gralloc/Notice` Apache-2.0; exact source/blob identities auditable | **HIGH** for multilib intent; **MEDIUM** for accepted handle/A16 runtime match | Source license is known and may be referenced/ported subject to its notice. Generated proprietary integration still needs a provenance review; no binary was committed. |
+| Mali-Bifrost gralloc source | Official public commit; tree `8a231b4f821fc0e30fd9010fb6b51ab01325d616`; `gralloc/Notice` Apache-2.0 | **HIGH** for multilib gralloc-1.x intent; **MEDIUM** for accepted handle/A16 runtime match | Source license is known and may be referenced/ported subject to its notice. No generated binary was committed. |
 | Other H618 BSP/vendor binaries | Public tree location exists but no exact-board necessity or complete rights audit was established | **LOW** for B1 necessity | Reference only. Not approved for local candidate intake or Git; B1 must not import them. |
 
 ## 7. Graphics ceiling
@@ -762,13 +768,13 @@ date must not be relabeled as a later device SPL; future security coverage would
 separate patch provenance program. No GMS, Play, certification or commercial-service status
 follows from choosing it.
 
-**Path A verdict: selected; CORE ARCHITECTURE VIABILITY PHYSICALLY PROVEN / GATE 2 HOLD.**
+**Path A verdict: selected; CORE ARCHITECTURE VIABILITY PHYSICALLY PROVEN / GATE 2 CLOSED.**
 The same-lineage kernel/wireless preservation checkpoint is **CLOSED / PASS**, the exact r7 source
 audit finds no architecture blocker, and r4 physically proves Android 16/zygote32/system_server/
 Mali-G31 without runtime EGL intervention plus Remote OK, stable HDMI, Wi-Fi validated L3 and real
-audible application media. Gate 2 remains HOLD solely because the boot-time vendor audio
-`getAudioPort` SIGSEGV reproduced and violates the written HAL-stability criterion. Prototype B
-readiness may be studied, but its build remains HOLD.
+audible application media. The explicit governance change moves the auto-recovered boot
+`getAudioPort` SIGSEGV to post-Gate P1 stabilization debt without calling it fixed. R4 is frozen;
+Prototype B0 is complete and B1 readiness is GO for one bounded build.
 
 #### QPR0 r7 source-only closure
 
@@ -918,75 +924,37 @@ crash buffer. Functional and steady-state playback pass.
 Before that clean playback interval, however, the legacy audio service reproduced the known boot
 SIGSEGV at address zero in the `Device::getAudioPortImpl<audio_port_v7>` / `getAudioPort` path and
 then recovered. Exact root cause remains unproven; successful playback does not turn this into a
-fix. The existing Gate 2 list explicitly includes vendor audio HAL stability, so five other
-functional gates cannot waive it. The decision is **GATE 2 HOLD — SINGLE MINIMUM REMAINING GATE:
-BOOT-TIME VENDOR AUDIO HAL STABILITY**. This is not a Path-A contradiction/NO-GO. r4 remains the
-exact ARM32 control but is not frozen as the accepted Android 16 architecture baseline.
+fix. The old Gate 2 startup-stability criterion therefore correctly produced HOLD. The user has
+now explicitly redefined Architecture Gate 2 around functional viability: auto-recovery, no loop,
+stable real playback and retained ARM32 process isolation make this crash **POST-GATE P1
+STABILIZATION DEBT**, not an architecture blocker. Gate 2 is **CLOSED / PASS**, r4 is the frozen
+Android 16 ARM32 architecture baseline, and the defect remains known/unfixed.
 
-#### Prototype B 2026-08-26 read-only readiness
+#### Prototype B B0 2026-08-26 pre-build readiness
 
-The exact QPR0 source, accepted r4 logical images, generated linkerconfig, AVB descriptors and
-official BPI donor tree were rechecked without building or integrating anything.
+The exact QPR0 source, r4 logical images, accepted vendor, official BPI donor commit, ELF contracts,
+linker/VINTF source and AVB/outer descriptors were rechecked without building or integrating
+anything. B0 is **COMPLETE**; the exact evidence, hash-pinned local intake, AOSP mapper versus donor
+gralloc split, mixed ABI/zygote contract, before/after vendor properties, partition table,
+allowed/forbidden delta and offline/physical gates are frozen in
+`prototype-b-b0-readiness.md`.
 
-Exact r7 `device/ubox/ceiling/ubox10_ceiling_arm64.mk` targets generic arm64, whose BoardConfig
-defines `TARGET_ARCH=arm64` and `TARGET_2ND_ARCH=arm`, and inherits `core_64_bit.mk`, which enables
-both app bitnesses and selects `ro.zygote=zygote64_32`. The corresponding init script imports
-`init.zygote64.rc` to run primary
-`app_process64 --start-system-server` and starts `app_process32` as `zygote_secondary`. Binder and
-HwBinder wire protocols are bitness-independent, and the retained kernel already uses 64-bit
-Binder with 32-bit compat. Frozen VNDK31 has both arm64 and arm variants; every DT_NEEDED entry of
-the candidate ARM64 Mali provider exists in its arm64 VNDK-SP/LLNDK set.
+The boot-critical set is exactly ARM64 Mali + exact r7 AOSP passthrough mapper + ARM64
+`gralloc.apollo`. The adapter's `hw_get_module()` path proves mapper and gralloc are separate
+same-process requirements; the donor's Apache-2.0 gralloc-1.x multilib path supplies the latter.
+ARM32 composer/allocator/media/audio/Wi-Fi/BT/DRM/TEE remain process-isolated. Mali static closure is
+297/297 strong imports against exact r7 ARM64 VNDK31/LLNDK; its redistribution right remains
+unproven and B1 intake is outside-Git/fail-closed. Vulkan remains post-boot, not first-UI.
 
-Accepted vendor is the controlling obstacle to a system-only experiment: `/vendor/build.prop`
-sets `ro.zygote=zygote32`, `ro.vendor.product.cpu.abilist=armeabi-v7a,armeabi`, an empty
-`abilist64`, and VNDK31. Exact r7 property loading gives vendor higher precedence than system.
-Minimum integration must therefore change both system and vendor property/content contracts;
-simply selecting the existing arm64 product and replacing system would still boot the vendor-owned
-zygote32 contract.
+System-only replacement is invalid because accepted vendor owns `ro.zygote=zygote32`, ARM32 ABI and
+`ro.bionic.arch=arm`. B1 changes only `system_a`, the bounded `vendor_a` property/lib64 set,
+`super.fex`, subordinate system/vendor vbmeta and three checksum companions. Product, boot/kernel,
+vendor_dlkm, top-level vbmeta, DT/DTBO, vendor_boot, TEE, bootloader and unrelated payloads remain
+exact. No mandatory same-process provider class or partition impact is unknown.
 
-The boot-critical same-process set is exactly:
-
-1. paired AArch64 `/vendor/lib64/egl/libGLES_mali.so`;
-2. AArch64 `/vendor/lib64/hw/android.hardware.graphics.mapper@2.0-impl-2.1.so`;
-3. matching AArch64 `/vendor/lib64/hw/gralloc.apollo.so` while retaining its ARM32 peer and
-   buffer-handle ABI.
-
-SUNXI composer/HWC and graphics allocator are binderized services and may remain ARM32. Allwinner
-OMX/Cedar, Apollo audio, Wi-Fi, Bluetooth, DRM and TEE are also process-isolated ARM32 services.
-Vulkan is not a B1 first-UI requirement: exact r7 defaults RenderEngine to GLES unless Vulkan is
-explicitly selected, and r4 proves the GLES path. A paired AArch64 Vulkan provider is required only
-before claiming AArch64 Vulkan-app capability.
-
-AVB inspection makes the first-candidate delta predictable. `system_a` changes for ARM64 primary,
-ARM32 secondary, both zygotes and ported r4 product content. `vendor_a` changes for
-`ro.zygote=zygote64_32`, mixed ABI properties and the lib64 graphics providers. Its hashtree and
-signed `vbmeta_vendor.fex` must regenerate. System hashtree and signed `vbmeta_system.fex` also
-regenerate; `super.fex` and the three corresponding Allwinner checksum companions change.
-Top-level `vbmeta.fex` has no chain descriptor and should remain exact. Accepted `product_a`
-defines no zygote or ABI-list property, so it should remain exact r4 bytes for B1 unless the
-offline composition audit demonstrates a different mandatory ABI-owned delta;
-boot, kernel, vendor_dlkm, DT/DTBO, vendor_boot, TEE, bootloader, factory/security and all unrelated
-outer payloads must remain byte-identical.
-
-A future B1 semantic scope is restricted to r4 + ARM64-primary/ARM32-secondary + `zygote64_32` +
-the three boot-critical AArch64 graphics files + minimum vendor property/manifest/linker/AVB
-consequences. It must preserve Linux 5.4.302, six Path-A additions, 22 modules, AIC
-BSP/firmware/FMAC, Wi-Fi/Ethernet/audio policy and HAL, ARM32 HWC/OMX/Cedar/TEE/DRM, remote,
-HDMI/display, DT/DTBO and rollback. No Android 25Q4, 5.10, broad kernel/vendor rewrite, Vulkan,
-feature work or product polish belongs in B1.
-
-B1's first physical gate is architectural: no-intervention Android 16 boot and
-`sys.boot_completed=1`; live primary zygote64 plus secondary zygote32; ELF64/AArch64 system_server
-and SurfaceFlinger; expected ARM64 framework/apps; intended vendor services still ELF32; ARM64
-SurfaceFlinger loading ARM64 Mali and mapper/gralloc; Mali-G31 stable HDMI UI; and unchanged
-remote/Wi-Fi/Ethernet/audio/real-media/vendor-service behavior. Vulkan, Netflix/HDR/4K60 and GMS
-are explicitly outside this first gate.
-
-Formal **PROTOTYPE B BUILD READINESS: HOLD**. Gate policy does not allow B while Prototype A Gate 2
-is HOLD. Even after that closes, the task must first establish a lawful local source for the
-hash-pinned proprietary ARM64 Mali file without committing it, and lock the exact multilib
-mapper/vendor/AVB integration manifest. These are bounded prerequisites; no structural NO-GO was
-found and no candidate was built.
+Formal **PROTOTYPE B1 BUILD READINESS: GO FOR ONE BOUNDED, SEPARATELY EXECUTED BUILD**. Its first
+gate is mixed bitness/boot/graphics plus r4 hardware preservation; exact-board runtime is not
+pre-claimed. B0 did not build or create a candidate.
 
 #### Same-lineage Linux 5.4.302 preservation checkpoint
 
@@ -1140,14 +1108,14 @@ accepted hardware product.
 
 | Rank | Path | Decision | Exact next condition |
 |---:|---|---|---|
-| 1 | A — QPR0/25Q2 plus retained 5.4 lineage | **SELECTED / FUNCTIONAL PHYSICAL PASS / GATE 2 HOLD** | r4 passes no-runtime EGL, Remote OK, HDMI, Wi-Fi L3 and media; only boot-time vendor audio HAL stability remains. |
+| 1 | A — QPR0/25Q2 plus retained 5.4 lineage | **SELECTED / PHYSICAL PASS / GATE 2 CLOSED** | r4 passes all functional architecture gates and is frozen; boot audio crash is tracked post-Gate P1. |
 | 2 | B — r4/25Q4 plus backports into 5.4 | **NO-GO** | Would require violating the version policy or executing a broad 5.10-class subsystem port. |
 | 3 | C — public H616 5.10+ kernel | **NO-GO** | Requires a new exact-board Android BSP and hardware-stack port. |
 
-Gate 2 is **HOLD ON ONE EXACT CONDITION**, not pending general r4 physical validation. r4's EGL,
-Remote OK, HDMI, Wi-Fi and real media gates are physically complete. The reproduced boot-time audio
-HAL crash remains; successful recovery/playback does not waive stability. Prototype B mixed-ABI
-readiness is bounded, but no build is authorized while this gate is open.
+Gate 2 is **CLOSED / PASS** under the explicitly revised architecture-viability policy. R4's EGL,
+Remote OK, HDMI, Wi-Fi and real media gates are physically complete and r4 is frozen. The reproduced
+boot-time audio HAL crash remains known/unfixed as post-Gate P1; it is not evidence of an audio fix.
+Prototype B B0 is complete and permits one bounded B1 build task.
 
 ## 12. Target A/B/C/D comparison
 
@@ -1174,17 +1142,16 @@ lower risk. They are decision aids grounded in the evidence above, not synthetic
 | **Unweighted total / 75** | **56** | **47** | **48** | **32** |
 
 The raw totals expose the actual trade: A wins stability and cost but loses future usefulness;
-B gains API 36 but now carries an EOL-kernel and QPR0-security burden; C has the best long-term
-application value after the ARM32 base closes its last stability gate. The project objective still
-makes C the preferred possible end state, but B1 remains policy-HOLD until Prototype A's boot audio
-crash gate and the two bounded provider-intake conditions close. The 5.4.302 wireless checkpoint is
-closed; D remains dominated on engineering economics.
+B gains API 36 but carries an EOL-kernel and QPR0-security burden; C has the best long-term
+application value now that the ARM32 architecture base is frozen. The project objective makes C the
+preferred experiment, and B0 has closed provider-intake/integration readiness for one bounded B1.
+The 5.4.302 wireless checkpoint is closed; D remains dominated on engineering economics.
 
 | Family | Viability | Main advantage | Decisive blocker/limit | Engineering risk | Verdict |
 |---|---|---|---|---|---|
 | Target A — Mature Legacy | **PROVEN now** | Accepted stability and hardware completeness | API 31 age and no 64-bit native apps; security/platform life is short | Low | Keep as rollback/reference, not final investment ceiling |
-| Target B — Modern Framework / Legacy Architecture | **FUNCTIONAL PHYSICAL PASS / GATE 2 HOLD** | Maximum vendor reuse and no new graphics provider | QPR0 only; boot-time vendor audio HAL stability remains and ARM32 excludes 64-bit-only native apps | Medium; single bounded gate | Close only the exact boot audio stability gate |
-| Target C — Modern Hybrid | **READINESS HOLD / MEDIUM** | API 36 plus AArch64 apps while preserving working 32-bit HALs/kernel | Gate 2, lawful ARM64 Mali intake and exact multilib mapper/vendor-AVB contract must close | High but bounded | Possible final target; no B1 build yet |
+| Target B — Modern Framework / Legacy Architecture | **PHYSICAL PASS / GATE 2 CLOSED / FROZEN** | Maximum vendor reuse and proven hardware viability | QPR0 only; boot-time audio P1 remains and ARM32 excludes 64-bit-only native apps | Medium; accepted architecture control | Freeze r4; no Prototype A r5 polish |
+| Target C — Modern Hybrid | **B1 BUILD READINESS GO / MEDIUM** | API 36 plus AArch64 apps while preserving working 32-bit HALs/kernel | Exact-board three-provider/runtime compatibility remains the bounded B1 test | High but bounded | Build one B1 under the frozen B0 contract |
 | Target D — Full Modern Port | **LOW** | Clean contemporary architecture in theory | No complete H616 5.10+ graphics/media/display/DRM provider; becomes multiple subsystem rewrites | Extreme | **NO-GO** |
 
 ## 13. Reuse versus rewrite map
@@ -1264,9 +1231,9 @@ that preserve ABI, remote/wake reliability, audio/media test assets and hardware
    isolatable 32-bit services. **PROVEN/HIGH CONFIDENCE**.
 5. The minimum mandatory mixed-mode blockers are graphics SP-HAL/mapper, not all 300 vendor
    ELF files. **HIGH CONFIDENCE**.
-6. The public same-lineage donor's ARM32 Mali file exactly matches UBOX and it supplies the
-   paired AArch64 library plus multilib mapper/gralloc source. **PROVEN provider existence;
-   MEDIUM exact-board runtime confidence**.
+6. The public same-lineage donor's ARM32 Mali file exactly matches UBOX and it supplies the paired
+   AArch64 library plus multilib gralloc-1.x source; exact r7 supplies the matching AOSP mapper
+   adapter. **PROVEN provider existence; MEDIUM exact-board runtime confidence**.
 7. The same-lineage 5.4.302 integration is reproducible, and r5 physically boots Android 12 with
    HDMI/UI, remote and functional AIC8800D Wi-Fi. One physical Wi-Fi OFF→ON cycle tears down and
    reinitializes successfully; both old START_APP-error filters are empty. Restoring the working
@@ -1291,14 +1258,14 @@ display, audio, wireless and DRM integration without a complete provider. It has
 of better Netflix capability and may lose the current 4K/audio path. The modern hybrid captures
 the application/framework benefit of ARM64 without paying that subsystem-rewrite cost.
 
-**Overall confidence: HIGH for ARM32 core architecture viability and r4 functional integration;
-MEDIUM for formal Prototype A closure and the end-state hybrid.** The r1/r2 progression proves
+**Overall confidence: HIGH for ARM32 architecture viability, r4 functional integration and formal
+Prototype A closure; MEDIUM for the end-state hybrid.** The r1/r2 progression proves
 early runtime, r5 closes the same-lineage 5.4.302 wireless checkpoint, and exact r7/r3/r4 outputs
 close the bounded offline contracts. r4 physically proves no-runtime EGL, Remote OK, stable HDMI,
-full Wi-Fi L3 and real audible Android media. Formal closure remains HOLD only because the written
-vendor-audio-stability criterion is violated by the reproduced boot-time `getAudioPort` SIGSEGV.
-Prototype B has a bounded provider/partition plan and no structural blocker, but build readiness
-remains HOLD until Gate 2 and lawful provider intake close.
+full Wi-Fi L3 and real audible Android media. The explicit policy change closes Gate 2 while keeping
+the reproduced `getAudioPort` crash as post-Gate P1. Prototype B0 closes the bounded provider,
+property, linker/VINTF and partition/AVB preflight; B1 runtime compatibility remains appropriately
+MEDIUM until the one bounded experiment runs.
 
 ## 15. Go / No-Go decisions and remaining decisive gates
 
@@ -1306,10 +1273,10 @@ remains HOLD until Gate 2 and lawful provider intake close.
 
 | Question | Decision | Reason |
 |---|---|---|
-| Recommended modern Android target | **PATH A CORE VIABILITY PHYSICALLY PROVEN / GATE 2 HOLD** | r4 physically passes no-runtime EGL, Remote OK, stable HDMI, Wi-Fi L3 and real media; only boot-time vendor audio HAL stability remains |
+| Recommended modern Android target | **PATH A PHYSICALLY PROVEN / GATE 2 CLOSED** | r4 physically passes the functional architecture contract and is frozen; boot audio crash remains post-Gate P1 |
 | Android 16 r4 / 25Q4 | **NO-GO with retained 5.4** | Physical and source evidence agree on the 5.10/5.10.210 requirement |
-| Android 16 QPR0 / 25Q2 | **SELECTED / r4 FUNCTIONAL PHYSICAL PASS / GATE 2 HOLD** | Exact r7 requires 5.4.277+; 5.4.302 and r4 runtime pass, but the boot audio-service crash violates the stability contract |
-| Mixed ARM64/ARM32 userspace | **READINESS HOLD / NO BUILD AUTHORIZATION** | Boot-critical provider set, zygote ownership and AVB delta are bounded; Gate 2 and lawful ARM64 Mali/local mapper intake remain prerequisites |
+| Android 16 QPR0 / 25Q2 | **SELECTED / r4 PHYSICAL PASS / GATE 2 CLOSED** | Exact r7 requires 5.4.277+; 5.4.302 and r4 runtime pass; audio boot crash is post-Gate P1 |
+| Mixed ARM64/ARM32 userspace | **B1 BUILD READINESS GO** | B0 locks the three providers, fail-closed Mali intake, zygote/vendor ownership, linker/VINTF and AVB delta; one bounded build is justified |
 | Full ARM64 userspace | **NO-GO** | Would convert/replace working proprietary service stack for little user value |
 | Kernel 5.4 as final architecture | **CLOSED / PASS AT 5.4.302 r5** | Boot/HDMI/remote/Wi-Fi/ADB and physical wireless reinitialization pass after restoring the working FMAC address contract |
 | Kernel 5.10+ migration | **NO-GO IN THIS PHASE** | No complete exact-SoC/board Android provider; regression surface is a new BSP port |
@@ -1321,13 +1288,12 @@ remains HOLD until Gate 2 and lawful provider intake close.
 1. **Completed:** exact r7 r3/r4 ARM32 build, offline closure and physical validation prove the
    retained 5.4.302 Path-A functional architecture, including no-runtime EGL/Remote OK/HDMI/Wi-Fi/
    real audible media on r4.
-2. **Single remaining Gate 2 condition:** diagnose and remove the boot-time legacy HIDL
-   `getAudioPort` SIGSEGV with one source-proven bounded delta; require a fresh boot with no such
-   crash and preserve all r4 passes. Do not create a broad cleanup candidate.
+2. **Completed:** explicit governance change closes Gate 2 and freezes r4; boot-time legacy HIDL
+   `getAudioPort` SIGSEGV remains known/unfixed post-Gate P1, not a Prototype A successor trigger.
 3. Continue to carry full-VINTF exit 65 solely for inherited `CONFIG_NFS_FS=y` versus FCM-6 `n`;
    never report it PASS. Enforcing SELinux remains later release hardening, not a Gate 2 substitute.
-4. Keep Prototype B build HOLD until Gate 2 closes, lawful local ARM64 Mali intake is named, and the
-   exact multilib mapper/vendor-property/system+vendor AVB manifest is frozen.
+4. Execute only one B1 under the frozen B0 local-Mali/provider/property/AVB contract; require every
+   offline gate before a separately authorized flash, and preserve exact r4 rollback.
 
 ## 16. Direct route to the target
 
@@ -1352,17 +1318,17 @@ remains HOLD until Gate 2 and lawful provider intake close.
 8. **Completed — strict two-delta closure candidate:** r4 persists `ro.hardware.egl=mali` and maps
    IR scanCode 352 while byte-preserving kernel/vendor/product and leaving HDMI/audio/Wi-Fi/
    Ethernet unchanged; full offline audit passes with only the inherited NFS exception.
-9. **Completed — r4 physical validation / Gate 2 adjudication:** no-intervention EGL, Remote OK,
-   stable HDMI, Wi-Fi association/L3 and real audible application media pass. Gate 2 is HOLD solely
-   because the boot-time vendor audio `getAudioPort` SIGSEGV reproduced despite auto-recovery.
-10. **Current next action — single bounded Prototype A gate:** prove the exact audio callback/
-    function-pointer cause, then authorize at most one single-variable successor and require a fresh
-    boot without the crash while preserving every r4 pass. Freeze the resulting exact ARM32
-    baseline only after that gate closes.
-11. **Then, and only then — bounded B1:** establish lawful local ARM64 Mali intake and a frozen
-    multilib mapper/vendor-zygote/AVB manifest; build r4 + mixed ABI/`zygote64_32` + the mandatory
-    AArch64 EGL/mapper/gralloc set only. First acceptance is bitness/boot/graphics plus hardware
-    preservation; Vulkan and product polish remain post-boot work.
+9. **Completed — r4 physical validation / Gate 2 closure:** no-intervention EGL, Remote OK, stable
+   HDMI, Wi-Fi association/L3 and real audible application media pass. The explicit policy change
+   reclassifies the auto-recovered boot audio crash as post-Gate P1; Gate 2 is CLOSED/PASS and exact
+   r4 is frozen. The defect is not fixed or erased.
+10. **Completed — Prototype B0:** lock lawful-local fail-closed Mali intake, exact AOSP mapper +
+    donor gralloc-1.x provider split, mixed ABI/zygote and vendor properties, VINTF/linker,
+    system/vendor AVB/outer impact, rollback, offline checks and first physical gate.
+11. **Current next action — one bounded B1:** build r4 + mixed ABI/`zygote64_32` + the mandatory
+    AArch64 EGL/mapper/gralloc set only, then require the full B0 offline gate before any separately
+    authorized flash. First acceptance is bitness/boot/graphics plus hardware preservation; Vulkan,
+    the audio P1 and product polish remain outside the build delta.
 12. **Final acceptance:** sustained daily-use regression, 4K30-or-1080p evidence-led media
     ceiling, enforcing/release hardening, recovery rehearsal and a hash-locked accepted architecture
     image.
