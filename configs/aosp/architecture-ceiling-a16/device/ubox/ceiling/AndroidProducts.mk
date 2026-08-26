@@ -4,4 +4,4 @@ PRODUCT_MAKEFILES := \
 
 COMMON_LUNCH_CHOICES := \
     ubox10_ceiling_arm-bp2a-userdebug \
-    ubox10_ceiling_arm64-bp4a-userdebug
+    ubox10_ceiling_arm64-bp2a-userdebug

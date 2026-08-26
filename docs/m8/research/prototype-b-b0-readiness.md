@@ -4,6 +4,13 @@ Date: 2026-08-26
 
 Status: **B0 COMPLETE / PROTOTYPE B1 BUILD READINESS GO FOR ONE BOUNDED BUILD**
 
+Execution update, 2026-08-26: that GO was exercised by the same canonical
+`a16-prototype-b-r1`. Exact Mali intake, ARM64 mapper/gralloc compilation and cross-bitness handle
+layout passed. Actual staging proved the frozen 117,104,640-byte vendor filesystem region is at
+least 18,165,760 bytes too small before AVB/FEC. B1 is therefore **OFFLINE HOLD / PARTITION FIT
+BLOCKER / NO CANDIDATE** pending an explicit storage-contract decision. This does not rewrite B0's
+historical pre-build decision; it records the downstream evidence that B0 intentionally required.
+
 This record is the integration contract for the first Prototype B build task. B0 was read-only:
 no Android or kernel build ran, no source or accepted image was modified, no candidate was created,
 and no donor proprietary binary was committed or installed. Exact QPR0 source, the r4 candidate and
@@ -163,8 +170,8 @@ Exact r7 `ubox10_ceiling_arm64.mk` inherits `core_64_bit.mk` and targets
 - frozen VNDK31 must be present in both arm64 and arm variants. Binder/HwBinder wire contracts are
   cross-bitness; retained 64-bit Binder plus compat already serves the proven ARM32 system.
 
-The current `AndroidProducts.mk` ARM64 lunch choice still says `bp4a`; B1 must change that single
-choice to `ubox10_ceiling_arm64-bp2a-userdebug`. It must also carry the r4 system composition
+At B0 time, `AndroidProducts.mk` still said `bp4a`; the same-r1 implementation has now made the
+required single choice `ubox10_ceiling_arm64-bp2a-userdebug`. It also carries the r4 system composition
 (`ro.hardware.egl=mali`, `sunxi-ir.kl`, exact display matrix and bounded SELinux composition) into
 the ARM64 product. It must not select `zygote64` without the secondary zygote.
 

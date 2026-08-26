@@ -2,7 +2,7 @@
   "schema": 1,
   "id": "a16-prototype-b-r1",
   "milestone": "Prototype B B1",
-  "status": "PREBUILD_BLOCKED_LOCAL_ARM64_MALI_INTAKE_MISSING",
+  "status": "OFFLINE_HOLD_PARTITION_FIT_BLOCKER",
   "base_candidate": {
     "id": "a16-prototype-a-r4",
     "path": "out/candidates/a16-prototype-a-r4/x12-a16-prototype-a-r4.img",
@@ -46,10 +46,90 @@
     "git_tracking_allowed": false
   },
   "prebuild_gate": {
-    "result": "BLOCKED",
-    "reason": "LOCAL_ARM64_MALI_INTAKE_MISSING",
-    "build_started": false,
-    "new_b1_source_modification_performed": false,
+    "result": "PASS_EXACT_ARM64_MALI_LOCAL_INTAKE",
+    "checker_root_cause": "The former line-anchored Build ID regex did not parse readelf -W single-line note output.",
+    "checker_fix": "Build ID remains mandatory and is parsed with a word-boundary expression valid for multiline and wide output.",
+    "disk_available_bytes": 252889870336,
+    "build_started": true,
+    "new_b1_source_modification_performed": true,
     "candidate_created": false
+  },
+  "mixed_product": {
+    "target_arch": "arm64",
+    "target_arch_variant": "armv8-a",
+    "target_cpu_variant": "generic",
+    "target_2nd_arch": "arm",
+    "target_2nd_arch_variant": "armv7-a-neon",
+    "target_2nd_cpu_variant": "cortex-a15",
+    "target_board_platform": "apollo",
+    "zygote": "zygote64_32",
+    "abi_list": "arm64-v8a,armeabi-v7a,armeabi",
+    "abi_list64": "arm64-v8a",
+    "abi_list32": "armeabi-v7a,armeabi",
+    "preflight": "PASS"
+  },
+  "gralloc_source": {
+    "repository": "https://github.com/BPI-SINOVOIP/BPI-H618-Android12",
+    "commit": "316cd80ca43fa17b0385eacd7f6f3652bbd66b2a",
+    "tree": "8a231b4f821fc0e30fd9010fb6b51ab01325d616",
+    "license": "Apache-2.0",
+    "built_api_family": "gralloc-1.x",
+    "local_compatibility_deltas": [
+      "Move libdl from compiler flags to LOCAL_SHARED_LIBRARIES.",
+      "Use current String8 empty() and c_str() APIs without changing dump behavior."
+    ]
+  },
+  "generated_arm64_providers": {
+    "mapper": {
+      "candidate_path": "/vendor/lib64/hw/android.hardware.graphics.mapper@2.0-impl-2.1.so",
+      "size": 36080,
+      "sha256": "83A236476CB24DE2514159534A267334A4C8D7BC957497CD25C70C93F757762D",
+      "build_id": "e9198e0d05b08c9fb4a3d54c3f65f994",
+      "source": "Exact android-security-16.0.0_r7 AOSP passthrough mapper 2.1 adapter"
+    },
+    "gralloc": {
+      "candidate_path": "/vendor/lib64/hw/gralloc.apollo.so",
+      "size": 77272,
+      "sha256": "842BA5157989B6BCBF7DC800DC5323FAC9BEF37D914FA56A25A4656B97692E1F",
+      "build_id": "59e5e1219b02315d7ac69734c760e0b8",
+      "source": "Pinned public gralloc-1.x source plus two Android 16 build-compatibility adaptations"
+    },
+    "result": "PASS_ELF64_AARCH64"
+  },
+  "handle_layout": {
+    "result": "CROSS-BITNESS_HANDLE_LAYOUT_OFFLINE_PASS",
+    "source_header_sha256": "A10338CA0AFCFFA53B8CC5909E19C72D4F86EA47BD915E0CD4B44B61EC47B2D5",
+    "private_handle_size": 232,
+    "private_handle_alignment": 8,
+    "plane_info_size": 16,
+    "plane_info_alignment": 4,
+    "num_fds": 2,
+    "num_ints": 53,
+    "magic": "0x03141592",
+    "all_transported_field_offsets_identical": true
+  },
+  "partition_fit": {
+    "result": "BLOCKER",
+    "partition": "vendor_a",
+    "fixed_partition_bytes": 119066624,
+    "available_filesystem_bytes": 117104640,
+    "r4_free_blocks": 90,
+    "block_size": 4096,
+    "staged_provider_bytes": 18258464,
+    "minimum_staged_filesystem_bytes": 135270400,
+    "minimum_filesystem_overflow_bytes": 18165760,
+    "avb_fec_footer_bytes_reserved": 1961984,
+    "lp_geometry_changed": false
+  },
+  "implementation_result": {
+    "result": "OFFLINE_HOLD_EXACT_BOUNDED_BLOCKER",
+    "blocker": "PARTITION_FIT_BLOCKER",
+    "system_build": "STOPPED_BY_POLICY_AT_57358_OF_158582_ACTIONS_AFTER_VENDOR_FIT_BLOCKER",
+    "system_image_created": false,
+    "vendor_image_created": false,
+    "super_created": false,
+    "outer_candidate_created": false,
+    "physical_validation": "NOT_APPLICABLE_NO_CANDIDATE",
+    "next_decision_required": "Authorize an explicit LP geometry or provider-placement contract change before resuming this same canonical r1; do not create r2."
   }
 }

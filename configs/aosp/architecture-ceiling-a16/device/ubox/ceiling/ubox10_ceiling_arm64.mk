@@ -12,8 +12,23 @@ PRODUCT_EXTRA_VNDK_VERSIONS := 31
 # build boot, vendor, super, or userdata images.
 PRODUCT_BUILD_PVMFW_IMAGE := false
 
+# Carry the exact physically accepted Prototype A r4 system composition into
+# the mixed product.  The accepted vendor keeps the Apollo board identity;
+# only the EGL suffix is selected here.
+DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE += \
+    device/ubox/ceiling/compatibility_matrix.xml
+
+PRODUCT_SYSTEM_PROPERTIES += \
+    ro.hardware.egl=mali
+
+PRODUCT_COPY_FILES += \
+    device/ubox/ceiling/sunxi-ir.kl:system/usr/keylayout/sunxi-ir.kl
+
+PRODUCT_ARTIFACT_PATH_REQUIREMENT_ALLOWED_LIST += \
+    system/usr/keylayout/sunxi-ir.kl
+
 PRODUCT_NAME := ubox10_ceiling_arm64
-PRODUCT_DEVICE := generic_arm64
+PRODUCT_DEVICE := ubox10_ceiling_arm64
 PRODUCT_BRAND := UBOX10Research
 PRODUCT_MODEL := UBOX10 A16 mixed architecture prototype
 PRODUCT_MANUFACTURER := UBOX10Research

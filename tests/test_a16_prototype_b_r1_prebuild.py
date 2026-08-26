@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import importlib.util
 from pathlib import Path
 import subprocess
 import sys
@@ -12,12 +13,24 @@ import unittest
 REPO = Path(__file__).resolve().parents[1]
 CONFIG = REPO / "configs/candidates/a16-prototype-b-r1.json"
 CHECKER = REPO / "scripts/check-a16-prototype-b-r1-mali.py"
+RESULT = REPO / "docs/m8/candidates/a16-prototype-b-r1-offline-result.json"
+
+
+def load_checker_module():
+    spec = importlib.util.spec_from_file_location("a16_prototype_b_r1_mali_checker", CHECKER)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load checker module: {CHECKER}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 class A16PrototypeBR1PrebuildTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.config = json.loads(CONFIG.read_text(encoding="utf-8"))
+        cls.result = json.loads(RESULT.read_text(encoding="utf-8"))
+        cls.checker = load_checker_module()
 
     def test_candidate_and_frozen_base_identity(self) -> None:
         self.assertEqual("a16-prototype-b-r1", self.config["id"])
@@ -28,6 +41,28 @@ class A16PrototypeBR1PrebuildTests(unittest.TestCase):
             self.config["base_candidate"]["sha256"],
         )
         self.assertEqual("ubox10_ceiling_arm64-bp2a-userdebug", self.config["android16"]["lunch"])
+
+    def test_final_hold_is_exact_vendor_partition_fit_blocker(self) -> None:
+        self.assertEqual("OFFLINE_HOLD_PARTITION_FIT_BLOCKER", self.config["status"])
+        self.assertEqual("PASS_EXACT_ARM64_MALI_LOCAL_INTAKE", self.config["prebuild_gate"]["result"])
+        self.assertFalse(self.config["prebuild_gate"]["candidate_created"])
+        fit = self.config["partition_fit"]
+        self.assertEqual("BLOCKER", fit["result"])
+        self.assertEqual(117104640, fit["available_filesystem_bytes"])
+        self.assertEqual(135270400, fit["minimum_staged_filesystem_bytes"])
+        self.assertEqual(18165760, fit["minimum_filesystem_overflow_bytes"])
+        self.assertFalse(fit["lp_geometry_changed"])
+        self.assertEqual(self.config["status"], self.result["status"])
+        self.assertFalse(self.result["build"]["candidate_created"])
+
+    def test_tracked_provider_source_contains_no_binary(self) -> None:
+        source = REPO / "configs/aosp/architecture-ceiling-a16/hardware/aw/gpu"
+        self.assertTrue((source / "mali-bifrost/gralloc/src/Android.mk").is_file())
+        binary_suffixes = {".so", ".a", ".o", ".elf", ".bin"}
+        self.assertEqual(
+            [],
+            [str(path.relative_to(REPO)) for path in source.rglob("*") if path.suffix in binary_suffixes],
+        )
 
     def test_arm64_mali_contract_is_exact_and_outside_git(self) -> None:
         mali = self.config["arm64_mali_intake"]
@@ -87,6 +122,32 @@ class A16PrototypeBR1PrebuildTests(unittest.TestCase):
             "sunxi-fel",
         ):
             self.assertNotIn(forbidden, source)
+
+    def test_build_id_parser_accepts_normal_multiline_output(self) -> None:
+        notes = "Displaying notes found in: .note.gnu.build-id\n  Build ID: 0123aBcD\n"
+        self.assertEqual(
+            "0123aBcD",
+            self.checker.one(r"\bBuild ID:\s*([0-9a-fA-F]+)", notes, "Build ID"),
+        )
+
+    def test_build_id_parser_accepts_readelf_w_single_line_output(self) -> None:
+        notes = (
+            "  Owner                Data size \tDescription\n"
+            "  GNU                  0x00000010\tNT_GNU_BUILD_ID (unique build ID bitstring)"
+            "\tBuild ID: 281008657ed1f606be382d076fe69918\n"
+        )
+        self.assertEqual(
+            "281008657ed1f606be382d076fe69918",
+            self.checker.one(r"\bBuild ID:\s*([0-9a-fA-F]+)", notes, "Build ID"),
+        )
+
+    def test_build_id_parser_still_fails_closed_when_absent(self) -> None:
+        with self.assertRaisesRegex(RuntimeError, "missing Build ID in ELF metadata"):
+            self.checker.one(
+                r"\bBuild ID:\s*([0-9a-fA-F]+)",
+                "GNU NT_GNU_ABI_TAG ABI: 0.0.0\n",
+                "Build ID",
+            )
 
 
 if __name__ == "__main__":

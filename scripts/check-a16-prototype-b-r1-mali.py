@@ -56,7 +56,7 @@ def inspect(path: Path) -> dict[str, object]:
         "elf_class": one(r"^\s*Class:\s*(\S+)", header, "ELF class"),
         "machine": one(r"^\s*Machine:\s*(.+)$", header, "ELF machine"),
         "soname": one(r"\(SONAME\).*\[([^]]+)\]", dynamic, "SONAME"),
-        "build_id": one(r"^\s*Build ID:\s*([0-9a-fA-F]+)", notes, "Build ID").lower(),
+        "build_id": one(r"\bBuild ID:\s*([0-9a-fA-F]+)", notes, "Build ID").lower(),
         "dt_needed": re.findall(r"\(NEEDED\).*\[([^]]+)\]", dynamic),
     }
 

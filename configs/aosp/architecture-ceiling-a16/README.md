@@ -1,19 +1,19 @@
 # Android 16 architecture prototype products
 
-These files preserve the two research-only UBOX10 Architecture Ceiling Study
-products as used for the historical r4 Gate-1 work. That build copied the `device`
-directory into a clean `android-16.0.0_r4` tree and selected
-`ubox10_ceiling_arm-bp4a-userdebug`; the ARM64 choice was never authorized or built.
+These files preserve the UBOX10 Architecture Ceiling Study products and their reproducible source
+integration. Historical Prototype A selected the ARM32 product; exact
+`android-security-16.0.0_r7` / `bp2a` r4 is now the physically accepted ARM32 control. Prototype B
+r1 uses `ubox10_ceiling_arm64-bp2a-userdebug`: ARM64 primary, ARM secondary, Apollo board platform,
+and the exact accepted r4 display/EGL/keylayout composition.
 
-The current source-audit decision selects exact `android-security-16.0.0_r7` / `bp2a` for one
-future ARM32 Prototype A r3 build. Before that future build, port only the ARM32 lunch choice
-from `bp4a` to `bp2a`, retain no secondary ABI and `zygote32`, and update the disposable build
-number. Do not select the ARM64 product or run this r4 wrapper unchanged. The exact r3 contract
-is in `docs/m8/research/android-16-qpr0-r7-source-audit.md`.
+The tracked `hardware/aw/gpu` subtree is public Apache-2.0 gralloc source pinned from BPI commit
+`316cd80ca43fa17b0385eacd7f6f3652bbd66b2a`; it contains no proprietary Mali binary. The B1 build
+uses only its gralloc-1.x path plus the exact r7 AOSP passthrough mapper. Its two Android 16 source
+compatibility changes are documented in `docs/m8/candidates/a16-prototype-b-r1.md`.
 
 Both products inherit the official Android TV GSI base, retain only VNDK 31,
 identify the device as an Android 12 field upgrade, and build no boot, vendor,
-super, userdata, or pKVM image. They contain no Allwinner or donor binaries and
+super, userdata, or pKVM image. They contain no proprietary Allwinner or donor binaries and
 are not flashable firmware. Every output is a DISPOSABLE ARCHITECTURE PROTOTYPE.
 
 Prototype A was verified on native Ubuntu 24.04 with 62.8 GiB RAM by exporting
@@ -78,6 +78,8 @@ two changes in a staging image and rejects any other filesystem delta.
 preservation and split SELinux/linker/ELF closure. Full VINTF deliberately
 remains exit 65 only for the inherited `CONFIG_NFS_FS=y` versus FCM-6 `n`
 deviation that also exists against the device-accepted Android 12 matrix; it is
-not reported as a pass. The later r5 physical kernel/wireless checkpoint and exact QPR0 r7
-source-only audit now leave Gate 2 **UNBLOCKED / READY FOR QPR0 r3 BUILD**, not PASS. No r3
-build or physical action occurred in that audit, and Prototype B remains closed configuration.
+not reported as a pass. The later r5 physical kernel/wireless checkpoint, exact QPR0 r7 source
+audit and r4 physical pass closed Gate 2. B0 then authorized one bounded Prototype B build. The same
+canonical B1 has passed Mali/provider/handle gates but is currently **OFFLINE HOLD / PARTITION FIT
+BLOCKER**: minimum staged vendor ext4 exceeds the frozen region by 18,165,760 bytes before AVB/FEC.
+No B1 candidate or physical action exists.

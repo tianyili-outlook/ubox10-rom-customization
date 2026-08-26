@@ -1,0 +1,99 @@
+{
+  "schema": 1,
+  "candidate": "a16-prototype-b-r1",
+  "date": "2026-08-26",
+  "starting_repository_head": "d2675ce6c291aede8686f156d1a3cc5881797101",
+  "status": "OFFLINE_HOLD_PARTITION_FIT_BLOCKER",
+  "frozen_control": {
+    "candidate": "a16-prototype-a-r4",
+    "path": "out/candidates/a16-prototype-a-r4/x12-a16-prototype-a-r4.img",
+    "size": 1239746560,
+    "sha256": "E125DD8FFB9F5B4A7B2B9B86DD8377367409AB00D1B29BE1E719CE25768E2111"
+  },
+  "source": {
+    "tag": "android-security-16.0.0_r7",
+    "manifest_commit": "ebea28d151539ecf0730b1a4ab92ac33edc17ac9",
+    "pinned_manifest_sha256": "F52BA4A04957CEC7EEE7C9DCDD1525533156A0B5A1F0ADFC31A8155F48FB087E",
+    "build_id": "BP2A.250805.034",
+    "lunch": "ubox10_ceiling_arm64-bp2a-userdebug"
+  },
+  "host": {
+    "cpu_count": 8,
+    "ram_kib": 65841336,
+    "swap_kib": 0,
+    "work_total_bytes": 474451066880,
+    "work_available_bytes_before_build": 252889870336
+  },
+  "gates": {
+    "arm64_mali_intake": "PASS_EXACT_ARM64_MALI_LOCAL_INTAKE",
+    "mixed_product_preflight": "PASS",
+    "arm64_mapper_build": "PASS",
+    "arm64_gralloc_build": "PASS",
+    "cross_bitness_handle_layout": "PASS",
+    "vendor_partition_fit": "BLOCKER",
+    "complete_system_build": "NOT_COMPLETED_STOPPED_AFTER_DECISIVE_BLOCKER",
+    "final_elf_census": "NOT_RUN_NO_CANDIDATE",
+    "final_linker_sphal": "NOT_RUN_NO_CANDIDATE",
+    "final_vintf": "NOT_RUN_NO_CANDIDATE",
+    "avb_super_imagewty": "NOT_RUN_NO_CANDIDATE",
+    "detached_r4_preservation": "NOT_RUN_NO_CANDIDATE",
+    "physical_action": "NONE"
+  },
+  "providers": {
+    "/vendor/lib64/egl/libGLES_mali.so": {
+      "size": 18145112,
+      "sha256": "03333D495E3566C7D85CA2E000DA569A16CE8F022EA25C0EA61950C891D5C7F8",
+      "build_id": "281008657ed1f606be382d076fe69918",
+      "redistribution_rights": "UNPROVEN",
+      "binary_tracked": false
+    },
+    "/vendor/lib64/hw/android.hardware.graphics.mapper@2.0-impl-2.1.so": {
+      "size": 36080,
+      "sha256": "83A236476CB24DE2514159534A267334A4C8D7BC957497CD25C70C93F757762D",
+      "build_id": "e9198e0d05b08c9fb4a3d54c3f65f994"
+    },
+    "/vendor/lib64/hw/gralloc.apollo.so": {
+      "size": 77272,
+      "sha256": "842BA5157989B6BCBF7DC800DC5323FAC9BEF37D914FA56A25A4656B97692E1F",
+      "build_id": "59e5e1219b02315d7ac69734c760e0b8"
+    }
+  },
+  "handle_layout": {
+    "status": "CROSS-BITNESS HANDLE LAYOUT OFFLINE PASS",
+    "private_handle_size": 232,
+    "private_handle_alignment": 8,
+    "plane_info_size": 16,
+    "plane_info_alignment": 4,
+    "num_fds": 2,
+    "num_ints": 53,
+    "magic": "0x03141592",
+    "all_transported_offsets_identical": true
+  },
+  "partition_fit": {
+    "partition": "vendor_a",
+    "fixed_partition_bytes": 119066624,
+    "available_filesystem_bytes": 117104640,
+    "r4_free_bytes": 368640,
+    "provider_bytes": 18258464,
+    "minimum_staged_filesystem_bytes": 135270400,
+    "minimum_filesystem_overflow_bytes": 18165760,
+    "required_avb_fec_footer_bytes_not_included_in_overflow": 1961984,
+    "lp_geometry_mutated": false
+  },
+  "build": {
+    "system_actions_at_stop": 57358,
+    "system_total_actions": 158582,
+    "system_progress_percent": 36,
+    "stop_reason": "The task requires stopping rather than resizing dynamic partitions when the exact staged vendor delta cannot fit the frozen extent.",
+    "candidate_created": false,
+    "candidate_path": null,
+    "candidate_size": null,
+    "candidate_sha256": null
+  },
+  "persistent_local_logs": {
+    "directory": "/work/build-logs/ubox10-a16-prototype-b-r1/20260826T153506Z",
+    "system_build_sha256": "817FC52A0B481E5DF52FD0DB6C46B1C184998E2361519A5565E0F003B6FB52B6",
+    "handle_layout_sha256": "CAB9C284F423E0A387E643BD82584EAE641FDC181379881FC921ABBA2219B3DD",
+    "vendor_partition_fit_sha256": "F4CD52C7089FFA83A879C808F31B01E2D73BD3647A46EB13175E9F22A0F653E7"
+  }
+}
