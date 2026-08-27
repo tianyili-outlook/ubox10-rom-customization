@@ -13,6 +13,7 @@ import unittest
 REPO = Path(__file__).resolve().parents[1]
 CONFIG = REPO / "configs/candidates/a16-prototype-b-r1.json"
 CHECKER = REPO / "scripts/check-a16-prototype-b-r1-mali.py"
+AUDITOR = REPO / "scripts/audit-a16-prototype-b-r1.py"
 RESULT = REPO / "docs/m8/candidates/a16-prototype-b-r1-offline-result.json"
 
 
@@ -25,12 +26,23 @@ def load_checker_module():
     return module
 
 
+def load_auditor_module():
+    spec = importlib.util.spec_from_file_location("a16_prototype_b_r1_auditor", AUDITOR)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load auditor module: {AUDITOR}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
 class A16PrototypeBR1PrebuildTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.config = json.loads(CONFIG.read_text(encoding="utf-8"))
         cls.result = json.loads(RESULT.read_text(encoding="utf-8"))
         cls.checker = load_checker_module()
+        cls.auditor = load_auditor_module()
 
     def test_candidate_and_frozen_base_identity(self) -> None:
         self.assertEqual("a16-prototype-b-r1", self.config["id"])
@@ -41,19 +53,69 @@ class A16PrototypeBR1PrebuildTests(unittest.TestCase):
             self.config["base_candidate"]["sha256"],
         )
         self.assertEqual("ubox10_ceiling_arm64-bp2a-userdebug", self.config["android16"]["lunch"])
+        self.assertEqual(1651167232, self.config["system_build_output"]["size"])
+        self.assertEqual(
+            "AA376DD3186044B82B1D0AD05415A2DDEFC174BACBCA153E9DF38769DF4E3FBC",
+            self.config["system_build_output"]["sha256"],
+        )
+        self.assertEqual(
+            self.config["frozen_r4_lp"]["logical"]["system_a"]["size"],
+            self.config["system_build_output"]["size"],
+        )
+        self.assertEqual(11634, self.config["frozen_r4_offline_audit"]["size"])
+        self.assertEqual(
+            "4C44694AE23B1D84EB6D842228351AB63AACE6B304C0D6C3917BA79FF24FE765",
+            self.config["frozen_r4_offline_audit"]["sha256"],
+        )
 
-    def test_final_hold_is_exact_vendor_partition_fit_blocker(self) -> None:
-        self.assertEqual("OFFLINE_HOLD_PARTITION_FIT_BLOCKER", self.config["status"])
+    def test_exact_144_mib_vendor_geometry_is_bounded(self) -> None:
+        self.assertEqual(
+            "OFFLINE_CHECKED_READY_FOR_PHYSICAL_VALIDATION", self.config["status"]
+        )
         self.assertEqual("PASS_EXACT_ARM64_MALI_LOCAL_INTAKE", self.config["prebuild_gate"]["result"])
-        self.assertFalse(self.config["prebuild_gate"]["candidate_created"])
+        self.assertTrue(self.config["prebuild_gate"]["candidate_created"])
         fit = self.config["partition_fit"]
-        self.assertEqual("BLOCKER", fit["result"])
+        self.assertEqual("PASS_BOUNDED_GEOMETRY_CORRECTION", fit["result"])
+        self.assertEqual(119066624, fit["frozen_r4_partition_bytes"])
+        self.assertEqual(150994944, fit["target_partition_bytes"])
+        self.assertEqual(144 * 1024 * 1024, fit["target_partition_bytes"])
+        self.assertEqual(31928320, fit["growth_bytes"])
+        self.assertEqual([[2048, 3226984]], fit["frozen_extents_sectors"]["system_a"])
+        self.assertEqual([[3227648, 3460200]], fit["frozen_extents_sectors"]["vendor_a"])
+        self.assertEqual([[3461120, 3993600]], fit["frozen_extents_sectors"]["product_a"])
+        self.assertEqual([[3993600, 4006648]], fit["frozen_extents_sectors"]["vendor_dlkm_a"])
+        self.assertEqual(
+            [[3227648, 3461120], [4007936, 4069376]],
+            fit["candidate_extents_sectors"]["vendor_a"],
+        )
+        for name in ("system_a", "product_a", "vendor_dlkm_a"):
+            self.assertEqual(
+                fit["frozen_extents_sectors"][name], fit["candidate_extents_sectors"][name]
+            )
+        for name in ("system_b", "vendor_b", "product_b", "vendor_dlkm_b"):
+            self.assertEqual([], fit["frozen_extents_sectors"][name])
+            self.assertEqual([], fit["candidate_extents_sectors"][name])
         self.assertEqual(117104640, fit["available_filesystem_bytes"])
         self.assertEqual(135270400, fit["minimum_staged_filesystem_bytes"])
         self.assertEqual(18165760, fit["minimum_filesystem_overflow_bytes"])
-        self.assertFalse(fit["lp_geometry_changed"])
+        self.assertEqual(3212836864, fit["frozen_sb_a_maximum_bytes"])
+        self.assertEqual(1163292672, fit["frozen_sb_a_unallocated_bytes"])
+        self.assertEqual(1131364352, fit["target_sb_a_unallocated_bytes"])
+        self.assertGreaterEqual(fit["frozen_sb_a_unallocated_bytes"], fit["growth_bytes"])
+        self.assertFalse(fit["sb_a_maximum_size_changed"])
+        self.assertFalse(fit["other_partition_sizes_or_allocations_changed"])
+        self.assertFalse(fit["partition_shrink_allowed"])
+        self.assertTrue(fit["lp_geometry_changed"])
         self.assertEqual(self.config["status"], self.result["status"])
-        self.assertFalse(self.result["build"]["candidate_created"])
+        self.assertEqual(
+            "OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION", self.result["decision"]
+        )
+        self.assertEqual(1641752576, self.result["artifacts"]["candidate"]["size"])
+        self.assertEqual(
+            "796A2D46DB7FCDFF27D53397565ABDDC3D18F2E548A697055CE5E47278E69545",
+            self.result["artifacts"]["candidate"]["sha256"],
+        )
+        self.assertFalse(self.result["physical_device_actions_performed"])
 
     def test_tracked_provider_source_contains_no_binary(self) -> None:
         source = REPO / "configs/aosp/architecture-ceiling-a16/hardware/aw/gpu"
@@ -63,6 +125,32 @@ class A16PrototypeBR1PrebuildTests(unittest.TestCase):
             [],
             [str(path.relative_to(REPO)) for path in source.rglob("*") if path.suffix in binary_suffixes],
         )
+
+    def test_symbol_parser_accepts_aarch64_ifunc_exports(self) -> None:
+        output = """
+  24: 0000000000000000 0 FUNC GLOBAL DEFAULT UND memcpy@LIBC (2)
+1030: 00000000000d9a44 92 <OS specific>: 10 GLOBAL DEFAULT 15 memcpy@@LIBC
+"""
+        undefined, exported = self.auditor.parse_dynamic_symbols(output)
+        self.assertEqual({"memcpy"}, undefined)
+        self.assertEqual({"memcpy"}, exported)
+
+    def test_mixed_board_config_is_durable_and_exact(self) -> None:
+        relative = (
+            "configs/aosp/architecture-ceiling-a16/device/ubox/"
+            "ubox10_ceiling_arm64/BoardConfig.mk"
+        )
+        item = self.config["tracked_source_inputs"][relative]
+        tracked = REPO / relative
+        text = tracked.read_text(encoding="utf-8")
+        self.assertIn("include device/generic/arm64/BoardConfig.mk", text)
+        self.assertIn("TARGET_BOARD_PLATFORM := apollo", text)
+        self.assertIn("BOARD_SYSTEMIMAGE_PARTITION_SIZE := 1651167232", text)
+        self.assertEqual(
+            "42F3A518531CDCA82EDD449C8B9F07C33C44D4C8BDEFF9D2D3E72A0E6463F25C",
+            item["sha256"],
+        )
+        self.assertEqual("device/ubox/ubox10_ceiling_arm64/BoardConfig.mk", item["aosp_relative"])
 
     def test_arm64_mali_contract_is_exact_and_outside_git(self) -> None:
         mali = self.config["arm64_mali_intake"]
@@ -122,6 +210,24 @@ class A16PrototypeBR1PrebuildTests(unittest.TestCase):
             "sunxi-fel",
         ):
             self.assertNotIn(forbidden, source)
+
+    def test_bounded_build_and_audit_have_no_physical_or_kernel_action(self) -> None:
+        sources = "\n".join(
+            (REPO / relative).read_text(encoding="utf-8").lower()
+            for relative in (
+                "scripts/build-a16-prototype-b-r1-candidate.py",
+                "scripts/audit-a16-prototype-b-r1.py",
+            )
+        )
+        for forbidden in (
+            "fastboot flash", "adb reboot", "phoenixcard", "sunxi-fel",
+            "shutdown -h", "systemctl poweroff", "build_boot(",
+            "build_vendor_dlkm(", "make menuconfig", "olddefconfig",
+        ):
+            self.assertNotIn(forbidden, sources)
+        self.assertIn('"kernel_rebuilt": false', sources)
+        self.assertIn('"physical_device_actions_performed": false', sources)
+        self.assertIn('"flash_authorized": false', sources)
 
     def test_build_id_parser_accepts_normal_multiline_output(self) -> None:
         notes = "Displaying notes found in: .note.gnu.build-id\n  Build ID: 0123aBcD\n"

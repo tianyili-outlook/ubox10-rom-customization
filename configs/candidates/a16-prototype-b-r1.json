@@ -2,12 +2,50 @@
   "schema": 1,
   "id": "a16-prototype-b-r1",
   "milestone": "Prototype B B1",
-  "status": "OFFLINE_HOLD_PARTITION_FIT_BLOCKER",
+  "status": "OFFLINE_CHECKED_READY_FOR_PHYSICAL_VALIDATION",
   "base_candidate": {
     "id": "a16-prototype-a-r4",
     "path": "out/candidates/a16-prototype-a-r4/x12-a16-prototype-a-r4.img",
     "size": 1239746560,
     "sha256": "E125DD8FFB9F5B4A7B2B9B86DD8377367409AB00D1B29BE1E719CE25768E2111"
+  },
+  "frozen_r4_lp": {
+    "super_raw": {
+      "path": "out/candidates/a16-prototype-a-r4/super.raw.img",
+      "size": 3221225472,
+      "sha256": "87DC9F39D60F9D325674AFA226A5C77CF0F0B3EAB2593C26E0B8F220A7F3F36F"
+    },
+    "logical": {
+      "system_a": {
+        "path": "out/candidates/a16-prototype-a-r4/candidate-logical/system_a.img",
+        "size": 1651167232,
+        "sha256": "F6437E0F7EDBAACF10B316A4DFCFEF916570766F9B0AAA4E72421C10C10D9001"
+      },
+      "vendor_a": {
+        "path": "out/candidates/a16-prototype-a-r4/candidate-logical/vendor_a.img",
+        "size": 119066624,
+        "sha256": "BB91A8B7ED4AC0145F434F89FD76865EB4311F234AA46D67C8373A7CD5B4929A"
+      },
+      "product_a": {
+        "path": "out/candidates/a16-prototype-a-r4/candidate-logical/product_a.img",
+        "size": 272629760,
+        "sha256": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974"
+      },
+      "vendor_dlkm_a": {
+        "path": "out/candidates/a16-prototype-a-r4/candidate-logical/vendor_dlkm_a.img",
+        "size": 6680576,
+        "sha256": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07"
+      }
+    },
+    "sb_a_maximum_bytes": 3212836864,
+    "metadata_slots": 3,
+    "metadata_version": "10.2",
+    "header_flags": "virtual_ab_device"
+  },
+  "frozen_r4_offline_audit": {
+    "path": "out/candidates/a16-prototype-a-r4/offline-audit/offline-audit.json",
+    "size": 11634,
+    "sha256": "4C44694AE23B1D84EB6D842228351AB63AACE6B304C0D6C3917BA79FF24FE765"
   },
   "android16": {
     "tag": "android-security-16.0.0_r7",
@@ -19,6 +57,67 @@
     "spl": "2025-08-05",
     "lunch": "ubox10_ceiling_arm64-bp2a-userdebug",
     "build_number": "UBOX10_A16_QPR0_B1"
+  },
+  "system_build_output": {
+    "path": "/work/src/ubox10-a16-ceiling/out-ceiling-b1/target/product/ubox10_ceiling_arm64/system.img",
+    "size": 1651167232,
+    "sha256": "AA376DD3186044B82B1D0AD05415A2DDEFC174BACBCA153E9DF38769DF4E3FBC"
+  },
+  "tracked_source_inputs": {
+    "configs/aosp/architecture-ceiling-a16/device/ubox/ceiling/AndroidProducts.mk": {
+      "aosp_relative": "device/ubox/ceiling/AndroidProducts.mk",
+      "sha256": "650ED1039418303EBFA896053E2CA145F545FD8454F2C05F90C248B465B607C2"
+    },
+    "configs/aosp/architecture-ceiling-a16/device/ubox/ceiling/compatibility_matrix.xml": {
+      "aosp_relative": "device/ubox/ceiling/compatibility_matrix.xml",
+      "sha256": "C21AD73999305E6F8258DB806EB3CFE3652C1D8D9F01B9E6FD6CEA64094CDDB8"
+    },
+    "configs/aosp/architecture-ceiling-a16/device/ubox/ceiling/sunxi-ir.kl": {
+      "aosp_relative": "device/ubox/ceiling/sunxi-ir.kl",
+      "sha256": "6064DF44874430600B9EF08D51609B56D34EDAA6CF0E24AD106019CD2171AD76"
+    },
+    "configs/aosp/architecture-ceiling-a16/device/ubox/ceiling/ubox10_ceiling_arm64.mk": {
+      "aosp_relative": "device/ubox/ceiling/ubox10_ceiling_arm64.mk",
+      "sha256": "7A2AA9F6A82ABEA247C0BBDE8E3F17ADCFE13822BD66D49F072981AAB3BAB1BF"
+    },
+    "configs/aosp/architecture-ceiling-a16/device/ubox/ubox10_ceiling_arm64/BoardConfig.mk": {
+      "aosp_relative": "device/ubox/ubox10_ceiling_arm64/BoardConfig.mk",
+      "sha256": "42F3A518531CDCA82EDD449C8B9F07C33C44D4C8BDEFF9D2D3E72A0E6463F25C"
+    }
+  },
+  "tracked_gpu_source": {
+    "relative": "configs/aosp/architecture-ceiling-a16/hardware/aw/gpu",
+    "aosp_relative": "hardware/aw/gpu",
+    "git_tree": "725a74a2de3be083d5031eb11743c4dae12cc538"
+  },
+  "sepolicy_source": {
+    "aosp_relative": "system/sepolicy/private/genfs_contexts",
+    "r7_unmodified_sha256": "8631AD087DA5E4E2E81CE3A179B9D9DDF31532E9F4D3B6DE32BD6D177512F3F1",
+    "one_line_deferral_sha256": "BC20916C24B2BDCC01D2250EA542D011B81AFA390144649BA73CE0872F0EF5C7",
+    "only_removed_line": "genfscon fuseblk / u:object_r:fuseblk:s0"
+  },
+  "avb": {
+    "system": {
+      "partition_size": 1651167232,
+      "salt": "6131362d70726f746f747970652d622d7231",
+      "rollback_index": 1644019200,
+      "rollback_index_location": 1,
+      "key_relative": "tools/testkey_rsa2048.pem",
+      "algorithm": "SHA256_RSA2048",
+      "fec": "none"
+    },
+    "vendor": {
+      "partition_size": 150994944,
+      "filesystem_size": 146800640,
+      "salt": "fd5d38e3dcce6009a051990978c7efd76c1d67e381f05da77c1cb230d85911c9",
+      "rollback_index": 1644019200,
+      "rollback_index_location": 0,
+      "key_relative": "tools/testkey_rsa2048.pem",
+      "algorithm": "SHA256_RSA2048",
+      "fec_roots": 2,
+      "fingerprint": "Unblocktech/apollo_p1/apollo-p1:12/SP1A.211105.004/hush10241757:userdebug/test-keys",
+      "os_version": "12"
+    }
   },
   "arm64_mali_intake": {
     "path": "/work/local-proprietary/ubox10/prototype-b-b1/libGLES_mali.so",
@@ -52,7 +151,7 @@
     "disk_available_bytes": 252889870336,
     "build_started": true,
     "new_b1_source_modification_performed": true,
-    "candidate_created": false
+    "candidate_created": true
   },
   "mixed_product": {
     "target_arch": "arm64",
@@ -109,9 +208,34 @@
     "all_transported_field_offsets_identical": true
   },
   "partition_fit": {
-    "result": "BLOCKER",
+    "result": "PASS_BOUNDED_GEOMETRY_CORRECTION",
     "partition": "vendor_a",
-    "fixed_partition_bytes": 119066624,
+    "frozen_r4_partition_bytes": 119066624,
+    "target_partition_bytes": 150994944,
+    "target_partition_mib": 144,
+    "growth_bytes": 31928320,
+    "growth_sectors_512": 62360,
+    "frozen_lpdump_json_sha256": "65886ACB7D685691A9223392F351A384DEA84EFFD7496C4AC893B34CE191EF18",
+    "frozen_extents_sectors": {
+      "system_a": [[2048, 3226984]],
+      "vendor_a": [[3227648, 3460200]],
+      "product_a": [[3461120, 3993600]],
+      "vendor_dlkm_a": [[3993600, 4006648]],
+      "system_b": [],
+      "vendor_b": [],
+      "product_b": [],
+      "vendor_dlkm_b": []
+    },
+    "candidate_extents_sectors": {
+      "system_a": [[2048, 3226984]],
+      "vendor_a": [[3227648, 3461120], [4007936, 4069376]],
+      "product_a": [[3461120, 3993600]],
+      "vendor_dlkm_a": [[3993600, 4006648]],
+      "system_b": [],
+      "vendor_b": [],
+      "product_b": [],
+      "vendor_dlkm_b": []
+    },
     "available_filesystem_bytes": 117104640,
     "r4_free_blocks": 90,
     "block_size": 4096,
@@ -119,17 +243,64 @@
     "minimum_staged_filesystem_bytes": 135270400,
     "minimum_filesystem_overflow_bytes": 18165760,
     "avb_fec_footer_bytes_reserved": 1961984,
-    "lp_geometry_changed": false
+    "frozen_sb_a_maximum_bytes": 3212836864,
+    "frozen_sb_a_allocated_bytes": 2049544192,
+    "frozen_sb_a_unallocated_bytes": 1163292672,
+    "target_sb_a_allocated_bytes": 2081472512,
+    "target_sb_a_unallocated_bytes": 1131364352,
+    "sb_a_maximum_size_changed": false,
+    "other_partition_sizes_or_allocations_changed": false,
+    "partition_shrink_allowed": false,
+    "lp_geometry_changed": true,
+    "authorization": "The vendor_a growth is taken only from frozen r4 sb_a unallocated space; the sb_a maximum and every other logical partition size/allocation remain exact."
   },
   "implementation_result": {
-    "result": "OFFLINE_HOLD_EXACT_BOUNDED_BLOCKER",
-    "blocker": "PARTITION_FIT_BLOCKER",
-    "system_build": "STOPPED_BY_POLICY_AT_57358_OF_158582_ACTIONS_AFTER_VENDOR_FIT_BLOCKER",
-    "system_image_created": false,
-    "vendor_image_created": false,
-    "super_created": false,
-    "outer_candidate_created": false,
-    "physical_validation": "NOT_APPLICABLE_NO_CANDIDATE",
-    "next_decision_required": "Authorize an explicit LP geometry or provider-placement contract change before resuming this same canonical r1; do not create r2."
+    "result": "OFFLINE_CHECKED_READY_FOR_PHYSICAL_VALIDATION",
+    "resolved_blocker": "PARTITION_FIT_BLOCKER_CLOSED_BY_AUTHORIZED_144_MIB_VENDOR_A",
+    "system_build": "PASS_COMPLETE_ANDROID_16_MIXED_ARM64_ARM32_SYSTEMIMAGE",
+    "system_source": {
+      "path": "/work/src/ubox10-a16-ceiling/out-ceiling-b1/target/product/ubox10_ceiling_arm64/system.img",
+      "size": 1651167232,
+      "sha256": "AA376DD3186044B82B1D0AD05415A2DDEFC174BACBCA153E9DF38769DF4E3FBC"
+    },
+    "system_candidate": {
+      "size": 1651167232,
+      "sha256": "DBA433B58363F2C393B76428E339380604AFCA6F5CE2153D3A387C4A74CFFCA0"
+    },
+    "vendor_candidate": {
+      "size": 150994944,
+      "sha256": "0166B5FB1718715E79F68D5A9FEAAE02439DC59DBE2379D4C1DA670541C7EC9B"
+    },
+    "super_raw": {
+      "size": 3221225472,
+      "sha256": "E740AC913A9EE5643FD795CC1E6C8178F892ECAEFDEDF79CA0DDC4E42C223EA3"
+    },
+    "super_sparse": {
+      "size": 1461955712,
+      "sha256": "F961F2DD2674513E0788823A88D14FE67E493FC88D486E419F52BCEED7B48A3F"
+    },
+    "outer_candidate": {
+      "path": "out/candidates/a16-prototype-b-r1/x12-a16-prototype-b-r1.img",
+      "size": 1641752576,
+      "sha256": "796A2D46DB7FCDFF27D53397565ABDDC3D18F2E548A697055CE5E47278E69545"
+    },
+    "offline_audit": {
+      "result": "PASS_ALL_BOUNDED_OFFLINE_GATES",
+      "artifact_size": 12656,
+      "artifact_sha256": "CC26F557EEB47AFB4382B000CD3F61D7E0345215468F07DC981A5C88F33F43B5",
+      "full_vintf": "INCOMPATIBLE_EXPECTED_INHERITED_NFS_EXCEPTION_ONLY",
+      "full_vintf_exit": 65,
+      "unexpected_vintf_incompatibilities": 0,
+      "apex_installed": 35,
+      "elf_total": 2517,
+      "mali_unique_strong_imports": 297,
+      "mali_unmatched_strong_imports": 0,
+      "vendor_dlkm_modules": 22,
+      "outer_changed_payloads": 6,
+      "outer_preserved_payloads": 44
+    },
+    "physical_validation": "NOT_YET_PERFORMED",
+    "flash_authorized": false,
+    "next_action": "Request one explicit physical validation of this exact r1 candidate; do not create r2 or claim runtime PASS from offline evidence."
   }
 }

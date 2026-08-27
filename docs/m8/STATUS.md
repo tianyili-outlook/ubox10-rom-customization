@@ -1,6 +1,6 @@
 # M8 status
 
-Updated: 2026-08-26
+Updated: 2026-08-27
 
 ## Golden baseline
 
@@ -125,9 +125,21 @@ gralloc-1.x ARM64 provider 均编译 PASS。Compiler-derived `private_handle_t` 
 可用区 117,104,640 bytes、仅余 368,640 bytes。只写最小 property delta 与 exact 三 provider 后，
 `resize2fs -M` 仍需 135,270,400 bytes，即在重新生成 1,961,984-byte AVB/FEC/footer 前已至少超出
 18,165,760 bytes。任务禁止静默改 LP geometry，故 system build 在 57,358/158,582 actions 后按政策
-停止。正式状态为 **OFFLINE HOLD / NO CANDIDATE / PARTITION FIT BLOCKER**；未生成 system/vendor/
-super/outer candidate，未执行 physical action，也不是 structural NO-GO。完整结果见
-`docs/m8/candidates/a16-prototype-b-r1.md` 与其 machine-readable offline result。
+停止。该历史 **OFFLINE HOLD / PARTITION FIT BLOCKER** 是有效的 bounded stop，不是 structural
+NO-GO。
+
+2026-08-27 用户明确授权同一 r1 仅把 `vendor_a` 扩到 150,994,944 bytes。Fresh frozen-r4
+`lpdump` 与 final candidate metadata 均证明 31,928,320-byte growth 只来自 `sb_a` unallocated；
+3,212,836,864-byte group maximum、`system_a`/`product_a`/`vendor_dlkm_a`、B-slot allocation 与其余
+extents 全保持，无 partition shrink。Same-r1 mixed system build、144 MiB vendor AVB、super/outer
+与全离线审计现已完成。Candidate 为
+`out/candidates/a16-prototype-b-r1/x12-a16-prototype-b-r1.img`，1,641,752,576 bytes / SHA-256
+`796A2D46DB7FCDFF27D53397565ABDDC3D18F2E548A697055CE5E47278E69545`。ARM64 primary + ARM32
+secondary、`zygote64_32`、exact 三 ARM64 graphics provider、35 APEX、双架构 VNDK31、Mali 297/0
+symbol closure、AVB/LP/IMAGEWTY、split SELinux、5.4.302+/22 modules/AIC 与 preservation 全离线
+close。Full VINTF 仍严格为 exit 65，仅 inherited NFS exception；不是 PASS。当前状态
+**OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**，但 **NOT YET PHYSICALLY VALIDATED**，本轮无
+任何 UBOX 物理动作。完整结果见 `docs/m8/candidates/a16-prototype-b-r1.md`。
 
 2026-08-21 Android 16 Gate 1 状态为 **OFFLINE CHECKED / SUCCESS**。Source 为 exact `android-16.0.0_r4` / `BP4A.251205.006`，manifest commit `15128c9e27cfa599c48d294babd39286ee8f1426`，pinned manifest SHA-256 `4E8BEB5D1B590DFF3D631B1DBB957138DBDA4E608A3183C625683DA4BC84918F`；Prototype A 为 `ubox10_ceiling_arm-bp4a-userdebug`、ARMv7-A NEON、无 secondary arch、shipping API 31、extra VNDK 31、pKVM off。GCP native Ubuntu 24.04 / ext4 / 8 vCPU / 62.8 GiB RAM / no swap 上使用 relative `OUT_DIR=out-ceiling`、`BUILD_NUMBER=DISPOSABLE_CEILING_R4`、unset `SOONG_GOMEMLIMIT GOMEMLIMIT` 和 `m -j8 systemimage`，123,197/123,197 actions 成功，wall 30,314 秒（8:25:14）。最低 available RAM 12,295,132 KiB；swap I/O 为 0；平均 CPU user/system 约 88.05%/9.48%、I/O wait 0.05%；`/work` 最低 free 231,671,357,440 bytes。完整 raw log 仅保留在 GCP ignored 路径，未进入 Git。
 
@@ -725,7 +737,7 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - r10 已在实机完成 framework boot；r9 Lights/Watchdog/llkd 方向保持关闭，不再修改。
 - r13 是当前 GOLDEN BASELINE；Projectivy、provisioning、遥控和 Power sleep/wake/shutdown 均以实机 UART 为准。
 - M8B native rc-core 遥控迁移已在 r5 设备验收并关闭；Mouse mode intentionally dropped，legacy multi_ir 工件保留为 inert reference，其 Android 12 清理已随 freeze 延期。
-- 当前 board、DT 与 runtime 证据识别为 H616。历史 A16 ARM32 r2 稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛；历史 kernel r1-r4 AIC failure 已收敛到错误 `0x00110000` FMAC contract。r5 恢复 working BSP `0x00120000` 后物理 boot/HDMI/remote/Wi-Fi/ADB 与 Wi-Fi OFF→ON reinitialization PASS，preservation checkpoint **CLOSED / PASS**。Exact QPR0 r7 audit 与 r4 physical pass 已关闭 Architecture Gate 2；r4 frozen。Boot-time legacy audio HAL SIGSEGV 保持 post-Gate P1，不称 fixed。Prototype B0 complete；同一 B1 已通过 intake/provider/handle gates，现为 **OFFLINE HOLD / VENDOR_A PARTITION FIT BLOCKER**，无 candidate。
+- 当前 board、DT 与 runtime 证据识别为 H616。历史 A16 ARM32 r2 稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛；历史 kernel r1-r4 AIC failure 已收敛到错误 `0x00110000` FMAC contract。r5 恢复 working BSP `0x00120000` 后物理 boot/HDMI/remote/Wi-Fi/ADB 与 Wi-Fi OFF→ON reinitialization PASS，preservation checkpoint **CLOSED / PASS**。Exact QPR0 r7 audit 与 r4 physical pass 已关闭 Architecture Gate 2；r4 frozen。Boot-time legacy audio HAL SIGSEGV 保持 post-Gate P1，不称 fixed。Prototype B0 complete；同一 `a16-prototype-b-r1` 已完成 bounded build/offline audit，现为 **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**，但尚无 B physical PASS。
 - `m8b-audio-r2` 只启用产品级 Treble/VNDK 合同；未修改 VNDK payload、mixer、audio platform XML、DTS、machine driver 或已验收功能，现已设备验收为 AUDIO PASS。
 - 2026-08-16 ADB-only 补验未刷机、未重启且未修改 ROM/device properties：VP9 为 Allwinner OMX/Cedar hardware-runtime PASS；Widevine 为可操作 L3，HDCP `NONE`，无 secure decoder 要求。物理画面/逐帧质量与商业服务认证或播放仍未证明。
 - 遥控器 Menu 与 Settings 当前均打开 Projectivy menu。两键语义分离为独立延期项，不回改已验收的 rc-core、keylayout 选择或其他按键行为。
@@ -735,15 +747,9 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 
 保持 frozen Android 12 `m8b-remote-r1`、frozen Android 16 ARM32 `a16-prototype-a-r4`、Test8r2/
 stock rollback、A16 r1-r3 与 kernel r1-r5 artifacts 不变。Canonical B1 ID 保持
-`a16-prototype-b-r1`，不得改名或创建 r2。下一步按顺序是：
-
-1. 仅做一次项目治理/设计决定：是否明确允许调整 r4 LP extent，为 `vendor_a` 提供至少
-   135,270,400-byte ext4 加 AVB/FEC headroom；或提出经 linker/SP-HAL/AVB 证明的等价 provider
-   placement。不得把本轮临时 measurement resize 误写为已授权 geometry。
-2. 若授权 LP 方案，先在不改变 3,212,836,864-byte `sb_a` group 上限的前提下精确计算
-   system/vendor/product/vendor_dlkm extents、alignment、剩余 group bytes 与 top-level AVB 影响，
-   并更新 B0 expected-exact partition contract；若无法形成 bounded plan，则同一 r1 继续 HOLD。
-3. 只有 storage contract 闭合后才恢复同一个 r1 的 system build、vendor AVB/super/outer assembly
-   和完整 ELF/linker/VINTF/preservation audit；不得复用未完成 system output 冒充 candidate。
-4. Vulkan、GMS、5.10、25Q4、full vendor rewrite、Audio fix、SELinux/NFS/HDMI polish 与产品 feature
-   均不得混入 B1；Mali 继续 outside-Git exact-hash intake。
+`a16-prototype-b-r1`，不得改名或创建 r2。下一步只是在用户另行明确授权后，对 exact
+1,641,752,576-byte / `796A2D46...9545` IMG 做一次 UART-first physical validation：先证明无介入
+mixed boot、`zygote64_32`、AArch64 system_server/SurfaceFlinger、Mali-G31 与 cross-bitness
+mapper/gralloc，再 regression-check r4 HDMI/audio/Wi-Fi/Ethernet/remote authority。当前不能称
+physical PASS。Vulkan、GMS、5.10、25Q4、full vendor rewrite、Audio fix、SELinux/NFS/HDMI polish
+与产品 feature 均不得混入 B1；Mali 继续 outside-Git exact-hash intake。

@@ -4,3 +4,4 @@
 include device/generic/arm64/BoardConfig.mk
 
 TARGET_BOARD_PLATFORM := apollo
+BOARD_SYSTEMIMAGE_PARTITION_SIZE := 1651167232

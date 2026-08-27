@@ -1,0 +1,74 @@
+{
+  "schema": 1,
+  "candidate": "a16-prototype-b-r1",
+  "base": "a16-prototype-a-r4",
+  "result": "PASS",
+  "functional_delta": [
+    "ARM64 primary plus ARM32 secondary Android userspace with zygote64_32",
+    "ten exact mixed-ABI vendor properties",
+    "ARM64 Mali, exact-r7 mapper and gralloc.apollo providers"
+  ],
+  "bounded_storage_consequence": {
+    "partition": "vendor_a",
+    "before_bytes": 119066624,
+    "after_bytes": 150994944,
+    "growth_bytes": 31928320,
+    "growth_only_from_sb_a_unallocated_space": true,
+    "sb_a_maximum_bytes": 3212836864,
+    "sb_a_maximum_changed": false,
+    "other_partition_sizes_or_allocations_changed": false,
+    "partition_shrunk": false
+  },
+  "logical_partitions": {
+    "system_a": "CHANGED_ANDROID_MIXED_USERSPACE_AND_AVB",
+    "vendor_a": "CHANGED_EXACT_PROPERTIES_THREE_PROVIDERS_GEOMETRY_AND_AVB",
+    "product_a": "BYTE_PRESERVED",
+    "vendor_dlkm_a": "BYTE_PRESERVED_22_MODULES",
+    "system_b": "EMPTY_EXACT_R4",
+    "vendor_b": "EMPTY_EXACT_R4",
+    "product_b": "EMPTY_EXACT_R4",
+    "vendor_dlkm_b": "EMPTY_EXACT_R4"
+  },
+  "outer": {
+    "entry_count": 50,
+    "changed": [
+      "Vsuper.fex",
+      "Vvbmeta_system.fex",
+      "Vvbmeta_vendor.fex",
+      "super.fex",
+      "vbmeta_system.fex",
+      "vbmeta_vendor.fex"
+    ],
+    "changed_count": 6,
+    "preserved_count": 44,
+    "all_unlisted_payloads_byte_preserved": true,
+    "top_level_vbmeta_byte_preserved": true,
+    "boot_byte_preserved": true
+  },
+  "kernel": {
+    "rebuilt": false,
+    "release": "5.4.302+",
+    "image_size": 23498760,
+    "image_sha256": "287A82F799982FB58D02ADE88150A9EAB22D4C0956BE3CE50765F6FD1DB24F40",
+    "path_a_six_configs": "PRESERVED",
+    "vendor_dlkm_modules": 22,
+    "aic_fmac": {
+      "upload": "0x00120000",
+      "patch_read": "0x00120180",
+      "start_app": "0x00120000"
+    }
+  },
+  "hardware_authority": {
+    "HDMI_display": "UNCHANGED",
+    "audio": "UNCHANGED_KNOWN_R4_BOOT_TIME_DEBT",
+    "Wi-Fi": "UNCHANGED",
+    "Ethernet": "UNCHANGED",
+    "remote": "UNCHANGED",
+    "vendor_boot": "UNCHANGED",
+    "DT_DTBO": "UNCHANGED",
+    "TEE_DRM": "UNCHANGED",
+    "factory_security_bootloader": "UNCHANGED",
+    "rollback_recovery": "UNCHANGED"
+  },
+  "physical_device_actions_performed": false
+}

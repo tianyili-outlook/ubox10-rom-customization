@@ -6,10 +6,28 @@ Status: **B0 COMPLETE / PROTOTYPE B1 BUILD READINESS GO FOR ONE BOUNDED BUILD**
 
 Execution update, 2026-08-26: that GO was exercised by the same canonical
 `a16-prototype-b-r1`. Exact Mali intake, ARM64 mapper/gralloc compilation and cross-bitness handle
-layout passed. Actual staging proved the frozen 117,104,640-byte vendor filesystem region is at
-least 18,165,760 bytes too small before AVB/FEC. B1 is therefore **OFFLINE HOLD / PARTITION FIT
-BLOCKER / NO CANDIDATE** pending an explicit storage-contract decision. This does not rewrite B0's
-historical pre-build decision; it records the downstream evidence that B0 intentionally required.
+layout passed. Actual staging proved the frozen 117,104,640-byte vendor filesystem region was at
+least 18,165,760 bytes too small before AVB/FEC. B1 therefore correctly stopped at **OFFLINE HOLD /
+PARTITION FIT BLOCKER / NO CANDIDATE** pending an explicit storage-contract decision. This does not
+rewrite B0's historical pre-build decision; it records the downstream evidence that B0
+intentionally required.
+
+Storage-contract update, 2026-08-27: governance explicitly authorized the same canonical r1 to
+enlarge only `vendor_a` from 119,066,624 to 150,994,944 bytes (144 MiB). A fresh exact-r7 `lpdump`
+read of frozen r4 `super.raw.img` reproduces the committed metadata byte-for-byte: `sb_a` remains
+3,212,836,864 bytes, old allocation is 2,049,544,192 bytes and old unallocated capacity is
+1,163,292,672 bytes. The 31,928,320-byte growth leaves 1,131,364,352 bytes unallocated. The group
+maximum, `system_a`, `product_a`, `vendor_dlkm_a`, every B-slot allocation and all other partition
+sizes/extents remain fixed; no partition may shrink. This closed only the measured storage-fit
+blocker and did not broaden B1 semantics or create r2.
+
+Final execution update, 2026-08-27: the same r1 completed its mixed system build, exact 144 MiB
+vendor image, system/vendor AVB, super/IMAGEWTY packaging and all required offline audits. The IMG
+is 1,641,752,576 bytes / SHA-256
+`796A2D46DB7FCDFF27D53397565ABDDC3D18F2E548A697055CE5E47278E69545`; status is **OFFLINE
+CHECKED / READY FOR PHYSICAL VALIDATION**, not physical PASS. The actual candidate metadata proves
+the authorized storage geometry and all preservation constraints. Full VINTF remains exit 65 for
+the inherited NFS exception only. No physical action occurred.
 
 This record is the integration contract for the first Prototype B build task. B0 was read-only:
 no Android or kernel build ran, no source or accepted image was modified, no candidate was created,
@@ -229,7 +247,7 @@ signed `vbmeta_system.fex`.
 |---|---|---|
 | `system_a` | **CHANGE REQUIRED** | ARM64 primary + ARM32 secondary userspace, both zygotes, and r4 product composition |
 | `vendor_a` | **CHANGE REQUIRED** | exact property fragment plus the three lib64 graphics providers; regenerate vendor hashtree/FEC |
-| `super.fex` | **CHANGE REQUIRED** | embeds changed `system_a` and `vendor_a`; LP geometry and all other extents remain fixed |
+| `super.fex` | **CHANGE REQUIRED** | embeds changed `system_a` and 144 MiB `vendor_a`; `sb_a` maximum and every other partition extent remain fixed |
 | `vbmeta_system.fex` | **CHANGE REQUIRED** | new system hashtree descriptor/signature |
 | `vbmeta_vendor.fex` | **CHANGE REQUIRED** | new vendor hashtree descriptor/signature |
 | `Vsuper.fex`, `Vvbmeta_system.fex`, `Vvbmeta_vendor.fex` | **CHANGE REQUIRED** | Allwinner checksum companions of changed payloads |

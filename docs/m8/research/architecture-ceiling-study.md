@@ -1,6 +1,6 @@
 # UBOX10 Architecture Ceiling Study
 
-Study date: 2026-08-17; build/runtime/source evidence updated: 2026-08-26
+Study date: 2026-08-17; build/runtime/source evidence updated: 2026-08-27
 
 Study branch/evidence base: `codex/m8-architecture-ceiling` / starting commit
 `f40a37b6fd488800b5a1ada89f2ce2cf687e8e33`, plus the hash-locked Linux 5.4.302
@@ -11,9 +11,9 @@ architecture control `a16-prototype-a-r4`; latest physically accepted kernel che
 `m8-kernel-5.4.302-r5`
 Scope: architecture decision, bounded offline prototypes, completed physical evidence through
 Linux 5.4.302 r5, exact QPR0 r7 source audit, the Prototype A r3/r4 build and physical evidence,
-formal Gate 2 policy/closure, the 2026-08-26 Prototype B B0 read-only preflight, and the same-day
-B1 intake/provider/handle implementation plus measured vendor partition-fit HOLD. No Prototype B
-candidate or physical action was produced.
+formal Gate 2 policy/closure, the 2026-08-26 Prototype B B0 read-only preflight, and the bounded
+same-r1 B1 intake/provider/handle implementation, authorized 144 MiB vendor geometry correction,
+mixed build, packaging and complete offline audit. No Prototype B physical action was performed.
 
 Confidence labels in this report have the following strict meanings: **PROVEN** is direct
 binary, build, runtime, repository, or authoritative-source evidence; **HIGH CONFIDENCE**
@@ -71,14 +71,21 @@ remains NO-GO; adopting a public H616
 5.10+ tree remains a new BSP port.
 
 The first `a16-prototype-b-r1` execution historically stopped at a missing local intake. Its same-r1
-continuation proves the file was exact and the failure was only an anchored Build ID parser that did
+continuation proved the file was exact and the failure was only an anchored Build ID parser that did
 not accept `readelf -W` single-line note output. With that minimal checker repair, Mali intake, host
 capacity, mixed product, ARM64 AOSP mapper, public-source gralloc and compiler-derived cross-bitness
-handle layout all pass. Actual vendor staging then found the decisive **B1 OFFLINE HOLD / PARTITION
-FIT BLOCKER**: the minimum 135,270,400-byte ext4 representation exceeds r4's 117,104,640-byte vendor
-filesystem region by 18,165,760 bytes before AVB/FEC. No LP change was authorized, so the build
-stopped and no candidate exists. This is a bounded storage-contract issue, not a structural hybrid
-architecture contradiction.
+handle layout all passed. Actual vendor staging then found the decisive historical **B1 OFFLINE HOLD
+/ PARTITION FIT BLOCKER**: the minimum 135,270,400-byte ext4 representation exceeded r4's
+117,104,640-byte vendor filesystem region by 18,165,760 bytes before AVB/FEC.
+
+The user subsequently authorized this same r1 to grow only `vendor_a` from 119,066,624 to exactly
+150,994,944 bytes using frozen `sb_a` unallocated capacity. Fresh and final LP evidence proves the
+group maximum, `system_a`, `product_a`, `vendor_dlkm_a`, B-slot allocations and every other extent
+remain exact, with no shrink. The complete mixed build and offline audit now produce
+`x12-a16-prototype-b-r1.img`, 1,641,752,576 bytes / SHA-256
+`796A2D46DB7FCDFF27D53397565ABDDC3D18F2E548A697055CE5E47278E69545`. Final status is **OFFLINE
+CHECKED / READY FOR PHYSICAL VALIDATION**. This closes the bounded storage issue but does not prove
+runtime mixed graphics, close release hardening, or authorize a physical action.
 
 This is a modern hybrid, not a full port. Framework, `system_server`, SurfaceFlinger, and
 eligible apps become AArch64; legacy Allwinner media, audio, HWC/composer, DRM, Wi-Fi,
@@ -1170,15 +1177,15 @@ lower risk. They are decision aids grounded in the evidence above, not synthetic
 The raw totals expose the actual trade: A wins stability and cost but loses future usefulness;
 B gains API 36 but carries an EOL-kernel and QPR0-security burden; C has the best long-term
 application value now that the ARM32 architecture base is frozen. The project objective still makes
-C the preferred experiment; B0 enabled one bounded B1, and its execution has now isolated one
-storage-contract prerequisite rather than a provider/ABI contradiction.
+C the preferred experiment; B0 enabled one bounded B1, and its execution has now closed the
+authorized storage correction plus all offline gates without finding a provider/ABI contradiction.
 The 5.4.302 wireless checkpoint is closed; D remains dominated on engineering economics.
 
 | Family | Viability | Main advantage | Decisive blocker/limit | Engineering risk | Verdict |
 |---|---|---|---|---|---|
 | Target A — Mature Legacy | **PROVEN now** | Accepted stability and hardware completeness | API 31 age and no 64-bit native apps; security/platform life is short | Low | Keep as rollback/reference, not final investment ceiling |
 | Target B — Modern Framework / Legacy Architecture | **PHYSICAL PASS / GATE 2 CLOSED / FROZEN** | Maximum vendor reuse and proven hardware viability | QPR0 only; boot-time audio P1 remains and ARM32 excludes 64-bit-only native apps | Medium; accepted architecture control | Freeze r4; no Prototype A r5 polish |
-| Target C — Modern Hybrid | **B1 OFFLINE HOLD / MEDIUM** | API 36 plus AArch64 apps while preserving working 32-bit HALs/kernel | Fixed r4 `vendor_a` is at least 18,165,760 bytes short before AVB/FEC; runtime remains untested | High but bounded | Decide one exact extent/placement contract, then resume the same r1 |
+| Target C — Modern Hybrid | **B1 OFFLINE CHECKED / MEDIUM** | API 36 plus AArch64 apps while preserving working 32-bit HALs/kernel | Mixed graphics/zygote and hardware preservation runtime remain untested | High but bounded | Request physical validation of exact r1; do not create r2 |
 | Target D — Full Modern Port | **LOW** | Clean contemporary architecture in theory | No complete H616 5.10+ graphics/media/display/DRM provider; becomes multiple subsystem rewrites | Extreme | **NO-GO** |
 
 ## 13. Reuse versus rewrite map
@@ -1291,8 +1298,8 @@ early runtime, r5 closes the same-lineage 5.4.302 wireless checkpoint, and exact
 close the bounded offline contracts. r4 physically proves no-runtime EGL, Remote OK, stable HDMI,
 full Wi-Fi L3 and real audible Android media. The explicit policy change closes Gate 2 while keeping
 the reproduced `getAudioPort` crash as post-Gate P1. Prototype B0 closes the bounded provider,
-property, linker/VINTF and partition/AVB preflight; B1 runtime compatibility remains appropriately
-MEDIUM until the one bounded experiment runs.
+property, linker/VINTF and partition/AVB preflight; B1 now closes its build, packaging and complete
+offline audit. Runtime compatibility remains appropriately MEDIUM until physical validation runs.
 
 ## 15. Go / No-Go decisions and remaining decisive gates
 
@@ -1303,7 +1310,7 @@ MEDIUM until the one bounded experiment runs.
 | Recommended modern Android target | **PATH A PHYSICALLY PROVEN / GATE 2 CLOSED** | r4 physically passes the functional architecture contract and is frozen; boot audio crash remains post-Gate P1 |
 | Android 16 r4 / 25Q4 | **NO-GO with retained 5.4** | Physical and source evidence agree on the 5.10/5.10.210 requirement |
 | Android 16 QPR0 / 25Q2 | **SELECTED / r4 PHYSICAL PASS / GATE 2 CLOSED** | Exact r7 requires 5.4.277+; 5.4.302 and r4 runtime pass; audio boot crash is post-Gate P1 |
-| Mixed ARM64/ARM32 userspace | **B1 OFFLINE HOLD / PARTITION FIT** | Mali, mapper/gralloc and handle-layout gates pass, but minimum staged vendor ext4 exceeds the frozen region by 18,165,760 bytes before AVB/FEC; no candidate exists |
+| Mixed ARM64/ARM32 userspace | **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION** | Same r1 closes mixed build, exact three providers, 144 MiB bounded vendor geometry, AVB/LP/outer, ELF/linker/APEX/VNDK31/SELinux and preservation; runtime remains untested |
 | Full ARM64 userspace | **NO-GO** | Would convert/replace working proprietary service stack for little user value |
 | Kernel 5.4 as final architecture | **CLOSED / PASS AT 5.4.302 r5** | Boot/HDMI/remote/Wi-Fi/ADB and physical wireless reinitialization pass after restoring the working FMAC address contract |
 | Kernel 5.10+ migration | **NO-GO IN THIS PHASE** | No complete exact-SoC/board Android provider; regression surface is a new BSP port |
@@ -1319,9 +1326,9 @@ MEDIUM until the one bounded experiment runs.
    `getAudioPort` SIGSEGV remains known/unfixed post-Gate P1, not a Prototype A successor trigger.
 3. Continue to carry full-VINTF exit 65 solely for inherited `CONFIG_NFS_FS=y` versus FCM-6 `n`;
    never report it PASS. Enforcing SELinux remains later release hardening, not a Gate 2 substitute.
-4. Decide one exact B1 storage contract: explicitly authorize and audit bounded LP extent changes or
-   prove an equivalent `/vendor/lib64/{egl,hw}` placement. Then resume the same r1 and require every
-   remaining offline gate before any separately authorized flash; preserve exact r4 rollback.
+4. **Completed offline / pending physical:** the authorized exact 144 MiB `vendor_a` correction and
+   all B1 offline gates are closed. Request one explicit physical validation of the exact r1 IMG;
+   do not create r2, broaden B1, or claim runtime PASS before that evidence exists.
 
 ## 16. Direct route to the target
 
@@ -1353,11 +1360,11 @@ MEDIUM until the one bounded experiment runs.
 10. **Completed — Prototype B0:** lock lawful-local fail-closed Mali intake, exact AOSP mapper +
     donor gralloc-1.x provider split, mixed ABI/zygote and vendor properties, VINTF/linker,
     system/vendor AVB/outer impact, rollback, offline checks and first physical gate.
-11. **Current next action — close same-r1 storage contract:** the exact outside-Git ARM64 Mali,
-    host capacity, mapper/gralloc build and handle ABI now pass. Authorize either a measured LP extent
-    delta with sufficient vendor ext4 plus AVB/FEC headroom, or an evidence-backed equivalent
-    provider placement. Update the B0 expected-exact partition rule, then resume—not rename—the same
-    r1 and run every remaining offline gate. Vulkan, the audio P1 and product polish stay outside it.
+11. **Completed — same-r1 B1 offline candidate:** the exact outside-Git ARM64 Mali, host capacity,
+    mapper/gralloc build, handle ABI, 144 MiB vendor geometry, mixed system, system/vendor AVB,
+    super/outer, ELF/linker/VINTF/APEX/VNDK31/SELinux and preservation audits close. The candidate is
+    ready to request physical validation, not physically accepted. Vulkan, the audio P1 and product
+    polish remain outside it.
 12. **Final acceptance:** sustained daily-use regression, 4K30-or-1080p evidence-led media
     ceiling, enforcing/release hardening, recovery rehearsal and a hash-locked accepted architecture
     image.
