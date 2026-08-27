@@ -13,7 +13,9 @@ Scope: architecture decision, bounded offline prototypes, completed physical evi
 Linux 5.4.302 r5, exact QPR0 r7 source audit, the Prototype A r3/r4 build and physical evidence,
 formal Gate 2 policy/closure, the 2026-08-26 Prototype B B0 read-only preflight, and the bounded
 same-r1 B1 intake/provider/handle implementation, authorized 144 MiB vendor geometry correction,
-mixed build, packaging and complete offline audit. No Prototype B physical action was performed.
+mixed build, packaging and complete offline audit, the r1 first-stage physical failure/root-cause
+audit, and the strict single-cause r2 offline successor. R1 has physical UART evidence; r2 has not
+yet been physically tested.
 
 Confidence labels in this report have the following strict meanings: **PROVEN** is direct
 binary, build, runtime, repository, or authoritative-source evidence; **HIGH CONFIDENCE**
@@ -87,13 +89,25 @@ remain exact, with no shrink. The complete mixed build and offline audit now pro
 CHECKED / READY FOR PHYSICAL VALIDATION**. This closed the bounded storage issue but did not prove
 runtime mixed graphics or close release hardening.
 
-The subsequent first physical UART result is **PHYSICAL FAIL — FIRST-STAGE MOUNT / DEFAULT FSTAB
-MISSING**. Kernel 5.4.302+, `/init`, normal first stage and force-normal handling are reached, but
-`/fstab.sun50iw9p1` cannot be loaded and the boot fatals before second stage. Exact r4/r1 audit proves
-the package contains the same accepted `vendor_boot` first-stage fstab, init, DT/DTBO and checksum
-companions; no pre-failure payload differs. The reason the runtime cannot load/parse those preserved
-bytes is therefore not uniquely proven. Architecture status is **HOLD FOR MINIMUM RUNTIME
-EVIDENCE**, not provider/ABI NO-GO and not authorization to copy an fstab or build r2.
+The first r1 UART diagnostic without a slot suffix stopped while looking up
+`/fstab.sun50iw9p1`; that was a diagnostic-boot artifact, not the candidate's final root cause.
+The subsequent slot-correct RAM-only diagnostic proves `_a` selection, fstab parse, metadata
+fsck/mount, logical partition creation and `system_a` mount, then fails at `SwitchRoot("/system")`
+while moving `/metadata`. Exact signed-root comparison proves r4 contains root `/metadata` as
+`0755`, `0:0`, `u:object_r:metadata_file:s0`, whereas r1 alone omits it; every other observed
+top-level move target has the same directory contract. Product provenance proves why: r4's generic
+GSI BoardConfig sets `BOARD_USES_METADATA_PARTITION=true`, while B1's dedicated generic-ARM64
+BoardConfig leaves it unset and the r7 root rule therefore omits `metadata`. The byte-identical
+first-stage init cannot create `/system/metadata` after mounting system read-only; its `MS_MOVE`
+therefore returns the observed `ENOENT`. R1's final status is **PHYSICAL FAIL — SYSTEM SWITCH-ROOT `/METADATA` TARGET
+MISSING**; it never reached second stage, APEX, zygote, system_server, SurfaceFlinger or Mali.
+
+That unique single-cause proof authorized `a16-prototype-b-r2`. R2 restores only the exact r4 root
+mountpoint contract; it does not change kernel, vendor_boot, fstab, vendor/graphics providers,
+mixed-ABI semantics or any preserved hardware authority. Its complete detached audit is **OFFLINE
+CHECKED / READY FOR PHYSICAL VALIDATION**. The resulting IMG is 1,641,756,672 bytes / SHA-256
+`6FA8D13220DC9367659B5B16798664E906A390820359E72FD16063B84EC48887`; mixed runtime remains
+unproven until one physical r2 validation.
 
 This is a modern hybrid, not a full port. Framework, `system_server`, SurfaceFlinger, and
 eligible apps become AArch64; legacy Allwinner media, audio, HWC/composer, DRM, Wi-Fi,
@@ -799,7 +813,9 @@ audit finds no architecture blocker, and r4 physically proves Android 16/zygote3
 Mali-G31 without runtime EGL intervention plus Remote OK, stable HDMI, Wi-Fi validated L3 and real
 audible application media. The explicit governance change moves the auto-recovered boot
 `getAudioPort` SIGSEGV to post-Gate P1 stabilization debt without calling it fixed. R4 is frozen;
-Prototype B0 is complete; its one bounded B1 is now offline HOLD solely on measured vendor fit.
+Prototype B0 is complete. B1 r1 passed its bounded offline gate but physically failed at the
+proven missing `/system/metadata` switch-root target. Single-cause r2 restores only that exact r4
+mountpoint contract and is offline checked, awaiting physical validation.
 
 #### QPR0 r7 source-only closure
 
@@ -1154,9 +1170,11 @@ accepted hardware product.
 Gate 2 is **CLOSED / PASS** under the explicitly revised architecture-viability policy. R4's EGL,
 Remote OK, HDMI, Wi-Fi and real media gates are physically complete and r4 is frozen. The reproduced
 boot-time audio HAL crash remains known/unfixed as post-Gate P1; it is not evidence of an audio fix.
-Prototype B B0 is complete and permitted one bounded B1 build task.
-That permission was exercised; the same r1 is now **OFFLINE HOLD / PARTITION FIT BLOCKER** with no
-candidate, pending an explicit extent/placement decision.
+Prototype B B0 is complete and permitted one bounded B1 build task. That permission produced r1,
+including the explicitly authorized bounded vendor extent correction. R1 passed offline acceptance
+but then physically failed on its uniquely proven missing `/system/metadata` switch-root target.
+Strict single-cause r2 is now **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**; no mixed-ABI
+physical PASS is claimed.
 
 ## 12. Target A/B/C/D comparison
 
@@ -1193,7 +1211,7 @@ The 5.4.302 wireless checkpoint is closed; D remains dominated on engineering ec
 |---|---|---|---|---|---|
 | Target A — Mature Legacy | **PROVEN now** | Accepted stability and hardware completeness | API 31 age and no 64-bit native apps; security/platform life is short | Low | Keep as rollback/reference, not final investment ceiling |
 | Target B — Modern Framework / Legacy Architecture | **PHYSICAL PASS / GATE 2 CLOSED / FROZEN** | Maximum vendor reuse and proven hardware viability | QPR0 only; boot-time audio P1 remains and ARM32 excludes 64-bit-only native apps | Medium; accepted architecture control | Freeze r4; no Prototype A r5 polish |
-| Target C — Modern Hybrid | **B1 PHYSICAL FAIL / HOLD / MEDIUM** | API 36 plus AArch64 apps while preserving working 32-bit HALs/kernel | First-stage cannot load the preserved default fstab; exact runtime cause is not uniquely proven and mixed runtime was not reached | High but bounded | Freeze r1 failure; collect minimum first-stage evidence before any r2 |
+| Target C — Modern Hybrid | **r1 PHYSICAL FAIL / r2 OFFLINE READY / MEDIUM** | API 36 plus AArch64 apps while preserving working 32-bit HALs/kernel | r1 fails because signed system root lacks the `/metadata` move target; r2 restores only that contract, but mixed runtime remains untested | High but bounded | Freeze r1 failure and physically validate exact single-cause r2 |
 | Target D — Full Modern Port | **LOW** | Clean contemporary architecture in theory | No complete H616 5.10+ graphics/media/display/DRM provider; becomes multiple subsystem rewrites | Extreme | **NO-GO** |
 
 ## 13. Reuse versus rewrite map
@@ -1318,7 +1336,7 @@ offline audit. Runtime compatibility remains appropriately MEDIUM until physical
 | Recommended modern Android target | **PATH A PHYSICALLY PROVEN / GATE 2 CLOSED** | r4 physically passes the functional architecture contract and is frozen; boot audio crash remains post-Gate P1 |
 | Android 16 r4 / 25Q4 | **NO-GO with retained 5.4** | Physical and source evidence agree on the 5.10/5.10.210 requirement |
 | Android 16 QPR0 / 25Q2 | **SELECTED / r4 PHYSICAL PASS / GATE 2 CLOSED** | Exact r7 requires 5.4.277+; 5.4.302 and r4 runtime pass; audio boot crash is post-Gate P1 |
-| Mixed ARM64/ARM32 userspace | **PHYSICAL FAIL / EVIDENCE-BACKED HOLD** | Same r1 closes all offline gates, but first physical boot stops at default-fstab load before second stage. r4/r1 first-stage payloads are exact, so the causal runtime difference remains unproven |
+| Mixed ARM64/ARM32 userspace | **r1 PHYSICAL FAIL / r2 OFFLINE CHECKED** | Slot-correct diagnostic passes fstab and early mounts, then r1 fails at `/metadata` move because `/system/metadata` is absent. Single-cause r2 restores the exact r4 directory contract and awaits physical validation |
 | Full ARM64 userspace | **NO-GO** | Would convert/replace working proprietary service stack for little user value |
 | Kernel 5.4 as final architecture | **CLOSED / PASS AT 5.4.302 r5** | Boot/HDMI/remote/Wi-Fi/ADB and physical wireless reinitialization pass after restoring the working FMAC address contract |
 | Kernel 5.10+ migration | **NO-GO IN THIS PHASE** | No complete exact-SoC/board Android provider; regression surface is a new BSP port |
@@ -1334,10 +1352,10 @@ offline audit. Runtime compatibility remains appropriately MEDIUM until physical
    `getAudioPort` SIGSEGV remains known/unfixed post-Gate P1, not a Prototype A successor trigger.
 3. Continue to carry full-VINTF exit 65 solely for inherited `CONFIG_NFS_FS=y` versus FCM-6 `n`;
    never report it PASS. Enforcing SELinux remains later release hardening, not a Gate 2 substitute.
-4. **Physical r1 failed / evidence pending:** all B1 offline gates remain closed, but the first UART
-   boot cannot load `/fstab.sun50iw9p1` and never reaches second stage. Exact package evidence proves
-   the r4 fstab/first-stage bytes are present and unchanged, so preserve the complete parser/fatal
-   UART block and runtime fstab/boot-config identity before creating any single-cause r2.
+4. **r1 root cause proven / r2 physical pending:** a slot-correct diagnostic passes fstab,
+   metadata and all early logical mounts, then fatals moving `/metadata`. Signed-root comparison and
+   byte-identical `SwitchRoot` prove absent r1 `/system/metadata` as the unique cause. r2 adds only
+   the exact r4 directory contract and closes all offline gates; physical mixed runtime is unproven.
 
 ## 16. Direct route to the target
 
@@ -1374,11 +1392,13 @@ offline audit. Runtime compatibility remains appropriately MEDIUM until physical
     super/outer, ELF/linker/VINTF/APEX/VNDK31/SELinux and preservation audits close. The candidate is
     an offline-pass artifact, not physically accepted. Vulkan, the audio P1 and product polish
     remain outside it.
-12. **Current — freeze first r1 physical failure:** normal first-stage init reaches the preserved
-    default-fstab lookup and fatals before second stage. Package provenance does not reproduce a
-    missing byte, so hold until the minimum UART/runtime identity evidence proves one causal delta;
-    do not create a speculative r2.
-13. **Final acceptance:** sustained daily-use regression, 4K30-or-1080p evidence-led media
+12. **Completed — freeze and explain r1 physical failure:** the initial no-slot diagnostic fstab
+    failure is reclassified as artificial. With slot `_a`, r1 reaches mounted system then fatals at
+    `/metadata` move; exact r4/r1 roots prove the missing target directory.
+13. **Current — exact single-cause r2:** restore only root `/metadata`, re-sign system, and preserve
+    46/50 r1 outer payloads plus all other B1 semantics. Full offline audit passes; request one
+    UART-first physical validation and do not create r3 before its result.
+14. **Final acceptance:** sustained daily-use regression, 4K30-or-1080p evidence-led media
     ceiling, enforcing/release hardening, recovery rehearsal and a hash-locked accepted architecture
     image.
 

@@ -50,18 +50,35 @@ class A16PrototypeBR1CandidateTests(unittest.TestCase):
         decision = self.first_stage["root_cause_decision"]
         self.assertEqual("a16-prototype-b-r1", self.first_stage["candidate"])
         self.assertEqual(
-            "PHYSICAL_FAIL_FIRST_STAGE_MOUNT_DEFAULT_FSTAB_MISSING", physical["status"]
+            "PHYSICAL_FAIL_SYSTEM_SWITCH_ROOT_METADATA_TARGET_MISSING",
+            physical["status"],
         )
         self.assertFalse(physical["accepted"])
         self.assertFalse(physical["raw_uart_capture_present_locally"])
         self.assertIsNone(physical["raw_uart_sha256"])
         self.assertIn("second-stage init", physical["not_reached"])
         self.assertEqual(
-            "EVIDENCE_BACKED_HOLD_ROOT_CAUSE_NOT_UNIQUELY_PROVEN",
+            "PROVEN_B1_SYSTEM_ROOT_METADATA_MOVE_TARGET_ABSENT",
             decision["result"],
         )
-        self.assertFalse(decision["r2_authorized"])
-        self.assertFalse(decision["r2_created"])
+        self.assertTrue(decision["r2_authorized"])
+        self.assertTrue(decision["r2_created"])
+        self.assertEqual(
+            "ARTIFICIAL_BLOCKER_DIAGNOSTIC_BOOT_LACKED_SLOT_SUFFIX",
+            physical["superseded_initial_diagnostic"]["status"],
+        )
+        roots = self.first_stage["signed_system_root_comparison"]
+        self.assertEqual(7, len(roots["move_mountpoints"]))
+        self.assertIsNone(roots["move_mountpoints"]["/metadata"]["r1"])
+        self.assertEqual(
+            "u:object_r:metadata_file:s0",
+            roots["move_mountpoints"]["/metadata"]["r4"]["selinux"],
+        )
+        self.assertEqual("/system/metadata", roots["only_missing_r1_destination"])
+        self.assertEqual(
+            "PROVEN_PRODUCT_BOARDCONFIG_GENERATION_DELTA",
+            roots["generation_provenance"]["result"],
+        )
 
     def test_r4_first_stage_contract_is_exact_in_r1_package(self) -> None:
         comparison = self.first_stage["r4_r1_first_stage_payload_comparison"]

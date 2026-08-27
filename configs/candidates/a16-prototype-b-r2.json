@@ -1,0 +1,135 @@
+{
+  "schema": 1,
+  "id": "a16-prototype-b-r2",
+  "milestone": "Prototype B B1 single-cause continuation",
+  "status": "ROOT_CAUSE_PROVEN_SINGLE_CAUSE_R2_AUTHORIZED",
+  "inherits": "configs/candidates/a16-prototype-b-r1.json",
+  "base_candidate": {
+    "id": "a16-prototype-b-r1",
+    "path": "out/candidates/a16-prototype-b-r1/x12-a16-prototype-b-r1.img",
+    "size": 1641752576,
+    "sha256": "796A2D46DB7FCDFF27D53397565ABDDC3D18F2E548A697055CE5E47278E69545"
+  },
+  "base_artifacts": {
+    "system_a": {
+      "path": "out/candidates/a16-prototype-b-r1/system_a.img",
+      "size": 1651167232,
+      "sha256": "DBA433B58363F2C393B76428E339380604AFCA6F5CE2153D3A387C4A74CFFCA0"
+    },
+    "vendor_a": {
+      "path": "out/candidates/a16-prototype-b-r1/vendor_a.img",
+      "size": 150994944,
+      "sha256": "0166B5FB1718715E79F68D5A9FEAAE02439DC59DBE2379D4C1DA670541C7EC9B"
+    },
+    "super_raw": {
+      "path": "out/candidates/a16-prototype-b-r1/super.raw.img",
+      "size": 3221225472,
+      "sha256": "E740AC913A9EE5643FD795CC1E6C8178F892ECAEFDEDF79CA0DDC4E42C223EA3"
+    },
+    "vbmeta_vendor": {
+      "path": "out/candidates/a16-prototype-b-r1/vbmeta_vendor.fex",
+      "size": 1600,
+      "sha256": "DE14183FAFBBEA3EC0D2B0E8737FF9F71BA001186A0DE0D58E24891706ACE6C5"
+    },
+    "boot": {
+      "path": "out/candidates/a16-prototype-b-r1/boot.fex",
+      "size": 67108864,
+      "sha256": "527CF878B015CFAE4E8600BD750C7C73F45F4290B5CFEFEDBD1AD9AC347B8063"
+    },
+    "vendor_dlkm": {
+      "path": "out/candidates/a16-prototype-b-r1/vendor_dlkm_a.img",
+      "size": 6680576,
+      "sha256": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07"
+    }
+  },
+  "root_cause": {
+    "result": "PROVEN_B1_SYSTEM_ROOT_METADATA_MOVE_TARGET_ABSENT",
+    "superseded_diagnostic_blocker": "The earlier default-fstab failure was induced by a RAM diagnostic boot without androidboot.slot_suffix and is not the current r1 root cause.",
+    "latest_ram_diagnostic": {
+      "androidboot_slot_suffix": "_a",
+      "fstab_parsing": "PASS",
+      "metadata_fsck_mount": "PASS",
+      "logical_partition_creation": [
+        "system_a",
+        "product_a",
+        "vendor_dlkm_a",
+        "vendor_a"
+      ],
+      "system_a_mount": "PASS",
+      "first_causal_blocker": "SwitchRoot(/system) cannot move /metadata because /system/metadata is absent; mount(MS_MOVE) returns ENOENT"
+    },
+    "first_stage_init": {
+      "r4_sha256": "2A7D6E125583C79E925B5D916C54C51E4AE8EE145F2D7422B2DD77D0B6C62751",
+      "r1_sha256": "2A7D6E125583C79E925B5D916C54C51E4AE8EE145F2D7422B2DD77D0B6C62751",
+      "byte_identical": true,
+      "elf": "ELF32 ARM",
+      "switch_root_contract": "For each top-level source mount, new_mount_path is /system plus mount_path; mkdir is attempted and mount(source, new_mount_path, MS_MOVE) fatals on failure. The signed system filesystem is read-only, so a missing destination cannot be created at runtime."
+    },
+    "generation_provenance": {
+      "r4": "PRODUCT_DEVICE=generic -> BoardConfigGsiCommon.mk -> BOARD_USES_METADATA_PARTITION=true",
+      "r1": "PRODUCT_DEVICE=ubox10_ceiling_arm64 -> device/generic/arm64/BoardConfig.mk -> BOARD_USES_METADATA_PARTITION unset",
+      "root_rule": "system/core/rootdir/create_root_structure.mk conditionally creates root metadata only when BOARD_USES_METADATA_PARTITION is set",
+      "result": "PROVEN_PRODUCT_BOARDCONFIG_GENERATION_DELTA"
+    }
+  },
+  "root_mountpoint_contract": {
+    "path": "/metadata",
+    "type": "directory",
+    "mode": "0755",
+    "uid": 0,
+    "gid": 0,
+    "selinux": "u:object_r:metadata_file:s0",
+    "ctime": "0x6a8d83ab",
+    "atime": "0x6a8d83ab",
+    "mtime": "0x6a8d83ab",
+    "crtime": "0x6a8e980e",
+    "r4_present": true,
+    "r1_present": false,
+    "required_move_mountpoints": [
+      "/dev",
+      "/proc",
+      "/sys",
+      "/mnt",
+      "/debug_ramdisk",
+      "/second_stage_resources",
+      "/metadata"
+    ],
+    "only_missing_r1_move_destination": "/metadata"
+  },
+  "avb_system": {
+    "partition_size": 1651167232,
+    "original_filesystem_size": 1250484224,
+    "salt": "6131362d70726f746f747970652d622d7231",
+    "rollback_index": 1644019200,
+    "rollback_index_location": 1,
+    "key_relative": "tools/testkey_rsa2048.pem",
+    "algorithm": "SHA256_RSA2048",
+    "fec": "none"
+  },
+  "outer_delta": {
+    "changed_payloads_from_r1": [
+      "Vsuper.fex",
+      "Vvbmeta_system.fex",
+      "super.fex",
+      "vbmeta_system.fex"
+    ],
+    "preserved_payload_count_from_r1": 46
+  },
+  "allowed_semantic_delta": [
+    "Add exactly one root-level /metadata directory to the r1 system_a filesystem with the accepted r4 type, mode, ownership and SELinux label."
+  ],
+  "forbidden_changes": [
+    "kernel",
+    "vendor_boot",
+    "fstab",
+    "vendor_a",
+    "product_a",
+    "vendor_dlkm_a",
+    "Mali",
+    "mapper",
+    "gralloc",
+    "zygote_or_ABI_properties",
+    "LP_geometry",
+    "all_other_B1_semantics"
+  ]
+}

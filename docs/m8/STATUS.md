@@ -141,14 +141,15 @@ close。Full VINTF 仍严格为 exit 65，仅 inherited NFS exception；不是 P
 的历史离线结论为 **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**；该 build/audit 当时没有
 执行任何 UBOX 物理动作。完整离线结果见 `docs/m8/candidates/a16-prototype-b-r1.md`。
 
-用户随后完成 exact r1 首次 UART 物理验收。当前正式状态已变为 **PHYSICAL FAIL — FIRST-STAGE
-MOUNT / DEFAULT FSTAB MISSING / NOT ACCEPTED**。Linux 5.4.302+、`/init` exec、normal first-stage
-init 与 `androidboot.force_normal_boot=1` 均已到达；首个 causal blocker 是
-`ReadFstabFromFile(): failed to load '/fstab.sun50iw9p1'`，随后 `Failed to create
-FirstStageMount`、required early mount failure、`InitFatalReboot` 和 kernel panic。Second-stage
-init、`apexd`、zygote、system_server、SurfaceFlinger 与 Mali runtime 均未到达，因此没有任何
-mixed-ABI/graphics runtime PASS 或 FAIL 结论。原始 UART capture 当前不在 GCP；仓库保存用户提供
-的权威结果/摘录，不虚构 raw log 或 hash。
+用户随后完成 exact r1 UART 物理验收。初始 RAM diagnostic 因缺少
+`androidboot.slot_suffix` 停在 `/fstab.sun50iw9p1` load；最新 slot-correct RAM-only diagnostic 已
+证明这是人为 blocker，不是 r1 当前 root cause。`androidboot.slot_suffix=_a`、fstab parsing、
+metadata fsck/mount、`system_a`/`product_a`/`vendor_dlkm_a`/`vendor_a` logical creation 与
+`system_a` mount 全 PASS；新首个 causal blocker 是 `Switching root to '/system'` 后
+`Unable to move mount at '/metadata': No such file or directory`，再进入 `InitFatalReboot`。
+Second-stage init、`apexd`、zygote、system_server、SurfaceFlinger 与 Mali runtime 仍未到达，因此
+没有 mixed-ABI/graphics physical PASS 或 FAIL 结论。原始 UART capture 当前不在 GCP；仓库只保存
+用户提供的权威事实/摘录，不虚构 raw log 或 hash。
 
 Exact r4↔r1 provenance audit 证明 physically accepted fstab 来源是 `vendor_boot.fex` 的
 `first_stage_ramdisk/fstab.sun50iw9p1`，2,330 bytes / SHA-256
@@ -159,12 +160,30 @@ late `/vendor/etc/fstab.sun50iw9p1` 是同字节副本但 first-stage 尚不能�
 companions 全部逐字节相同，两个 outer IMAGEWTY verify 均 PASS。r1 的六项 outer delta 仅是
 super 和 system/vendor subordinate vbmeta/V companions，均不提供该 first-stage 文件。
 
-因此离线证据否定了“B1 product 没有复制 fstab”或“直接复制一个 fstab 即为已证明修复”，但尚
-不能唯一解释实机为何无法加载/解析包内存在的 exact fstab。缺少完整 UART parser 前置行与 runtime
-文件/boot-config 观测时，read/parse/slotselect 或其他 runtime condition 不能区分。当前决策为
-**EVIDENCE-BACKED HOLD — ROOT CAUSE NOT UNIQUELY PROVEN**；r1 冻结为不可变物理失败点，本轮不
-创建或构建 r2。Machine record 为
-`docs/m8/candidates/a16-prototype-b-r1-first-stage-audit.json`。
+Exact signed-root comparison 现已闭合 root cause：r4 `/metadata` 是 directory 0755、0:0、
+`u:object_r:metadata_file:s0`，r1 root 完全缺失它；其余六个 observed move destinations 在两边
+type/mode/owner/label 一致。生成 provenance 同样精确：r4 `PRODUCT_DEVICE=generic` 继承
+`BoardConfigGsiCommon.mk` 并设置 `BOARD_USES_METADATA_PARTITION=true`；B1 专用 ARM64
+BoardConfig 未继承该 flag，而 r7 root rule 只在 flag 存在时创建 `metadata`。Byte-identical ELF32
+first-stage init（`2A7D6E12...62751`）的 Android
+12 `SwitchRoot` 以 `new_root + mount_path` 形成目标，所以 `SwitchRoot("/system")` 移动已挂载的
+`/metadata` 唯一要求 `/system/metadata`。Exact fstab 将 system 挂为 `ro`，runtime `mkdir` 不能
+补出缺失目标，随后的 `MS_MOVE` 与 UART ENOENT 唯一对应。正式 r1 状态为 **PHYSICAL FAIL —
+SYSTEM SWITCH-ROOT `/METADATA` TARGET MISSING / NOT ACCEPTED**；root cause **PROVEN**。
+
+用户据此授权一个 single-cause `a16-prototype-b-r2`。r2 不重编 Android/kernel，只在 r1 signed
+system root 增加 exact r4 `/metadata` contract；final filesystem tree delta 精确为
+`added=[metadata]`、`removed=[]`、`changed=[]`。Required generated changes 仅 system AVB、
+`vbmeta_system`、super 与 V companions；相对 r1 外层 4/50 changed、46/50 byte-preserved，
+vendor/product/vendor_dlkm/B slots/LP geometry、boot/vendor_boot/fstab/kernel/三 graphics provider 与
+所有 B1 semantics 保持。Candidate
+`out/candidates/a16-prototype-b-r2/x12-a16-prototype-b-r2.img` 为 1,641,756,672 bytes / SHA-256
+`6FA8D13220DC9367659B5B16798664E906A390820359E72FD16063B84EC48887`。Ext4、AVB、LP sparse
+roundtrip、IMAGEWTY、ELF/Mali 297/0、35 APEX、VNDK31、linker、split SELinux、kernel/modules/AIC
+与 preservation PASS；full VINTF 仍仅 inherited NFS exit 65，严格不称 PASS。当前状态
+**OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION / NOT YET PHYSICALLY VALIDATED**。R2 focused
+6/6、combined r1/r2 17/17、full lightweight repository 136 tests PASS（34 个
+repository-declared fixture skips）。
 
 2026-08-21 Android 16 Gate 1 状态为 **OFFLINE CHECKED / SUCCESS**。Source 为 exact `android-16.0.0_r4` / `BP4A.251205.006`，manifest commit `15128c9e27cfa599c48d294babd39286ee8f1426`，pinned manifest SHA-256 `4E8BEB5D1B590DFF3D631B1DBB957138DBDA4E608A3183C625683DA4BC84918F`；Prototype A 为 `ubox10_ceiling_arm-bp4a-userdebug`、ARMv7-A NEON、无 secondary arch、shipping API 31、extra VNDK 31、pKVM off。GCP native Ubuntu 24.04 / ext4 / 8 vCPU / 62.8 GiB RAM / no swap 上使用 relative `OUT_DIR=out-ceiling`、`BUILD_NUMBER=DISPOSABLE_CEILING_R4`、unset `SOONG_GOMEMLIMIT GOMEMLIMIT` 和 `m -j8 systemimage`，123,197/123,197 actions 成功，wall 30,314 秒（8:25:14）。最低 available RAM 12,295,132 KiB；swap I/O 为 0；平均 CPU user/system 约 88.05%/9.48%、I/O wait 0.05%；`/work` 最低 free 231,671,357,440 bytes。完整 raw log 仅保留在 GCP ignored 路径，未进入 Git。
 
@@ -762,7 +781,7 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - r10 已在实机完成 framework boot；r9 Lights/Watchdog/llkd 方向保持关闭，不再修改。
 - r13 是当前 GOLDEN BASELINE；Projectivy、provisioning、遥控和 Power sleep/wake/shutdown 均以实机 UART 为准。
 - M8B native rc-core 遥控迁移已在 r5 设备验收并关闭；Mouse mode intentionally dropped，legacy multi_ir 工件保留为 inert reference，其 Android 12 清理已随 freeze 延期。
-- 当前 board、DT 与 runtime 证据识别为 H616。历史 A16 ARM32 r2 稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛；历史 kernel r1-r4 AIC failure 已收敛到错误 `0x00110000` FMAC contract。r5 恢复 working BSP `0x00120000` 后物理 boot/HDMI/remote/Wi-Fi/ADB 与 Wi-Fi OFF→ON reinitialization PASS，preservation checkpoint **CLOSED / PASS**。Exact QPR0 r7 audit 与 r4 physical pass 已关闭 Architecture Gate 2；r4 frozen。Boot-time legacy audio HAL SIGSEGV 保持 post-Gate P1，不称 fixed。Prototype B0 complete；同一 `a16-prototype-b-r1` 的 bounded build/offline audit 曾 PASS，但首次物理结果为 **PHYSICAL FAIL — FIRST-STAGE MOUNT / DEFAULT FSTAB MISSING**。Exact package 中 r4 first-stage contract 原字节存在，故当前为 root-cause-unproven HOLD，不创建 r2。
+- 当前 board、DT 与 runtime 证据识别为 H616。历史 A16 ARM32 r2 稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛；历史 kernel r1-r4 AIC failure 已收敛到错误 `0x00110000` FMAC contract。r5 恢复 working BSP `0x00120000` 后物理 boot/HDMI/remote/Wi-Fi/ADB 与 Wi-Fi OFF→ON reinitialization PASS，preservation checkpoint **CLOSED / PASS**。Exact QPR0 r7 audit 与 r4 physical pass 已关闭 Architecture Gate 2；r4 frozen。Boot-time legacy audio HAL SIGSEGV 保持 post-Gate P1，不称 fixed。Prototype B0 complete；B r1 首次物理状态最终为 **PHYSICAL FAIL — SYSTEM SWITCH-ROOT `/METADATA` TARGET MISSING**，先前 fstab 行是无 slot suffix 的 diagnostic artifact。Single-cause r2 已恢复 exact r4 root mountpoint，完整离线 PASS，等待物理验证。
 - `m8b-audio-r2` 只启用产品级 Treble/VNDK 合同；未修改 VNDK payload、mixer、audio platform XML、DTS、machine driver 或已验收功能，现已设备验收为 AUDIO PASS。
 - 2026-08-16 ADB-only 补验未刷机、未重启且未修改 ROM/device properties：VP9 为 Allwinner OMX/Cedar hardware-runtime PASS；Widevine 为可操作 L3，HDCP `NONE`，无 secure decoder 要求。物理画面/逐帧质量与商业服务认证或播放仍未证明。
 - 遥控器 Menu 与 Settings 当前均打开 Projectivy menu。两键语义分离为独立延期项，不回改已验收的 rc-core、keylayout 选择或其他按键行为。
@@ -771,11 +790,10 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 ## Next action
 
 保持 frozen Android 12 `m8b-remote-r1`、frozen Android 16 ARM32 `a16-prototype-a-r4`、Test8r2/
-stock rollback、A16 r1-r3 与 kernel r1-r5 artifacts 不变；把 exact B r1
-1,641,752,576-byte / `796A2D46...9545` IMG 冻结为首次物理失败 evidence point。下一步不是复制
-fstab 或立即构建：先保存 force-normal switch-root 到 fatal 的完整 UART block（含任何 errno、
-`Error parsing fstab` 或 slotselect 行），核对 flashed IMG/PhoenixCard record，并在另行物理授权的
-read-only recovery/first-stage diagnostic 中取得 runtime `/fstab.sun50iw9p1` metadata/hash、
-`/proc/cmdline` 与 `/proc/bootconfig`。只有唯一 root cause 证明后才允许创建一个 single-cause
-`a16-prototype-b-r2`；否则保持 HOLD。Vulkan、GMS、5.10、25Q4、full vendor rewrite、Audio fix、
-SELinux/NFS/HDMI polish 与产品 feature 均不得混入。
+stock rollback、A16 r1-r3 与 kernel r1-r5 artifacts 不变；继续冻结 exact B r1
+1,641,752,576-byte / `796A2D46...9545` IMG 为物理失败 evidence point。下一步只请求对 exact r2
+1,641,756,672-byte / `6FA8D132...8887` IMG 的一次 UART-first physical validation：先证明
+`/metadata` move、second-stage init/APEX，再证明 `zygote64_32`、AArch64
+system_server/SurfaceFlinger/Mali，最后回归 r4 remote/HDMI/network/audio authority。未经该结果不
+创建 r3。Vulkan、GMS、5.10、25Q4、full vendor rewrite、Audio fix、SELinux/NFS/HDMI polish 与
+产品 feature 均不得混入。

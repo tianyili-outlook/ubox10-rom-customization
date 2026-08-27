@@ -2,14 +2,14 @@
 
 Date: 2026-08-27
 
-Status: **PHYSICAL FAIL — FIRST-STAGE MOUNT / DEFAULT FSTAB MISSING / NOT ACCEPTED**
+Status: **PHYSICAL FAIL — SYSTEM SWITCH-ROOT `/METADATA` TARGET MISSING / NOT ACCEPTED**
 
 Physical status: **FAILED BEFORE SECOND-STAGE INIT**. The prior build/offline audit performed no
 UBOX action and remains valid as an offline record; the user subsequently flashed and UART-tested
 the exact r1. That first physical result is now immutable evidence. This is still the same canonical
-`a16-prototype-b-r1`; no r2 has been created.
+`a16-prototype-b-r1`; the later single-cause r2 does not rewrite this failure point.
 
-## First physical result
+## Initial diagnostic result — superseded causal classification
 
 The user-supplied UART evidence establishes this strict boundary:
 
@@ -28,9 +28,58 @@ The user-supplied UART evidence establishes this strict boundary:
 
 No raw UART capture is present on this VM, so this repository record preserves the externally
 supplied result and exact decisive excerpts; it does not fabricate a raw log or SHA-256. The proper
-classification is **PHYSICAL FAIL — FIRST-STAGE MOUNT / DEFAULT FSTAB MISSING**. Here “missing” is
-the observed runtime load boundary, not a claim that the verified package lacks the bytes. It is
-not evidence against mixed zygote or graphics because none of those stages ran.
+classification at that evidence point was **FIRST-STAGE MOUNT / DEFAULT FSTAB MISSING**. The later
+RAM-only diagnostic proves this was induced by the diagnostic boot lacking `androidboot.slot_suffix`,
+not by absent fstab bytes and not by the r1 candidate's current causal boundary.
+
+## Latest RAM-only diagnostic and current root cause
+
+With `androidboot.slot_suffix=_a`, the same r1 passes fstab parsing, metadata fsck/mount, creation of
+`system_a`, `product_a`, `vendor_dlkm_a` and `vendor_a`, and mounting `system_a` at `/system`. The
+first causal blocker advances to:
+
+```text
+Switching root to '/system'
+Unable to move mount at '/metadata': No such file or directory
+InitFatalReboot
+```
+
+Exact signed-root comparison proves r4 has `/metadata` as a directory, mode 0755, uid/gid 0:0,
+SELinux `u:object_r:metadata_file:s0`; r1 has no root-level `/metadata`. All other observed top-level
+move destinations (`/dev`, `/proc`, `/sys`, `/mnt`, `/debug_ramdisk`,
+`/second_stage_resources`) exist in both and have matching type/mode/owner/label.
+
+The exact signed-root contracts are:
+
+| SwitchRoot source / required destination under `/system` | Frozen r4 root | B1 r1 root |
+|---|---|---|
+| `/dev` | dir `0755`, `0:0`, `device` | exact r4 |
+| `/proc` | dir `0755`, `0:0`, `rootfs` | exact r4 |
+| `/sys` | dir `0755`, `0:0`, `sysfs` | exact r4 |
+| `/mnt` | dir `0755`, `0:1000`, `tmpfs` | exact r4 |
+| `/debug_ramdisk` | dir `0755`, `0:0`, `tmpfs` | exact r4 |
+| `/second_stage_resources` | dir `0755`, `0:0`, `tmpfs` | exact r4 |
+| `/metadata` | dir `0755`, `0:0`, `metadata_file` | **ABSENT** |
+
+Labels above abbreviate the exact `u:object_r:<type>:s0` xattr. Child mounts such as
+`/sys/fs/selinux` are moved with their already-selected top-level parent by `MS_MOVE`; the
+implementation deliberately excludes such children from the independent move list.
+
+The build provenance explains the root difference exactly. R4's product sets
+`PRODUCT_DEVICE := generic`, resolving `build/make/target/board/generic/BoardConfig.mk`; that file
+inherits `BoardConfigGsiCommon.mk`, which sets `BOARD_USES_METADATA_PARTITION := true`. B1 instead
+sets `PRODUCT_DEVICE := ubox10_ceiling_arm64`; its dedicated BoardConfig includes
+`device/generic/arm64/BoardConfig.mk`, which does not set or inherit that GSI flag. Exact r7
+`system/core/rootdir/create_root_structure.mk` creates `$(TARGET_ROOT_OUT)/metadata` only under
+`ifdef BOARD_USES_METADATA_PARTITION`. Therefore the signed-root omission is the deterministic
+product/BoardConfig generation consequence, not an ext4, AVB, packaging or first-stage fstab loss.
+
+The executed r4/r1 first-stage init remains byte-identical at SHA-256 `2A7D6E12...62751`. Its
+Android 12 `SwitchRoot` contract forms `new_mount_path = new_root + mount_path`; with
+`new_root=/system`, moving the mounted source `/metadata` therefore requires target
+`/system/metadata`. The signed system filesystem is read-only, so the attempted runtime `mkdir`
+cannot supply the missing target; `mount(..., MS_MOVE)` returns the observed ENOENT. This is a
+unique causal correspondence: **PROVEN B1 SYSTEM-ROOT `/metadata` MOVE TARGET ABSENT**.
 
 ## Exact r4 versus r1 fstab provenance audit
 
@@ -74,13 +123,9 @@ Both outer packages also pass IMAGEWTY checksum verification. The only six r1 ou
 `super`/`Vsuper`, subordinate system/vendor vbmeta and their V companions; none supplies or executes
 the default fstab before this failure.
 
-This creates an evidence conflict, not a proven copy-rule defect: the verified r1 package contains
-the exact r4 first-stage init, vendor ramdisk and fstab, while the physical runtime cannot load or
-parse the expected path. The locally unavailable full UART block also prevents distinguishing an
-underlying read error, fstab field/parser error, slot-selection update failure or another runtime
-condition. Therefore the exact reason r4 proceeds while r1 fails is **NOT UNIQUELY PROVEN**. Copying
-the same fstab into system, modifying boot/vendor_boot, or changing product inheritance would be
-speculative and is prohibited. Machine-readable evidence is in
+This earlier audit correctly disproved a package-level fstab omission and prevented a speculative
+fstab copy. The newer slot-correct diagnostic now resolves that evidence conflict and moves the
+causal boundary to the signed system root. Machine-readable history and reclassification are in
 `a16-prototype-b-r1-first-stage-audit.json`.
 
 ## Historical offline decision
@@ -91,7 +136,7 @@ candidate is:
 | Artifact | Bytes | SHA-256 |
 |---|---:|---|
 | `out/candidates/a16-prototype-b-r1/x12-a16-prototype-b-r1.img` | 1,641,752,576 | `796A2D46DB7FCDFF27D53397565ABDDC3D18F2E548A697055CE5E47278E69545` |
-| signed `system_a.img` | 1,651,167,232 | `DBA433B58363F2C393B76428E339380604AFCA6F5CE2153D3A38769DF4E3FBC` |
+| signed `system_a.img` | 1,651,167,232 | `DBA433B58363F2C393B76428E339380604AFCA6F5CE2153D3A387C4A74CFFCA0` |
 | signed `vendor_a.img` | 150,994,944 | `0166B5FB1718715E79F68D5A9FEAAE02439DC59DBE2379D4C1DA670541C7EC9B` |
 | raw `super` | 3,221,225,472 | `E740AC913A9EE5643FD795CC1E6C8178F892ECAEFDEDF79CA0DDC4E42C223EA3` |
 | sparse `super.fex` | 1,461,955,712 | `F961F2DD2674513E0788823A88D14FE67E493FC88D486E419F52BCEED7B48A3F` |
@@ -232,17 +277,11 @@ check all pass. The combined B1 focused suite is 21/21 PASS. The established ful
 `python3 -m unittest discover -s tests` reports 127 tests OK with 34 repository-declared skips.
 Python syntax compilation, JSON parsing and `git diff --check` also pass.
 
-## Current HOLD and next evidence
+## Current handoff
 
-The current result is **EVIDENCE-BACKED HOLD — ROOT CAUSE NOT UNIQUELY PROVEN**. r1 remains the
-immutable failed physical evidence point and is not accepted. The known r4 auto-recovered boot-time
-legacy audio failure remains unchanged and unfixed. Vulkan, enforcing SELinux, commercial DRM and
+r1 remains the immutable failed physical evidence point and is not accepted. Its exact root cause
+is now proven, so one strict single-cause `a16-prototype-b-r2` was authorized and built. r2 restores
+only the accepted root `/metadata` directory contract and is **OFFLINE CHECKED / READY FOR PHYSICAL
+VALIDATION**; see its separate candidate record. The known r4 auto-recovered boot-time legacy audio
+failure remains unchanged and unfixed. Vulkan, enforcing SELinux, commercial DRM and
 release-hardening work remain outside this failure boundary.
-
-Before any r2 design, preserve the unabridged UART block from force-normal switch-root through the
-fstab parser and fatal path, including any preceding errno, `Error parsing fstab` or slotselect
-message; verify the flashed outer identity/PhoenixCard record against `796A2D46...9545`; and, under
-separate physical authorization, establish the runtime presence/metadata/hash of
-`/fstab.sun50iw9p1` plus `/proc/cmdline` and `/proc/bootconfig` from a read-only recovery or
-first-stage diagnostic. Only a unique causal delta may authorize **one** bounded
-`a16-prototype-b-r2`. This task built no r2 and changed no candidate bytes.

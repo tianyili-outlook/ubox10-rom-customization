@@ -29,13 +29,19 @@ CHECKED / READY FOR PHYSICAL VALIDATION**, not physical PASS. The actual candida
 the authorized storage geometry and all preservation constraints. Full VINTF remains exit 65 for
 the inherited NFS exception only. No physical action occurred.
 
-Physical execution update, 2026-08-27: the user's first exact-r1 UART test is **PHYSICAL FAIL —
-FIRST-STAGE MOUNT / DEFAULT FSTAB MISSING**. It reaches the preserved kernel and normal first-stage
-init but not second stage. This does not reopen B0 or contradict its provider/build-readiness work.
-Detached r4/r1 provenance proves boot, first-stage init, vendor_boot ramdisk/fstab, DT/DTBO and
-their checksum companions are byte-identical and both packages verify; the runtime load/parse
-difference is not yet uniquely explained. Current execution decision is evidence-backed HOLD, and
-no r2 may be built merely by copying the same fstab. See the r1 candidate record and
+Physical execution update, 2026-08-27: the first exact-r1 diagnostic without a slot suffix stopped
+at default-fstab lookup; later slot-correct RAM-only UART evidence proved that result was an
+artificial diagnostic-boot blocker. With `androidboot.slot_suffix=_a`, fstab parse, metadata
+fsck/mount, logical partition creation and `system_a` mount all pass. The true first causal failure
+is the attempt to move `/metadata` after `SwitchRoot("/system")`.
+
+Exact signed r4/r1 root comparison uniquely proves r4 contains `/metadata` as a `0755`, `0:0`,
+`u:object_r:metadata_file:s0` directory and r1 omits it; all other observed top-level move targets
+match. The byte-identical first-stage init cannot create `/system/metadata` on the read-only system
+mount, so `MS_MOVE` returns the observed `ENOENT`. R1 is therefore **PHYSICAL FAIL — SYSTEM
+SWITCH-ROOT `/METADATA` TARGET MISSING**, not a default-fstab failure. Strict single-cause
+`a16-prototype-b-r2` restores only the accepted r4 root mountpoint contract and is **OFFLINE CHECKED
+/ READY FOR PHYSICAL VALIDATION**; it has not been flashed. See both candidate records and
 `a16-prototype-b-r1-first-stage-audit.json`.
 
 This record is the integration contract for the first Prototype B build task. B0 was read-only:

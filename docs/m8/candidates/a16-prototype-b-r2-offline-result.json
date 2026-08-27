@@ -1,0 +1,114 @@
+{
+  "schema": 1,
+  "candidate": "a16-prototype-b-r2",
+  "status": "OFFLINE_CHECKED_READY_FOR_PHYSICAL_VALIDATION",
+  "decision": "OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION",
+  "physical_status": "NOT_YET_VALIDATED",
+  "physical_device_actions_performed": false,
+  "flash_authorized": false,
+  "base": {
+    "candidate": "a16-prototype-b-r1",
+    "path": "out/candidates/a16-prototype-b-r1/x12-a16-prototype-b-r1.img",
+    "size": 1641752576,
+    "sha256": "796A2D46DB7FCDFF27D53397565ABDDC3D18F2E548A697055CE5E47278E69545"
+  },
+  "artifacts": {
+    "candidate": {
+      "path": "out/candidates/a16-prototype-b-r2/x12-a16-prototype-b-r2.img",
+      "size": 1641756672,
+      "sha256": "6FA8D13220DC9367659B5B16798664E906A390820359E72FD16063B84EC48887"
+    },
+    "system_a": {
+      "size": 1651167232,
+      "sha256": "5FE7D77931146F6AA989E42F50EF935CA3E7800F479F3302D9C2BE43338F15FC"
+    },
+    "vendor_a": {
+      "size": 150994944,
+      "sha256": "0166B5FB1718715E79F68D5A9FEAAE02439DC59DBE2379D4C1DA670541C7EC9B"
+    },
+    "super_raw": {
+      "size": 3221225472,
+      "sha256": "E650755DDC29D1E02F6A41D5C141A100F5788645E1076FECD657D291E8D5911C"
+    },
+    "super_sparse": {
+      "size": 1461959808,
+      "sha256": "E14E34E60ED6460F81F40ED9295B7C1DD0C8D1DF93A089598EBCD91A06A6E15C"
+    },
+    "vbmeta_system": {
+      "size": 1472,
+      "sha256": "DE6BE32D1C3E924E51283C1BE8E8ECC86E371387760BF07E8048F67D9275A2B2"
+    },
+    "vbmeta_vendor": {
+      "size": 1600,
+      "sha256": "DE14183FAFBBEA3EC0D2B0E8737FF9F71BA001186A0DE0D58E24891706ACE6C5"
+    }
+  },
+  "source": {
+    "tag": "android-security-16.0.0_r7",
+    "manifest_commit": "ebea28d151539ecf0730b1a4ab92ac33edc17ac9",
+    "build_id": "BP2A.250805.034",
+    "build_number_in_preserved_system": "UBOX10_A16_QPR0_B1",
+    "lunch": "ubox10_ceiling_arm64-bp2a-userdebug",
+    "android_system_rebuilt": false,
+    "kernel_rebuilt": false
+  },
+  "root_cause": {
+    "result": "PROVEN_B1_SYSTEM_ROOT_METADATA_MOVE_TARGET_ABSENT",
+    "superseded_diagnostic": "The earlier fstab failure was induced by a RAM diagnostic boot without androidboot.slot_suffix; the slot-correct diagnostic passes fstab and all early logical mounts.",
+    "latest_first_causal_blocker": "SwitchRoot(/system) moving /metadata to absent /system/metadata returns ENOENT",
+    "first_stage_init_sha256": "2A7D6E125583C79E925B5D916C54C51E4AE8EE145F2D7422B2DD77D0B6C62751"
+  },
+  "single_cause_delta": {
+    "tree_added": [
+      "metadata"
+    ],
+    "tree_removed": [],
+    "tree_changed": [],
+    "path": "/metadata",
+    "type": "directory",
+    "mode": "0755",
+    "uid": 0,
+    "gid": 0,
+    "selinux": "u:object_r:metadata_file:s0",
+    "r4_contract_exact": true,
+    "other_six_move_mountpoint_contracts_exact": true
+  },
+  "architecture": {
+    "result": "PASS_MIXED_ARM64_PRIMARY_ARM32_SECONDARY",
+    "zygote": "zygote64_32",
+    "system_aarch64_elf": 1471,
+    "system_arm_elf": 701,
+    "vendor_aarch64_services": 0,
+    "vendor_aarch64_provider_count": 3
+  },
+  "offline_gates": {
+    "filesystem_e2fsck": "PASS",
+    "system_avb": "PASS_SHA256_RSA2048_HASHTREE_NO_FEC",
+    "vendor_avb": "PASS_BYTE_PRESERVED_FROM_R1",
+    "vbmeta_system": "PASS_ROLLBACK_INDEX_1644019200_LOCATION_1",
+    "vbmeta_vendor": "PASS_BYTE_PRESERVED_FROM_R1",
+    "lp_geometry": "PASS_BYTE_PRESERVED_FROM_R1",
+    "super_sparse_roundtrip": "PASS",
+    "imagewty": "PASS",
+    "apex": "PASS_35_INSTALLED_AND_ACTIVATED",
+    "vndk31": "PASS_BOTH_ARCHITECTURES",
+    "linkerconfig": "PASS_MIXED_LIB_AND_ARM64_SPHAL",
+    "mali_symbol_closure": "PASS_297_STRONG_IMPORTS_ZERO_UNMATCHED",
+    "selinux": "PASS_OFFLINE_SPLIT_COMPILE_ONLY",
+    "system_vintf": "PASS",
+    "full_vintf": "INCOMPATIBLE_EXPECTED_INHERITED_NFS_EXCEPTION_ONLY",
+    "full_vintf_exit": 65,
+    "unexpected_vintf_incompatibilities": 0,
+    "kernel": "PASS_PRESERVED_5.4.302_PATH_A",
+    "vendor_dlkm": "PASS_PRESERVED_22_MODULES",
+    "aic_fmac": "PASS_PRESERVED",
+    "root_mountpoint": "PASS_SINGLE_CAUSE_METADATA_ROOT_MOUNTPOINT_RESTORED",
+    "preservation": "PASS"
+  },
+  "limitations": [
+    "r2 has not been flashed or physically validated.",
+    "The offline correction proves package structure, not successful runtime SwitchRoot or mixed-userspace boot.",
+    "Full VINTF remains exit 65 solely for inherited CONFIG_NFS_FS=y versus FCM-6 n.",
+    "The known auto-recovered r4 boot-time audio HAL defect remains post-Gate P1 and unfixed."
+  ]
+}

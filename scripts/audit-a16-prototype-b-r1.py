@@ -77,10 +77,34 @@ def dynamic_symbols(path: Path) -> tuple[set[str], set[str]]:
     return parse_dynamic_symbols(output)
 
 
+def load_candidate_contract(path: Path) -> dict[str, object]:
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    inherited = raw.get("inherits")
+    if inherited is None:
+        return raw
+    inherited_path = Path(str(inherited))
+    if not inherited_path.is_absolute():
+        inherited_path = REPO / inherited_path
+    merged = json.loads(inherited_path.read_text(encoding="utf-8"))
+    merged.update({
+        "id": raw["id"],
+        "milestone": raw["milestone"],
+        "status": raw["status"],
+        "base_candidate": raw["base_candidate"],
+        "outer_delta": raw["outer_delta"],
+        "root_cause": raw["root_cause"],
+        "root_mountpoint_contract": raw["root_mountpoint_contract"],
+        "_continuation": raw,
+    })
+    merged["avb"] = dict(merged["avb"])
+    merged["avb"]["system"] = raw["avb_system"]
+    return merged
+
+
 class Auditor(R3.Auditor):
     def __init__(self, args: argparse.Namespace) -> None:
         super().__init__(args)
-        self.cfg = json.loads(args.config.read_text(encoding="utf-8"))
+        self.cfg = load_candidate_contract(args.config)
         self.r4_config = json.loads(
             (REPO / "configs/candidates/a16-prototype-a-r4.json").read_text(
                 encoding="utf-8"
@@ -89,9 +113,10 @@ class Auditor(R3.Auditor):
         self.host = args.aosp / "out-ceiling-b1/host/linux-x86/bin"
         self.avbtool = args.aosp / "external/avb/avbtool.py"
         self.r4_vendor_mount = self.mounts / "r4-vendor"
+        self.r1_system_mount = self.mounts / "r1-system"
         self.kernel_evidence = self.candidate / "kernel-evidence"
-        if self.cfg["id"] != "a16-prototype-b-r1":
-            raise RuntimeError("B r1 auditor received the wrong contract")
+        if self.cfg["id"] not in {"a16-prototype-b-r1", "a16-prototype-b-r2"}:
+            raise RuntimeError("Prototype B auditor received the wrong contract")
         if self.build_result["id"] != self.cfg["id"]:
             raise RuntimeError("candidate/build contract ID mismatch")
 
@@ -247,7 +272,7 @@ class Auditor(R3.Auditor):
             command.extend(["--partition", f"{name}={path}"])
         command.extend([
             "--csv", str(csv_path), "--summary", str(summary),
-            "--label", "a16-prototype-b-r1 mixed exact-board candidate",
+            "--label", f"{self.cfg['id']} mixed exact-board candidate",
         ])
         self.run(command, output=self.audit / "elf-inventory.log")
         rows = list(csv.DictReader(csv_path.open(encoding="utf-8")))
@@ -437,11 +462,22 @@ class Auditor(R3.Auditor):
         if any(super_evidence.get(name) is not True for name in required_flags):
             raise RuntimeError("builder LP preservation evidence is incomplete")
         outer = self.build_result["outer"]
-        expected_changed = sorted([
+        default_changed = [
             "super.fex", "Vsuper.fex", "vbmeta_system.fex", "Vvbmeta_system.fex",
             "vbmeta_vendor.fex", "Vvbmeta_vendor.fex",
-        ])
-        if outer["changed_payloads"] != expected_changed or outer["preserved_payload_count"] != 44:
+        ]
+        continuation = self.cfg.get("_continuation", {})
+        outer_contract = continuation.get("outer_delta", {})
+        expected_changed = sorted(
+            outer_contract.get("changed_payloads_from_r1", default_changed)
+        )
+        expected_preserved = int(
+            outer_contract.get("preserved_payload_count_from_r1", 44)
+        )
+        if (
+            outer["changed_payloads"] != expected_changed
+            or outer["preserved_payload_count"] != expected_preserved
+        ):
             raise RuntimeError("outer changed/preserved inventory changed")
         base_path = Path(str(self.cfg["base_candidate"]["path"]))
         if not base_path.is_absolute():
@@ -469,6 +505,109 @@ class Auditor(R3.Auditor):
             "detached_outer_changed_payloads": detached_changed,
             "imagewty": "PASS",
             "result": "PASS",
+        }
+
+    @staticmethod
+    def inode_contract(image: Path, path: str) -> dict[str, object] | None:
+        output = subprocess.check_output(
+            ["debugfs", "-R", f"stat {path}", str(image)],
+            text=True, stderr=subprocess.STDOUT,
+        )
+        if "File not found" in output:
+            return None
+        header = re.search(r"Type:\s+(\w+)\s+Mode:\s+(\d+)", output)
+        owner = re.search(r"User:\s+(\d+)\s+Group:\s+(\d+)", output)
+        if header is None or owner is None:
+            raise RuntimeError(f"cannot parse inode contract for {path}")
+        label_match = re.search(r'security\.selinux \(\d+\) = "([^"\\]+)', output)
+        if label_match is None:
+            attrs = subprocess.check_output(
+                ["debugfs", "-R", f"ea_list {path}", str(image)],
+                text=True, stderr=subprocess.STDOUT,
+            )
+            label_match = re.search(r'security\.selinux \(\d+\) = "([^"\\]+)', attrs)
+        return {
+            "type": header.group(1),
+            "mode": header.group(2),
+            "uid": int(owner.group(1)),
+            "gid": int(owner.group(2)),
+            "selinux": label_match.group(1) if label_match else None,
+        }
+
+    def audit_root_mountpoint_delta(self, images: dict[str, Path]) -> dict[str, object]:
+        if self.cfg["id"] == "a16-prototype-b-r1":
+            return {"result": "NOT_APPLICABLE_TO_HISTORICAL_R1_OFFLINE_AUDIT"}
+
+        continuation = self.cfg["_continuation"]
+        base_spec = continuation["base_artifacts"]["system_a"]
+        base_path = Path(str(base_spec["path"]))
+        if not base_path.is_absolute():
+            base_path = REPO / base_path
+        base_record = R3.record(base_path)
+        if (
+            base_record["size"] != base_spec["size"]
+            or base_record["sha256"] != base_spec["sha256"]
+        ):
+            raise RuntimeError("frozen r1 system identity changed")
+        self.r1_system_mount.mkdir(parents=True)
+        self.run([
+            "sudo", "mount", "-o", "loop,ro,noload", str(base_path),
+            str(self.r1_system_mount),
+        ])
+        self.mounted.append(self.r1_system_mount)
+
+        before = R4.tree_manifest(self.r1_system_mount)
+        after = R4.tree_manifest(self.mounts / "system")
+        added = sorted(set(after) - set(before))
+        removed = sorted(set(before) - set(after))
+        changed = sorted(
+            name for name in set(before) & set(after) if before[name] != after[name]
+        )
+        if added != ["metadata"] or removed or changed:
+            raise RuntimeError(
+                f"r2 system semantic delta expanded: added={added} "
+                f"removed={removed} changed={changed}"
+            )
+
+        r4_system = REPO / "out/candidates/a16-prototype-a-r4/system_a.img"
+        contract = continuation["root_mountpoint_contract"]
+        accepted = self.inode_contract(r4_system, "/metadata")
+        base_metadata = self.inode_contract(base_path, "/metadata")
+        candidate_metadata = self.inode_contract(images["system"], "/metadata")
+        expected = {
+            "type": contract["type"], "mode": contract["mode"],
+            "uid": contract["uid"], "gid": contract["gid"],
+            "selinux": contract["selinux"],
+        }
+        if accepted != expected or base_metadata is not None or candidate_metadata != expected:
+            raise RuntimeError(
+                "r4/r1/r2 /metadata contract does not prove the single-cause restoration"
+            )
+
+        move_mountpoints = {}
+        for path in contract["required_move_mountpoints"]:
+            r4_value = self.inode_contract(r4_system, path)
+            r1_value = self.inode_contract(base_path, path)
+            r2_value = self.inode_contract(images["system"], path)
+            if path == "/metadata":
+                if r4_value != r2_value or r1_value is not None:
+                    raise RuntimeError("/metadata is not the sole restored move destination")
+            elif r1_value != r4_value or r2_value != r4_value:
+                raise RuntimeError(f"switch-root destination contract changed: {path}")
+            move_mountpoints[path] = {"r4": r4_value, "r1": r1_value, "r2": r2_value}
+
+        return {
+            "result": "PASS_SINGLE_CAUSE_METADATA_ROOT_MOUNTPOINT_RESTORED",
+            "r1_system": R3.record(base_path),
+            "r2_system": R3.record(images["system"]),
+            "tree_delta_from_r1": {"added": added, "removed": removed, "changed": changed},
+            "metadata_contract": {"r4": accepted, "r1": base_metadata, "r2": candidate_metadata},
+            "move_mountpoints": move_mountpoints,
+            "switch_root_new_root": "/system",
+            "failing_source_mount": "/metadata",
+            "proven_missing_r1_destination": "/system/metadata",
+            "first_stage_init_sha256": continuation["root_cause"]["first_stage_init"]["r1_sha256"],
+            "result_scope": "OFFLINE ROOT-CAUSE CORRECTION; PHYSICAL BOOT NOT YET VALIDATED",
         }
 
     def audit_preservation(self, images: dict[str, Path]) -> dict[str, object]:
@@ -544,6 +683,7 @@ class Auditor(R3.Auditor):
         elf: dict[str, object],
         avb_lp_outer: dict[str, object],
         preservation: dict[str, object],
+        root_mountpoint: dict[str, object],
     ) -> None:
         kernel_audit = json.loads(
             (self.kernel_evidence / "offline-audit.json").read_text(encoding="utf-8")
@@ -566,6 +706,7 @@ class Auditor(R3.Auditor):
             "compatibility": compatibility,
             "elf_abi_linker": elf,
             "preservation": preservation,
+            "root_mountpoint": root_mountpoint,
             "kernel": {
                 "result": kernel_audit["result"],
                 "release": kernel_audit["source"]["kernel_release"],
@@ -607,10 +748,14 @@ class Auditor(R3.Auditor):
             elf = self.audit_elf(images)
             avb_lp_outer = self.audit_avb_lp_outer(images)
             preservation = self.audit_preservation(images)
+            root_mountpoint = self.audit_root_mountpoint_delta(images)
         finally:
             for point in reversed(self.mounted):
                 self.run(["sudo", "umount", str(point)], allowed={0, 32})
-        self.finish_b1(images, apex, compatibility, elf, avb_lp_outer, preservation)
+        self.finish_b1(
+            images, apex, compatibility, elf, avb_lp_outer, preservation,
+            root_mountpoint,
+        )
         print("OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION", flush=True)
 
 

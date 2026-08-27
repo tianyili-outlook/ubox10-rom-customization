@@ -3,7 +3,7 @@
   "candidate": "a16-prototype-b-r1",
   "date": "2026-08-27",
   "physical_result": {
-    "status": "PHYSICAL_FAIL_FIRST_STAGE_MOUNT_DEFAULT_FSTAB_MISSING",
+    "status": "PHYSICAL_FAIL_SYSTEM_SWITCH_ROOT_METADATA_TARGET_MISSING",
     "accepted": false,
     "evidence_provenance": "USER_SUPPLIED_UART_FACTS_AND_EXCERPTS",
     "raw_uart_capture_present_locally": false,
@@ -12,12 +12,16 @@
       "Linux 5.4.302+ kernel startup",
       "/init exec",
       "normal first-stage init",
-      "androidboot.force_normal_boot=1 handling"
+      "androidboot.force_normal_boot=1 handling",
+      "androidboot.slot_suffix=_a handling",
+      "default fstab parsing",
+      "metadata fsck and mount",
+      "system_a/product_a/vendor_dlkm_a/vendor_a logical partition creation",
+      "system_a mount at /system"
     ],
-    "first_causal_blocker": "ReadFstabFromFile failed to load /fstab.sun50iw9p1",
+    "first_causal_blocker": "SwitchRoot(/system) cannot move /metadata because the signed r1 system root has no /metadata destination; mount(MS_MOVE) returns ENOENT",
     "cascade": [
-      "Failed to create FirstStageMount",
-      "Failed to mount required partitions early",
+      "Unable to move mount at /metadata: No such file or directory",
       "InitFatalReboot",
       "kernel panic"
     ],
@@ -28,7 +32,12 @@
       "system_server",
       "SurfaceFlinger",
       "ARM64 Mali runtime"
-    ]
+    ],
+    "superseded_initial_diagnostic": {
+      "status": "ARTIFICIAL_BLOCKER_DIAGNOSTIC_BOOT_LACKED_SLOT_SUFFIX",
+      "observed": "ReadFstabFromFile failed to load /fstab.sun50iw9p1",
+      "current_classification": "Not the r1 candidate root cause; the later RAM-only diagnostic supplied androidboot.slot_suffix=_a and passed fstab parsing."
+    }
   },
   "artifact_identity": {
     "r4": {
@@ -120,7 +129,86 @@
       "/first_stage_ramdisk/system/etc/fstab.<suffix>",
       "/fstab.<suffix>",
       "/first_stage_ramdisk/fstab.<suffix>"
-    ]
+    ],
+    "android12_switch_root": {
+      "tag_commit": "1d37c4499249b17f143df12cebc5ee9ea3600ce3",
+      "switch_root_cpp_sha256": "CCB59F87ECB6F06ABDB2A4A0F620CADC79BB19D2F033919C5D9699DA32BD92CE",
+      "behavior": "For new_root=/system, each top-level source mount path is moved to /system plus that path; /metadata therefore requires /system/metadata.",
+      "scope": "The byte-identical r4/r1 ELF32 init contains the matching Switching root and Unable to move mount strings; this record does not claim a unique vendor binary source commit."
+    }
+  },
+  "signed_system_root_comparison": {
+    "scope": "Top-level mounts requiring independent SwitchRoot MS_MOVE destinations; children of an earlier parent mount are moved with that subtree.",
+    "generation_provenance": {
+      "r4_product": {
+        "product_device": "generic",
+        "product_file": "configs/aosp/architecture-ceiling-a16/device/ubox/ceiling/ubox10_ceiling_arm.mk",
+        "product_file_sha256": "BF21FEC0D698A5AF512016DA4C1DC97BA0CC29ED9C2C5EEE45EA2CF044A4EF7F",
+        "resolved_board_config": "build/make/target/board/generic/BoardConfig.mk",
+        "resolved_board_config_sha256": "BCA69458BB6378357F74CC7EE444ACEDAABEDF0A703861AD6B2B3B0D9158DFD3",
+        "gsi_common": "build/make/target/board/BoardConfigGsiCommon.mk",
+        "gsi_common_sha256": "8C15B36A409647A5FA7B26553588E6028226E4ED8F9B04C5C3A3DFFED7A8CD2F",
+        "effective_contract": "BOARD_USES_METADATA_PARTITION=true"
+      },
+      "r1_product": {
+        "product_device": "ubox10_ceiling_arm64",
+        "product_file": "configs/aosp/architecture-ceiling-a16/device/ubox/ceiling/ubox10_ceiling_arm64.mk",
+        "product_file_sha256": "7A2AA9F6A82ABEA247C0BBDE8E3F17ADCFE13822BD66D49F072981AAB3BAB1BF",
+        "resolved_board_config": "configs/aosp/architecture-ceiling-a16/device/ubox/ubox10_ceiling_arm64/BoardConfig.mk",
+        "resolved_board_config_sha256": "42F3A518531CDCA82EDD449C8B9F07C33C44D4C8BDEFF9D2D3E72A0E6463F25C",
+        "included_generic_arm64_board_config": "device/generic/arm64/BoardConfig.mk",
+        "included_generic_arm64_board_config_sha256": "B2A307B133C8C3254516EFA9DEC45B6A972A7828369C06E1DD5904F68E8C1569",
+        "effective_contract": "BOARD_USES_METADATA_PARTITION is unset"
+      },
+      "root_generation": {
+        "system_core_commit": "68be0c2c0006a0740d0b1809abe4717308f90d15",
+        "path": "system/core/rootdir/create_root_structure.mk",
+        "sha256": "E4B6E731F1E93512B0E861DD2B92ADDF2852872D80DA2D16A7755C06CC1BB49C",
+        "rule": "mkdir -p $(TARGET_ROOT_OUT)/metadata only under ifdef BOARD_USES_METADATA_PARTITION"
+      },
+      "result": "PROVEN_PRODUCT_BOARDCONFIG_GENERATION_DELTA"
+    },
+    "move_mountpoints": {
+      "/dev": {
+        "r4": {"type": "directory", "mode": "0755", "uid": 0, "gid": 0, "selinux": "u:object_r:device:s0"},
+        "r1": {"type": "directory", "mode": "0755", "uid": 0, "gid": 0, "selinux": "u:object_r:device:s0"}
+      },
+      "/proc": {
+        "r4": {"type": "directory", "mode": "0755", "uid": 0, "gid": 0, "selinux": "u:object_r:rootfs:s0"},
+        "r1": {"type": "directory", "mode": "0755", "uid": 0, "gid": 0, "selinux": "u:object_r:rootfs:s0"}
+      },
+      "/sys": {
+        "r4": {"type": "directory", "mode": "0755", "uid": 0, "gid": 0, "selinux": "u:object_r:sysfs:s0"},
+        "r1": {"type": "directory", "mode": "0755", "uid": 0, "gid": 0, "selinux": "u:object_r:sysfs:s0"}
+      },
+      "/mnt": {
+        "r4": {"type": "directory", "mode": "0755", "uid": 0, "gid": 1000, "selinux": "u:object_r:tmpfs:s0"},
+        "r1": {"type": "directory", "mode": "0755", "uid": 0, "gid": 1000, "selinux": "u:object_r:tmpfs:s0"}
+      },
+      "/debug_ramdisk": {
+        "r4": {"type": "directory", "mode": "0755", "uid": 0, "gid": 0, "selinux": "u:object_r:tmpfs:s0"},
+        "r1": {"type": "directory", "mode": "0755", "uid": 0, "gid": 0, "selinux": "u:object_r:tmpfs:s0"}
+      },
+      "/second_stage_resources": {
+        "r4": {"type": "directory", "mode": "0755", "uid": 0, "gid": 0, "selinux": "u:object_r:tmpfs:s0"},
+        "r1": {"type": "directory", "mode": "0755", "uid": 0, "gid": 0, "selinux": "u:object_r:tmpfs:s0"}
+      },
+      "/metadata": {
+        "r4": {
+          "type": "directory",
+          "mode": "0755",
+          "uid": 0,
+          "gid": 0,
+          "selinux": "u:object_r:metadata_file:s0",
+          "ctime": "0x6a8d83ab",
+          "atime": "0x6a8d83ab",
+          "mtime": "0x6a8d83ab",
+          "crtime": "0x6a8e980e"
+        },
+        "r1": null
+      }
+    },
+    "only_missing_r1_destination": "/system/metadata"
   },
   "outer_integrity": {
     "r4_imagewty": "PASS_12_PARTITIONS_ZERO_MISMATCH",
@@ -136,24 +224,28 @@
     "first_stage_payload_in_changed_set": false
   },
   "root_cause_decision": {
-    "result": "EVIDENCE_BACKED_HOLD_ROOT_CAUSE_NOT_UNIQUELY_PROVEN",
+    "result": "PROVEN_B1_SYSTEM_ROOT_METADATA_MOVE_TARGET_ABSENT",
     "proven": [
-      "The r1 physical boot fails in first-stage default-fstab handling before any mixed-userspace or graphics runtime.",
+      "The earlier default-fstab diagnostic blocker was induced by absence of androidboot.slot_suffix and is not the current r1 root cause.",
+      "With androidboot.slot_suffix=_a, r1 passes fstab parsing, metadata fsck/mount, logical partition creation and system_a mount.",
+      "The current first causal failure is SwitchRoot(/system) moving the already-mounted /metadata source to the required /system/metadata destination.",
+      "Frozen r4 signed system_a contains /metadata as directory 0755, uid/gid 0:0, u:object_r:metadata_file:s0; signed r1 system_a lacks it.",
+      "The other six top-level move destinations exist in both signed roots with matching type, mode, uid/gid and SELinux label.",
       "The accepted r4 fstab source is vendor_boot first_stage_ramdisk, not the generated system root.",
-      "The r1 package retains the exact r4 boot, first-stage init, vendor_boot ramdisk, fstab, DT, DTBO and checksum companions relevant before the failure.",
-      "No tracked r1 product, BoardConfig, system, vendor-property, Mali, mapper, gralloc or LP semantic delta can explain the package-level absence of /fstab.sun50iw9p1 before first-stage parsing."
+      "The r1 package retains the exact r4 boot, first-stage init, vendor_boot ramdisk, fstab, DT, DTBO and checksum companions."
     ],
     "not_proven": [
-      "Why the physical r1 runtime could not load or parse bytes that are present in its verified vendor_boot payload.",
-      "Whether the decisive inner parser failure was file read, field parsing, slotselect update or another runtime-only condition; the full raw UART block is not locally available.",
-      "That copying the same fstab to another partition or rebuilding boot/vendor_boot would correct the observed failure."
+      "Any second-stage, mixed-ABI, zygote or graphics runtime result; r1 did not reach them.",
+      "Physical success of the r2 correction; it remains offline-only until separately authorized device validation."
     ],
-    "r2_authorized": false,
-    "r2_created": false,
-    "minimum_next_evidence": [
-      "Preserve the exact unabridged UART block from force-normal switch-root through ReadFstabFromFile and InitFatalReboot, including any preceding errno, Error parsing fstab, or slotselect line.",
-      "Verify the flashed r1 image identity and PhoenixCard write/checksum record against SHA-256 796A2D46DB7FCDFF27D53397565ABDDC3D18F2E548A697055CE5E47278E69545.",
-      "Using an explicitly authorized read-only recovery or first-stage diagnostic, establish runtime existence, metadata and SHA-256 of /fstab.sun50iw9p1 plus /proc/cmdline and /proc/bootconfig before proposing a byte change."
-    ]
+    "r2_authorized": true,
+    "r2_created": true,
+    "r2_scope": "Restore only the exact accepted /metadata root mountpoint contract in r1 system_a; preserve kernel, boot, vendor_boot, fstab, LP geometry, vendor, graphics providers and all other B1 semantics.",
+    "r2_candidate": {
+      "path": "out/candidates/a16-prototype-b-r2/x12-a16-prototype-b-r2.img",
+      "size": 1641756672,
+      "sha256": "6FA8D13220DC9367659B5B16798664E906A390820359E72FD16063B84EC48887",
+      "status": "OFFLINE_CHECKED_READY_FOR_PHYSICAL_VALIDATION"
+    }
   }
 }

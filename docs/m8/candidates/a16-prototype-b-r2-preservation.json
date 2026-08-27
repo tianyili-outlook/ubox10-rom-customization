@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "candidate": "a16-prototype-b-r2",
+  "base": "a16-prototype-b-r1",
+  "result": "PASS",
+  "semantic_delta": {
+    "added": [
+      "/metadata directory: mode 0755, uid/gid 0:0, SELinux u:object_r:metadata_file:s0"
+    ],
+    "removed": [],
+    "changed": [],
+    "classification": "SINGLE_CAUSE_SYSTEM_ROOT_MOUNTPOINT_RESTORATION"
+  },
+  "logical_partitions": {
+    "system_a": "CHANGED_ONLY_FOR_ROOT_METADATA_DIRECTORY_AND_REQUIRED_AVB_HASHTREE",
+    "vendor_a": "BYTE_PRESERVED_FROM_R1",
+    "product_a": "BYTE_PRESERVED_FROM_R1",
+    "vendor_dlkm_a": "BYTE_PRESERVED_FROM_R1_22_MODULES",
+    "all_b_slots": "BYTE_PRESERVED_EMPTY",
+    "lp_geometry": "BYTE_PRESERVED_FROM_R1"
+  },
+  "outer": {
+    "changed": [
+      "Vsuper.fex",
+      "Vvbmeta_system.fex",
+      "super.fex",
+      "vbmeta_system.fex"
+    ],
+    "changed_count": 4,
+    "preserved_count": 46,
+    "all_unlisted_payloads_byte_preserved_from_r1": true,
+    "vbmeta_vendor_byte_preserved": true,
+    "top_level_vbmeta_byte_preserved": true,
+    "boot_byte_preserved": true,
+    "vendor_boot_and_fstab_byte_preserved": true
+  },
+  "kernel": {
+    "rebuilt": false,
+    "image_sha256": "287A82F799982FB58D02ADE88150A9EAB22D4C0956BE3CE50765F6FD1DB24F40",
+    "release": "5.4.302+",
+    "path_a_six_configs": "PRESERVED",
+    "vendor_dlkm_modules": 22,
+    "aic_fmac_contract": "PRESERVED"
+  },
+  "b1_architecture": {
+    "arm64_primary_arm32_secondary": "PRESERVED",
+    "zygote64_32": "PRESERVED",
+    "arm64_mali_sha256": "03333D495E3566C7D85CA2E000DA569A16CE8F022EA25C0EA61950C891D5C7F8",
+    "arm64_mapper_sha256": "83A236476CB24DE2514159534A267334A4C8D7BC957497CD25C70C93F757762D",
+    "arm64_gralloc_sha256": "842BA5157989B6BCBF7DC800DC5323FAC9BEF37D914FA56A25A4656B97692E1F",
+    "vendor_property_delta": "BYTE_PRESERVED_IN_VENDOR_A"
+  },
+  "hardware_authority": {
+    "Wi-Fi": "UNCHANGED",
+    "Ethernet": "UNCHANGED",
+    "audio": "UNCHANGED_KNOWN_R4_BOOT_TIME_DEBT",
+    "remote": "UNCHANGED",
+    "HDMI_display": "UNCHANGED",
+    "HWC_allocator_OMX_Cedar_DRM_TEE": "UNCHANGED",
+    "DT_DTBO_bootloader_factory_security_recovery": "UNCHANGED"
+  }
+}

@@ -2,7 +2,7 @@
 
 ## Freeze decision
 
-`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为稳定日用回退。`a16-prototype-a-r4` 现已冻结为 **PHYSICAL PASS / ACCEPTED Android 16 ARM32 ARCHITECTURE BASELINE / Prototype B ROLLBACK CONTROL**。用户明确把一次性、自动恢复的 boot-time `getAudioPort` SIGSEGV 从旧 Gate 2 startup-stability 条件改列为 **KNOWN / UNFIXED / POST-GATE P1 STABILIZATION DEBT**；故 Gate 2 为 **CLOSED / PASS**，不是静默弱化证据。当前不实施 Android 12 M8B feature、Prototype A r5 或 P1 polish；活跃架构路径是下述 Prototype B B1 bounded experiment。
+`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为稳定日用回退。`a16-prototype-a-r4` 现已冻结为 **PHYSICAL PASS / ACCEPTED Android 16 ARM32 ARCHITECTURE BASELINE / Prototype B ROLLBACK CONTROL**。用户明确把一次性、自动恢复的 boot-time `getAudioPort` SIGSEGV 从旧 Gate 2 startup-stability 条件改列为 **KNOWN / UNFIXED / POST-GATE P1 STABILIZATION DEBT**；故 Gate 2 为 **CLOSED / PASS**，不是静默弱化证据。当前不实施 Android 12 M8B feature、Prototype A r5 或 P1 polish；B1 r1 已冻结为物理失败点，活跃执行合同是下述 exact single-cause r2 physical validation。
 
 ## Android 16 Gate 1 / Gate 2 — Prototype A ARM32
 
@@ -72,19 +72,22 @@
   `796A2D46DB7FCDFF27D53397565ABDDC3D18F2E548A697055CE5E47278E69545`；full VINTF 仍只有
   inherited NFS exit-65 exception。这里保留的是 physical test 之前的历史
   **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION** 结论；当前结果见 13。
-- [x] **13 — r1 first physical result and provenance audit：**用户 UART 证明 Linux 5.4.302+、
-  `/init`、normal first-stage 与 force-normal handling 到达；首错为
-  `/fstab.sun50iw9p1` load failure，随后 FirstStageMount/required early mount/fatal reboot/panic。
-  状态 **PHYSICAL FAIL — FIRST-STAGE MOUNT / DEFAULT FSTAB MISSING / NOT ACCEPTED**；second stage、
-  APEX、zygote、system_server、SurfaceFlinger、Mali 均未到达。Exact r4/r1 outer audit 同时证明
-  fstab 的真实来源是 byte-preserved vendor_boot `first_stage_ramdisk`，且 boot/init/vendor ramdisk/
-  fstab/DT/DTBO/checksum companions 全相同；generated system root 从来不是 fstab 来源。故当前
-  **HOLD — ROOT CAUSE NOT UNIQUELY PROVEN**，不能猜测性复制 fstab，也不构建 r2。
-- [ ] **14 — minimum evidence before r2：**保存未截断 UART（含 `ReadFstabFromFile` 前的 errno、
-  parse 或 slotselect 行），核对 flashed IMG/PhoenixCard record 与 `796A2D46...9545`，并在另行
-  授权的 read-only recovery/first-stage diagnostic 中读取 runtime `/fstab.sun50iw9p1` 的存在性、
-  metadata/hash 以及 `/proc/cmdline`、`/proc/bootconfig`。只有唯一 causal delta proven 后，才创建
-  一个 bounded `a16-prototype-b-r2`；否则保持 r1 HOLD。
+- [x] **13 — r1 physical result reclassification：**初始无 slot suffix RAM diagnostic 的 fstab
+  failure 保留为历史但不再作为 root cause。最新 `androidboot.slot_suffix=_a` diagnostic 已通过
+  fstab、metadata、四个 A logical devices 与 system mount，首错推进到
+  `SwitchRoot("/system")` 对 `/metadata` 的 ENOENT。Signed r4 有 exact root `/metadata` contract，
+  signed r1 唯一缺失该 move destination；其余六项与 byte-identical init contract 对应，root cause
+  **PROVEN**。r1 冻结为 **PHYSICAL FAIL / NOT ACCEPTED**。
+- [x] **14 — bounded `a16-prototype-b-r2`：**只恢复 `/metadata` directory 0755/0:0/
+  `metadata_file`；tree delta 为 added one、removed/changed zero。Vendor/product/vendor_dlkm/B slots/
+  LP geometry、boot/vendor_boot/fstab/kernel/Mali/mapper/gralloc/B1 semantics 保持。IMG
+  1,641,756,672 bytes / `6FA8D132...8887`；ext4/AVB/LP/IMAGEWTY/ELF/APEX/VNDK/linker/SELinux/
+  preservation PASS；r2 focused 6/6、combined r1/r2 17/17、full lightweight repository 136 tests
+  PASS（34 skips）；full VINTF 仍仅 inherited NFS exit 65。状态 **OFFLINE CHECKED / READY FOR
+  PHYSICAL VALIDATION**。
+- [ ] **15 — r2 physical architecture validation：**另行授权后只测试 exact r2。先确认跨过
+  `/metadata` move 并进入 second stage/APEX，再检查 `zygote64_32`、AArch64
+  system_server/SurfaceFlinger/Mali 与 r4 hardware preservation。没有 r2 物理结果前不创建 r3。
 
 ## Post-Gate stabilization / release hardening
 
@@ -149,4 +152,4 @@
 - [x] 完成限定只读 system-quality audit：无 P0；stability、retry loop、audio residual、SELinux、CPU/thermal/idle、graphics 与 memory 证据见 `docs/m8/device-tests/20260816-m8b-system-quality-audit/`。
 - [ ] **DEFERRED / P2 / 不修：**Wi-Fi HAL link-layer statistics 每约 3 秒返回 `ERROR_UNKNOWN`；网络 ADB 稳定且 Wi-Fi 进程未重启。
 - [x] 保持 Mouse mode dropped；不重新引入 vendor mouse framework。
-- [x] architecture-ceiling study 与 B0 已锁定 paired AArch64 Mali、AOSP mapper adapter、multilib gralloc-1.x、lawful-local fail-closed intake、vendor property 与 AVB scope；ARM32 OMX/Cedar/media/HWC/audio/Wi-Fi/BT/DRM/TEE 继续进程隔离复用。B0 的 historical build-readiness GO 与同一 B1 的 storage correction/build/offline audit 已执行；首次 physical 现已在 first-stage fstab load 失败，当前执行合同由上文 13/14 的 evidence-backed HOLD 取代。
+- [x] architecture-ceiling study 与 B0 已锁定 paired AArch64 Mali、AOSP mapper adapter、multilib gralloc-1.x、lawful-local fail-closed intake、vendor property 与 AVB scope；ARM32 OMX/Cedar/media/HWC/audio/Wi-Fi/BT/DRM/TEE 继续进程隔离复用。B r1 first-stage root cause 已证明，single-cause r2 已完整离线闭合；当前执行合同是上文 15 的 exact r2 physical validation。
