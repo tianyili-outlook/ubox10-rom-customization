@@ -3,8 +3,9 @@
   "candidate": "a16-prototype-b-r2",
   "status": "OFFLINE_CHECKED_READY_FOR_PHYSICAL_VALIDATION",
   "decision": "OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION",
-  "physical_status": "NOT_YET_VALIDATED",
+  "physical_status": "PHYSICAL_FAIL_SYSTEM_SWITCH_ROOT_VENDOR_MOUNTPOINT_NON_CANONICAL",
   "physical_device_actions_performed": false,
+  "subsequent_user_physical_validation_performed": true,
   "flash_authorized": false,
   "base": {
     "candidate": "a16-prototype-b-r1",
@@ -58,6 +59,13 @@
     "latest_first_causal_blocker": "SwitchRoot(/system) moving /metadata to absent /system/metadata returns ENOENT",
     "first_stage_init_sha256": "2A7D6E125583C79E925B5D916C54C51E4AE8EE145F2D7422B2DD77D0B6C62751"
   },
+  "subsequent_physical_result": {
+    "metadata_single_cause_fix": "PHYSICAL_PASS",
+    "reached": "slot _a, fstab, metadata fsck/mount, four A logical devices, system mount and SwitchRoot(/system)",
+    "first_causal_blocker": "mount point is not canonical: realpath(/vendor) -> /system/vendor; vendor mount returns EEXIST",
+    "second_stage_reached": false,
+    "evidence": "docs/m8/candidates/a16-prototype-b-r2-root-layout-audit.json"
+  },
   "single_cause_delta": {
     "tree_added": [
       "metadata"
@@ -106,8 +114,8 @@
     "preservation": "PASS"
   },
   "limitations": [
-    "r2 has not been flashed or physically validated.",
-    "The offline correction proves package structure, not successful runtime SwitchRoot or mixed-userspace boot.",
+    "The later RAM-only physical diagnostic proves the metadata correction but r2 fails at the next /vendor canonical mount boundary.",
+    "No second-stage or mixed-userspace runtime was reached.",
     "Full VINTF remains exit 65 solely for inherited CONFIG_NFS_FS=y versus FCM-6 n.",
     "The known auto-recovered r4 boot-time audio HAL defect remains post-Gate P1 and unfixed."
   ]

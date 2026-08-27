@@ -57,8 +57,16 @@ class A16PrototypeBR2CandidateTests(unittest.TestCase):
         self.assertEqual(
             "OFFLINE_CHECKED_READY_FOR_PHYSICAL_VALIDATION", self.result["status"]
         )
-        self.assertEqual("NOT_YET_VALIDATED", self.result["physical_status"])
+        self.assertEqual(
+            "PHYSICAL_FAIL_SYSTEM_SWITCH_ROOT_VENDOR_MOUNTPOINT_NON_CANONICAL",
+            self.result["physical_status"],
+        )
         self.assertFalse(self.result["physical_device_actions_performed"])
+        self.assertTrue(self.result["subsequent_user_physical_validation_performed"])
+        self.assertEqual(
+            "PHYSICAL_PASS",
+            self.result["subsequent_physical_result"]["metadata_single_cause_fix"],
+        )
         self.assertFalse(self.result["flash_authorized"])
         artifact = self.result["artifacts"]["candidate"]
         self.assertEqual(1641756672, artifact["size"])

@@ -1,0 +1,153 @@
+{
+  "schema": 1,
+  "id": "a16-prototype-b-r3",
+  "milestone": "Prototype B B1 single-cause root-layout continuation",
+  "status": "ROOT_CAUSE_PROVEN_SINGLE_CAUSE_R3_AUTHORIZED",
+  "inherits": "configs/candidates/a16-prototype-b-r1.json",
+  "base_candidate": {
+    "id": "a16-prototype-b-r2",
+    "path": "out/candidates/a16-prototype-b-r2/x12-a16-prototype-b-r2.img",
+    "size": 1641756672,
+    "sha256": "6FA8D13220DC9367659B5B16798664E906A390820359E72FD16063B84EC48887"
+  },
+  "base_artifacts": {
+    "system_a": {
+      "path": "out/candidates/a16-prototype-b-r2/system_a.img",
+      "size": 1651167232,
+      "sha256": "5FE7D77931146F6AA989E42F50EF935CA3E7800F479F3302D9C2BE43338F15FC"
+    },
+    "vendor_a": {
+      "path": "out/candidates/a16-prototype-b-r2/vendor_a.img",
+      "size": 150994944,
+      "sha256": "0166B5FB1718715E79F68D5A9FEAAE02439DC59DBE2379D4C1DA670541C7EC9B"
+    },
+    "super_raw": {
+      "path": "out/candidates/a16-prototype-b-r2/super.raw.img",
+      "size": 3221225472,
+      "sha256": "E650755DDC29D1E02F6A41D5C141A100F5788645E1076FECD657D291E8D5911C"
+    },
+    "vbmeta_vendor": {
+      "path": "out/candidates/a16-prototype-b-r2/vbmeta_vendor.fex",
+      "size": 1600,
+      "sha256": "DE14183FAFBBEA3EC0D2B0E8737FF9F71BA001186A0DE0D58E24891706ACE6C5"
+    },
+    "boot": {
+      "path": "out/candidates/a16-prototype-b-r2/boot.fex",
+      "size": 67108864,
+      "sha256": "527CF878B015CFAE4E8600BD750C7C73F45F4290B5CFEFEDBD1AD9AC347B8063"
+    },
+    "vendor_dlkm": {
+      "path": "out/candidates/a16-prototype-b-r2/vendor_dlkm_a.img",
+      "size": 6680576,
+      "sha256": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07"
+    }
+  },
+  "root_cause": {
+    "result": "PROVEN_PROTOTYPE_B_R2_SYSTEM_ROOT_VENDOR_MOUNTPOINT_NON_CANONICAL",
+    "r2_physical_result": {
+      "metadata_single_cause_fix": "PHYSICAL_PASS",
+      "first_causal_blocker": "mount point is not canonical: realpath(/vendor) -> /system/vendor; vendor mount returns EEXIST",
+      "not_reached": [
+        "second-stage init",
+        "apexd",
+        "zygote64_32",
+        "system_server",
+        "SurfaceFlinger",
+        "ARM64 Mali runtime"
+      ]
+    },
+    "first_stage_init": {
+      "r4_sha256": "2A7D6E125583C79E925B5D916C54C51E4AE8EE145F2D7422B2DD77D0B6C62751",
+      "r2_sha256": "2A7D6E125583C79E925B5D916C54C51E4AE8EE145F2D7422B2DD77D0B6C62751",
+      "byte_identical": true,
+      "elf": "ELF32 ARM",
+      "canonical_contract": "fs_mgr_create_canonical_mount_point requires realpath(mount_point) to equal mount_point before mounting each required fstab entry."
+    },
+    "fstab": {
+      "source": "byte-preserved vendor_boot first_stage_ramdisk/fstab.sun50iw9p1",
+      "sha256": "6C771313A6F9DEDAEFA4061B14FE142F050F4AB13D360FF2F60FB9361277F701",
+      "vendor_entry": "vendor /vendor ext4 ro,barrier=1 wait,first_stage_mount,logical,slotselect"
+    },
+    "generation_provenance": {
+      "r4": "PRODUCT_DEVICE=generic resolves through BoardConfigGsiCommon/MainlineCommon, setting TARGET_COPY_OUT_VENDOR=vendor and BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE=ext4; BOARD_USES_VENDORIMAGE is true and create_root_structure.mk creates /vendor as a directory.",
+      "r2": "PRODUCT_DEVICE=ubox10_ceiling_arm64 resolves to device/generic/arm64/BoardConfig.mk; the dedicated BoardConfig does not inherit the GSI separate-vendor settings, so TARGET_COPY_OUT_VENDOR defaults to system/vendor, BOARD_USES_VENDORIMAGE is false and create_root_structure.mk creates /vendor -> /system/vendor.",
+      "result": "PROVEN_PRODUCT_BOARDCONFIG_SEPARATE_VENDOR_CONTRACT_OMITTED"
+    },
+    "peer_mountpoint_risk": {
+      "product": "r4 and r2 both use /product -> /system/product; identical gsi skip_mount.cfg excludes /product and descendants before MountPartition.",
+      "system_ext": "r4 and r2 both use /system_ext -> /system/system_ext; identical gsi skip_mount.cfg excludes /system_ext and descendants.",
+      "oem": "r4 and r2 both use a canonical /oem directory; skip_mount.cfg also excludes /oem.",
+      "odm": "r4 and r2 both use a canonical /odm directory and current fstab has no /odm entry.",
+      "vendor_dlkm": "r4 and r2 both use a canonical /vendor_dlkm directory for the required fstab entry.",
+      "metadata": "r2 now exactly matches the accepted r4 /metadata directory contract and physically passed SwitchRoot."
+    }
+  },
+  "root_mountpoint_contract": {
+    "path": "/vendor",
+    "r4": {
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 2000,
+      "selinux": "u:object_r:vendor_file:s0",
+      "ctime": "0x6a8d83ab",
+      "atime": "0x6a8d83ab",
+      "mtime": "0x6a8d83ab",
+      "crtime": "0x6a8e9813"
+    },
+    "r2": {
+      "type": "symlink",
+      "target": "/system/vendor",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "selinux": "u:object_r:vendor_file:s0"
+    },
+    "audited_root_objects": [
+      "/vendor",
+      "/product",
+      "/odm",
+      "/system_ext",
+      "/metadata",
+      "/vendor_dlkm",
+      "/oem"
+    ]
+  },
+  "avb_system": {
+    "partition_size": 1651167232,
+    "original_filesystem_size": 1250484224,
+    "salt": "6131362d70726f746f747970652d622d7231",
+    "rollback_index": 1644019200,
+    "rollback_index_location": 1,
+    "key_relative": "tools/testkey_rsa2048.pem",
+    "algorithm": "SHA256_RSA2048",
+    "fec": "none"
+  },
+  "outer_delta": {
+    "changed_payloads_from_base": [
+      "Vsuper.fex",
+      "Vvbmeta_system.fex",
+      "super.fex",
+      "vbmeta_system.fex"
+    ],
+    "preserved_payload_count_from_base": 46
+  },
+  "allowed_semantic_delta": [
+    "Replace exactly the root-level /vendor symlink in r2 system_a with the accepted r4 empty directory contract: mode 0755, uid/gid 0:2000 and SELinux u:object_r:vendor_file:s0."
+  ],
+  "forbidden_changes": [
+    "kernel",
+    "boot_or_vendor_boot",
+    "fstab",
+    "vendor_a",
+    "product_a",
+    "vendor_dlkm_a",
+    "Mali",
+    "mapper",
+    "gralloc",
+    "zygote_or_mixed_ABI_architecture",
+    "hardware_HAL_stack",
+    "LP_geometry",
+    "all_other_B1_semantics"
+  ]
+}

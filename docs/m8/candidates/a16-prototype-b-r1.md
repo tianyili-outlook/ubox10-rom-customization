@@ -280,8 +280,9 @@ Python syntax compilation, JSON parsing and `git diff --check` also pass.
 ## Current handoff
 
 r1 remains the immutable failed physical evidence point and is not accepted. Its exact root cause
-is now proven, so one strict single-cause `a16-prototype-b-r2` was authorized and built. r2 restores
-only the accepted root `/metadata` directory contract and is **OFFLINE CHECKED / READY FOR PHYSICAL
-VALIDATION**; see its separate candidate record. The known r4 auto-recovered boot-time legacy audio
-failure remains unchanged and unfixed. Vulkan, enforcing SELinux, commercial DRM and
-release-hardening work remain outside this failure boundary.
+authorized one strict `a16-prototype-b-r2`, whose `/metadata` correction later physically passed.
+R2 then froze a new first-stage failure at a noncanonical `/vendor` symlink. Exact root/build
+provenance uniquely proved that next cause and authorized single-cause `a16-prototype-b-r3`; r3 is
+**OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**. See the separate r2/r3 candidate records. The
+known r4 auto-recovered boot-time legacy audio failure remains unchanged and unfixed. Vulkan,
+enforcing SELinux, commercial DRM and release-hardening work remain outside this failure boundary.

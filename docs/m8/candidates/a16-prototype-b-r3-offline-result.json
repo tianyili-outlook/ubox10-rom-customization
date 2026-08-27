@@ -1,0 +1,112 @@
+{
+  "schema": 1,
+  "candidate": "a16-prototype-b-r3",
+  "status": "OFFLINE_CHECKED_READY_FOR_PHYSICAL_VALIDATION",
+  "decision": "OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION",
+  "physical_status": "NOT_YET_VALIDATED",
+  "physical_device_actions_performed": false,
+  "flash_authorized": false,
+  "base": {
+    "candidate": "a16-prototype-b-r2",
+    "path": "out/candidates/a16-prototype-b-r2/x12-a16-prototype-b-r2.img",
+    "size": 1641756672,
+    "sha256": "6FA8D13220DC9367659B5B16798664E906A390820359E72FD16063B84EC48887"
+  },
+  "artifacts": {
+    "candidate": {
+      "path": "out/candidates/a16-prototype-b-r3/x12-a16-prototype-b-r3.img",
+      "size": 1641760768,
+      "sha256": "7948D1B9AE4DC9E7B61EEF39876145BFCB4E6966FC12BC82925583477E5CB9D2"
+    },
+    "system_a": {
+      "size": 1651167232,
+      "sha256": "F77559D602C780C5FBB1183FB7F26009EF7B66781BC2FC57DE9341997B8260EB"
+    },
+    "vendor_a": {
+      "size": 150994944,
+      "sha256": "0166B5FB1718715E79F68D5A9FEAAE02439DC59DBE2379D4C1DA670541C7EC9B"
+    },
+    "super_raw": {
+      "size": 3221225472,
+      "sha256": "2DB09C51686BAB041C0EC66A18B8F31990A4136B3783171596F1D599D0556C75"
+    },
+    "super_sparse": {
+      "size": 1461963904,
+      "sha256": "6DC9D3F12346FB1D514B6D8A2454851D327CCCB6A82DA5DC9CB16C48ABB06E9A"
+    },
+    "vbmeta_system": {
+      "size": 1472,
+      "sha256": "DC7067B9AD494967968BF496E9B6D211EA84479815B77DF1EF845E2E8BF9D29C"
+    },
+    "vbmeta_vendor": {
+      "size": 1600,
+      "sha256": "DE14183FAFBBEA3EC0D2B0E8737FF9F71BA001186A0DE0D58E24891706ACE6C5"
+    }
+  },
+  "source": {
+    "tag": "android-security-16.0.0_r7",
+    "manifest_commit": "ebea28d151539ecf0730b1a4ab92ac33edc17ac9",
+    "build_id": "BP2A.250805.034",
+    "build_number_in_preserved_system": "UBOX10_A16_QPR0_B1",
+    "lunch": "ubox10_ceiling_arm64-bp2a-userdebug",
+    "android_system_rebuilt": false,
+    "kernel_rebuilt": false
+  },
+  "root_cause": {
+    "result": "PROVEN_PROTOTYPE_B_R2_SYSTEM_ROOT_VENDOR_MOUNTPOINT_NON_CANONICAL",
+    "r2_physical_metadata_fix": "PASS",
+    "r2_first_causal_blocker": "realpath(/vendor) resolves to /system/vendor because signed r2 system root contains a symlink",
+    "first_stage_init_sha256": "2A7D6E125583C79E925B5D916C54C51E4AE8EE145F2D7422B2DD77D0B6C62751",
+    "fstab_sha256": "6C771313A6F9DEDAEFA4061B14FE142F050F4AB13D360FF2F60FB9361277F701"
+  },
+  "single_cause_delta": {
+    "tree_added": [],
+    "tree_removed": [],
+    "tree_changed": [
+      "vendor"
+    ],
+    "r2_before": "symlink /vendor -> /system/vendor, 0644, 0:0, vendor_file",
+    "r3_after": "directory /vendor, 0755, 0:2000, vendor_file",
+    "r4_contract_exact": true,
+    "all_peer_root_contracts_exact": true,
+    "gsi_skip_mount_contract_exact": true
+  },
+  "architecture": {
+    "result": "PASS_MIXED_ARM64_PRIMARY_ARM32_SECONDARY",
+    "zygote": "zygote64_32",
+    "system_aarch64_elf": 1471,
+    "system_arm_elf": 701,
+    "vendor_aarch64_services": 0,
+    "vendor_aarch64_provider_count": 3
+  },
+  "offline_gates": {
+    "filesystem_e2fsck": "PASS",
+    "system_avb": "PASS_SHA256_RSA2048_HASHTREE_NO_FEC",
+    "vendor_avb": "PASS_BYTE_PRESERVED_FROM_R2",
+    "vbmeta_system": "PASS_ROLLBACK_INDEX_1644019200_LOCATION_1",
+    "vbmeta_vendor": "PASS_BYTE_PRESERVED_FROM_R2",
+    "lp_geometry": "PASS_BYTE_PRESERVED_FROM_R2",
+    "super_sparse_roundtrip": "PASS",
+    "imagewty": "PASS",
+    "apex": "PASS_35_INSTALLED_AND_ACTIVATED",
+    "vndk31": "PASS_BOTH_ARCHITECTURES",
+    "linkerconfig": "PASS_MIXED_LIB_AND_ARM64_SPHAL",
+    "mali_symbol_closure": "PASS_297_STRONG_IMPORTS_ZERO_UNMATCHED",
+    "selinux": "PASS_OFFLINE_SPLIT_COMPILE_ONLY",
+    "system_vintf": "PASS",
+    "full_vintf": "INCOMPATIBLE_EXPECTED_INHERITED_NFS_EXCEPTION_ONLY",
+    "full_vintf_exit": 65,
+    "unexpected_vintf_incompatibilities": 0,
+    "kernel": "PASS_PRESERVED_5.4.302_PATH_A",
+    "vendor_dlkm": "PASS_PRESERVED_22_MODULES",
+    "aic_fmac": "PASS_PRESERVED",
+    "root_mountpoint": "PASS_SINGLE_CAUSE_VENDOR_ROOT_MOUNTPOINT_RESTORED",
+    "preservation": "PASS"
+  },
+  "limitations": [
+    "r3 has not been flashed or physically validated.",
+    "The offline correction proves package structure, not successful vendor mount, second-stage init or mixed-userspace boot.",
+    "Full VINTF remains exit 65 solely for inherited CONFIG_NFS_FS=y versus FCM-6 n.",
+    "The known auto-recovered r4 boot-time audio HAL defect remains post-Gate P1 and unfixed."
+  ]
+}

@@ -2,7 +2,7 @@
 
 ## Freeze decision
 
-`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为稳定日用回退。`a16-prototype-a-r4` 现已冻结为 **PHYSICAL PASS / ACCEPTED Android 16 ARM32 ARCHITECTURE BASELINE / Prototype B ROLLBACK CONTROL**。用户明确把一次性、自动恢复的 boot-time `getAudioPort` SIGSEGV 从旧 Gate 2 startup-stability 条件改列为 **KNOWN / UNFIXED / POST-GATE P1 STABILIZATION DEBT**；故 Gate 2 为 **CLOSED / PASS**，不是静默弱化证据。当前不实施 Android 12 M8B feature、Prototype A r5 或 P1 polish；B1 r1 已冻结为物理失败点，活跃执行合同是下述 exact single-cause r2 physical validation。
+`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为稳定日用回退。`a16-prototype-a-r4` 现已冻结为 **PHYSICAL PASS / ACCEPTED Android 16 ARM32 ARCHITECTURE BASELINE / Prototype B ROLLBACK CONTROL**。用户明确把一次性、自动恢复的 boot-time `getAudioPort` SIGSEGV 从旧 Gate 2 startup-stability 条件改列为 **KNOWN / UNFIXED / POST-GATE P1 STABILIZATION DEBT**；故 Gate 2 为 **CLOSED / PASS**，不是静默弱化证据。当前不实施 Android 12 M8B feature、Prototype A r5 或 P1 polish；B1 r1/r2 已分别冻结为物理失败证据点，活跃执行合同是下述 exact single-cause r3 physical validation。
 
 ## Android 16 Gate 1 / Gate 2 — Prototype A ARM32
 
@@ -85,9 +85,24 @@
   preservation PASS；r2 focused 6/6、combined r1/r2 17/17、full lightweight repository 136 tests
   PASS（34 skips）；full VINTF 仍仅 inherited NFS exit 65。状态 **OFFLINE CHECKED / READY FOR
   PHYSICAL VALIDATION**。
-- [ ] **15 — r2 physical architecture validation：**另行授权后只测试 exact r2。先确认跨过
-  `/metadata` move 并进入 second stage/APEX，再检查 `zygote64_32`、AArch64
-  system_server/SurfaceFlinger/Mali 与 r4 hardware preservation。没有 r2 物理结果前不创建 r3。
+- [x] **15 — r2 physical boundary：**exact r2 已物理跨过 `/metadata` move，证明该 single-cause
+  correction **PHYSICAL PASS**；新首错为 `realpath(/vendor) -> /system/vendor` 后 required vendor
+  mount EEXIST。Second stage/APEX/zygote/Mali 未到达；r2 总体 **PHYSICAL FAIL / NOT ACCEPTED**。
+- [x] **16 — r4↔r2 root-layout cause：**signed r4 `/vendor` 是 0755/0:2000/`vendor_file`
+  directory，r2 是 `/system/vendor` symlink。Exact fstab 独立挂载 `/vendor`，byte-identical init
+  强制 canonical realpath；B1 dedicated ARM64 BoardConfig 漏继承 r4 GSI separate-vendor variables，
+  root rule 因而生成 symlink。Product/system_ext/oem skip contract 和 odm/metadata/vendor_dlkm
+  canonical peers 已逐项排除；root cause **PROVEN**。
+- [x] **17 — bounded `a16-prototype-b-r3`：**只恢复 exact r4 root `/vendor` directory，signed
+  system tree 相对 r2 唯一 `changed=[vendor]`。IMG 1,641,760,768 bytes /
+  `7948D1B9...E5CB9D2`；ext4/AVB/LP/IMAGEWTY/mixed ELF/APEX/VNDK/linker/SP-HAL/SELinux/kernel/
+  provider/hardware preservation PASS，46/50 outer payload byte-preserved，full VINTF 仍仅
+  inherited NFS exit 65。R3 focused 6/6、combined r1/r2/r3 23/23、full lightweight 142 tests
+  PASS（34 skips）。状态 **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**。
+- [ ] **18 — r3 physical architecture validation：**另行授权后只测试 exact r3。先证明旧
+  `/vendor` canonical error 消失、vendor/remaining early mounts PASS 并进入 second-stage/APEX；
+  再检查 `zygote64_32`、AArch64 system_server/SurfaceFlinger/Mali 与 r4 hardware preservation。
+  没有 r3 物理结果前不创建 r4。
 
 ## Post-Gate stabilization / release hardening
 
@@ -152,4 +167,4 @@
 - [x] 完成限定只读 system-quality audit：无 P0；stability、retry loop、audio residual、SELinux、CPU/thermal/idle、graphics 与 memory 证据见 `docs/m8/device-tests/20260816-m8b-system-quality-audit/`。
 - [ ] **DEFERRED / P2 / 不修：**Wi-Fi HAL link-layer statistics 每约 3 秒返回 `ERROR_UNKNOWN`；网络 ADB 稳定且 Wi-Fi 进程未重启。
 - [x] 保持 Mouse mode dropped；不重新引入 vendor mouse framework。
-- [x] architecture-ceiling study 与 B0 已锁定 paired AArch64 Mali、AOSP mapper adapter、multilib gralloc-1.x、lawful-local fail-closed intake、vendor property 与 AVB scope；ARM32 OMX/Cedar/media/HWC/audio/Wi-Fi/BT/DRM/TEE 继续进程隔离复用。B r1 first-stage root cause 已证明，single-cause r2 已完整离线闭合；当前执行合同是上文 15 的 exact r2 physical validation。
+- [x] architecture-ceiling study 与 B0 已锁定 paired AArch64 Mali、AOSP mapper adapter、multilib gralloc-1.x、lawful-local fail-closed intake、vendor property 与 AVB scope；ARM32 OMX/Cedar/media/HWC/audio/Wi-Fi/BT/DRM/TEE 继续进程隔离复用。R1 `/metadata` 与 r2 `/vendor` root causes 均已证明；single-cause r3 已完整离线闭合，当前执行合同是上文 18 的 exact r3 physical validation。

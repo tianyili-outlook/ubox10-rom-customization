@@ -2,10 +2,10 @@
 
 Date: 2026-08-27
 
-Status: **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**
+Status: **PHYSICAL FAIL — SYSTEM SWITCH-ROOT / VENDOR MOUNTPOINT NON-CANONICAL**
 
-Physical status: **NOT YET VALIDATED**. This record does not authorize flashing and makes no mixed
-runtime PASS claim.
+Physical status: **FAILED AT THE NEXT FIRST-STAGE BOUNDARY**. The single-cause `/metadata`
+correction is **PHYSICAL PASS**, but r2 is not accepted and makes no mixed-runtime PASS claim.
 
 ## Decision
 
@@ -104,7 +104,35 @@ Machine records are `a16-prototype-b-r2-offline-result.json` and
 
 ## Physical boundary and next action
 
-The exact r2 IMG may be proposed for one separately authorized UART-first physical validation.
-The first question is whether it passes the former `/metadata` move and reaches second-stage init;
-only then test `apexd`, `zygote64_32`, AArch64 system_server/SurfaceFlinger/Mali and frozen r4
-hardware regressions. Do not create r3 or add another fix before this exact r2 result exists.
+The user's exact r2 RAM-only UART diagnostic proves `_a` slot selection, fstab parsing, metadata
+fsck/mount, all four A-slot logical-device creations, `system_a` mount and
+`SwitchRoot("/system")`. The r1 error `Unable to move mount at '/metadata': No such file or
+directory` is absent: r2's one-directory correction is therefore **PHYSICAL PASS**.
+
+The new first causal blocker is:
+
+```text
+mount point is not canonical: realpath(/vendor) -> /system/vendor
+Failed to mount /vendor: File exists
+Failed to mount required partitions early
+InitFatalReboot
+```
+
+Second-stage init, `apexd`, `zygote64_32`, system_server, SurfaceFlinger and Mali runtime remain
+unreached. This is not a mixed-ABI or graphics runtime result. Raw UART bytes are not locally
+present; the tracked record preserves the user-supplied facts/excerpts without inventing a raw log
+or hash.
+
+Exact frozen-r4/r2 comparison proves r4 root `/vendor` is a directory (`0755`, `0:2000`,
+`vendor_file`) while r2 root `/vendor` is a symlink to `/system/vendor` (`0644`, `0:0`,
+`vendor_file`). The byte-identical fstab requires a separate logical vendor mount at `/vendor`, and
+the byte-identical first-stage init rejects any mountpoint whose `realpath()` differs. Product
+provenance proves B1's dedicated ARM64 BoardConfig omitted r4's GSI separate-vendor contract, so
+the root-generation rule emitted the symlink. `/product` and `/system_ext` are intentionally the
+same symlinks in r4/r2 and are excluded by identical `skip_mount.cfg`; `/odm`, `/metadata`,
+`/vendor_dlkm` and `/oem` are matching canonical directories. Thus `/vendor` is the unique next
+root-layout cause.
+
+That proof authorizes one strict successor, `a16-prototype-b-r3`, which replaces only this root
+symlink with the exact r4 empty-directory contract. See
+`a16-prototype-b-r2-root-layout-audit.json`; do not reinterpret r2 itself as accepted.

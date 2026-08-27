@@ -1,0 +1,269 @@
+{
+  "schema": 1,
+  "date": "2026-08-27",
+  "candidate": "a16-prototype-b-r2",
+  "physical_result": {
+    "status": "PHYSICAL_FAIL_SYSTEM_SWITCH_ROOT_VENDOR_MOUNTPOINT_NON_CANONICAL",
+    "accepted": false,
+    "evidence_provenance": "USER_SUPPLIED_RAM_ONLY_UART_FACTS_AND_EXCERPTS",
+    "raw_uart_capture_present_locally": false,
+    "raw_uart_sha256": null,
+    "closed_blocker": {
+      "result": "PHYSICAL_PASS",
+      "cause": "r1 signed system lacked the root /metadata move destination",
+      "r2_delta": "restore exact accepted r4 /metadata directory contract",
+      "proof": "The r1 /metadata ENOENT is absent and r2 reaches SwitchRoot(/system)."
+    },
+    "reached": [
+      "androidboot.slot_suffix=_a handling",
+      "default fstab parsing",
+      "metadata fsck and mount",
+      "system_a/product_a/vendor_dlkm_a/vendor_a logical partition creation",
+      "system_a mount at /system",
+      "SwitchRoot(/system)"
+    ],
+    "first_causal_blocker": "mount point is not canonical: realpath(/vendor) -> /system/vendor",
+    "cascade": [
+      "Failed to mount /vendor: File exists",
+      "Failed to mount required partitions early",
+      "InitFatalReboot"
+    ],
+    "not_reached": [
+      "second-stage init",
+      "apexd",
+      "zygote64_32",
+      "system_server",
+      "SurfaceFlinger",
+      "ARM64 Mali runtime"
+    ]
+  },
+  "artifact_identity": {
+    "r4_system_a": {
+      "path": "out/candidates/a16-prototype-a-r4/system_a.img",
+      "size": 1651167232,
+      "sha256": "F6437E0F7EDBAACF10B316A4DFCFEF916570766F9B0AAA4E72421C10C10D9001"
+    },
+    "r2_system_a": {
+      "path": "out/candidates/a16-prototype-b-r2/system_a.img",
+      "size": 1651167232,
+      "sha256": "5FE7D77931146F6AA989E42F50EF935CA3E7800F479F3302D9C2BE43338F15FC"
+    },
+    "r2_outer": {
+      "path": "out/candidates/a16-prototype-b-r2/x12-a16-prototype-b-r2.img",
+      "size": 1641756672,
+      "sha256": "6FA8D13220DC9367659B5B16798664E906A390820359E72FD16063B84EC48887"
+    }
+  },
+  "root_object_comparison": {
+    "/vendor": {
+      "r4": {
+        "type": "directory",
+        "target": null,
+        "mode": "0755",
+        "uid": 0,
+        "gid": 2000,
+        "selinux": "u:object_r:vendor_file:s0"
+      },
+      "r2": {
+        "type": "symlink",
+        "target": "/system/vendor",
+        "mode": "0644",
+        "uid": 0,
+        "gid": 0,
+        "selinux": "u:object_r:vendor_file:s0"
+      },
+      "difference": "ONLY_TYPE_TARGET_OWNER_MODE_ROOT_LAYOUT_DIFFERENCE_AMONG_REQUESTED_OBJECTS"
+    },
+    "/product": {
+      "r4": {
+        "type": "symlink",
+        "target": "/system/product",
+        "mode": "0644",
+        "uid": 0,
+        "gid": 0,
+        "selinux": "u:object_r:system_file:s0"
+      },
+      "r2": {
+        "type": "symlink",
+        "target": "/system/product",
+        "mode": "0644",
+        "uid": 0,
+        "gid": 0,
+        "selinux": "u:object_r:system_file:s0"
+      },
+      "first_stage": "SKIPPED_BY_IDENTICAL_GSI_SKIP_MOUNT_CONFIG"
+    },
+    "/odm": {
+      "r4": {
+        "type": "directory",
+        "target": null,
+        "mode": "0755",
+        "uid": 0,
+        "gid": 0,
+        "selinux": "u:object_r:vendor_file:s0"
+      },
+      "r2": {
+        "type": "directory",
+        "target": null,
+        "mode": "0755",
+        "uid": 0,
+        "gid": 0,
+        "selinux": "u:object_r:vendor_file:s0"
+      },
+      "first_stage": "NO_CURRENT_FSTAB_ENTRY"
+    },
+    "/system_ext": {
+      "r4": {
+        "type": "symlink",
+        "target": "/system/system_ext",
+        "mode": "0644",
+        "uid": 0,
+        "gid": 0,
+        "selinux": "u:object_r:system_file:s0"
+      },
+      "r2": {
+        "type": "symlink",
+        "target": "/system/system_ext",
+        "mode": "0644",
+        "uid": 0,
+        "gid": 0,
+        "selinux": "u:object_r:system_file:s0"
+      },
+      "first_stage": "SKIPPED_BY_IDENTICAL_GSI_SKIP_MOUNT_CONFIG"
+    },
+    "/metadata": {
+      "r4": {
+        "type": "directory",
+        "target": null,
+        "mode": "0755",
+        "uid": 0,
+        "gid": 0,
+        "selinux": "u:object_r:metadata_file:s0"
+      },
+      "r2": {
+        "type": "directory",
+        "target": null,
+        "mode": "0755",
+        "uid": 0,
+        "gid": 0,
+        "selinux": "u:object_r:metadata_file:s0"
+      },
+      "physical_result": "PASS_SWITCH_ROOT_MOVE"
+    },
+    "/vendor_dlkm": {
+      "r4": {
+        "type": "directory",
+        "target": null,
+        "mode": "0755",
+        "uid": 0,
+        "gid": 0,
+        "selinux": "u:object_r:vendor_file:s0"
+      },
+      "r2": {
+        "type": "directory",
+        "target": null,
+        "mode": "0755",
+        "uid": 0,
+        "gid": 0,
+        "selinux": "u:object_r:vendor_file:s0"
+      },
+      "first_stage": "CANONICAL_REQUIRED_FSTAB_TARGET"
+    },
+    "/oem": {
+      "r4": {
+        "type": "directory",
+        "target": null,
+        "mode": "0755",
+        "uid": 0,
+        "gid": 0,
+        "selinux": "u:object_r:oemfs:s0"
+      },
+      "r2": {
+        "type": "directory",
+        "target": null,
+        "mode": "0755",
+        "uid": 0,
+        "gid": 0,
+        "selinux": "u:object_r:oemfs:s0"
+      },
+      "first_stage": "SKIPPED_BY_IDENTICAL_GSI_SKIP_MOUNT_CONFIG"
+    }
+  },
+  "fstab_contract": {
+    "source": "vendor_boot first_stage_ramdisk/fstab.sun50iw9p1",
+    "runtime_path": "/fstab.sun50iw9p1",
+    "sha256_r4_r2": "6C771313A6F9DEDAEFA4061B14FE142F050F4AB13D360FF2F60FB9361277F701",
+    "vendor_entry": "vendor /vendor ext4 ro,barrier=1 wait,first_stage_mount,logical,slotselect",
+    "vendor_dlkm_entry": "vendor_dlkm /vendor_dlkm ext4 ro,barrier=1 wait,first_stage_mount,logical,slotselect",
+    "product_entry": "product /product ext4 ro,barrier=1 wait,first_stage_mount,logical,slotselect"
+  },
+  "first_stage_contract": {
+    "init_sha256_r4_r2": "2A7D6E125583C79E925B5D916C54C51E4AE8EE145F2D7422B2DD77D0B6C62751",
+    "byte_identical": true,
+    "elf": "ELF32 ARM",
+    "source_logic": "MountPartition calls fs_mgr_create_canonical_mount_point before logical mapping/mount; the helper rejects when Realpath(mount_point) differs from mount_point.",
+    "r2_exact_target": "/vendor",
+    "r2_realpath": "/system/vendor",
+    "uart_errno": "EEXIST",
+    "causal_result": "UNIQUE_CORRESPONDENCE_PROVEN"
+  },
+  "android12_source_corroboration": {
+    "system_core_commit": "1d37c4499249b17f143df12cebc5ee9ea3600ce3",
+    "commit_subject": "Snap for 7633965 from c87ea84d206a16e7ab7b5593c124e0cced288c31 to sc-release",
+    "fs_mgr_cpp_sha256": "845804B591467AFE6B8BE00A500D5074E6EFE1D68260083F00067F440A703C2F",
+    "first_stage_mount_cpp_sha256": "4EEF3E554BAB62BCC76CA5B3F65F99926D2259DD0313F143696E55C44878817B",
+    "fstab_cpp_sha256": "2DC4C621E4BBB23AB03DBDF4EC9E4871E6F07ADD5435005E527B4B6C48A46993",
+    "match": "MountPartition calls fs_mgr_create_canonical_mount_point before logical mapping; the helper emits the exact UART noncanonical string and returns false when mount_point != Realpath(mount_point). The same source generation reads /system/system_ext/etc/init/config/skip_mount.cfg before remaining mounts.",
+    "scope": "The executed init binary is pinned independently by identical r4/r2 bytes; source corroboration does not claim a vendor binary build manifest that was not retained."
+  },
+  "generation_provenance": {
+    "r4": {
+      "product_device": "generic",
+      "board_chain": [
+        "build/make/target/board/generic/BoardConfig.mk",
+        "build/make/target/board/BoardConfigGsiCommon.mk",
+        "build/make/target/board/BoardConfigMainlineCommon.mk"
+      ],
+      "effective": {
+        "TARGET_COPY_OUT_VENDOR": "vendor",
+        "BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE": "ext4",
+        "BOARD_USES_VENDORIMAGE": true
+      },
+      "root_rule_result": "mkdir /vendor"
+    },
+    "r2": {
+      "product_device": "ubox10_ceiling_arm64",
+      "board_chain": [
+        "configs/aosp/architecture-ceiling-a16/device/ubox/ubox10_ceiling_arm64/BoardConfig.mk",
+        "device/generic/arm64/BoardConfig.mk"
+      ],
+      "effective": {
+        "TARGET_COPY_OUT_VENDOR": "system/vendor",
+        "BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE": null,
+        "BOARD_USES_VENDORIMAGE": false
+      },
+      "root_rule_result": "symlink /vendor -> /system/vendor"
+    },
+    "result": "PROVEN_MISSING_SEPARATE_VENDOR_BOARDCONFIG_CONTRACT"
+  },
+  "gsi_skip_mount": {
+    "path": "/system/system_ext/etc/init/config/skip_mount.cfg",
+    "byte_identical_r4_r2": true,
+    "patterns": [
+      "/oem",
+      "/product",
+      "/system_ext",
+      "/oem/*",
+      "/product/*",
+      "/system_ext/*",
+      "/system/*"
+    ]
+  },
+  "decision": {
+    "root_cause": "PROVEN",
+    "r2_status": "PHYSICAL_FAIL_NOT_ACCEPTED",
+    "r3_authorized": true,
+    "r3_allowed_delta": "replace only root /vendor symlink with exact accepted r4 empty-directory contract",
+    "physical_runtime_scope": "No second-stage or mixed-ABI runtime conclusion is available."
+  }
+}

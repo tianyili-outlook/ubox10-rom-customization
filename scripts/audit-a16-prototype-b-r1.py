@@ -115,7 +115,11 @@ class Auditor(R3.Auditor):
         self.r4_vendor_mount = self.mounts / "r4-vendor"
         self.r1_system_mount = self.mounts / "r1-system"
         self.kernel_evidence = self.candidate / "kernel-evidence"
-        if self.cfg["id"] not in {"a16-prototype-b-r1", "a16-prototype-b-r2"}:
+        if self.cfg["id"] not in {
+            "a16-prototype-b-r1",
+            "a16-prototype-b-r2",
+            "a16-prototype-b-r3",
+        }:
             raise RuntimeError("Prototype B auditor received the wrong contract")
         if self.build_result["id"] != self.cfg["id"]:
             raise RuntimeError("candidate/build contract ID mismatch")
@@ -468,11 +472,15 @@ class Auditor(R3.Auditor):
         ]
         continuation = self.cfg.get("_continuation", {})
         outer_contract = continuation.get("outer_delta", {})
-        expected_changed = sorted(
-            outer_contract.get("changed_payloads_from_r1", default_changed)
-        )
+        expected_changed = sorted(outer_contract.get(
+            "changed_payloads_from_base",
+            outer_contract.get("changed_payloads_from_r1", default_changed),
+        ))
         expected_preserved = int(
-            outer_contract.get("preserved_payload_count_from_r1", 44)
+            outer_contract.get(
+                "preserved_payload_count_from_base",
+                outer_contract.get("preserved_payload_count_from_r1", 44),
+            )
         )
         if (
             outer["changed_payloads"] != expected_changed

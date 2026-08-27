@@ -185,6 +185,42 @@ roundtrip、IMAGEWTY、ELF/Mali 297/0、35 APEX、VNDK31、linker、split SELinu
 6/6、combined r1/r2 17/17、full lightweight repository 136 tests PASS（34 个
 repository-declared fixture skips）。
 
+Exact r2 的后续 RAM-only UART 物理诊断现已完成。`androidboot.slot_suffix=_a`、fstab parse、
+metadata fsck/mount、四个 A-slot logical device creation、`system_a` mount 与
+`SwitchRoot("/system")` 全通过；r1 的 `/metadata` ENOENT 已消失，因此 r2 的 single-cause
+`/metadata` correction 是 **PHYSICAL PASS**。但 r2 的总体状态是 **PHYSICAL FAIL — SYSTEM
+SWITCH-ROOT / VENDOR MOUNTPOINT NON-CANONICAL / NOT ACCEPTED**。新首错为
+`mount point is not canonical: realpath(/vendor) -> /system/vendor`，继而 `Failed to mount
+/vendor: File exists`、required early mount failure 与 `InitFatalReboot`。Second-stage init、
+`apexd`、zygote、system_server、SurfaceFlinger、Mali runtime 均未到达；这不是 mixed runtime
+PASS/FAIL。Raw UART 当前不在 GCP，tracked record 只保存用户提供的权威 facts/excerpts。
+
+Exact r4↔r2 signed-root/provenance audit 证明唯一原因。r4 root `/vendor` 是 directory 0755、
+0:2000、`vendor_file`；r2 是 `/vendor -> /system/vendor` symlink 0644、0:0、同 label。Byte-identical
+first-stage fstab（`6C771313...F701`）要求独立 logical vendor 在 `/vendor`，byte-identical ELF32
+init（`2A7D6E12...62751`）在 mount 前强制 `realpath(mountpoint)==mountpoint`，因此 UART
+`realpath`/EEXIST 与该 symlink 唯一对应。生成链同样闭合：r4 generic GSI BoardConfig 设置
+`TARGET_COPY_OUT_VENDOR=vendor` 与 vendor-image ext4 contract；B1 专用 ARM64 BoardConfig 只继承
+plain generic-arm64，变量默认 `system/vendor`，root rule 因而生成 symlink。`/product`、
+`/system_ext` 与 `/oem` 被两边同字节 GSI skip list 排除；`/odm`、`/metadata`、`/vendor_dlkm`、
+`/oem` 的 canonical directory contract 相同，没有第二个同类差异。
+
+该唯一证明授权并完成 `a16-prototype-b-r3`。R3 只把 r2 signed-system root 的 `/vendor` symlink
+替换成 exact r4 empty directory；全树 delta 为 `added=[]`、`removed=[]`、`changed=[vendor]`，
+不重编 Android/kernel。Candidate
+`out/candidates/a16-prototype-b-r3/x12-a16-prototype-b-r3.img` 为 1,641,760,768 bytes / SHA-256
+`7948D1B9AE4DC9E7B61EEF39876145BFCB4E6966FC12BC82925583477E5CB9D2`。Ext4、system/vendor AVB、
+LP exact geometry、sparse roundtrip、IMAGEWTY、mixed ELF/`zygote64_32`、exact three ARM64 graphics
+providers、Mali 297/0、35 APEX、both-ABI VNDK31、linker/SP-HAL、split SELinux、kernel/22 modules/
+AIC 和 hardware preservation 全 PASS。Full VINTF 仍仅 inherited NFS exit 65，严格不称 PASS。
+外层相对 r2 仅 system/super 必然四项变化，46/50 byte-preserved；vendor_a、product_a、
+vendor_dlkm、boot/vendor_boot/fstab、kernel、Mali/mapper/gralloc 与 B1 architecture 均保持。
+R3 focused 6/6、combined r1/r2/r3 23/23、full lightweight repository 142 tests PASS（34 个
+repository-declared fixture skips）。
+当前 r3 状态 **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION / NOT YET PHYSICALLY
+VALIDATED**；下一步只验证 exact r3 是否跨过 `/vendor` canonical mount 并进入 second stage，
+不得先创建 r4。
+
 2026-08-21 Android 16 Gate 1 状态为 **OFFLINE CHECKED / SUCCESS**。Source 为 exact `android-16.0.0_r4` / `BP4A.251205.006`，manifest commit `15128c9e27cfa599c48d294babd39286ee8f1426`，pinned manifest SHA-256 `4E8BEB5D1B590DFF3D631B1DBB957138DBDA4E608A3183C625683DA4BC84918F`；Prototype A 为 `ubox10_ceiling_arm-bp4a-userdebug`、ARMv7-A NEON、无 secondary arch、shipping API 31、extra VNDK 31、pKVM off。GCP native Ubuntu 24.04 / ext4 / 8 vCPU / 62.8 GiB RAM / no swap 上使用 relative `OUT_DIR=out-ceiling`、`BUILD_NUMBER=DISPOSABLE_CEILING_R4`、unset `SOONG_GOMEMLIMIT GOMEMLIMIT` 和 `m -j8 systemimage`，123,197/123,197 actions 成功，wall 30,314 秒（8:25:14）。最低 available RAM 12,295,132 KiB；swap I/O 为 0；平均 CPU user/system 约 88.05%/9.48%、I/O wait 0.05%；`/work` 最低 free 231,671,357,440 bytes。完整 raw log 仅保留在 GCP ignored 路径，未进入 Git。
 
 唯一产物 `/work/src/ubox10-a16-ceiling/out-ceiling/target/product/generic/system.img` 为 946,765,824 bytes，SHA-256 `FD349F1D8073DFEB71E2CEA28915F1C755FA54E3EBA85616FCAA279063F3EDBE`。Raw ext4 `e2fsck -fn` clean；AVB SHA256_RSA2048 footer 与 system hashtree verify；staging 有 2,277 regular files、256 symlinks、997 个 ARM32 userspace ELF，另 7 个 ELF64 均为 Linux BPF object 而非 AArch64 userspace。36 个 installed APEX 全部可解析；`/system_ext/apex/com.android.vndk.v31.apex` 为 17,743,872 bytes / SHA-256 `FB94B4E2BA84BDEFDDFAF59729FDAE87B0195D2EEFD972FD69235DD7A12D705E`，含 ARM32 `libaudioroute.so` 与 v31 lists。A16 host linkerconfig 对实际 system/VNDK 生成 `[vendor]`、`/apex/com.android.vndk.v31/${LIB}` 和 `default→vndk` 的 `libaudioroute.so`；system-side `checkvintf --check-one` PASS，FCM 6 matrix 包含 5.4 kernel 分支；SELinux xattr、31.0 mapping 与 compiled policy 存在。只生成 `system.img`，未生成 boot/vendor/product/system_ext/super/userdata、IMAGEWTY 或可刷固件。
@@ -781,7 +817,7 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - r10 已在实机完成 framework boot；r9 Lights/Watchdog/llkd 方向保持关闭，不再修改。
 - r13 是当前 GOLDEN BASELINE；Projectivy、provisioning、遥控和 Power sleep/wake/shutdown 均以实机 UART 为准。
 - M8B native rc-core 遥控迁移已在 r5 设备验收并关闭；Mouse mode intentionally dropped，legacy multi_ir 工件保留为 inert reference，其 Android 12 清理已随 freeze 延期。
-- 当前 board、DT 与 runtime 证据识别为 H616。历史 A16 ARM32 r2 稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛；历史 kernel r1-r4 AIC failure 已收敛到错误 `0x00110000` FMAC contract。r5 恢复 working BSP `0x00120000` 后物理 boot/HDMI/remote/Wi-Fi/ADB 与 Wi-Fi OFF→ON reinitialization PASS，preservation checkpoint **CLOSED / PASS**。Exact QPR0 r7 audit 与 r4 physical pass 已关闭 Architecture Gate 2；r4 frozen。Boot-time legacy audio HAL SIGSEGV 保持 post-Gate P1，不称 fixed。Prototype B0 complete；B r1 首次物理状态最终为 **PHYSICAL FAIL — SYSTEM SWITCH-ROOT `/METADATA` TARGET MISSING**，先前 fstab 行是无 slot suffix 的 diagnostic artifact。Single-cause r2 已恢复 exact r4 root mountpoint，完整离线 PASS，等待物理验证。
+- 当前 board、DT 与 runtime 证据识别为 H616。历史 A16 ARM32 r2 稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛；历史 kernel r1-r4 AIC failure 已收敛到错误 `0x00110000` FMAC contract。r5 恢复 working BSP `0x00120000` 后物理 boot/HDMI/remote/Wi-Fi/ADB 与 Wi-Fi OFF→ON reinitialization PASS，preservation checkpoint **CLOSED / PASS**。Exact QPR0 r7 audit 与 r4 physical pass 已关闭 Architecture Gate 2；r4 frozen。Boot-time legacy audio HAL SIGSEGV 保持 post-Gate P1，不称 fixed。Prototype B0 complete；B r1 为 **PHYSICAL FAIL — `/METADATA` TARGET MISSING**。Single-cause r2 物理关闭该错误后停在 proven noncanonical `/vendor` symlink，仍为 **PHYSICAL FAIL / NOT ACCEPTED**。Single-cause r3 只恢复 exact r4 `/vendor` directory，完整离线 PASS，等待物理验证。
 - `m8b-audio-r2` 只启用产品级 Treble/VNDK 合同；未修改 VNDK payload、mixer、audio platform XML、DTS、machine driver 或已验收功能，现已设备验收为 AUDIO PASS。
 - 2026-08-16 ADB-only 补验未刷机、未重启且未修改 ROM/device properties：VP9 为 Allwinner OMX/Cedar hardware-runtime PASS；Widevine 为可操作 L3，HDCP `NONE`，无 secure decoder 要求。物理画面/逐帧质量与商业服务认证或播放仍未证明。
 - 遥控器 Menu 与 Settings 当前均打开 Projectivy menu。两键语义分离为独立延期项，不回改已验收的 rc-core、keylayout 选择或其他按键行为。
@@ -790,10 +826,10 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 ## Next action
 
 保持 frozen Android 12 `m8b-remote-r1`、frozen Android 16 ARM32 `a16-prototype-a-r4`、Test8r2/
-stock rollback、A16 r1-r3 与 kernel r1-r5 artifacts 不变；继续冻结 exact B r1
-1,641,752,576-byte / `796A2D46...9545` IMG 为物理失败 evidence point。下一步只请求对 exact r2
-1,641,756,672-byte / `6FA8D132...8887` IMG 的一次 UART-first physical validation：先证明
-`/metadata` move、second-stage init/APEX，再证明 `zygote64_32`、AArch64
+stock rollback、A16 r1-r3 与 kernel r1-r5 artifacts 不变；冻结 exact B r1/r2 为各自不可变物理
+失败 evidence points。下一步只请求对 exact B r3 1,641,760,768-byte /
+`7948D1B9...E5CB9D2` IMG 的一次 UART-first physical validation：先证明旧 `/vendor` canonical
+error 消失、remaining early mounts 与 second-stage init/APEX，再证明 `zygote64_32`、AArch64
 system_server/SurfaceFlinger/Mali，最后回归 r4 remote/HDMI/network/audio authority。未经该结果不
-创建 r3。Vulkan、GMS、5.10、25Q4、full vendor rewrite、Audio fix、SELinux/NFS/HDMI polish 与
+创建 B r4。Vulkan、GMS、5.10、25Q4、full vendor rewrite、Audio fix、SELinux/NFS/HDMI polish 与
 产品 feature 均不得混入。

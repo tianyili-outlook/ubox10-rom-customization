@@ -41,8 +41,14 @@ match. The byte-identical first-stage init cannot create `/system/metadata` on t
 mount, so `MS_MOVE` returns the observed `ENOENT`. R1 is therefore **PHYSICAL FAIL — SYSTEM
 SWITCH-ROOT `/METADATA` TARGET MISSING**, not a default-fstab failure. Strict single-cause
 `a16-prototype-b-r2` restores only the accepted r4 root mountpoint contract and is **OFFLINE CHECKED
-/ READY FOR PHYSICAL VALIDATION**; it has not been flashed. See both candidate records and
-`a16-prototype-b-r1-first-stage-audit.json`.
+/ READY FOR PHYSICAL VALIDATION** at that historical offline point. Its later RAM-only diagnostic
+physically passes the `/metadata` correction, then fails at the next first-stage boundary because
+root `/vendor` is a symlink to `/system/vendor` and cannot be the canonical target for the
+independent vendor mount. Exact r4/r2 root, BoardConfig, root-generation, fstab and init evidence
+uniquely proves that cause. `a16-prototype-b-r3` restores only the exact accepted r4 root `/vendor`
+directory contract and is **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**; no mixed-runtime
+PASS is claimed. See the r1/r2/r3 candidate records, `a16-prototype-b-r1-first-stage-audit.json`
+and `a16-prototype-b-r2-root-layout-audit.json`.
 
 This record is the integration contract for the first Prototype B build task. B0 was read-only:
 no Android or kernel build ran, no source or accepted image was modified, no candidate was created,

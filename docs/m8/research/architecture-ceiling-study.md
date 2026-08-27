@@ -14,8 +14,8 @@ Linux 5.4.302 r5, exact QPR0 r7 source audit, the Prototype A r3/r4 build and ph
 formal Gate 2 policy/closure, the 2026-08-26 Prototype B B0 read-only preflight, and the bounded
 same-r1 B1 intake/provider/handle implementation, authorized 144 MiB vendor geometry correction,
 mixed build, packaging and complete offline audit, the r1 first-stage physical failure/root-cause
-audit, and the strict single-cause r2 offline successor. R1 has physical UART evidence; r2 has not
-yet been physically tested.
+audit, the strict single-cause r2 physical boundary/root-layout audit, and the bounded r3 offline
+successor. R1 and r2 have user-supplied UART evidence; r3 is not yet physically tested.
 
 Confidence labels in this report have the following strict meanings: **PROVEN** is direct
 binary, build, runtime, repository, or authoritative-source evidence; **HIGH CONFIDENCE**
@@ -106,8 +106,27 @@ That unique single-cause proof authorized `a16-prototype-b-r2`. R2 restores only
 mountpoint contract; it does not change kernel, vendor_boot, fstab, vendor/graphics providers,
 mixed-ABI semantics or any preserved hardware authority. Its complete detached audit is **OFFLINE
 CHECKED / READY FOR PHYSICAL VALIDATION**. The resulting IMG is 1,641,756,672 bytes / SHA-256
-`6FA8D13220DC9367659B5B16798664E906A390820359E72FD16063B84EC48887`; mixed runtime remains
-unproven until one physical r2 validation.
+`6FA8D13220DC9367659B5B16798664E906A390820359E72FD16063B84EC48887`.
+
+The exact r2 RAM-only diagnostic physically passes the restored `/metadata` contract: slot `_a`,
+fstab, metadata, all A logical devices, system mount and `SwitchRoot("/system")` succeed, and the
+r1 ENOENT is gone. R2 then fails first on `realpath(/vendor) -> /system/vendor`, followed by vendor
+mount EEXIST and `InitFatalReboot`; it still never reaches second stage/APEX/zygote/Mali. Exact
+r4/r2 roots prove r4 `/vendor` is a 0755/0:2000 `vendor_file` directory while r2 is a symlink to
+`/system/vendor`. The shared fstab requires a separate `/vendor` mount, and the byte-identical init
+requires canonical `realpath` before mounting. Product provenance uniquely explains the symlink:
+r4's generic GSI BoardConfig sets the separate-vendor output/image contract; B1's dedicated plain
+generic-ARM64 BoardConfig omits it. The identical GSI skip list excludes the matching product and
+system_ext symlinks, while odm/metadata/vendor_dlkm/oem directory peers match, so no second same-
+class mismatch was found.
+
+That proof authorizes only `a16-prototype-b-r3`. R3 replaces the r2 root `/vendor` symlink with the
+exact accepted r4 empty-directory contract. Its signed-system tree delta is only
+`changed=[vendor]`; vendor, product, vendor_dlkm, boot/vendor_boot/fstab, kernel, graphics
+providers, mixed ABI and all hardware authority remain unchanged. Complete offline audit is
+**OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**. The IMG is 1,641,760,768 bytes / SHA-256
+`7948D1B9AE4DC9E7B61EEF39876145BFCB4E6966FC12BC82925583477E5CB9D2`; mixed runtime remains
+unproven until exact r3 physical validation.
 
 This is a modern hybrid, not a full port. Framework, `system_server`, SurfaceFlinger, and
 eligible apps become AArch64; legacy Allwinner media, audio, HWC/composer, DRM, Wi-Fi,
@@ -814,8 +833,10 @@ Mali-G31 without runtime EGL intervention plus Remote OK, stable HDMI, Wi-Fi val
 audible application media. The explicit governance change moves the auto-recovered boot
 `getAudioPort` SIGSEGV to post-Gate P1 stabilization debt without calling it fixed. R4 is frozen;
 Prototype B0 is complete. B1 r1 passed its bounded offline gate but physically failed at the
-proven missing `/system/metadata` switch-root target. Single-cause r2 restores only that exact r4
-mountpoint contract and is offline checked, awaiting physical validation.
+proven missing `/system/metadata` switch-root target. Single-cause r2 physically closes that error
+but then fails at the independently proven noncanonical `/vendor` symlink. Single-cause r3 restores
+the accepted r4 root `/vendor` directory contract and is offline checked, awaiting physical
+validation.
 
 #### QPR0 r7 source-only closure
 
@@ -1173,8 +1194,9 @@ boot-time audio HAL crash remains known/unfixed as post-Gate P1; it is not evide
 Prototype B B0 is complete and permitted one bounded B1 build task. That permission produced r1,
 including the explicitly authorized bounded vendor extent correction. R1 passed offline acceptance
 but then physically failed on its uniquely proven missing `/system/metadata` switch-root target.
-Strict single-cause r2 is now **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**; no mixed-ABI
-physical PASS is claimed.
+Strict single-cause r2 physically closes that target but then fails at the proven noncanonical
+root `/vendor` symlink. Strict single-cause r3 restores the accepted directory contract and is now
+**OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**; no mixed-ABI physical PASS is claimed.
 
 ## 12. Target A/B/C/D comparison
 
@@ -1211,7 +1233,7 @@ The 5.4.302 wireless checkpoint is closed; D remains dominated on engineering ec
 |---|---|---|---|---|---|
 | Target A — Mature Legacy | **PROVEN now** | Accepted stability and hardware completeness | API 31 age and no 64-bit native apps; security/platform life is short | Low | Keep as rollback/reference, not final investment ceiling |
 | Target B — Modern Framework / Legacy Architecture | **PHYSICAL PASS / GATE 2 CLOSED / FROZEN** | Maximum vendor reuse and proven hardware viability | QPR0 only; boot-time audio P1 remains and ARM32 excludes 64-bit-only native apps | Medium; accepted architecture control | Freeze r4; no Prototype A r5 polish |
-| Target C — Modern Hybrid | **r1 PHYSICAL FAIL / r2 OFFLINE READY / MEDIUM** | API 36 plus AArch64 apps while preserving working 32-bit HALs/kernel | r1 fails because signed system root lacks the `/metadata` move target; r2 restores only that contract, but mixed runtime remains untested | High but bounded | Freeze r1 failure and physically validate exact single-cause r2 |
+| Target C — Modern Hybrid | **r1/r2 PHYSICAL FAIL / r3 OFFLINE READY / MEDIUM** | API 36 plus AArch64 apps while preserving working 32-bit HALs/kernel | r1 lacks `/metadata`; r2 physically closes it but exposes a noncanonical root `/vendor` symlink; r3 restores the exact r4 directory contract, while mixed runtime remains untested | High but bounded | Freeze r1/r2 evidence and physically validate exact single-cause r3 |
 | Target D — Full Modern Port | **LOW** | Clean contemporary architecture in theory | No complete H616 5.10+ graphics/media/display/DRM provider; becomes multiple subsystem rewrites | Extreme | **NO-GO** |
 
 ## 13. Reuse versus rewrite map
@@ -1336,7 +1358,7 @@ offline audit. Runtime compatibility remains appropriately MEDIUM until physical
 | Recommended modern Android target | **PATH A PHYSICALLY PROVEN / GATE 2 CLOSED** | r4 physically passes the functional architecture contract and is frozen; boot audio crash remains post-Gate P1 |
 | Android 16 r4 / 25Q4 | **NO-GO with retained 5.4** | Physical and source evidence agree on the 5.10/5.10.210 requirement |
 | Android 16 QPR0 / 25Q2 | **SELECTED / r4 PHYSICAL PASS / GATE 2 CLOSED** | Exact r7 requires 5.4.277+; 5.4.302 and r4 runtime pass; audio boot crash is post-Gate P1 |
-| Mixed ARM64/ARM32 userspace | **r1 PHYSICAL FAIL / r2 OFFLINE CHECKED** | Slot-correct diagnostic passes fstab and early mounts, then r1 fails at `/metadata` move because `/system/metadata` is absent. Single-cause r2 restores the exact r4 directory contract and awaits physical validation |
+| Mixed ARM64/ARM32 userspace | **r1/r2 PHYSICAL FAIL / r3 OFFLINE CHECKED** | r2 physically closes r1's `/metadata` move failure, then fails because root `/vendor` is a symlink and cannot be the canonical target for the independent vendor mount. Exact provenance proves the cause; r3 restores only the r4 directory contract and awaits physical validation |
 | Full ARM64 userspace | **NO-GO** | Would convert/replace working proprietary service stack for little user value |
 | Kernel 5.4 as final architecture | **CLOSED / PASS AT 5.4.302 r5** | Boot/HDMI/remote/Wi-Fi/ADB and physical wireless reinitialization pass after restoring the working FMAC address contract |
 | Kernel 5.10+ migration | **NO-GO IN THIS PHASE** | No complete exact-SoC/board Android provider; regression surface is a new BSP port |
@@ -1352,10 +1374,10 @@ offline audit. Runtime compatibility remains appropriately MEDIUM until physical
    `getAudioPort` SIGSEGV remains known/unfixed post-Gate P1, not a Prototype A successor trigger.
 3. Continue to carry full-VINTF exit 65 solely for inherited `CONFIG_NFS_FS=y` versus FCM-6 `n`;
    never report it PASS. Enforcing SELinux remains later release hardening, not a Gate 2 substitute.
-4. **r1 root cause proven / r2 physical pending:** a slot-correct diagnostic passes fstab,
-   metadata and all early logical mounts, then fatals moving `/metadata`. Signed-root comparison and
-   byte-identical `SwitchRoot` prove absent r1 `/system/metadata` as the unique cause. r2 adds only
-   the exact r4 directory contract and closes all offline gates; physical mixed runtime is unproven.
+4. **r1 and r2 causes proven / r3 physical pending:** r2 physically passes the restored metadata
+   move, then fatals because `/vendor` resolves to `/system/vendor`. Exact roots, fstab/init and
+   BoardConfig/root-generation provenance prove the missing separate-vendor contract. R3 changes
+   only that root object and closes all offline gates; physical mixed runtime is unproven.
 
 ## 16. Direct route to the target
 
@@ -1395,10 +1417,12 @@ offline audit. Runtime compatibility remains appropriately MEDIUM until physical
 12. **Completed — freeze and explain r1 physical failure:** the initial no-slot diagnostic fstab
     failure is reclassified as artificial. With slot `_a`, r1 reaches mounted system then fatals at
     `/metadata` move; exact r4/r1 roots prove the missing target directory.
-13. **Current — exact single-cause r2:** restore only root `/metadata`, re-sign system, and preserve
-    46/50 r1 outer payloads plus all other B1 semantics. Full offline audit passes; request one
-    UART-first physical validation and do not create r3 before its result.
-14. **Final acceptance:** sustained daily-use regression, 4K30-or-1080p evidence-led media
+13. **Completed — exact single-cause r2:** restore only root `/metadata`; physical diagnostic proves
+    that move now passes and freezes r2's next `/vendor` canonical failure.
+14. **Current — exact single-cause r3:** replace only the r2 root `/vendor` symlink with the accepted
+    r4 directory contract; preserve 46/50 r2 outer payloads and all other B1 semantics. Full offline
+    audit passes; request one UART-first physical validation and do not create r4 before its result.
+15. **Final acceptance:** sustained daily-use regression, 4K30-or-1080p evidence-led media
     ceiling, enforcing/release hardening, recovery rehearsal and a hash-locked accepted architecture
     image.
 
