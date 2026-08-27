@@ -2,13 +2,88 @@
 
 Date: 2026-08-27
 
-Status: **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**
+Status: **PHYSICAL FAIL — FIRST-STAGE MOUNT / DEFAULT FSTAB MISSING / NOT ACCEPTED**
 
-Physical status: **NOT YET VALIDATED**. No UBOX physical action occurred, and this record does not
-authorize flashing. This is the same canonical `a16-prototype-b-r1`; no r2 was created and B0 was
-not rerun.
+Physical status: **FAILED BEFORE SECOND-STAGE INIT**. The prior build/offline audit performed no
+UBOX action and remains valid as an offline record; the user subsequently flashed and UART-tested
+the exact r1. That first physical result is now immutable evidence. This is still the same canonical
+`a16-prototype-b-r1`; no r2 has been created.
 
-## Decision
+## First physical result
+
+The user-supplied UART evidence establishes this strict boundary:
+
+| Stage | Result |
+|---|---|
+| Linux 5.4.302+ kernel | **PASS / REACHED** |
+| `/init` exec | **PASS / REACHED** |
+| normal first-stage init | **PASS / REACHED** |
+| `androidboot.force_normal_boot=1` | **PASS / APPLIED** |
+| default fstab | **FAIL** — `ReadFstabFromFile(): failed to load '/fstab.sun50iw9p1'` |
+| first-stage mount | **FAIL** — `Failed to create FirstStageMount`, then required early mounts fail |
+| fatal handling | `InitFatalReboot` followed by kernel panic |
+| second-stage init / `apexd` | **NOT REACHED** |
+| zygote / system_server / SurfaceFlinger | **NOT REACHED** |
+| ARM64 Mali / mapper / gralloc runtime | **NOT REACHED** |
+
+No raw UART capture is present on this VM, so this repository record preserves the externally
+supplied result and exact decisive excerpts; it does not fabricate a raw log or SHA-256. The proper
+classification is **PHYSICAL FAIL — FIRST-STAGE MOUNT / DEFAULT FSTAB MISSING**. Here “missing” is
+the observed runtime load boundary, not a claim that the verified package lacks the bytes. It is
+not evidence against mixed zygote or graphics because none of those stages ran.
+
+## Exact r4 versus r1 fstab provenance audit
+
+The physically accepted r4 default fstab does **not** come from its generated `system_a` root.
+Both r4 and r1 generated system roots lack `/fstab.sun50iw9p1`,
+`/first_stage_ramdisk/fstab.sun50iw9p1` and `/system/etc/fstab.sun50iw9p1`. The accepted source is
+the header-v3 `vendor_boot.fex` vendor ramdisk:
+
+```text
+first_stage_ramdisk/fstab.sun50iw9p1
+size 2330
+mode 0644, uid/gid 0:0
+SHA-256 6C771313A6F9DEDAEFA4061B14FE142F050F4AB13D360FF2F60FB9361277F701
+```
+
+The preserved boot ramdisk runs `/system/bin/init`, an ELF32 ARM executable with SHA-256
+`2A7D6E125583C79E925B5D916C54C51E4AE8EE145F2D7422B2DD77D0B6C62751`. With
+`androidboot.force_normal_boot=1`, first-stage init switches root to `/first_stage_ramdisk`; the
+archive path above therefore becomes runtime `/fstab.sun50iw9p1`. The boot hardware suffix
+`sun50iw9p1` is what directs default-fstab lookup to that filename. The DT supplies Android firmware,
+boot-device and vbmeta data but has no Android fstab node, so the file is the required fallback.
+`/vendor/etc/fstab.sun50iw9p1` is a later identical copy and cannot be the initial source because
+vendor has not yet been mounted.
+
+Detached extraction from both exact outer images proves that all pre-failure inputs are identical:
+
+| Input | r4 and r1 exact identity |
+|---|---|
+| `boot.fex` | 67,108,864 bytes / `527CF878...B8063` |
+| `Vboot.fex` | `CCA715D2...F8DA3` |
+| `vendor_boot.fex` | 33,554,432 bytes / `AAF77E65...7E72` |
+| `Vvendor_boot.fex` | `A9DD7B9B...4B90F` |
+| vendor ramdisk | 1,437 bytes / `89CCD98E...C7E9` |
+| vendor-boot DTB | 68,228 bytes / `24928802...2F72` |
+| `sunxi.fex` | 72,704 bytes / `29E551D6...8EBAA` |
+| `dtbo.fex` / `Vdtbo.fex` | `6CF9B085...911F` / `E966D753...AAC1` |
+| first-stage fstab | 2,330 bytes / `6C771313...F701` |
+| late vendor fstab | same `6C771313...F701` in both vendor images |
+
+Both outer packages also pass IMAGEWTY checksum verification. The only six r1 outer changes remain
+`super`/`Vsuper`, subordinate system/vendor vbmeta and their V companions; none supplies or executes
+the default fstab before this failure.
+
+This creates an evidence conflict, not a proven copy-rule defect: the verified r1 package contains
+the exact r4 first-stage init, vendor ramdisk and fstab, while the physical runtime cannot load or
+parse the expected path. The locally unavailable full UART block also prevents distinguishing an
+underlying read error, fstab field/parser error, slot-selection update failure or another runtime
+condition. Therefore the exact reason r4 proceeds while r1 fails is **NOT UNIQUELY PROVEN**. Copying
+the same fstab into system, modifying boot/vendor_boot, or changing product inheritance would be
+speculative and is prohibited. Machine-readable evidence is in
+`a16-prototype-b-r1-first-stage-audit.json`.
+
+## Historical offline decision
 
 All bounded B1 offline gates closed after the explicitly authorized storage correction. The exact
 candidate is:
@@ -23,9 +98,9 @@ candidate is:
 | `vbmeta_system.fex` | 1,472 | `7D3546FD3AA9F33075CB7BB858D1B9D7EF406CE6198C5D320A7E0B48DB20ADDB` |
 | `vbmeta_vendor.fex` | 1,600 | `DE14183FAFBBEA3EC0D2B0E8737FF9F71BA001186A0DE0D58E24891706ACE6C5` |
 
-The decision is not a runtime claim. Mixed zygote startup, AArch64 SurfaceFlinger/system_server,
-Mali rendering, cross-bitness graphics-buffer transport and all hardware behavior still require a
-later explicitly authorized physical validation.
+That offline decision was not a runtime claim and is now superseded by the physical first-stage
+failure above. Mixed zygote startup, AArch64 SurfaceFlinger/system_server, Mali rendering,
+cross-bitness graphics-buffer transport and all preserved hardware behavior remain untested.
 
 ## Same-r1 history and bounded storage closure
 
@@ -157,14 +232,17 @@ check all pass. The combined B1 focused suite is 21/21 PASS. The established ful
 `python3 -m unittest discover -s tests` reports 127 tests OK with 34 repository-declared skips.
 Python syntax compilation, JSON parsing and `git diff --check` also pass.
 
-## Physical boundary and next action
+## Current HOLD and next evidence
 
-No flash, reboot, UART, ADB or other UBOX action occurred. The known r4 auto-recovered boot-time
+The current result is **EVIDENCE-BACKED HOLD — ROOT CAUSE NOT UNIQUELY PROVEN**. r1 remains the
+immutable failed physical evidence point and is not accepted. The known r4 auto-recovered boot-time
 legacy audio failure remains unchanged and unfixed. Vulkan, enforcing SELinux, commercial DRM and
-release-hardening work remain outside B1.
+release-hardening work remain outside this failure boundary.
 
-The next action is to request explicit authorization for one physical validation of this exact IMG.
-That validation must first prove boot to UI without intervention, `zygote64_32`, AArch64
-system_server/SurfaceFlinger, Mali-G31 rendering and cross-bitness gralloc/mapper operation, then
-regression-check the frozen r4 HDMI/audio/Wi-Fi/Ethernet/remote authority. A failure must return to
-this same r1 evidence boundary; it does not authorize r2 or expanded semantics.
+Before any r2 design, preserve the unabridged UART block from force-normal switch-root through the
+fstab parser and fatal path, including any preceding errno, `Error parsing fstab` or slotselect
+message; verify the flashed outer identity/PhoenixCard record against `796A2D46...9545`; and, under
+separate physical authorization, establish the runtime presence/metadata/hash of
+`/fstab.sun50iw9p1` plus `/proc/cmdline` and `/proc/bootconfig` from a read-only recovery or
+first-stage diagnostic. Only a unique causal delta may authorize **one** bounded
+`a16-prototype-b-r2`. This task built no r2 and changed no candidate bytes.

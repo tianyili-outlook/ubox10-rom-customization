@@ -70,8 +70,21 @@
   ARM64+ARM32/`zygote64_32` system、exact 三 provider、system/vendor AVB、super/IMAGEWTY 与完整
   ELF/linker/APEX/VNDK31/split-SELinux/kernel/preservation audit PASS。IMG 1,641,752,576 bytes /
   `796A2D46DB7FCDFF27D53397565ABDDC3D18F2E548A697055CE5E47278E69545`；full VINTF 仍只有
-  inherited NFS exit-65 exception。状态 **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**，尚未
-  物理验证且未授权 flash；下一步只请求 exact r1 一次 physical validation，不创建 r2。
+  inherited NFS exit-65 exception。这里保留的是 physical test 之前的历史
+  **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION** 结论；当前结果见 13。
+- [x] **13 — r1 first physical result and provenance audit：**用户 UART 证明 Linux 5.4.302+、
+  `/init`、normal first-stage 与 force-normal handling 到达；首错为
+  `/fstab.sun50iw9p1` load failure，随后 FirstStageMount/required early mount/fatal reboot/panic。
+  状态 **PHYSICAL FAIL — FIRST-STAGE MOUNT / DEFAULT FSTAB MISSING / NOT ACCEPTED**；second stage、
+  APEX、zygote、system_server、SurfaceFlinger、Mali 均未到达。Exact r4/r1 outer audit 同时证明
+  fstab 的真实来源是 byte-preserved vendor_boot `first_stage_ramdisk`，且 boot/init/vendor ramdisk/
+  fstab/DT/DTBO/checksum companions 全相同；generated system root 从来不是 fstab 来源。故当前
+  **HOLD — ROOT CAUSE NOT UNIQUELY PROVEN**，不能猜测性复制 fstab，也不构建 r2。
+- [ ] **14 — minimum evidence before r2：**保存未截断 UART（含 `ReadFstabFromFile` 前的 errno、
+  parse 或 slotselect 行），核对 flashed IMG/PhoenixCard record 与 `796A2D46...9545`，并在另行
+  授权的 read-only recovery/first-stage diagnostic 中读取 runtime `/fstab.sun50iw9p1` 的存在性、
+  metadata/hash 以及 `/proc/cmdline`、`/proc/bootconfig`。只有唯一 causal delta proven 后，才创建
+  一个 bounded `a16-prototype-b-r2`；否则保持 r1 HOLD。
 
 ## Post-Gate stabilization / release hardening
 
@@ -136,4 +149,4 @@
 - [x] 完成限定只读 system-quality audit：无 P0；stability、retry loop、audio residual、SELinux、CPU/thermal/idle、graphics 与 memory 证据见 `docs/m8/device-tests/20260816-m8b-system-quality-audit/`。
 - [ ] **DEFERRED / P2 / 不修：**Wi-Fi HAL link-layer statistics 每约 3 秒返回 `ERROR_UNKNOWN`；网络 ADB 稳定且 Wi-Fi 进程未重启。
 - [x] 保持 Mouse mode dropped；不重新引入 vendor mouse framework。
-- [x] architecture-ceiling study 与 B0 已锁定 paired AArch64 Mali、AOSP mapper adapter、multilib gralloc-1.x、lawful-local fail-closed intake、vendor property 与 AVB scope；ARM32 OMX/Cedar/media/HWC/audio/Wi-Fi/BT/DRM/TEE 继续进程隔离复用。B0 的 historical build-readiness GO 已执行；同一 B1 的 storage correction、candidate 与 offline audit 已闭合，等待明确授权后的 physical validation。
+- [x] architecture-ceiling study 与 B0 已锁定 paired AArch64 Mali、AOSP mapper adapter、multilib gralloc-1.x、lawful-local fail-closed intake、vendor property 与 AVB scope；ARM32 OMX/Cedar/media/HWC/audio/Wi-Fi/BT/DRM/TEE 继续进程隔离复用。B0 的 historical build-readiness GO 与同一 B1 的 storage correction/build/offline audit 已执行；首次 physical 现已在 first-stage fstab load 失败，当前执行合同由上文 13/14 的 evidence-backed HOLD 取代。

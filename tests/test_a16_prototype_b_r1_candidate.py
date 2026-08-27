@@ -11,6 +11,7 @@ REPO = Path(__file__).resolve().parents[1]
 CONFIG = REPO / "configs/candidates/a16-prototype-b-r1.json"
 RESULT = REPO / "docs/m8/candidates/a16-prototype-b-r1-offline-result.json"
 PRESERVATION = REPO / "docs/m8/candidates/a16-prototype-b-r1-preservation.json"
+FIRST_STAGE = REPO / "docs/m8/candidates/a16-prototype-b-r1-first-stage-audit.json"
 CANDIDATE = REPO / "out/candidates/a16-prototype-b-r1/x12-a16-prototype-b-r1.img"
 LOCAL_BUILD_RESULT = REPO / "out/candidates/a16-prototype-b-r1/build-result.json"
 LOCAL_AUDIT = REPO / "out/candidates/a16-prototype-b-r1/offline-audit/offline-audit.json"
@@ -30,8 +31,9 @@ class A16PrototypeBR1CandidateTests(unittest.TestCase):
         cls.config = json.loads(CONFIG.read_text(encoding="utf-8"))
         cls.result = json.loads(RESULT.read_text(encoding="utf-8"))
         cls.preservation = json.loads(PRESERVATION.read_text(encoding="utf-8"))
+        cls.first_stage = json.loads(FIRST_STAGE.read_text(encoding="utf-8"))
 
-    def test_final_decision_has_no_physical_claim(self) -> None:
+    def test_historical_offline_decision_has_no_physical_claim(self) -> None:
         self.assertEqual("a16-prototype-b-r1", self.result["candidate"])
         self.assertEqual(
             "OFFLINE_CHECKED_READY_FOR_PHYSICAL_VALIDATION", self.result["status"]
@@ -42,6 +44,68 @@ class A16PrototypeBR1CandidateTests(unittest.TestCase):
         self.assertEqual("NOT_YET_VALIDATED", self.result["physical_status"])
         self.assertFalse(self.result["physical_device_actions_performed"])
         self.assertFalse(self.result["flash_authorized"])
+
+    def test_current_physical_failure_and_hold_are_locked(self) -> None:
+        physical = self.first_stage["physical_result"]
+        decision = self.first_stage["root_cause_decision"]
+        self.assertEqual("a16-prototype-b-r1", self.first_stage["candidate"])
+        self.assertEqual(
+            "PHYSICAL_FAIL_FIRST_STAGE_MOUNT_DEFAULT_FSTAB_MISSING", physical["status"]
+        )
+        self.assertFalse(physical["accepted"])
+        self.assertFalse(physical["raw_uart_capture_present_locally"])
+        self.assertIsNone(physical["raw_uart_sha256"])
+        self.assertIn("second-stage init", physical["not_reached"])
+        self.assertEqual(
+            "EVIDENCE_BACKED_HOLD_ROOT_CAUSE_NOT_UNIQUELY_PROVEN",
+            decision["result"],
+        )
+        self.assertFalse(decision["r2_authorized"])
+        self.assertFalse(decision["r2_created"])
+
+    def test_r4_first_stage_contract_is_exact_in_r1_package(self) -> None:
+        comparison = self.first_stage["r4_r1_first_stage_payload_comparison"]
+        for name in (
+            "boot.fex",
+            "Vboot.fex",
+            "vendor_boot.fex",
+            "Vvendor_boot.fex",
+            "vendor_ramdisk",
+            "vendor_boot_dtb",
+            "sunxi.fex",
+            "dtbo.fex",
+            "Vdtbo.fex",
+        ):
+            self.assertTrue(comparison[name]["byte_identical"], name)
+        contract = self.first_stage["accepted_first_stage_contract"]
+        self.assertEqual(
+            "first_stage_ramdisk/fstab.sun50iw9p1", contract["archive_path"]
+        )
+        self.assertEqual(
+            "/fstab.sun50iw9p1",
+            contract["runtime_path_after_force_normal_boot_switch_root"],
+        )
+        self.assertEqual(
+            "6C771313A6F9DEDAEFA4061B14FE142F050F4AB13D360FF2F60FB9361277F701",
+            contract["sha256"],
+        )
+        self.assertFalse(contract["r4_system_generated_root_fstab_present"])
+        self.assertFalse(contract["r1_system_generated_root_fstab_present"])
+        self.assertTrue(contract["r4_vendor_boot_fstab_present"])
+        self.assertTrue(contract["r1_vendor_boot_fstab_present"])
+
+    def test_no_first_stage_payload_was_in_r1_outer_delta(self) -> None:
+        outer = self.first_stage["outer_integrity"]
+        self.assertEqual("PASS_12_PARTITIONS_ZERO_MISMATCH", outer["r4_imagewty"])
+        self.assertEqual("PASS_12_PARTITIONS_ZERO_MISMATCH", outer["r1_imagewty"])
+        self.assertFalse(outer["first_stage_payload_in_changed_set"])
+        self.assertEqual(
+            sorted([
+                "super.fex", "Vsuper.fex", "vbmeta_system.fex",
+                "Vvbmeta_system.fex", "vbmeta_vendor.fex", "Vvbmeta_vendor.fex",
+            ]),
+            sorted(outer["r1_changed_outer_payloads"]),
+        )
 
     def test_exact_outer_and_logical_artifacts_are_pinned(self) -> None:
         artifacts = self.result["artifacts"]

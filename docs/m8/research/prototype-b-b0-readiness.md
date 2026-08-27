@@ -29,6 +29,15 @@ CHECKED / READY FOR PHYSICAL VALIDATION**, not physical PASS. The actual candida
 the authorized storage geometry and all preservation constraints. Full VINTF remains exit 65 for
 the inherited NFS exception only. No physical action occurred.
 
+Physical execution update, 2026-08-27: the user's first exact-r1 UART test is **PHYSICAL FAIL —
+FIRST-STAGE MOUNT / DEFAULT FSTAB MISSING**. It reaches the preserved kernel and normal first-stage
+init but not second stage. This does not reopen B0 or contradict its provider/build-readiness work.
+Detached r4/r1 provenance proves boot, first-stage init, vendor_boot ramdisk/fstab, DT/DTBO and
+their checksum companions are byte-identical and both packages verify; the runtime load/parse
+difference is not yet uniquely explained. Current execution decision is evidence-backed HOLD, and
+no r2 may be built merely by copying the same fstab. See the r1 candidate record and
+`a16-prototype-b-r1-first-stage-audit.json`.
+
 This record is the integration contract for the first Prototype B build task. B0 was read-only:
 no Android or kernel build ran, no source or accepted image was modified, no candidate was created,
 and no donor proprietary binary was committed or installed. Exact QPR0 source, the r4 candidate and

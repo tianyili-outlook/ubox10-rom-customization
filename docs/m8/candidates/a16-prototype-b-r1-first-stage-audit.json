@@ -1,0 +1,159 @@
+{
+  "schema": 1,
+  "candidate": "a16-prototype-b-r1",
+  "date": "2026-08-27",
+  "physical_result": {
+    "status": "PHYSICAL_FAIL_FIRST_STAGE_MOUNT_DEFAULT_FSTAB_MISSING",
+    "accepted": false,
+    "evidence_provenance": "USER_SUPPLIED_UART_FACTS_AND_EXCERPTS",
+    "raw_uart_capture_present_locally": false,
+    "raw_uart_sha256": null,
+    "reached": [
+      "Linux 5.4.302+ kernel startup",
+      "/init exec",
+      "normal first-stage init",
+      "androidboot.force_normal_boot=1 handling"
+    ],
+    "first_causal_blocker": "ReadFstabFromFile failed to load /fstab.sun50iw9p1",
+    "cascade": [
+      "Failed to create FirstStageMount",
+      "Failed to mount required partitions early",
+      "InitFatalReboot",
+      "kernel panic"
+    ],
+    "not_reached": [
+      "second-stage init",
+      "apexd",
+      "zygote64_32",
+      "system_server",
+      "SurfaceFlinger",
+      "ARM64 Mali runtime"
+    ]
+  },
+  "artifact_identity": {
+    "r4": {
+      "path": "out/candidates/a16-prototype-a-r4/x12-a16-prototype-a-r4.img",
+      "size": 1239746560,
+      "sha256": "E125DD8FFB9F5B4A7B2B9B86DD8377367409AB00D1B29BE1E719CE25768E2111"
+    },
+    "r1": {
+      "path": "out/candidates/a16-prototype-b-r1/x12-a16-prototype-b-r1.img",
+      "size": 1641752576,
+      "sha256": "796A2D46DB7FCDFF27D53397565ABDDC3D18F2E548A697055CE5E47278E69545"
+    }
+  },
+  "r4_r1_first_stage_payload_comparison": {
+    "boot.fex": {
+      "size": 67108864,
+      "sha256": "527CF878B015CFAE4E8600BD750C7C73F45F4290B5CFEFEDBD1AD9AC347B8063",
+      "byte_identical": true
+    },
+    "Vboot.fex": {
+      "sha256": "CCA715D267A1C4F40462856006EDDB6E9C7348ACE030F39CA34B5F7B189F8DA3",
+      "byte_identical": true
+    },
+    "vendor_boot.fex": {
+      "size": 33554432,
+      "sha256": "AAF77E65F6D882754015C7963E7A3D533282E1BCFA76F35220DB9FCAF4ED7E72",
+      "byte_identical": true
+    },
+    "Vvendor_boot.fex": {
+      "sha256": "A9DD7B9BB9AF8B85385EF42E4C3D43A1805258A430A51B20C3F2A384B504B90F",
+      "byte_identical": true
+    },
+    "vendor_ramdisk": {
+      "size": 1437,
+      "decompressed_cpio_size": 6400,
+      "sha256": "89CCD98E14A4A286526D6C9F98FAD048D9C5CA5A0C28F4783D55201DCD56C7E9",
+      "byte_identical": true
+    },
+    "vendor_boot_dtb": {
+      "size": 68228,
+      "sha256": "24928802B99DA546338141E4FC6F3DEDF9E7DE6FBE29306AF4D038D838092F72",
+      "byte_identical": true,
+      "android_fstab_node_present": false
+    },
+    "sunxi.fex": {
+      "size": 72704,
+      "sha256": "29E551D6721DC2771B5F3E57FAD0B2DC75D10367F1E89F4933014917BFA8EBAA",
+      "byte_identical": true,
+      "android_fstab_node_present": false
+    },
+    "dtbo.fex": {
+      "size": 2097152,
+      "sha256": "6CF9B085E2E450076E1740171BA04137F5912D4124C015DCD039EE2B6215911F",
+      "byte_identical": true
+    },
+    "Vdtbo.fex": {
+      "sha256": "E966D75303AE4C149B50F3AB78B3D12F0BA53F749ED1426C87C14F273E92AAC1",
+      "byte_identical": true
+    }
+  },
+  "accepted_first_stage_contract": {
+    "source_partition": "vendor_boot ramdisk",
+    "archive_path": "first_stage_ramdisk/fstab.sun50iw9p1",
+    "archive_mode": "0644",
+    "archive_uid_gid": "0:0",
+    "size": 2330,
+    "sha256": "6C771313A6F9DEDAEFA4061B14FE142F050F4AB13D360FF2F60FB9361277F701",
+    "runtime_path_after_force_normal_boot_switch_root": "/fstab.sun50iw9p1",
+    "late_vendor_copy_path": "/vendor/etc/fstab.sun50iw9p1",
+    "late_vendor_copy_sha256_r4": "6C771313A6F9DEDAEFA4061B14FE142F050F4AB13D360FF2F60FB9361277F701",
+    "late_vendor_copy_sha256_r1": "6C771313A6F9DEDAEFA4061B14FE142F050F4AB13D360FF2F60FB9361277F701",
+    "boot_ramdisk_first_stage_init_path": "/system/bin/init",
+    "boot_ramdisk_first_stage_init_sha256": "2A7D6E125583C79E925B5D916C54C51E4AE8EE145F2D7422B2DD77D0B6C62751",
+    "boot_ramdisk_first_stage_init_elf": "ELF32 ARM",
+    "androidboot_hardware_effect": "hardware=sun50iw9p1 selects the suffix searched by default-fstab lookup",
+    "r4_system_generated_root_fstab_present": false,
+    "r1_system_generated_root_fstab_present": false,
+    "r4_vendor_boot_fstab_present": true,
+    "r1_vendor_boot_fstab_present": true
+  },
+  "source_corroboration": {
+    "scope": "QPR0 r7 source corroborates the lookup/switch-root contract; the executed first-stage init itself is the byte-preserved ELF32 boot-ramdisk binary above",
+    "system_core_commit": "68be0c2c0006a0740d0b1809abe4717308f90d15",
+    "first_stage_init_cpp_sha256": "6CB3624633C823F3DFD37700AC7ADEBB9C47C7F808DBDFDE267B24E0DEB7FD1F",
+    "fstab_cpp_sha256": "7979FB019E73D831136DB0784AA59DC0E79C0B8CAF3A569D6E07612F3A768847",
+    "force_normal_boot_behavior": "SwitchRoot(/first_stage_ramdisk)",
+    "default_fstab_search_order_includes": [
+      "/system/etc/fstab.<suffix>",
+      "/first_stage_ramdisk/system/etc/fstab.<suffix>",
+      "/fstab.<suffix>",
+      "/first_stage_ramdisk/fstab.<suffix>"
+    ]
+  },
+  "outer_integrity": {
+    "r4_imagewty": "PASS_12_PARTITIONS_ZERO_MISMATCH",
+    "r1_imagewty": "PASS_12_PARTITIONS_ZERO_MISMATCH",
+    "r1_changed_outer_payloads": [
+      "Vsuper.fex",
+      "Vvbmeta_system.fex",
+      "Vvbmeta_vendor.fex",
+      "super.fex",
+      "vbmeta_system.fex",
+      "vbmeta_vendor.fex"
+    ],
+    "first_stage_payload_in_changed_set": false
+  },
+  "root_cause_decision": {
+    "result": "EVIDENCE_BACKED_HOLD_ROOT_CAUSE_NOT_UNIQUELY_PROVEN",
+    "proven": [
+      "The r1 physical boot fails in first-stage default-fstab handling before any mixed-userspace or graphics runtime.",
+      "The accepted r4 fstab source is vendor_boot first_stage_ramdisk, not the generated system root.",
+      "The r1 package retains the exact r4 boot, first-stage init, vendor_boot ramdisk, fstab, DT, DTBO and checksum companions relevant before the failure.",
+      "No tracked r1 product, BoardConfig, system, vendor-property, Mali, mapper, gralloc or LP semantic delta can explain the package-level absence of /fstab.sun50iw9p1 before first-stage parsing."
+    ],
+    "not_proven": [
+      "Why the physical r1 runtime could not load or parse bytes that are present in its verified vendor_boot payload.",
+      "Whether the decisive inner parser failure was file read, field parsing, slotselect update or another runtime-only condition; the full raw UART block is not locally available.",
+      "That copying the same fstab to another partition or rebuilding boot/vendor_boot would correct the observed failure."
+    ],
+    "r2_authorized": false,
+    "r2_created": false,
+    "minimum_next_evidence": [
+      "Preserve the exact unabridged UART block from force-normal switch-root through ReadFstabFromFile and InitFatalReboot, including any preceding errno, Error parsing fstab, or slotselect line.",
+      "Verify the flashed r1 image identity and PhoenixCard write/checksum record against SHA-256 796A2D46DB7FCDFF27D53397565ABDDC3D18F2E548A697055CE5E47278E69545.",
+      "Using an explicitly authorized read-only recovery or first-stage diagnostic, establish runtime existence, metadata and SHA-256 of /fstab.sun50iw9p1 plus /proc/cmdline and /proc/bootconfig before proposing a byte change."
+    ]
+  }
+}

@@ -84,8 +84,16 @@ group maximum, `system_a`, `product_a`, `vendor_dlkm_a`, B-slot allocations and 
 remain exact, with no shrink. The complete mixed build and offline audit now produce
 `x12-a16-prototype-b-r1.img`, 1,641,752,576 bytes / SHA-256
 `796A2D46DB7FCDFF27D53397565ABDDC3D18F2E548A697055CE5E47278E69545`. Final status is **OFFLINE
-CHECKED / READY FOR PHYSICAL VALIDATION**. This closes the bounded storage issue but does not prove
-runtime mixed graphics, close release hardening, or authorize a physical action.
+CHECKED / READY FOR PHYSICAL VALIDATION**. This closed the bounded storage issue but did not prove
+runtime mixed graphics or close release hardening.
+
+The subsequent first physical UART result is **PHYSICAL FAIL — FIRST-STAGE MOUNT / DEFAULT FSTAB
+MISSING**. Kernel 5.4.302+, `/init`, normal first stage and force-normal handling are reached, but
+`/fstab.sun50iw9p1` cannot be loaded and the boot fatals before second stage. Exact r4/r1 audit proves
+the package contains the same accepted `vendor_boot` first-stage fstab, init, DT/DTBO and checksum
+companions; no pre-failure payload differs. The reason the runtime cannot load/parse those preserved
+bytes is therefore not uniquely proven. Architecture status is **HOLD FOR MINIMUM RUNTIME
+EVIDENCE**, not provider/ABI NO-GO and not authorization to copy an fstab or build r2.
 
 This is a modern hybrid, not a full port. Framework, `system_server`, SurfaceFlinger, and
 eligible apps become AArch64; legacy Allwinner media, audio, HWC/composer, DRM, Wi-Fi,
@@ -1185,7 +1193,7 @@ The 5.4.302 wireless checkpoint is closed; D remains dominated on engineering ec
 |---|---|---|---|---|---|
 | Target A — Mature Legacy | **PROVEN now** | Accepted stability and hardware completeness | API 31 age and no 64-bit native apps; security/platform life is short | Low | Keep as rollback/reference, not final investment ceiling |
 | Target B — Modern Framework / Legacy Architecture | **PHYSICAL PASS / GATE 2 CLOSED / FROZEN** | Maximum vendor reuse and proven hardware viability | QPR0 only; boot-time audio P1 remains and ARM32 excludes 64-bit-only native apps | Medium; accepted architecture control | Freeze r4; no Prototype A r5 polish |
-| Target C — Modern Hybrid | **B1 OFFLINE CHECKED / MEDIUM** | API 36 plus AArch64 apps while preserving working 32-bit HALs/kernel | Mixed graphics/zygote and hardware preservation runtime remain untested | High but bounded | Request physical validation of exact r1; do not create r2 |
+| Target C — Modern Hybrid | **B1 PHYSICAL FAIL / HOLD / MEDIUM** | API 36 plus AArch64 apps while preserving working 32-bit HALs/kernel | First-stage cannot load the preserved default fstab; exact runtime cause is not uniquely proven and mixed runtime was not reached | High but bounded | Freeze r1 failure; collect minimum first-stage evidence before any r2 |
 | Target D — Full Modern Port | **LOW** | Clean contemporary architecture in theory | No complete H616 5.10+ graphics/media/display/DRM provider; becomes multiple subsystem rewrites | Extreme | **NO-GO** |
 
 ## 13. Reuse versus rewrite map
@@ -1310,7 +1318,7 @@ offline audit. Runtime compatibility remains appropriately MEDIUM until physical
 | Recommended modern Android target | **PATH A PHYSICALLY PROVEN / GATE 2 CLOSED** | r4 physically passes the functional architecture contract and is frozen; boot audio crash remains post-Gate P1 |
 | Android 16 r4 / 25Q4 | **NO-GO with retained 5.4** | Physical and source evidence agree on the 5.10/5.10.210 requirement |
 | Android 16 QPR0 / 25Q2 | **SELECTED / r4 PHYSICAL PASS / GATE 2 CLOSED** | Exact r7 requires 5.4.277+; 5.4.302 and r4 runtime pass; audio boot crash is post-Gate P1 |
-| Mixed ARM64/ARM32 userspace | **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION** | Same r1 closes mixed build, exact three providers, 144 MiB bounded vendor geometry, AVB/LP/outer, ELF/linker/APEX/VNDK31/SELinux and preservation; runtime remains untested |
+| Mixed ARM64/ARM32 userspace | **PHYSICAL FAIL / EVIDENCE-BACKED HOLD** | Same r1 closes all offline gates, but first physical boot stops at default-fstab load before second stage. r4/r1 first-stage payloads are exact, so the causal runtime difference remains unproven |
 | Full ARM64 userspace | **NO-GO** | Would convert/replace working proprietary service stack for little user value |
 | Kernel 5.4 as final architecture | **CLOSED / PASS AT 5.4.302 r5** | Boot/HDMI/remote/Wi-Fi/ADB and physical wireless reinitialization pass after restoring the working FMAC address contract |
 | Kernel 5.10+ migration | **NO-GO IN THIS PHASE** | No complete exact-SoC/board Android provider; regression surface is a new BSP port |
@@ -1326,9 +1334,10 @@ offline audit. Runtime compatibility remains appropriately MEDIUM until physical
    `getAudioPort` SIGSEGV remains known/unfixed post-Gate P1, not a Prototype A successor trigger.
 3. Continue to carry full-VINTF exit 65 solely for inherited `CONFIG_NFS_FS=y` versus FCM-6 `n`;
    never report it PASS. Enforcing SELinux remains later release hardening, not a Gate 2 substitute.
-4. **Completed offline / pending physical:** the authorized exact 144 MiB `vendor_a` correction and
-   all B1 offline gates are closed. Request one explicit physical validation of the exact r1 IMG;
-   do not create r2, broaden B1, or claim runtime PASS before that evidence exists.
+4. **Physical r1 failed / evidence pending:** all B1 offline gates remain closed, but the first UART
+   boot cannot load `/fstab.sun50iw9p1` and never reaches second stage. Exact package evidence proves
+   the r4 fstab/first-stage bytes are present and unchanged, so preserve the complete parser/fatal
+   UART block and runtime fstab/boot-config identity before creating any single-cause r2.
 
 ## 16. Direct route to the target
 
@@ -1363,9 +1372,13 @@ offline audit. Runtime compatibility remains appropriately MEDIUM until physical
 11. **Completed — same-r1 B1 offline candidate:** the exact outside-Git ARM64 Mali, host capacity,
     mapper/gralloc build, handle ABI, 144 MiB vendor geometry, mixed system, system/vendor AVB,
     super/outer, ELF/linker/VINTF/APEX/VNDK31/SELinux and preservation audits close. The candidate is
-    ready to request physical validation, not physically accepted. Vulkan, the audio P1 and product
-    polish remain outside it.
-12. **Final acceptance:** sustained daily-use regression, 4K30-or-1080p evidence-led media
+    an offline-pass artifact, not physically accepted. Vulkan, the audio P1 and product polish
+    remain outside it.
+12. **Current — freeze first r1 physical failure:** normal first-stage init reaches the preserved
+    default-fstab lookup and fatals before second stage. Package provenance does not reproduce a
+    missing byte, so hold until the minimum UART/runtime identity evidence proves one causal delta;
+    do not create a speculative r2.
+13. **Final acceptance:** sustained daily-use regression, 4K30-or-1080p evidence-led media
     ceiling, enforcing/release hardening, recovery rehearsal and a hash-locked accepted architecture
     image.
 
