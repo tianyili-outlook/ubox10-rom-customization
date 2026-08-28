@@ -295,8 +295,33 @@ exact r3 `6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974`，ve
 Active-source/dumpvars/r7 derivation、ext4、AVB、LP/sparse/IMAGEWTY、46/50 outer preservation、
 mixed ELF、35 APEX、both-ABI VNDK31、linker/SP-HAL、Mali 297/0、split SELinux、system VINTF、
 kernel/22 modules/AIC audits PASS。Full VINTF 仍严格为 exit 65，仅 inherited NFS exception，
-**不是 PASS**。R5 当前正式状态为 **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION / NOT YET
-PHYSICALLY VALIDATED**；独立 `gralloc-mapper is missing` physical failure 保持未修。
+**不是 PASS**。
+
+Exact r5 UART physical validation 现已证明 active `/system/product` correction 与 global mixed ABI
+三项值全部 **PHYSICAL PASS**；旧 empty `ro.product.cpu.abilist64` blocker 已关闭。Retained vendor
+BoringSSL32 由 ABI32 early-init trigger 启动并 exit 0。新首个 fatal 是 ABI64 trigger 启动
+`boringssl_self_test64_vendor` 时找不到 `/vendor/bin/boringssl_self_test64`，随后
+`reboot,boringssl-self-check-failed`。因此 r5 冻结为 **PHYSICAL FAIL — ACTIVE PRODUCT/GLOBAL ABI
+PASS; RETAINED VENDOR BORINGSSL64 EXECUTABLE MISSING**。该 executable 尚未 exec，不是 crypto
+algorithm、linker 或 SELinux failure；zygote、system_server 和 graphics 在本次 r5 boot 尚未到达。
+
+Exact signed-vendor/r7 source audit 唯一证明 retained ARM32 packaging 携带通用双 ABI rc，但 ABI64
+长期为空使 64-bit branch dormant；r5 正确激活 mixed ABI 后该缺口才成为 first fatal。Canonical
+`boringssl_self_test_vendor` 是 `vendor: true`、`compile_multilib: both`，targeted r7 build 产生 exact
+14,280-byte AArch64 output。其五项 DT_NEEDED 均由现有 r5 VNDK31/Bionic providers 闭合、两项
+strong import unmatched 0；不需要 vendor libcrypto、rc bypass 或第二项修复。
+
+严格 single-cause `a16-prototype-b-r6` 因而只在 vendor 新增
+`/vendor/bin/boringssl_self_test64`，SHA-256
+`E8F3B67A7BADC94FE034A74F5C59F085138D5D8E38A27CF3ADEB676AE60C058F`。Candidate
+`out/candidates/a16-prototype-b-r6/x12-a16-prototype-b-r6.img` 为 1,641,773,056 bytes / SHA-256
+`2AAF8E2CA89DDE486A9416FDE7ACFF7BCD6DB80CDCB161598ABF99A7CB2DBD53`。Vendor tree diff 为 added
+one/changed zero/removed zero；r5 system/active ABI/product、boot/vendor_dlkm、root objects、Mali/
+mapper/gralloc、kernel/hardware stack 均保持。Ext4、AVB、LP/no-shrink、sparse roundtrip、IMAGEWTY、
+46/50 outer preservation、mixed ELF/APEX/VNDK/linker/SP-HAL/Mali 297/0/split SELinux/system VINTF
+全部 offline PASS。Full VINTF 仍仅 inherited NFS exit 65，**NOT PASS**。R6 当前是 **OFFLINE
+CHECKED / READY FOR PHYSICAL VALIDATION / NOT YET VALIDATED**；下次只先验 BoringSSL64 start/exit
+与跨过 reboot gate，再测 zygotes/system_server。Independent graphics mapper failure 仍未修。
 
 2026-08-21 Android 16 Gate 1 状态为 **OFFLINE CHECKED / SUCCESS**。Source 为 exact `android-16.0.0_r4` / `BP4A.251205.006`，manifest commit `15128c9e27cfa599c48d294babd39286ee8f1426`，pinned manifest SHA-256 `4E8BEB5D1B590DFF3D631B1DBB957138DBDA4E608A3183C625683DA4BC84918F`；Prototype A 为 `ubox10_ceiling_arm-bp4a-userdebug`、ARMv7-A NEON、无 secondary arch、shipping API 31、extra VNDK 31、pKVM off。GCP native Ubuntu 24.04 / ext4 / 8 vCPU / 62.8 GiB RAM / no swap 上使用 relative `OUT_DIR=out-ceiling`、`BUILD_NUMBER=DISPOSABLE_CEILING_R4`、unset `SOONG_GOMEMLIMIT GOMEMLIMIT` 和 `m -j8 systemimage`，123,197/123,197 actions 成功，wall 30,314 秒（8:25:14）。最低 available RAM 12,295,132 KiB；swap I/O 为 0；平均 CPU user/system 约 88.05%/9.48%、I/O wait 0.05%；`/work` 最低 free 231,671,357,440 bytes。完整 raw log 仅保留在 GCP ignored 路径，未进入 Git。
 
@@ -894,7 +919,7 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - r10 已在实机完成 framework boot；r9 Lights/Watchdog/llkd 方向保持关闭，不再修改。
 - r13 是当前 GOLDEN BASELINE；Projectivy、provisioning、遥控和 Power sleep/wake/shutdown 均以实机 UART 为准。
 - M8B native rc-core 遥控迁移已在 r5 设备验收并关闭；Mouse mode intentionally dropped，legacy multi_ir 工件保留为 inert reference，其 Android 12 清理已随 freeze 延期。
-- 当前 board、DT 与 runtime 证据识别为 H616。历史 A16 ARM32 r2 稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛；历史 kernel r1-r4 AIC failure 已收敛到错误 `0x00110000` FMAC contract。r5 恢复 working BSP `0x00120000` 后物理 boot/HDMI/remote/Wi-Fi/ADB 与 Wi-Fi OFF→ON reinitialization PASS，preservation checkpoint **CLOSED / PASS**。Exact QPR0 r7 audit 与 Prototype A r4 physical pass 已关闭 Architecture Gate 2；A r4 frozen。Boot-time legacy audio HAL SIGSEGV 保持 post-Gate P1，不称 fixed。Prototype B0 complete；B r1 为 **PHYSICAL FAIL — `/METADATA` TARGET MISSING**，r2 物理关闭该错误后停在 noncanonical `/vendor`，r3 再关闭 `/vendor` 并到达 ARM64 second stage，但停在 global ABI-property zygote64 abort 与独立 ARM64 mapper abort。B r4 把正确 triplet 写进 runtime-inactive logical product_a，实机 ABI abort 不变，已冻结为 **PHYSICAL FAIL / NOT ACCEPTED**。Exact runtime-source audit 后，single-cause B r5 已把 triplet 放入 active embedded `/system/product` 并完成全离线验收，状态 **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION / NOT YET PHYSICALLY VALIDATED**。
+- 当前 board、DT 与 runtime 证据识别为 H616。历史 A16 ARM32 r2 稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛；历史 kernel r1-r4 AIC failure 已收敛到错误 `0x00110000` FMAC contract。r5 恢复 working BSP `0x00120000` 后物理 boot/HDMI/remote/Wi-Fi/ADB 与 Wi-Fi OFF→ON reinitialization PASS，preservation checkpoint **CLOSED / PASS**。Exact QPR0 r7 audit 与 Prototype A r4 physical pass 已关闭 Architecture Gate 2；A r4 frozen。Boot-time legacy audio HAL SIGSEGV 保持 post-Gate P1，不称 fixed。Prototype B0 complete；B r1 `/metadata` FAIL，r2 `/metadata` PASS 后 `/vendor` FAIL，r3 `/vendor` PASS 后到达 ARM64 second stage并停在 global ABI 与独立 mapper，r4 因 patch inactive product_a 重复 ABI failure。B r5 active embedded product correction 及 global mixed ABI 已 **PHYSICAL PASS**，随后 retained BoringSSL32 PASS，但首个 fatal 推进为缺失 vendor BoringSSL64 executable。Strict r6 只加入 exact r7 AArch64 self-test，完整 offline gate PASS，状态 **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION / NOT YET VALIDATED**；graphics、TEE/PRNG warnings 与其他 service 未在 r6 修复。
 - `m8b-audio-r2` 只启用产品级 Treble/VNDK 合同；未修改 VNDK payload、mixer、audio platform XML、DTS、machine driver 或已验收功能，现已设备验收为 AUDIO PASS。
 - 2026-08-16 ADB-only 补验未刷机、未重启且未修改 ROM/device properties：VP9 为 Allwinner OMX/Cedar hardware-runtime PASS；Widevine 为可操作 L3，HDCP `NONE`，无 secure decoder 要求。物理画面/逐帧质量与商业服务认证或播放仍未证明。
 - 遥控器 Menu 与 Settings 当前均打开 Projectivy menu。两键语义分离为独立延期项，不回改已验收的 rc-core、keylayout 选择或其他按键行为。
@@ -903,11 +928,10 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 ## Next action
 
 保持 frozen Android 12 `m8b-remote-r1`、frozen Android 16 ARM32 `a16-prototype-a-r4`、Test8r2/
-stock rollback、A16 r1-r3 与 kernel r1-r5 artifacts 不变；冻结 exact B r1/r2/r3 为各自不可变物理
-失败 evidence points；另冻结 exact B r4 为 inactive-product-source physical failure。Runtime-active
-product source 与 r4 assembly mistake 已唯一证明，single-cause B r5 已完成全离线验收。下一步只对
-exact r5 做 UART-first physical ABI gate：确认已通过的 `/metadata`、`/vendor` 与 second stage 不回归，
-核对 product-scoped/global canonical ABI triplet、两 zygote 与 AArch64 system_server。若独立 mapper
-abort 仍复现，应单独记录 graphics failure，不否定已跨过的 ABI boundary，也不在本次 physical
-判定中猜修。Vulkan、GMS、5.10、25Q4、full vendor rewrite、Audio fix、SELinux/NFS/HDMI polish 与
-产品 feature 均不得混入。
+stock rollback、A16 r1-r3 与 kernel r1-r5 artifacts 不变；冻结 exact B r1-r5 为各自不可变物理
+evidence points。R5 已物理关闭 runtime-active product/global ABI，并冻结 missing vendor
+BoringSSL64 为其新 first fatal。Single-cause B r6 已完成全离线验收；下一步只验证 exact r6 保留
+canonical ABI/BoringSSL32、启动并通过 BoringSSL64、跨过 `boringssl-self-check-failed` reboot gate，
+然后记录两 zygote 与 AArch64 system_server。若独立 mapper abort 仍复现，应单独记录 graphics
+failure，不否定已跨过的 BoringSSL/ABI boundary，也不在本次 physical 判定中猜修。Vulkan、GMS、
+5.10、25Q4、full vendor rewrite、Audio fix、TEE/PRNG、SELinux/NFS/HDMI polish 与产品 feature 均不得混入。

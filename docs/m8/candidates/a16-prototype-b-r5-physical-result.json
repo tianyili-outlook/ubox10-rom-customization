@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "candidate": "a16-prototype-b-r5",
+  "physical_date": "2026-08-28",
+  "evidence_origin": "AUTHORITATIVE_USER_SUPPLIED_EXTERNAL_UART_AND_ROOT_CONSOLE_FACTS",
+  "raw_capture_locally_archived": false,
+  "decision": "PHYSICAL FAIL — ACTIVE PRODUCT AND GLOBAL ABI CORRECTION PASSED; RETAINED VENDOR 64-BIT BORINGSSL SELF-TEST EXECUTABLE MISSING",
+  "classification": "ACTIVE_PRODUCT_GLOBAL_ABI_PHYSICAL_PASS_BORINGSSL64_VENDOR_EXECUTABLE_MISSING_FIRST_FATAL",
+  "candidate_identity": {
+    "path": "out/candidates/a16-prototype-b-r5/x12-a16-prototype-b-r5.img",
+    "size": 1641760768,
+    "sha256": "418CDC6BBFC44E4BDD346D3AE2861BC44522F321288A570E9CA1729439F6FE2E"
+  },
+  "boot_boundaries": {
+    "kernel_5_4_302_plus": "PASS",
+    "first_stage": "PASS",
+    "r2_metadata_fix": "PHYSICAL_PASS_STILL_PRESERVED",
+    "r3_vendor_fix": "PHYSICAL_PASS_STILL_PRESERVED",
+    "switch_root": "PASS",
+    "second_stage": "REACHED"
+  },
+  "abi_correction": {
+    "active_system_product_source": "PHYSICAL_PASS",
+    "global_mixed_abi": "PHYSICAL_PASS",
+    "runtime_values": {
+      "ro.product.cpu.abilist": "arm64-v8a,armeabi-v7a,armeabi",
+      "ro.product.cpu.abilist32": "armeabi-v7a,armeabi",
+      "ro.product.cpu.abilist64": "arm64-v8a"
+    },
+    "exact_init_messages": [
+      "init: Setting property 'ro.product.cpu.abilist' to 'arm64-v8a,armeabi-v7a,armeabi'",
+      "init: Setting property 'ro.product.cpu.abilist32' to 'armeabi-v7a,armeabi'",
+      "init: Setting property 'ro.product.cpu.abilist64' to 'arm64-v8a'"
+    ],
+    "old_app_process64_empty_abilist64_blocker": "CLOSED_PHYSICALLY_NO_LONGER_FIRST_BLOCKER"
+  },
+  "boringssl_vendor": {
+    "rc_path": "/vendor/etc/init/boringssl_self_test.rc",
+    "self_test32": {
+      "trigger": "ro.product.cpu.abilist32=* && early-init",
+      "service": "boringssl_self_test32_vendor",
+      "binary": "/vendor/bin/boringssl_self_test32",
+      "exec_start": "PASS",
+      "exit_status": 0,
+      "physical_result": "PASS"
+    },
+    "self_test64": {
+      "trigger": "ro.product.cpu.abilist64=* && early-init",
+      "service": "boringssl_self_test64_vendor",
+      "binary": "/vendor/bin/boringssl_self_test64",
+      "exec_start": "FAIL_BEFORE_EXEC",
+      "exact_error": "Could not start exec service: Cannot find '/vendor/bin/boringssl_self_test64': No such file or directory",
+      "reboot_reason": "reboot,boringssl-self-check-failed",
+      "physical_result": "FIRST_FATAL_MISSING_EXECUTABLE"
+    }
+  },
+  "service_boundaries": {
+    "zygote64": "NOT_YET_REACHED",
+    "zygote32": "NOT_YET_REACHED",
+    "system_server": "NOT_YET_REACHED",
+    "graphics_mapper": "PREVIOUS_INDEPENDENT_PHYSICAL_FAIL_NOT_REACHED_IN_THIS_R5_BOOT"
+  },
+  "causal_limits": {
+    "cryptographic_algorithm_self_test_failure_proven": false,
+    "linker_failure_proven": false,
+    "selinux_denial_proven": false,
+    "abi_property_failure_current": false,
+    "zygote_failure_current": false,
+    "executable_absence_is_first_fatal": true
+  }
+}

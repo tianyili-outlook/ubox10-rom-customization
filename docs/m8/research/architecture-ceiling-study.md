@@ -16,8 +16,9 @@ same-r1 B1 intake/provider/handle implementation, authorized 144 MiB vendor geom
 mixed build, packaging and complete offline audit, the r1 first-stage physical failure/root-cause
 audit, the strict single-cause r2 physical boundary/root-layout audit, r3 physical ARM64-runtime
 evidence, exact ABI-property provenance, the independent mapper read-only audit, r4 physical
-inactive-product-source evidence, the exact runtime-source audit, and bounded r5 offline successor.
-R1 through r4 have user-supplied UART/runtime evidence; r5 is not yet physically tested.
+inactive-product-source evidence, the exact runtime-source audit, r5 physical mixed-ABI/BoringSSL
+boundary, and bounded r6 offline successor. R1 through r5 have user-supplied UART/runtime evidence;
+r6 is not yet physically tested.
 
 Confidence labels in this report have the following strict meanings: **PROVEN** is direct
 binary, build, runtime, repository, or authoritative-source evidence; **HIGH CONFIDENCE**
@@ -1253,8 +1254,12 @@ physically reaches ARM64 second stage, then fails on empty global ABI64 metadata
 mapper chain. Strict single-cause r4 put canonical product-scoped ABI generation in inactive logical
 product_a and physically reproduced the same ABI failure. Exact runtime-source proof identifies
 embedded `system_a:/system/product/etc/build.prop` as active. Strict single-cause r5 changes only
-that active file, restores inactive product_a to r3 bytes and is **OFFLINE CHECKED / READY FOR
-PHYSICAL VALIDATION**; no mixed-ABI physical PASS is claimed.
+that active file and restores inactive product_a to r3 bytes. R5 physical UART proves canonical
+global mixed ABI and BoringSSL32 PASS; the next first fatal is a missing retained-vendor
+`boringssl_self_test64` executable before exec. Exact r7 multilib provenance and existing VNDK31/
+Bionic dependency closure authorize strict r6, whose only vendor tree addition is that AArch64
+self-test. R6 is **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**; no BoringSSL64, zygote,
+system_server or mixed graphics physical PASS is claimed.
 
 ## 12. Target A/B/C/D comparison
 
@@ -1291,7 +1296,7 @@ The 5.4.302 wireless checkpoint is closed; D remains dominated on engineering ec
 |---|---|---|---|---|---|
 | Target A — Mature Legacy | **PROVEN now** | Accepted stability and hardware completeness | API 31 age and no 64-bit native apps; security/platform life is short | Low | Keep as rollback/reference, not final investment ceiling |
 | Target B — Modern Framework / Legacy Architecture | **PHYSICAL PASS / GATE 2 CLOSED / FROZEN** | Maximum vendor reuse and proven hardware viability | QPR0 only; boot-time audio P1 remains and ARM32 excludes 64-bit-only native apps | Medium; accepted architecture control | Freeze r4; no Prototype A r5 polish |
-| Target C — Modern Hybrid | **r1-r4 PHYSICAL FAIL / r5 OFFLINE READY / MEDIUM** | API 36 plus AArch64 apps while preserving working 32-bit HALs/kernel | r3 crosses ARM64 second stage; r4 proves logical product_a is inactive; r5 moves only the mixed triplet to active embedded product; mapper remains independent | High but bounded | Freeze r1-r4 evidence; physically validate r5 ABI/zygote boundary, keeping graphics separate |
+| Target C — Modern Hybrid | **r1-r5 PHYSICAL EVIDENCE / r6 OFFLINE READY / MEDIUM** | API 36 plus AArch64 apps while preserving working 32-bit HALs/kernel | r5 physically proves canonical mixed ABI, then exposes missing vendor BoringSSL64; r6 closes only that executable gap offline; mapper remains independent | High but bounded | Freeze chronology; physically validate r6 BoringSSL gate before zygote/system_server, keeping graphics separate |
 | Target D — Full Modern Port | **LOW** | Clean contemporary architecture in theory | No complete H616 5.10+ graphics/media/display/DRM provider; becomes multiple subsystem rewrites | Extreme | **NO-GO** |
 
 ## 13. Reuse versus rewrite map
@@ -1405,9 +1410,10 @@ close the bounded offline contracts. Prototype A r4 physically proves no-runtime
 full Wi-Fi L3 and real audible Android media. The explicit policy change closes Gate 2 while keeping
 the reproduced `getAudioPort` crash as post-Gate P1. Prototype B0 closes the bounded provider,
 property, linker/VINTF and partition/AVB preflight. R4 physical evidence exposes the inactive
-logical-product assumption; r5 closes the corrected active-source build, packaging and complete
-offline audit. Runtime compatibility remains appropriately MEDIUM until r5 physical ABI and
-independent mapper validation run.
+logical-product assumption; r5 physically closes the corrected active-source/global-ABI contract
+and then exposes missing vendor BoringSSL64 as the next first fatal. R6 closes only that executable
+and dependency contract offline. Runtime compatibility remains appropriately MEDIUM until r6
+BoringSSL/zygote/system_server and independent mapper validation run.
 
 ## 15. Go / No-Go decisions and remaining decisive gates
 
@@ -1418,7 +1424,7 @@ independent mapper validation run.
 | Recommended modern Android target | **PATH A PHYSICALLY PROVEN / GATE 2 CLOSED** | r4 physically passes the functional architecture contract and is frozen; boot audio crash remains post-Gate P1 |
 | Android 16 r4 / 25Q4 | **NO-GO with retained 5.4** | Physical and source evidence agree on the 5.10/5.10.210 requirement |
 | Android 16 QPR0 / 25Q2 | **SELECTED / r4 PHYSICAL PASS / GATE 2 CLOSED** | Exact r7 requires 5.4.277+; 5.4.302 and r4 runtime pass; audio boot crash is post-Gate P1 |
-| Mixed ARM64/ARM32 userspace | **r1-r4 PHYSICAL FAIL / r5 OFFLINE CHECKED** | r3 reaches ARM64 second stage; r4 proves its patched logical product_a is runtime inactive. Exact layout/r7 provenance authorizes r5's one active embedded-product change; r5 awaits physical validation while mapper remains independent. |
+| Mixed ARM64/ARM32 userspace | **r5 GLOBAL ABI PHYSICAL PASS / r6 OFFLINE CHECKED** | r3 reaches ARM64 second stage; r4 proves its patched logical product_a inactive; r5 physically proves active embedded-product/global mixed ABI and BoringSSL32, then stops at missing vendor BoringSSL64. R6 adds only canonical r7 AArch64 self-test; zygotes/system_server and mapper remain physical gates. |
 | Full ARM64 userspace | **NO-GO** | Would convert/replace working proprietary service stack for little user value |
 | Kernel 5.4 as final architecture | **CLOSED / PASS AT 5.4.302 r5** | Boot/HDMI/remote/Wi-Fi/ADB and physical wireless reinitialization pass after restoring the working FMAC address contract |
 | Kernel 5.10+ migration | **NO-GO IN THIS PHASE** | No complete exact-SoC/board Android provider; regression surface is a new BSP port |
@@ -1434,11 +1440,12 @@ independent mapper validation run.
    `getAudioPort` SIGSEGV remains known/unfixed post-Gate P1, not a Prototype A successor trigger.
 3. Continue to carry full-VINTF exit 65 solely for inherited `CONFIG_NFS_FS=y` versus FCM-6 `n`;
    never report it PASS. Enforcing SELinux remains later release hardening, not a Gate 2 substitute.
-4. **r1-r4 immutable physical chain / r5 physical pending:** r2 passes r1 `/metadata`, r3 passes r2
-   `/vendor` and reaches ARM64 second stage. R4 proves logical product_a is inactive under the
-   retained `/product -> /system/product`/skip-mount contract. Exact r7 loading and final build vars
-   uniquely authorize r5's active embedded-product triplet. R5 closes all offline gates; zygote64,
-   system_server and the independent mapper chain still require separate physical adjudication.
+4. **r1-r5 immutable physical chain / r6 physical pending:** r2 passes r1 `/metadata`, r3 passes r2
+   `/vendor` and reaches ARM64 second stage. R4 proves logical product_a inactive. R5's active
+   embedded-product correction physically produces canonical global mixed ABI and passes retained
+   BoringSSL32, then the newly true vendor ABI64 trigger fails on its missing executable. R6 closes
+   exactly that file/dependency contract offline; BoringSSL64, zygotes, system_server and independent
+   mapper chain still require ordered physical adjudication.
 
 ## 16. Direct route to the target
 
@@ -1487,11 +1494,14 @@ independent mapper validation run.
     its correct triplet lived only in logical product_a. Physical `/product -> /system/product`, no
     product mount, signed skip-list and exact r7 loading uniquely prove the active source is the
     embedded system product; the zygote64 ABI abort therefore remained unchanged.
-16. **Current — exact single-cause r5:** generate the canonical triplet only in active
-    `system_a:/system/product/etc/build.prop`, restore inactive product_a to exact r3, and preserve
-    every unrelated B1 contract. Full offline audit passes; request UART-first ABI/dual-zygote/
-    system_server validation. Treat any surviving mapper abort as a separate graphics result.
-17. **Final acceptance:** sustained daily-use regression, 4K30-or-1080p evidence-led media
+16. **Completed — exact single-cause r5 physical ABI boundary:** active embedded-product generation
+    physically yields canonical global mixed ABI; BoringSSL32 exits 0. Freeze its next first fatal as
+    missing `/vendor/bin/boringssl_self_test64`, before zygote or graphics.
+17. **Current — exact single-cause r6:** add only canonical r7 AArch64 vendor BoringSSL self-test;
+    preserve r5 system/ABI, rc, 32-bit binary and all B1 hardware. Full offline audit passes. The
+    next physical gate first measures BoringSSL64 start/exit and reboot avoidance, then zygotes/
+    system_server. Treat the independent mapper abort as a separate graphics result.
+18. **Final acceptance:** sustained daily-use regression, 4K30-or-1080p evidence-led media
     ceiling, enforcing/release hardening, recovery rehearsal and a hash-locked accepted architecture
     image.
 

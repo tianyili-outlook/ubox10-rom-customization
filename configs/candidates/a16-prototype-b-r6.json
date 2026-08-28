@@ -1,0 +1,205 @@
+{
+  "schema": 1,
+  "id": "a16-prototype-b-r6",
+  "milestone": "Prototype B B1 retained-vendor BoringSSL64 continuation",
+  "status": "ROOT_CAUSE_PROVEN_SINGLE_CAUSE_R6_AUTHORIZED",
+  "inherits": "configs/candidates/a16-prototype-b-r1.json",
+  "base_candidate": {
+    "id": "a16-prototype-b-r5",
+    "path": "out/candidates/a16-prototype-b-r5/x12-a16-prototype-b-r5.img",
+    "size": 1641760768,
+    "sha256": "418CDC6BBFC44E4BDD346D3AE2861BC44522F321288A570E9CA1729439F6FE2E"
+  },
+  "base_artifacts": {
+    "system_a": {
+      "path": "out/candidates/a16-prototype-b-r5/system_a.img",
+      "size": 1651167232,
+      "sha256": "93D968693A2EEDA2BA53D4EE74BBA8EB73E341EA9BC63EFCD5878609C7DE80BE"
+    },
+    "product_a": {
+      "path": "out/candidates/a16-prototype-b-r5/candidate-logical/product_a.img",
+      "size": 272629760,
+      "sha256": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974"
+    },
+    "vendor_a": {
+      "path": "out/candidates/a16-prototype-b-r5/vendor_a.img",
+      "size": 150994944,
+      "sha256": "0166B5FB1718715E79F68D5A9FEAAE02439DC59DBE2379D4C1DA670541C7EC9B"
+    },
+    "vendor_dlkm": {
+      "path": "out/candidates/a16-prototype-b-r5/vendor_dlkm_a.img",
+      "size": 6680576,
+      "sha256": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07"
+    },
+    "boot": {
+      "path": "out/candidates/a16-prototype-b-r5/boot.fex",
+      "size": 67108864,
+      "sha256": "527CF878B015CFAE4E8600BD750C7C73F45F4290B5CFEFEDBD1AD9AC347B8063"
+    },
+    "super_raw": {
+      "path": "out/candidates/a16-prototype-b-r5/super.raw.img",
+      "size": 3221225472,
+      "sha256": "8B3CB4A62C5E398CEB41A7D74F6D8536A25AED6B8DD5F213B18FA0694863C616"
+    },
+    "vbmeta_system": {
+      "path": "out/candidates/a16-prototype-b-r5/vbmeta_system.fex",
+      "size": 1472,
+      "sha256": "40732C64F88194DB3CFC35E7F7CFA1DD13CF48B274D8B997152D71E2DA6FC9AA"
+    },
+    "vbmeta_vendor": {
+      "path": "out/candidates/a16-prototype-b-r5/vbmeta_vendor.fex",
+      "size": 1600,
+      "sha256": "DE14183FAFBBEA3EC0D2B0E8737FF9F71BA001186A0DE0D58E24891706ACE6C5"
+    }
+  },
+  "root_cause": {
+    "result": "PROVEN_MISSING_VENDOR_BORINGSSL_SELF_TEST64_EXECUTABLE",
+    "audit": "docs/m8/candidates/a16-prototype-b-r6-boringssl-root-cause-audit.json",
+    "physical_result": "docs/m8/candidates/a16-prototype-b-r5-physical-result.json",
+    "first_fatal_path": "/vendor/bin/boringssl_self_test64",
+    "reboot_reason": "reboot,boringssl-self-check-failed"
+  },
+  "boringssl64_contract": {
+    "source_path": "/work/src/ubox10-a16-ceiling/out-ceiling-b1/target/product/ubox10_ceiling_arm64/system/vendor/bin/boringssl_self_test64",
+    "install_path": "/bin/boringssl_self_test64",
+    "runtime_path": "/vendor/bin/boringssl_self_test64",
+    "size": 14280,
+    "sha256": "E8F3B67A7BADC94FE034A74F5C59F085138D5D8E38A27CF3ADEB676AE60C058F",
+    "elf_class": "ELF64",
+    "machine": "AArch64",
+    "interpreter": "/system/bin/linker64",
+    "android_api_note": 36,
+    "build_id": "7f73c5e1189408db688509323880032e",
+    "dt_needed": [
+      "libcrypto.so",
+      "libc++.so",
+      "libc.so",
+      "libm.so",
+      "libdl.so"
+    ],
+    "mode": "0755",
+    "uid": 0,
+    "gid": 2000,
+    "selinux": "u:object_r:vendor_boringssl_self_test_exec:s0",
+    "ctime": "0x6a90f200",
+    "atime": "0x6a90f200",
+    "mtime": "0x6a90f200",
+    "crtime": "0x6a90f200"
+  },
+  "retained_vendor_contract": {
+    "rc": {
+      "path": "/etc/init/boringssl_self_test.rc",
+      "size": 751,
+      "sha256": "459FEA4E63E78A19B04B37E6298E4CE22A816F2F5604B17289D04C3A57E1FE1D"
+    },
+    "self_test32": {
+      "path": "/bin/boringssl_self_test32",
+      "size": 2672,
+      "sha256": "CD2BCD98343AE5B6DB3FB1DF0599692E0DA52FBC599322EDF2E60A2AE9731166"
+    },
+    "new_vendor_libcrypto_allowed": false,
+    "new_rc_allowed": false
+  },
+  "elf_census_contract": {
+    "approved_additional_vendor64": [
+      "/vendor/bin/boringssl_self_test64"
+    ],
+    "reason": "The physically proven first-fatal remediation adds exactly one approved ARM64 vendor executable; all other vendor64 additions remain fail-closed."
+  },
+  "root_mountpoint_contract": {
+    "metadata": {
+      "path": "/metadata",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "selinux": "u:object_r:metadata_file:s0"
+    },
+    "vendor": {
+      "path": "/vendor",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 2000,
+      "selinux": "u:object_r:vendor_file:s0"
+    },
+    "product": {
+      "path": "/product",
+      "type": "symlink",
+      "target": "/system/product"
+    }
+  },
+  "active_product_property_contract": {
+    "root_object": {
+      "path": "/product",
+      "type": "symlink",
+      "target": "/system/product",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "selinux": "u:object_r:system_file:s0"
+    },
+    "active_path": "/system/product/etc/build.prop",
+    "generated_path": "/work/src/ubox10-a16-ceiling/out-ceiling-b1/target/product/ubox10_ceiling_arm64/system/product/etc/build.prop",
+    "target_copy_out_product": "system/product",
+    "properties": {
+      "ro.product.product.cpu.abilist": "arm64-v8a,armeabi-v7a,armeabi",
+      "ro.product.product.cpu.abilist32": "armeabi-v7a,armeabi",
+      "ro.product.product.cpu.abilist64": "arm64-v8a"
+    },
+    "must_equal_build_variables": {
+      "ro.product.product.cpu.abilist": "TARGET_CPU_ABI_LIST",
+      "ro.product.product.cpu.abilist32": "TARGET_CPU_ABI_LIST_32_BIT",
+      "ro.product.product.cpu.abilist64": "TARGET_CPU_ABI_LIST_64_BIT"
+    },
+    "expected_global_derivation": {
+      "source": "product",
+      "ro.product.cpu.abilist": "arm64-v8a,armeabi-v7a,armeabi",
+      "ro.product.cpu.abilist32": "armeabi-v7a,armeabi",
+      "ro.product.cpu.abilist64": "arm64-v8a"
+    }
+  },
+  "skip_mount_contract": {
+    "path": "/system/system_ext/etc/init/config/skip_mount.cfg",
+    "size": 143,
+    "sha256": "7C28485E025157ACBBD0ABF9505A212AF3B4A96211B5AA3BC3D858A560A3AEFD",
+    "required_pattern": "/product"
+  },
+  "avb_system": {
+    "partition_size": 1651167232,
+    "original_filesystem_size": 1250484224,
+    "salt": "6131362d70726f746f747970652d622d7231",
+    "rollback_index": 1644019200,
+    "rollback_index_location": 1,
+    "key_relative": "tools/testkey_rsa2048.pem",
+    "algorithm": "SHA256_RSA2048",
+    "fec": "none"
+  },
+  "outer_delta": {
+    "changed_payloads_from_base": [
+      "Vsuper.fex",
+      "Vvbmeta_vendor.fex",
+      "super.fex",
+      "vbmeta_vendor.fex"
+    ],
+    "preserved_payload_count_from_base": 46
+  },
+  "allowed_semantic_delta": [
+    "Add exact r7 AArch64 boringssl_self_test_vendor output only at /vendor/bin/boringssl_self_test64."
+  ],
+  "forbidden_changes": [
+    "boringssl_rc",
+    "boringssl_self_test32",
+    "vendor_libcrypto",
+    "r5_system_or_active_ABI_triplet",
+    "product_a",
+    "kernel_or_vendor_dlkm",
+    "boot_vendor_boot_fstab_skip_mount",
+    "root_metadata_vendor_product_contract",
+    "Mali_mapper_gralloc_or_graphics",
+    "TEE_PRNG_cgroup",
+    "hardware_HAL_stack",
+    "LP_geometry",
+    "all_other_B1_semantics"
+  ]
+}

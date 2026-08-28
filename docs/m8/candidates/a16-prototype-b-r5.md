@@ -1,10 +1,15 @@
 # Android 16 Prototype B r5
 
-状态：**OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**。物理状态：**NOT YET VALIDATED**。
+离线状态：**OFFLINE CHECKED**。物理状态：**PHYSICAL FAIL — ACTIVE PRODUCT/GLOBAL ABI
+CORRECTION PASS / RETAINED VENDOR BORINGSSL64 EXECUTABLE MISSING FIRST FATAL**。
 
-本版只关闭 r4 暴露的 inactive-property-source assembly 错误。它不声称 zygote、system_server、
-SurfaceFlinger、Mali 或 mixed runtime 已物理通过，也没有处理独立的
-`gralloc-mapper is missing` failure。
+本版已物理关闭 r4 暴露的 inactive-property-source assembly 错误：exact r7 init 生成 canonical
+global mixed ABI triplet，旧 empty `ro.product.cpu.abilist64` blocker 不再是首错。随后 retained
+vendor BoringSSL32 self-test 以 status 0 通过；新首个 fatal 是 ARM64 ABI 激活的 vendor
+`boringssl_self_test64_vendor` 找不到 `/vendor/bin/boringssl_self_test64`，继而请求
+`reboot,boringssl-self-check-failed`。该 executable 尚未执行，所以这不是 algorithm/linker/SELinux
+failure 的证据。Zygote、system_server 与 graphics 在本次 r5 启动中尚未到达；独立历史
+`gralloc-mapper is missing` 也没有被本次结果重判。
 
 ## Candidate identity
 
@@ -19,7 +24,34 @@ SurfaceFlinger、Mali 或 mixed runtime 已物理通过，也没有处理独立�
 | build/API/SPL | `BP2A.250805.034` / 36 / 2025-08-05 |
 | lunch | `ubox10_ceiling_arm64-bp2a-userdebug` |
 | kernel | byte-preserved `5.4.302+`; no kernel/module build |
-| physical action in this task | none |
+| physical evidence | user-supplied exact UART/root-console facts; raw capture not present on this VM |
+
+## Physical result
+
+R5 继续跨过 kernel、first stage、`/metadata`、canonical `/vendor`、SwitchRoot 和 second stage。
+Exact init output physically proves:
+
+```text
+ro.product.cpu.abilist=arm64-v8a,armeabi-v7a,armeabi
+ro.product.cpu.abilist32=armeabi-v7a,armeabi
+ro.product.cpu.abilist64=arm64-v8a
+```
+
+Thus the r5 active `system_a:/system/product/etc/build.prop` correction and global derivation are
+**PHYSICAL PASS**; the old app_process64 empty-ABI64 abort is closed as the current blocker.
+Retained `/vendor/bin/boringssl_self_test32` starts from
+`ro.product.cpu.abilist32=* && early-init` and exits 0: **PHYSICAL PASS**. Immediately afterward the
+newly true 64-bit trigger executes `boringssl_self_test64_vendor`, but init reports:
+
+```text
+Could not start exec service:
+Cannot find '/vendor/bin/boringssl_self_test64':
+No such file or directory
+```
+
+The subsequent reboot reason is `reboot,boringssl-self-check-failed`. R5 is therefore frozen as an
+immutable physical failure at the missing vendor executable boundary. Exact details are in
+`a16-prototype-b-r5-physical-result.json`; no local raw-capture hash is claimed.
 
 ## Immutable r4 physical result
 

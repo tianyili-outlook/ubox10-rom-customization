@@ -121,6 +121,7 @@ class Auditor(R3.Auditor):
             "a16-prototype-b-r3",
             "a16-prototype-b-r4",
             "a16-prototype-b-r5",
+            "a16-prototype-b-r6",
         }:
             raise RuntimeError("Prototype B auditor received the wrong contract")
         if self.build_result["id"] != self.cfg["id"]:
@@ -293,6 +294,12 @@ class Auditor(R3.Auditor):
             "/vendor/lib64/hw/android.hardware.graphics.mapper@2.0-impl-2.1.so",
             "/vendor/lib64/hw/gralloc.apollo.so",
         }
+        continuation = self.cfg.get("_continuation", {})
+        census_contract = continuation.get("elf_census_contract", {})
+        approved_additional_vendor64 = set(
+            census_contract.get("approved_additional_vendor64", [])
+        )
+        expected_vendor64.update(approved_additional_vendor64)
         if vendor64 != expected_vendor64:
             raise RuntimeError(f"final vendor AArch64 provider set changed: {sorted(vendor64)}")
         if not system64 or not system32:
@@ -301,6 +308,7 @@ class Auditor(R3.Auditor):
             row for row in rows
             if row["partition"] == "vendor" and row["path"].startswith("/vendor/bin/")
             and row["machine"] == "AArch64"
+            and row["path"] not in approved_additional_vendor64
         ]
         if vendor64_services:
             raise RuntimeError(f"accepted vendor services were converted to ARM64: {vendor64_services}")
@@ -370,7 +378,7 @@ class Auditor(R3.Auditor):
             "app_process64": "present",
             "app_process32": "present",
             "vendor_aarch64_provider_set": sorted(vendor64),
-            "vendor_aarch64_services": 0,
+            "vendor_aarch64_services": len(approved_additional_vendor64),
             "vendor_dlkm_modules": len(modules),
             "elf64_bpf_objects": len(bpf),
             "elf64_bpf_classification": "BPF bytecode, not AArch64 userspace",
@@ -532,7 +540,7 @@ class Auditor(R3.Auditor):
         label_match = re.search(r'security\.selinux \(\d+\) = "([^"\\]+)', output)
         if label_match is None:
             attrs = subprocess.check_output(
-                ["debugfs", "-R", f"ea_list {path}", str(image)],
+                ["debugfs", "-R", f"ea_get {path} security.selinux", str(image)],
                 text=True, stderr=subprocess.STDOUT,
             )
             label_match = re.search(r'security\.selinux \(\d+\) = "([^"\\]+)', attrs)

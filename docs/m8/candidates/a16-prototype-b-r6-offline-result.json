@@ -1,0 +1,140 @@
+{
+  "schema": 1,
+  "candidate": "a16-prototype-b-r6",
+  "decision": "OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION",
+  "physical_status": "NOT_YET_VALIDATED",
+  "flash_authorized": false,
+  "candidate_identity": {
+    "path": "out/candidates/a16-prototype-b-r6/x12-a16-prototype-b-r6.img",
+    "size": 1641773056,
+    "sha256": "2AAF8E2CA89DDE486A9416FDE7ACFF7BCD6DB80CDCB161598ABF99A7CB2DBD53"
+  },
+  "source": {
+    "tag": "android-security-16.0.0_r7",
+    "manifest_commit": "ebea28d151539ecf0730b1a4ab92ac33edc17ac9",
+    "boringssl_repository_commit": "ecc1358826150d6a1851c517c325b0e6c0e1b8be",
+    "targeted_module": "boringssl_self_test_vendor",
+    "android_system_rebuilt": false,
+    "kernel_rebuilt": false
+  },
+  "semantic_delta": [
+    "Add exact r7 AArch64 boringssl_self_test_vendor output only at /vendor/bin/boringssl_self_test64."
+  ],
+  "artifacts": {
+    "system_a": {
+      "size": 1651167232,
+      "sha256": "93D968693A2EEDA2BA53D4EE74BBA8EB73E341EA9BC63EFCD5878609C7DE80BE",
+      "byte_preserved_from_r5": true
+    },
+    "product_a": {
+      "size": 272629760,
+      "sha256": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974",
+      "byte_preserved_from_r5": true
+    },
+    "vendor_a": {
+      "size": 150994944,
+      "sha256": "8B6DC4BF6828F1746FAF7FF07ABEC67FF88D1BCA93BE4A87B0427BD3687E7386"
+    },
+    "vendor_dlkm_a": {
+      "size": 6680576,
+      "sha256": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07",
+      "byte_preserved_from_r5": true
+    },
+    "super_raw": {
+      "size": 3221225472,
+      "sha256": "FA564A023333199D1629CF15EAA2FBBEB8E152330F737F97A4BF8EF54C77D6AC"
+    },
+    "super_sparse": {
+      "size": 1461976192,
+      "sha256": "6DDB6B5F1E5112B87DD3FDB6A081CEF90C82FFB4DED30624C0CC16F3D5105F8A"
+    },
+    "vbmeta_system": {
+      "size": 1472,
+      "sha256": "40732C64F88194DB3CFC35E7F7CFA1DD13CF48B274D8B997152D71E2DA6FC9AA",
+      "byte_preserved_from_r5": true
+    },
+    "vbmeta_vendor": {
+      "size": 1600,
+      "sha256": "E45F5A0A133090922FA4D6BB3907CCED92A51B1631405BF79BF249AEFF5D50C5"
+    }
+  },
+  "boringssl64": {
+    "runtime_path": "/vendor/bin/boringssl_self_test64",
+    "size": 14280,
+    "sha256": "E8F3B67A7BADC94FE034A74F5C59F085138D5D8E38A27CF3ADEB676AE60C058F",
+    "elf_class": "ELF64",
+    "machine": "AArch64",
+    "interpreter": "/system/bin/linker64",
+    "build_id": "7f73c5e1189408db688509323880032e",
+    "dt_needed": [
+      "libcrypto.so",
+      "libc++.so",
+      "libc.so",
+      "libm.so",
+      "libdl.so"
+    ],
+    "strong_undefined_count": 2,
+    "strong_unmatched_count": 0,
+    "selinux": "u:object_r:vendor_boringssl_self_test_exec:s0"
+  },
+  "offline_gates": {
+    "vendor_tree_delta": "PASS_ADDED_ONE_FILE_CHANGED_ZERO_REMOVED_ZERO",
+    "boringssl32_byte_preservation": "PASS",
+    "boringssl64_elf_and_dependency_closure": "PASS_ZERO_UNMATCHED_EXISTING_R5_PROVIDERS",
+    "e2fsck": "PASS",
+    "system_avb": "PASS_PRESERVED",
+    "vendor_avb": "PASS",
+    "vbmeta_system": "PASS_PRESERVED_ROLLBACK_LOCATION_1",
+    "vbmeta_vendor": "PASS_ROLLBACK_LOCATION_0",
+    "lp_geometry": "PASS_EXACT_R5_NO_SHRINK",
+    "super_sparse_raw_roundtrip": "PASS",
+    "imagewty": "PASS",
+    "outer_changed_payloads": [
+      "Vsuper.fex",
+      "Vvbmeta_vendor.fex",
+      "super.fex",
+      "vbmeta_vendor.fex"
+    ],
+    "outer_preserved_payload_count": 46,
+    "r5_active_mixed_abi": "PASS_PRESERVED",
+    "root_metadata_vendor_product_contract": "PASS_PRESERVED",
+    "mixed_elf": "PASS_ARM64_PRIMARY_ARM32_SECONDARY",
+    "vendor_aarch64_provider_set": [
+      "/vendor/bin/boringssl_self_test64",
+      "/vendor/lib64/egl/libGLES_mali.so",
+      "/vendor/lib64/hw/android.hardware.graphics.mapper@2.0-impl-2.1.so",
+      "/vendor/lib64/hw/gralloc.apollo.so"
+    ],
+    "apex": "PASS_35_OF_35",
+    "vndk31_both_arches": "PASS",
+    "linkerconfig": "PASS",
+    "arm64_sphal": "PASS",
+    "mali_strong_imports": "PASS_297_OF_297_ZERO_UNMATCHED",
+    "split_selinux_compile": "PASS_OFFLINE_ONLY",
+    "system_vintf": "PASS",
+    "full_vintf": "INCOMPATIBLE_EXPECTED_INHERITED_NFS_EXCEPTION_ONLY_NOT_PASS",
+    "full_vintf_exit": 65,
+    "full_vintf_exception": "CONFIG_NFS_FS=y vs FCM-6 requires n",
+    "kernel_5_4_302_and_path_a": "PASS_PRESERVED",
+    "vendor_dlkm_module_count": 22,
+    "aic_fmac_contract": "PASS_PRESERVED"
+  },
+  "known_limits": [
+    "No physical UBOX action was performed by the r6 build/audit task.",
+    "BoringSSL64 has not yet physically started or exited.",
+    "Zygote64, zygote32 and system_server remain unproven after the r5 first fatal.",
+    "The independent gralloc-mapper physical failure is unchanged and not repaired.",
+    "Full VINTF is not PASS; inherited CONFIG_NFS_FS remains the sole exception.",
+    "SELinux enforcing runtime compatibility is not claimed."
+  ],
+  "repository_validation": {
+    "focused_r1_through_r6_tests": 44,
+    "focused_result": "PASS",
+    "full_lightweight_tests": 163,
+    "full_result": "PASS",
+    "declared_fixture_skips": 34,
+    "tracked_json_parsed": 73,
+    "python_compile": "PASS",
+    "git_diff_check": "PASS"
+  }
+}

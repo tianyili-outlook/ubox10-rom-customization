@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "audit_date": "2026-08-28",
+  "scope": "READ_ONLY_NO_R6_KERNEL_OR_PRNG_CHANGE",
+  "observed_uart": {
+    "message": "prng_seeder: Hanging forever because setup failed",
+    "cause": "hwrng.read_exact: No such device (os error 19)"
+  },
+  "signed_service": {
+    "rc_path": "/system/etc/init/prng_seeder.rc",
+    "rc_sha256": "6C4763C65AB372E459E5B1558E733FA08A85615198D2555A4112276B47CB71D4",
+    "binary_path": "/system/bin/prng_seeder",
+    "binary_size": 129744,
+    "binary_sha256": "19E31F3CD7C3726D0DA8C9F728AC551725488205FD27657C1CAEA83D7E1C6FA0",
+    "source_device": "/dev/hw_random",
+    "start_phase": "early-init"
+  },
+  "exact_r7_source": {
+    "repository": "platform/system/security",
+    "commit": "ce2aa0ef49158d0d45fb133fd42ab1deff210f8c",
+    "main": {
+      "path": "system/security/prng_seeder/src/main.rs",
+      "sha256": "24247AD0E02929E1944AE484297928ABC1496F9313604BC239B8D2739AA1A447"
+    },
+    "conditioner": {
+      "path": "system/security/prng_seeder/src/conditioner.rs",
+      "sha256": "FAB1303A6BAC6965D1642A1A415A0020B897A46E927477A68D0CEA64625247F4"
+    },
+    "failure_behavior": "If setup or the first HWRNG read fails, the process deliberately parks forever so init does not respawn it."
+  },
+  "frozen_kernel": {
+    "CONFIG_HW_RANDOM": "y",
+    "CONFIG_HW_RANDOM_OPTEE": "y",
+    "runtime_hwrng_provider_ready": false,
+    "interpretation": "The HWRNG core and OP-TEE RNG driver are built, but the physical read returned ENODEV; source/config alone does not prove why no usable provider was registered."
+  },
+  "impact": {
+    "hardware_conditioner_service_available": false,
+    "kernel_csprng_unavailable_proven": false,
+    "boot_blocking_proven": false,
+    "current_first_fatal": false,
+    "r6_prerequisite": false
+  },
+  "classification": "REAL_HWRNG_SEEDING_LOSS_NON_FATAL_AS_OF_R5_READ_ONLY_ROOT_CAUSE_NOT_UNIQUE"
+}

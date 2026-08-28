@@ -1,0 +1,146 @@
+{
+  "schema": 1,
+  "audit_date": "2026-08-28",
+  "base_candidate": {
+    "id": "a16-prototype-b-r5",
+    "path": "out/candidates/a16-prototype-b-r5/x12-a16-prototype-b-r5.img",
+    "size": 1641760768,
+    "sha256": "418CDC6BBFC44E4BDD346D3AE2861BC44522F321288A570E9CA1729439F6FE2E"
+  },
+  "physical_first_fatal": {
+    "result": "PROVEN_MISSING_VENDOR_BORINGSSL_SELF_TEST64_EXECUTABLE",
+    "trigger": "ro.product.cpu.abilist64=* && early-init",
+    "service": "boringssl_self_test64_vendor",
+    "path": "/vendor/bin/boringssl_self_test64",
+    "error": "Could not start exec service: Cannot find '/vendor/bin/boringssl_self_test64': No such file or directory",
+    "reboot_reason": "reboot,boringssl-self-check-failed",
+    "algorithm_test_started": false,
+    "linker_started": false
+  },
+  "retained_vendor_rc": {
+    "path": "/vendor/etc/init/boringssl_self_test.rc",
+    "size": 751,
+    "sha256": "459FEA4E63E78A19B04B37E6298E4CE22A816F2F5604B17289D04C3A57E1FE1D",
+    "mode": "0644",
+    "uid": 0,
+    "gid": 0,
+    "selinux": "u:object_r:vendor_configs_file:s0",
+    "declares_both_abis": true,
+    "reboot_on_failure": "reboot,boringssl-self-check-failed",
+    "r6_treatment": "BYTE_PRESERVE"
+  },
+  "retained_vendor_self_test32": {
+    "path": "/vendor/bin/boringssl_self_test32",
+    "size": 2672,
+    "sha256": "CD2BCD98343AE5B6DB3FB1DF0599692E0DA52FBC599322EDF2E60A2AE9731166",
+    "elf_class": "ELF32",
+    "machine": "ARM",
+    "interpreter": "/system/bin/linker",
+    "android_api_note": 31,
+    "build_id": "01e351e08cd8a92b512f978edf96c108",
+    "dt_needed": [
+      "libcrypto.so",
+      "libc++.so",
+      "libc.so",
+      "libm.so",
+      "libdl.so"
+    ],
+    "mode": "0755",
+    "uid": 0,
+    "gid": 2000,
+    "selinux": "u:object_r:vendor_boringssl_self_test_exec:s0",
+    "physical_result": "PASS_EXIT_0",
+    "r6_treatment": "BYTE_PRESERVE"
+  },
+  "signed_r5_absence": {
+    "vendor_path_present": false,
+    "system_variant_present": true,
+    "conscrypt_apex_variant_present": true,
+    "standalone_vendor_libcrypto64_present": false,
+    "vndk31_libcrypto64_present": true
+  },
+  "canonical_source": {
+    "tag": "android-security-16.0.0_r7",
+    "manifest_commit": "ebea28d151539ecf0730b1a4ab92ac33edc17ac9",
+    "repository": "platform/external/boringssl",
+    "repository_commit": "ecc1358826150d6a1851c517c325b0e6c0e1b8be",
+    "android_bp": {
+      "path": "external/boringssl/selftest/Android.bp",
+      "sha256": "74F55DFAD1B84F1A48FD54AE3ADE350B23317713C4544C34C5346ADCC914CF2D"
+    },
+    "source": {
+      "path": "external/boringssl/selftest/boringssl_self_test.cpp",
+      "sha256": "5C8DF03E2133E61638FF9833E4F7EECD7029067B7CB10B4876BAA7F750239ED8"
+    },
+    "module": "boringssl_self_test_vendor",
+    "compile_multilib": "both",
+    "lib32_suffix": "32",
+    "lib64_suffix": "64",
+    "vendor": true,
+    "stem": "boringssl_self_test",
+    "build_command": "build/soong/soong_ui.bash --make-mode -j8 boringssl_self_test_vendor",
+    "build_result": "PASS"
+  },
+  "canonical_arm64_executable": {
+    "local_build_path": "/work/src/ubox10-a16-ceiling/out-ceiling-b1/target/product/ubox10_ceiling_arm64/system/vendor/bin/boringssl_self_test64",
+    "candidate_install_path": "/vendor/bin/boringssl_self_test64",
+    "size": 14280,
+    "sha256": "E8F3B67A7BADC94FE034A74F5C59F085138D5D8E38A27CF3ADEB676AE60C058F",
+    "elf_class": "ELF64",
+    "machine": "AArch64",
+    "interpreter": "/system/bin/linker64",
+    "android_api_note": 36,
+    "build_id": "7f73c5e1189408db688509323880032e",
+    "dt_needed": [
+      "libcrypto.so",
+      "libc++.so",
+      "libc.so",
+      "libm.so",
+      "libdl.so"
+    ],
+    "strong_undefined_count": 2,
+    "strong_unmatched_count": 0,
+    "mode": "0755",
+    "uid": 0,
+    "gid": 2000,
+    "selinux": "u:object_r:vendor_boringssl_self_test_exec:s0"
+  },
+  "dependency_closure": {
+    "result": "PASS_EXISTING_R5_NAMESPACE_PROVIDERS_ZERO_UNMATCHED",
+    "vendor_namespace_searches_vendor_lib64_first": true,
+    "vndk31_libcrypto64": {
+      "path": "/apex/com.android.vndk.v31/lib64/libcrypto.so",
+      "size": 1220048,
+      "sha256": "522CD5F4640D63982440EE227885EE03F20BD0812E0A82A923BEE58FFD69400A",
+      "android_api_note": 31,
+      "build_id": "0ca1c18b3c9c248a7cb307a59923c269",
+      "exports_fips_mode": true
+    },
+    "libcxx_provider": "/apex/com.android.vndk.v31/lib64/libc++.so",
+    "bionic_providers": [
+      "/apex/com.android.runtime/lib64/bionic/libc.so",
+      "/apex/com.android.runtime/lib64/bionic/libm.so",
+      "/apex/com.android.runtime/lib64/bionic/libdl.so"
+    ],
+    "direct_new_dependencies_required": [],
+    "reason_no_vendor_libcrypto_added": "The exact r5 vendor namespace already exposes VNDK31 libcrypto64, including FIPS_mode; the retained 32-bit service uses the analogous VNDK31 provider and physically exits 0. Adding a new vendor libcrypto would replace rather than close the proven missing-executable cause."
+  },
+  "retained_vendor_mismatch_explanation": {
+    "result": "PROVEN_ARM32_ONLY_PACKAGING_WITH_DORMANT_GENERIC_64_TRIGGER",
+    "accepted_vendor_abi": "ARM32_ONLY",
+    "rc_declares_both_services": true,
+    "accepted_runtime_abilist64": "EMPTY",
+    "consequence_before_r5": "The 64-bit trigger was false, so the absent executable was dormant.",
+    "consequence_after_r5": "The physically proven canonical mixed ABI property makes the existing 64-bit trigger true."
+  },
+  "r6_decision": {
+    "authorized": true,
+    "status": "ROOT_CAUSE_PROVEN_SINGLE_CAUSE_R6_AUTHORIZED",
+    "allowed_functional_delta": [
+      "/vendor/bin/boringssl_self_test64"
+    ],
+    "rc_change_allowed": false,
+    "libcrypto_change_allowed": false,
+    "other_service_fix_allowed": false
+  }
+}

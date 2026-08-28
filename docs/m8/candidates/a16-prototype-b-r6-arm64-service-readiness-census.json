@@ -1,0 +1,143 @@
+{
+  "schema": 1,
+  "audit_date": "2026-08-28",
+  "base": "a16-prototype-b-r5 signed images",
+  "scope": "PREDICTION_ONLY_NO_ADDITIONAL_R6_REMEDIATION_AUTHORIZED",
+  "scan_roots": [
+    "/system/etc/init",
+    "/system/system_ext/etc/init",
+    "/system/product/etc/init",
+    "/vendor/etc/init",
+    "/vendor/etc/init/hw"
+  ],
+  "newly_true_contract": "ro.product.cpu.abilist64=arm64-v8a",
+  "services": [
+    {
+      "service": "boringssl_self_test64_vendor",
+      "trigger": "early-init && property:ro.product.cpu.abilist64=*",
+      "rc_path": "/vendor/etc/init/boringssl_self_test.rc",
+      "binary_path": "/vendor/bin/boringssl_self_test64",
+      "binary_present_r5": false,
+      "elf": "EXPECTED_ELF64_AARCH64",
+      "dt_needed_closure_r5": "PASS_FOR_CANONICAL_R7_BINARY",
+      "selinux": "u:object_r:vendor_boringssl_self_test_exec:s0",
+      "startup_phase": "early-init",
+      "fatal": true,
+      "physical_status": "MISSING_BINARY_FIRST_FATAL",
+      "offline_readiness": "MISSING_BINARY",
+      "ordering": "BEFORE_SYSTEM_BORINGSSL_AND_ZYGOTE"
+    },
+    {
+      "service": "boringssl_self_test64",
+      "trigger": "init && property:ro.product.cpu.abilist64=* via init.boringssl.zygote64_32.rc",
+      "rc_path": "/system/etc/init/hw/init.rc",
+      "binary_path": "/system/bin/boringssl_self_test64",
+      "binary_present_r5": true,
+      "size": 14280,
+      "sha256": "F13F117576890C0029C246527FE05F78322388E095B8539A1729A7F62D1D31AB",
+      "elf": "ELF64_AARCH64",
+      "dt_needed_closure_r5": "PASS",
+      "selinux": "u:object_r:boringssl_self_test_exec:s0",
+      "startup_phase": "init",
+      "fatal": true,
+      "physical_status": "NOT_REACHED_BECAUSE_VENDOR_TEST_FAILED_FIRST",
+      "offline_readiness": "READY_OFFLINE",
+      "ordering": "AFTER_VENDOR_EARLY_INIT_TEST_BEFORE_ZYGOTE"
+    },
+    {
+      "service": "boringssl_self_test_apex64",
+      "trigger": "apexd.status=ready && property:ro.product.cpu.abilist64=*",
+      "rc_path": "/system/etc/init/hw/init.rc",
+      "binary_path": "/apex/com.android.conscrypt/bin/boringssl_self_test64",
+      "binary_present_r5": true,
+      "size": 14280,
+      "sha256": "F13F117576890C0029C246527FE05F78322388E095B8539A1729A7F62D1D31AB",
+      "elf": "ELF64_AARCH64",
+      "dt_needed_closure_r5": "PASS",
+      "selinux": "u:object_r:boringssl_self_test_exec:s0",
+      "startup_phase": "post-APEX activation",
+      "fatal": true,
+      "physical_status": "NOT_REACHED_BECAUSE_VENDOR_TEST_FAILED_FIRST",
+      "offline_readiness": "READY_OFFLINE",
+      "ordering": "AFTER_APEXD_READY_BEFORE_ZYGOTE_COMPLETION"
+    },
+    {
+      "service": "zygote",
+      "trigger": "ro.zygote=zygote64_32 import and class_start main",
+      "rc_path": "/system/etc/init/hw/init.zygote64_32.rc",
+      "binary_path": "/system/bin/app_process64",
+      "binary_present_r5": true,
+      "size": 18992,
+      "sha256": "30481D240222A25A2907D28AA39C3FC43235E54AC7D5DDC416DEE4E48EA1BA86",
+      "elf": "ELF64_AARCH64",
+      "dt_needed_closure_r5": "PASS_OFFLINE",
+      "startup_phase": "main",
+      "fatal": false,
+      "physical_status": "NOT_REACHED_IN_R5; PREVIOUS_EMPTY_ABILIST64_ABORT_CLOSED_BY_R5",
+      "offline_readiness": "READY_OFFLINE",
+      "ordering": "AFTER_BORINGSSL_GATES"
+    },
+    {
+      "service": "zygote_secondary",
+      "trigger": "ro.zygote=zygote64_32 import and class_start main",
+      "rc_path": "/system/etc/init/hw/init.zygote64_32.rc",
+      "binary_path": "/system/bin/app_process32",
+      "binary_present_r5": true,
+      "size": 10480,
+      "sha256": "28EFCF58E01B215732B837B1E4EAE7C8132EF10F8399AC369F9D6AEDE79E3DD8",
+      "elf": "ELF32_ARM",
+      "dt_needed_closure_r5": "PASS_OFFLINE",
+      "startup_phase": "main",
+      "fatal": false,
+      "physical_status": "NOT_REACHED_IN_R5",
+      "offline_readiness": "READY_OFFLINE",
+      "ordering": "AFTER_BORINGSSL_GATES"
+    },
+    {
+      "service": "surfaceflinger",
+      "trigger": "class core",
+      "rc_path": "/system/etc/init/surfaceflinger.rc",
+      "binary_path": "/system/bin/surfaceflinger",
+      "binary_present_r5": true,
+      "size": 8565296,
+      "sha256": "582E1B0B075DE069370A7565196D32423A21EEE03E21403375C5BDF33C9F3C61",
+      "elf": "ELF64_AARCH64",
+      "dt_needed_closure_r5": "PASS_OFFLINE_EXCEPT_RUNTIME_MAPPER_DISCOVERY",
+      "startup_phase": "core",
+      "fatal": false,
+      "physical_status": "PRIOR_INDEPENDENT_PHYSICAL_FAIL_GRALLOC_MAPPER_IS_MISSING_NOT_REACHED_IN_R5",
+      "offline_readiness": "UNKNOWN_NEEDS_PHYSICAL",
+      "ordering": "INDEPENDENT_OF_ZYGOTE; KNOWN NEXT ARCHITECTURE FRONTIER"
+    },
+    {
+      "service": "dmesgd",
+      "trigger": "ro.product.cpu.abilist64=* && bootreceiver.enable=1 && dmesgd.start=1",
+      "rc_path": "/system/etc/init/dmesgd.rc",
+      "binary_path": "/system/bin/dmesgd",
+      "binary_present_r5": true,
+      "size": 85224,
+      "sha256": "75A2CECD1B62B0ACED22B2E2C56AA1997407B8159DA1318AC5EDAC290562284F",
+      "elf": "ELF64_AARCH64",
+      "startup_phase": "post-boot",
+      "fatal": false,
+      "physical_status": "NOT_APPLICABLE_ON_KERNEL_5_4_BOOTRECEIVER_DISABLED",
+      "offline_readiness": "NOT_APPLICABLE",
+      "ordering": "POST_BOOT_ONLY"
+    }
+  ],
+  "config_only_actions": [
+    {
+      "rc_path": "/system/etc/init/hw/init.rc",
+      "trigger": "ro.product.cpu.abilist64=* && bootreceiver.enable=1",
+      "classification": "CONFIG_ONLY_NOT_APPLICABLE_ON_KERNEL_5_4"
+    }
+  ],
+  "summary": {
+    "missing_binary": 1,
+    "ready_offline": 4,
+    "known_independent_runtime_failure": 1,
+    "not_applicable": 1,
+    "additional_r6_fix_authorized": false,
+    "next_predicted_blocker": "ARM64 SurfaceFlinger passthrough mapper discovery remains the only already-observed independent post-BoringSSL blocker; zygote/system_server must still be measured after the BoringSSL gate."
+  }
+}

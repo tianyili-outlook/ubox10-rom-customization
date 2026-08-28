@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "audit_date": "2026-08-28",
+  "scope": "READ_ONLY_NO_R6_KERNEL_OR_TEE_CHANGE",
+  "observed_uart": [
+    "insmod /vendor/lib/modules/tee.ko -> No such file or directory",
+    "insmod /vendor/lib/modules/optee.ko -> No such file or directory",
+    "insmod /vendor/lib/modules/sunxi_drm_heap.ko -> No such file or directory"
+  ],
+  "rc": {
+    "path": "/vendor/etc/init/android.supplicant@2.5-optee.rc",
+    "size": 508,
+    "sha256": "43BFE9B2B0D000BB03725238F8E07668DE6F0FC1775AB16DA7523CB6BF56DAB1",
+    "mode": "0644",
+    "uid": 0,
+    "gid": 0,
+    "trigger": "early-init",
+    "service": "/vendor/bin/hw/tee_supplicant"
+  },
+  "signed_image_files": {
+    "/vendor/lib/modules/tee.ko": false,
+    "/vendor/lib/modules/optee.ko": false,
+    "/vendor/lib/modules/sunxi_drm_heap.ko": false
+  },
+  "frozen_kernel_config": {
+    "path": "out/candidates/a16-prototype-b-r5/kernel-evidence/build-result/built.config",
+    "sha256": "2A159B7EAF3ED96988F169A022A927B440A5D786F20C490D7AF004760F4B4F29",
+    "CONFIG_TEE": "y",
+    "CONFIG_OPTEE": "y",
+    "CONFIG_SUNXI_DRM_HEAP": "y",
+    "interpretation": "The retained rc still attempts module insertion although all three functions are compiled into the frozen kernel rather than shipped in the 22-module vendor_dlkm contract."
+  },
+  "preservation_context": {
+    "kernel": "BYTE_IDENTICAL_TO_PHYSICALLY_ACCEPTED_PROTOTYPE_A_R4_LINEAGE",
+    "vendor_rc": "INHERITED_BYTE_IDENTICAL",
+    "vendor_dlkm_module_count": 22,
+    "module_contract_change_authorized": false
+  },
+  "classification": "REAL_STALE_INSMOD_PATHS_NON_FATAL_AS_OF_R5_READ_ONLY",
+  "causal_limits": {
+    "tee_functionality_physically_proven_in_r5": false,
+    "drm_functionality_physically_proven_in_r5": false,
+    "current_first_fatal": false,
+    "r6_prerequisite": false
+  }
+}

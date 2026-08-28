@@ -62,9 +62,12 @@ was inactive, so r4's correct triplet never entered the active 1657-byte embedde
 signed root, retained `/product` skip-list, first-stage source and r7 property loading uniquely prove
 that active source is `system_a:/system/product/etc/build.prop`. R4 is therefore an immutable
 **PHYSICAL FAIL — PATCHED INACTIVE LOGICAL PRODUCT_A**. Strict single-cause
-`a16-prototype-b-r5` source-generates the triplet in that active file, restores inactive product_a to
-exact r3 bytes, preserves every unrelated B0 contract, and is **OFFLINE CHECKED / READY FOR PHYSICAL
-VALIDATION / NOT YET PHYSICALLY VALIDATED**. Full VINTF remains inherited NFS exit 65, not PASS;
+`a16-prototype-b-r5` source-generates the triplet in that active file and restores inactive product_a
+to exact r3 bytes. Physical UART now proves this correction and canonical global mixed ABI PASS;
+retained BoringSSL32 also exits 0. The newly activated vendor BoringSSL64 trigger then fails before
+exec because its named executable is absent. Exact source/vendor audit authorized strict r6, which
+adds only canonical r7 AArch64 `boringssl_self_test_vendor` output and is **OFFLINE CHECKED / READY
+FOR PHYSICAL VALIDATION / NOT YET VALIDATED**. Full VINTF remains inherited NFS exit 65, not PASS;
 graphics remains unchanged and independently unresolved.
 
 This record is the integration contract for the first Prototype B build task. B0 was read-only:
