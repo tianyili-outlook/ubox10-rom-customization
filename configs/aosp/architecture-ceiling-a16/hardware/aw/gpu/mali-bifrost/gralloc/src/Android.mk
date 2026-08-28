@@ -153,6 +153,7 @@ LOCAL_C_INCLUDES := $(MALI_LOCAL_PATH) $(MALI_DDK_INCLUDES)
 LOCAL_C_INCLUDES += hardware/aw/gpu/include
 # General compilation flags
 LOCAL_CFLAGS := -Werror -DLOG_TAG="\"gralloc\"" -DPLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION)
+LOCAL_CPPFLAGS_64 += -include $(LOCAL_PATH)/vndk31_libcpp_backdeploy.h
 
 # Static hw flags
 LOCAL_CFLAGS += -DMALI_GPU_SUPPORT_AFBC_BASIC=$(MALI_GPU_SUPPORT_AFBC_BASIC)

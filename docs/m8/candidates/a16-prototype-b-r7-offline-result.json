@@ -1,0 +1,157 @@
+{
+  "schema": 1,
+  "candidate": "a16-prototype-b-r7",
+  "decision": "OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION",
+  "physical_status": "NOT_YET_VALIDATED",
+  "flash_authorized": false,
+  "candidate_identity": {
+    "path": "out/candidates/a16-prototype-b-r7/x12-a16-prototype-b-r7.img",
+    "size": 1641773056,
+    "sha256": "A1F58668AEFFC9DC83CFFD8A49A309839332B6616C02153DCC00A71136A7AA27"
+  },
+  "source": {
+    "tag": "android-security-16.0.0_r7",
+    "manifest_commit": "ebea28d151539ecf0730b1a4ab92ac33edc17ac9",
+    "hardware_interfaces_commit": "b553275c84253b074a8532a6ff0f4406c43e606e",
+    "targeted_modules": [
+      "android.hardware.graphics.mapper@2.0-impl-2.1",
+      "gralloc.apollo"
+    ],
+    "android_system_rebuilt": false,
+    "kernel_rebuilt": false,
+    "architecture_scope": "ARM64_ONLY"
+  },
+  "root_cause": {
+    "result": "PROVEN_ARM64_MAPPER_AND_GRALLOC_VNDK31_LIBCPP_BACKDEPLOY_FAILURE",
+    "missing_symbol": "_ZNSt3__122__libcpp_verbose_abortEPKcz",
+    "r6_mapper_unmatched": 1,
+    "r6_gralloc_unmatched": 1,
+    "failure_boundary": "SPHAL_DLOPEN_RELOCATION_BEFORE_HIDL_FETCH_IMAPPER",
+    "why_two_files": "The mapper factory immediately loads gralloc.apollo with RTLD_NOW; both old ARM64 DSOs fail on the same sole VNDK31 libc++ symbol."
+  },
+  "semantic_delta": [
+    "Replace the existing ARM64 HIDL mapper passthrough provider with its exact r7 ARM64 VNDK31-back-deployed build.",
+    "Replace the paired existing ARM64 gralloc.apollo provider with its exact ARM64 VNDK31-back-deployed build."
+  ],
+  "artifacts": {
+    "system_a": {
+      "size": 1651167232,
+      "sha256": "93D968693A2EEDA2BA53D4EE74BBA8EB73E341EA9BC63EFCD5878609C7DE80BE",
+      "byte_preserved_from_r6": true
+    },
+    "product_a": {
+      "size": 272629760,
+      "sha256": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974",
+      "byte_preserved_from_r6": true
+    },
+    "vendor_a": {
+      "size": 150994944,
+      "sha256": "C1B13363A10B0EBD8BE21706A5AC7E7696E5F409BBDD2FED6AB4D78A59490D9A"
+    },
+    "vendor_dlkm_a": {
+      "size": 6680576,
+      "sha256": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07",
+      "byte_preserved_from_r6": true
+    },
+    "super_raw": {
+      "size": 3221225472,
+      "sha256": "D4B38DBDAD77DD7A6AC798731FB8CDD9F559270EA91C0BCA55827333371AE4BE"
+    },
+    "super_sparse": {
+      "size": 1461976192,
+      "sha256": "542EABF30DE0E16E6F7F5FE0B5FEFAEB9301F78D0E18E486D240BB1B0953B424"
+    },
+    "vbmeta_system": {
+      "size": 1472,
+      "sha256": "40732C64F88194DB3CFC35E7F7CFA1DD13CF48B274D8B997152D71E2DA6FC9AA",
+      "byte_preserved_from_r6": true
+    },
+    "vbmeta_vendor": {
+      "size": 1600,
+      "sha256": "60440F276ECFFB27EDF0D623271D7E95CFEB08EB3D215A1D94F49511E25A1408"
+    }
+  },
+  "graphics": {
+    "mapper": {
+      "runtime_path": "/vendor/lib64/hw/android.hardware.graphics.mapper@2.0-impl-2.1.so",
+      "size": 36056,
+      "sha256": "D0FC49B3C216441BDEA66C015CE17B494523E3EB4D1659DE9BBA31693C7461E8",
+      "build_id": "2f99ba222f5d3eaf2e6217f8b3670537",
+      "required_export": "HIDL_FETCH_IMapper",
+      "strong_imports": 45,
+      "strong_unmatched": 0
+    },
+    "gralloc": {
+      "runtime_path": "/vendor/lib64/hw/gralloc.apollo.so",
+      "size": 77248,
+      "sha256": "B03BFE24802C73E158A365CB5D15E1BC7598BB73C98DEF86533183678837CFE7",
+      "build_id": "4ea9accdddd3f88f1787aa22de09f009",
+      "required_export": "HMI",
+      "strong_imports": 47,
+      "strong_unmatched": 0
+    },
+    "mali": {
+      "sha256": "03333D495E3566C7D85CA2E000DA569A16CE8F022EA25C0EA61950C891D5C7F8",
+      "byte_preserved_from_r6": true,
+      "strong_imports": 297,
+      "strong_unmatched": 0
+    },
+    "runtime_mapper_status": "NOT_YET_VALIDATED"
+  },
+  "offline_gates": {
+    "vendor_tree_delta": "PASS_CHANGED_EXACT_TWO_ADDED_ZERO_REMOVED_ZERO",
+    "mapper_gralloc_sphal_closure": "PASS_ZERO_UNMATCHED",
+    "manifest_transport": "PASS_BYTE_PRESERVED_HIDL_2_1_PASSTHROUGH_32_PLUS_64_DEFAULT",
+    "arm32_mapper_gralloc": "PASS_BYTE_PRESERVED_CONTROL",
+    "mixed_abi": "PASS_PRESERVED",
+    "root_metadata_vendor_product_contract": "PASS_PRESERVED",
+    "e2fsck": "PASS",
+    "system_avb": "PASS_PRESERVED",
+    "vendor_avb": "PASS",
+    "vbmeta_system": "PASS_PRESERVED_ROLLBACK_LOCATION_1",
+    "vbmeta_vendor": "PASS_ROLLBACK_LOCATION_0",
+    "lp_geometry": "PASS_EXACT_R6_NO_SHRINK",
+    "super_sparse_raw_roundtrip": "PASS",
+    "imagewty": "PASS",
+    "outer_changed_payloads": [
+      "Vsuper.fex",
+      "Vvbmeta_vendor.fex",
+      "super.fex",
+      "vbmeta_vendor.fex"
+    ],
+    "outer_preserved_payload_count": 46,
+    "mixed_elf": "PASS_ARM64_PRIMARY_ARM32_SECONDARY",
+    "system_aarch64_objects": 1471,
+    "system_arm_objects": 701,
+    "apex": "PASS_35_OF_35",
+    "vndk31_both_arches": "PASS",
+    "linkerconfig": "PASS",
+    "arm64_sphal": "PASS",
+    "split_selinux_compile": "PASS_OFFLINE_ONLY",
+    "system_vintf": "PASS",
+    "full_vintf": "INCOMPATIBLE_EXPECTED_INHERITED_NFS_EXCEPTION_ONLY_NOT_PASS",
+    "full_vintf_exit": 65,
+    "full_vintf_exception": "CONFIG_NFS_FS=y vs FCM-6 requires n",
+    "kernel_5_4_302_and_path_a": "PASS_PRESERVED",
+    "vendor_dlkm_module_count": 22,
+    "aic_fmac_contract": "PASS_PRESERVED"
+  },
+  "known_limits": [
+    "No physical UBOX action was performed by the r7 build/audit task.",
+    "Mapper/gralloc runtime discovery, load, allocation and buffer import remain unproven until physical validation.",
+    "Stable SurfaceFlinger, zygotes and system_server remain unproven for r7.",
+    "Mali/EGL/HWC runtime is not established by the mapper relocation closure.",
+    "Full VINTF is not PASS; inherited CONFIG_NFS_FS remains the sole exception.",
+    "SELinux enforcing runtime compatibility is not claimed."
+  ],
+  "repository_validation": {
+    "focused_r1_through_r7_tests": 64,
+    "focused_result": "PASS",
+    "full_lightweight_tests": 170,
+    "full_result": "PASS",
+    "declared_fixture_skips": 34,
+    "tracked_json_parsed": 79,
+    "python_compile": "PASS",
+    "git_diff_check": "PASS"
+  }
+}

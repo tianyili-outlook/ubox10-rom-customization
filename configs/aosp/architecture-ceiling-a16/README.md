@@ -8,8 +8,9 @@ and the exact accepted r4 display/EGL/keylayout composition.
 
 The tracked `hardware/aw/gpu` subtree is public Apache-2.0 gralloc source pinned from BPI commit
 `316cd80ca43fa17b0385eacd7f6f3652bbd66b2a`; it contains no proprietary Mali binary. The B1 build
-uses only its gralloc-1.x path plus the exact r7 AOSP passthrough mapper. Its two Android 16 source
-compatibility changes are documented in `docs/m8/candidates/a16-prototype-b-r1.md`.
+uses only its gralloc-1.x path plus the exact r7 AOSP passthrough mapper. Initial Android 16 source
+compatibility is documented in `docs/m8/candidates/a16-prototype-b-r1.md`; the later ARM64-only
+VNDK31 libc++ back-deploy closure is documented in `docs/m8/candidates/a16-prototype-b-r7.md`.
 
 Both products inherit the official Android TV GSI base, retain only VNDK 31,
 identify the device as an Android 12 field upgrade, and build no boot, vendor,
@@ -79,7 +80,11 @@ preservation and split SELinux/linker/ELF closure. Full VINTF deliberately
 remains exit 65 only for the inherited `CONFIG_NFS_FS=y` versus FCM-6 `n`
 deviation that also exists against the device-accepted Android 12 matrix; it is
 not reported as a pass. The later r5 physical kernel/wireless checkpoint, exact QPR0 r7 source
-audit and r4 physical pass closed Gate 2. B0 then authorized one bounded Prototype B build. The same
-canonical B1 has passed Mali/provider/handle gates but is currently **OFFLINE HOLD / PARTITION FIT
-BLOCKER**: minimum staged vendor ext4 exceeds the frozen region by 18,165,760 bytes before AVB/FEC.
-No B1 candidate or physical action exists.
+audit and r4 physical pass closed Gate 2. B0 then authorized one bounded Prototype B build. Its
+historical partition-fit HOLD was closed by the explicitly authorized exact 144 MiB vendor extent
+using only existing `sb_a` unallocated space. R1-r6 physical evidence now reaches both ART/Zygote
+runtimes and primary preload; r6's zygote restart is downstream of ARM64 SurfaceFlinger mapper
+failure. Exact r7 source/image/runtime audit proves a VNDK31 libc++ back-deploy relocation mismatch
+in the existing ARM64 mapper/gralloc pair. Strict r7 changes only that pair and is **OFFLINE CHECKED /
+READY FOR PHYSICAL VALIDATION / NOT YET VALIDATED**. Full VINTF remains inherited NFS exit 65 and is
+not PASS.

@@ -1,0 +1,86 @@
+{
+  "schema": 1,
+  "candidate": "a16-prototype-b-r7",
+  "base": "a16-prototype-b-r6",
+  "result": "PASS_R7_TWO_FILE_SINGLE_MAPPER_INSTANTIATION_CLOSURE_AND_B1_PRESERVATION",
+  "vendor_tree_delta": {
+    "added": [],
+    "changed": [
+      "lib64/hw/android.hardware.graphics.mapper@2.0-impl-2.1.so",
+      "lib64/hw/gralloc.apollo.so"
+    ],
+    "removed": []
+  },
+  "changed_arm64_graphics": {
+    "mapper": {
+      "r6_sha256": "83A236476CB24DE2514159534A267334A4C8D7BC957497CD25C70C93F757762D",
+      "r7_sha256": "D0FC49B3C216441BDEA66C015CE17B494523E3EB4D1659DE9BBA31693C7461E8"
+    },
+    "gralloc": {
+      "r6_sha256": "842BA5157989B6BCBF7DC800DC5323FAC9BEF37D914FA56A25A4656B97692E1F",
+      "r7_sha256": "B03BFE24802C73E158A365CB5D15E1BC7598BB73C98DEF86533183678837CFE7"
+    }
+  },
+  "retained_vendor": {
+    "bin/boringssl_self_test32": "CD2BCD98343AE5B6DB3FB1DF0599692E0DA52FBC599322EDF2E60A2AE9731166",
+    "bin/boringssl_self_test64": "E8F3B67A7BADC94FE034A74F5C59F085138D5D8E38A27CF3ADEB676AE60C058F",
+    "etc/init/boringssl_self_test.rc": "459FEA4E63E78A19B04B37E6298E4CE22A816F2F5604B17289D04C3A57E1FE1D",
+    "lib64/egl/libGLES_mali.so": "03333D495E3566C7D85CA2E000DA569A16CE8F022EA25C0EA61950C891D5C7F8",
+    "lib/hw/android.hardware.graphics.mapper@2.0-impl-2.1.so": "5D18BB597F91C90CC9A17BDAD4CD3F525B33B903C7AA188A04D79B1273768BE3",
+    "lib/hw/gralloc.apollo.so": "7325BD8B0562F4A01CDF283DAAA8DB660AAFF4E31F6FC7AD5D6DFABC4ABF8AAC"
+  },
+  "byte_preserved_artifacts": {
+    "system_a": "93D968693A2EEDA2BA53D4EE74BBA8EB73E341EA9BC63EFCD5878609C7DE80BE",
+    "product_a": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974",
+    "vendor_dlkm_a": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07",
+    "boot": "527CF878B015CFAE4E8600BD750C7C73F45F4290B5CFEFEDBD1AD9AC347B8063",
+    "vbmeta_system": "40732C64F88194DB3CFC35E7F7CFA1DD13CF48B274D8B997152D71E2DA6FC9AA"
+  },
+  "root_objects": {
+    "/metadata": {
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "selinux": "u:object_r:metadata_file:s0"
+    },
+    "/vendor": {
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 2000,
+      "selinux": "u:object_r:vendor_file:s0"
+    },
+    "/product": {
+      "type": "symlink",
+      "target": "/system/product",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "selinux": "u:object_r:system_file:s0"
+    }
+  },
+  "system_tree_delta_from_r6": {
+    "added": [],
+    "changed": [],
+    "removed": []
+  },
+  "hardware_contract": {
+    "kernel_release": "5.4.302+",
+    "kernel_image_sha256": "287A82F799982FB58D02ADE88150A9EAB22D4C0956BE3CE50765F6FD1DB24F40",
+    "path_a_six_configs": "PRESERVED",
+    "vendor_dlkm_module_count": 22,
+    "aic_fmac_contract": "PRESERVED_0x00120000_0x00120180_0x00120000",
+    "hardware_authority": "UNCHANGED"
+  },
+  "outer": {
+    "changed_payloads": [
+      "Vsuper.fex",
+      "Vvbmeta_vendor.fex",
+      "super.fex",
+      "vbmeta_vendor.fex"
+    ],
+    "preserved_payload_count": 46,
+    "all_other_payloads_exact_r6": true
+  }
+}

@@ -1,0 +1,287 @@
+{
+  "schema": 1,
+  "id": "a16-prototype-b-r7",
+  "milestone": "Prototype B B1 ARM64 mapper VNDK31 back-deploy continuation",
+  "status": "ROOT_CAUSE_PROVEN_SINGLE_CAUSE_R7_AUTHORIZED",
+  "inherits": "configs/candidates/a16-prototype-b-r1.json",
+  "base_candidate": {
+    "id": "a16-prototype-b-r6",
+    "path": "out/candidates/a16-prototype-b-r6/x12-a16-prototype-b-r6.img",
+    "size": 1641773056,
+    "sha256": "2AAF8E2CA89DDE486A9416FDE7ACFF7BCD6DB80CDCB161598ABF99A7CB2DBD53"
+  },
+  "base_artifacts": {
+    "system_a": {
+      "path": "out/candidates/a16-prototype-b-r6/system_a.img",
+      "size": 1651167232,
+      "sha256": "93D968693A2EEDA2BA53D4EE74BBA8EB73E341EA9BC63EFCD5878609C7DE80BE"
+    },
+    "product_a": {
+      "path": "out/candidates/a16-prototype-b-r6/candidate-logical/product_a.img",
+      "size": 272629760,
+      "sha256": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974"
+    },
+    "vendor_a": {
+      "path": "out/candidates/a16-prototype-b-r6/vendor_a.img",
+      "size": 150994944,
+      "sha256": "8B6DC4BF6828F1746FAF7FF07ABEC67FF88D1BCA93BE4A87B0427BD3687E7386"
+    },
+    "vendor_dlkm": {
+      "path": "out/candidates/a16-prototype-b-r6/vendor_dlkm_a.img",
+      "size": 6680576,
+      "sha256": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07"
+    },
+    "boot": {
+      "path": "out/candidates/a16-prototype-b-r6/boot.fex",
+      "size": 67108864,
+      "sha256": "527CF878B015CFAE4E8600BD750C7C73F45F4290B5CFEFEDBD1AD9AC347B8063"
+    },
+    "super_raw": {
+      "path": "out/candidates/a16-prototype-b-r6/super.raw.img",
+      "size": 3221225472,
+      "sha256": "FA564A023333199D1629CF15EAA2FBBEB8E152330F737F97A4BF8EF54C77D6AC"
+    },
+    "vbmeta_system": {
+      "path": "out/candidates/a16-prototype-b-r6/vbmeta_system.fex",
+      "size": 1472,
+      "sha256": "40732C64F88194DB3CFC35E7F7CFA1DD13CF48B274D8B997152D71E2DA6FC9AA"
+    },
+    "vbmeta_vendor": {
+      "path": "out/candidates/a16-prototype-b-r6/vbmeta_vendor.fex",
+      "size": 1600,
+      "sha256": "E45F5A0A133090922FA4D6BB3907CCED92A51B1631405BF79BF249AEFF5D50C5"
+    }
+  },
+  "root_cause": {
+    "result": "PROVEN_ARM64_MAPPER_AND_GRALLOC_VNDK31_LIBCPP_BACKDEPLOY_FAILURE",
+    "audit": "docs/m8/candidates/a16-prototype-b-r7-mapper-root-cause-audit.json",
+    "control": "docs/m8/candidates/a16-prototype-b-r7-arm32-arm64-mapper-control.json",
+    "physical_result": "docs/m8/candidates/a16-prototype-b-r6-physical-result.json",
+    "missing_symbol": "_ZNSt3__122__libcpp_verbose_abortEPKcz",
+    "runtime_abort": "gralloc-mapper is missing"
+  },
+  "source_contract": {
+    "manifest_commit": "ebea28d151539ecf0730b1a4ab92ac33edc17ac9",
+    "hardware_interfaces_commit": "b553275c84253b074a8532a6ff0f4406c43e606e",
+    "mapper_patch": {
+      "path": "configs/aosp/architecture-ceiling-a16/patches/0003-mapper-vndk31-libcpp-backdeploy.patch",
+      "sha256": "18A358BDFBA03E3C9F13EEAD3429F4B49EBD40070CDE25CFEC87B4C8D7801CEF"
+    },
+    "mapper_android_bp": {
+      "path": "/work/src/ubox10-a16-ceiling/hardware/interfaces/graphics/mapper/2.1/default/Android.bp",
+      "sha256": "6D196400B7A1A5CBC0D1987F3E86587616445A26DA4A4A0D20F8000FA05C5AA0"
+    },
+    "mapper_backdeploy_header": {
+      "path": "/work/src/ubox10-a16-ceiling/hardware/interfaces/graphics/mapper/2.1/default/vndk31_libcpp_backdeploy.h",
+      "sha256": "4F3BB9BD1715B45AC1F59391B9738144A97855D046357503F646D7802431D689"
+    },
+    "gralloc_android_mk": {
+      "path": "configs/aosp/architecture-ceiling-a16/hardware/aw/gpu/mali-bifrost/gralloc/src/Android.mk",
+      "aosp_path": "/work/src/ubox10-a16-ceiling/hardware/aw/gpu/mali-bifrost/gralloc/src/Android.mk",
+      "sha256": "378AE5AF1897F86F7C5341A0F2B935BFB37722A1EC7B7D8557F3960CB1BB09B4"
+    },
+    "gralloc_backdeploy_header": {
+      "path": "configs/aosp/architecture-ceiling-a16/hardware/aw/gpu/mali-bifrost/gralloc/src/vndk31_libcpp_backdeploy.h",
+      "aosp_path": "/work/src/ubox10-a16-ceiling/hardware/aw/gpu/mali-bifrost/gralloc/src/vndk31_libcpp_backdeploy.h",
+      "sha256": "4F3BB9BD1715B45AC1F59391B9738144A97855D046357503F646D7802431D689"
+    },
+    "compatibility_macro": "#define _LIBCPP_VERBOSE_ABORT(...) __builtin_abort()",
+    "architecture_scope": "ARM64_ONLY"
+  },
+  "providers": {
+    "mapper": {
+      "source_path": "/work/src/ubox10-a16-ceiling/out-ceiling-b1/target/product/ubox10_ceiling_arm64/system/vendor/lib64/hw/android.hardware.graphics.mapper@2.0-impl-2.1.so",
+      "install_path": "/lib64/hw/android.hardware.graphics.mapper@2.0-impl-2.1.so",
+      "runtime_path": "/vendor/lib64/hw/android.hardware.graphics.mapper@2.0-impl-2.1.so",
+      "size": 36056,
+      "sha256": "D0FC49B3C216441BDEA66C015CE17B494523E3EB4D1659DE9BBA31693C7461E8",
+      "build_id": "2f99ba222f5d3eaf2e6217f8b3670537",
+      "soname": "android.hardware.graphics.mapper@2.0-impl-2.1.so",
+      "required_export": "HIDL_FETCH_IMapper",
+      "dt_needed": [
+        "android.hardware.graphics.mapper@2.0.so",
+        "android.hardware.graphics.mapper@2.1.so",
+        "libbase.so",
+        "libcutils.so",
+        "libhardware.so",
+        "libhidlbase.so",
+        "liblog.so",
+        "libsync.so",
+        "libutils.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "selinux": "u:object_r:same_process_hal_file:s0",
+      "times": "0x6a8fff2c"
+    },
+    "gralloc": {
+      "source_path": "/work/src/ubox10-a16-ceiling/out-ceiling-b1/target/product/ubox10_ceiling_arm64/system/vendor/lib64/hw/gralloc.apollo.so",
+      "install_path": "/lib64/hw/gralloc.apollo.so",
+      "runtime_path": "/vendor/lib64/hw/gralloc.apollo.so",
+      "size": 77248,
+      "sha256": "B03BFE24802C73E158A365CB5D15E1BC7598BB73C98DEF86533183678837CFE7",
+      "build_id": "4ea9accdddd3f88f1787aa22de09f009",
+      "soname": "gralloc.apollo.so",
+      "required_export": "HMI",
+      "dt_needed": [
+        "libhardware.so",
+        "liblog.so",
+        "libcutils.so",
+        "libion.so",
+        "libsync.so",
+        "libutils.so",
+        "libGLESv1_CM.so",
+        "libnativewindow.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "selinux": "u:object_r:same_process_hal_file:s0",
+      "times": "0x6a8fff2c"
+    }
+  },
+  "retained_vendor_contract": {
+    "mali": {
+      "path": "/lib64/egl/libGLES_mali.so",
+      "size": 18145112,
+      "sha256": "03333D495E3566C7D85CA2E000DA569A16CE8F022EA25C0EA61950C891D5C7F8"
+    },
+    "mapper32": {
+      "path": "/lib/hw/android.hardware.graphics.mapper@2.0-impl-2.1.so",
+      "size": 20996,
+      "sha256": "5D18BB597F91C90CC9A17BDAD4CD3F525B33B903C7AA188A04D79B1273768BE3"
+    },
+    "gralloc32": {
+      "path": "/lib/hw/gralloc.apollo.so",
+      "size": 56588,
+      "sha256": "7325BD8B0562F4A01CDF283DAAA8DB660AAFF4E31F6FC7AD5D6DFABC4ABF8AAC"
+    },
+    "boringssl32": {
+      "path": "/bin/boringssl_self_test32",
+      "size": 2672,
+      "sha256": "CD2BCD98343AE5B6DB3FB1DF0599692E0DA52FBC599322EDF2E60A2AE9731166"
+    },
+    "boringssl64": {
+      "path": "/bin/boringssl_self_test64",
+      "size": 14280,
+      "sha256": "E8F3B67A7BADC94FE034A74F5C59F085138D5D8E38A27CF3ADEB676AE60C058F"
+    },
+    "boringssl_rc": {
+      "path": "/etc/init/boringssl_self_test.rc",
+      "size": 751,
+      "sha256": "459FEA4E63E78A19B04B37E6298E4CE22A816F2F5604B17289D04C3A57E1FE1D"
+    }
+  },
+  "elf_census_contract": {
+    "approved_additional_vendor64": [
+      "/vendor/bin/boringssl_self_test64"
+    ],
+    "reason": "R7 replaces two existing ARM64 same-process providers and adds no new vendor ELF path."
+  },
+  "root_mountpoint_contract": {
+    "metadata": {
+      "path": "/metadata",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "selinux": "u:object_r:metadata_file:s0"
+    },
+    "vendor": {
+      "path": "/vendor",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 2000,
+      "selinux": "u:object_r:vendor_file:s0"
+    },
+    "product": {
+      "path": "/product",
+      "type": "symlink",
+      "target": "/system/product"
+    }
+  },
+  "active_product_property_contract": {
+    "root_object": {
+      "path": "/product",
+      "type": "symlink",
+      "target": "/system/product",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "selinux": "u:object_r:system_file:s0"
+    },
+    "active_path": "/system/product/etc/build.prop",
+    "generated_path": "/work/src/ubox10-a16-ceiling/out-ceiling-b1/target/product/ubox10_ceiling_arm64/system/product/etc/build.prop",
+    "target_copy_out_product": "system/product",
+    "properties": {
+      "ro.product.product.cpu.abilist": "arm64-v8a,armeabi-v7a,armeabi",
+      "ro.product.product.cpu.abilist32": "armeabi-v7a,armeabi",
+      "ro.product.product.cpu.abilist64": "arm64-v8a"
+    },
+    "must_equal_build_variables": {
+      "ro.product.product.cpu.abilist": "TARGET_CPU_ABI_LIST",
+      "ro.product.product.cpu.abilist32": "TARGET_CPU_ABI_LIST_32_BIT",
+      "ro.product.product.cpu.abilist64": "TARGET_CPU_ABI_LIST_64_BIT"
+    },
+    "expected_global_derivation": {
+      "source": "product",
+      "ro.product.cpu.abilist": "arm64-v8a,armeabi-v7a,armeabi",
+      "ro.product.cpu.abilist32": "armeabi-v7a,armeabi",
+      "ro.product.cpu.abilist64": "arm64-v8a"
+    }
+  },
+  "skip_mount_contract": {
+    "path": "/system/system_ext/etc/init/config/skip_mount.cfg",
+    "size": 143,
+    "sha256": "7C28485E025157ACBBD0ABF9505A212AF3B4A96211B5AA3BC3D858A560A3AEFD",
+    "required_pattern": "/product"
+  },
+  "avb_system": {
+    "partition_size": 1651167232,
+    "original_filesystem_size": 1250484224,
+    "salt": "6131362d70726f746f747970652d622d7231",
+    "rollback_index": 1644019200,
+    "rollback_index_location": 1,
+    "key_relative": "tools/testkey_rsa2048.pem",
+    "algorithm": "SHA256_RSA2048",
+    "fec": "none"
+  },
+  "outer_delta": {
+    "changed_payloads_from_base": [
+      "Vsuper.fex",
+      "Vvbmeta_vendor.fex",
+      "super.fex",
+      "vbmeta_vendor.fex"
+    ],
+    "preserved_payload_count_from_base": 46
+  },
+  "allowed_semantic_delta": [
+    "Replace only the existing ARM64 HIDL mapper passthrough provider with the exact r7 VNDK31-back-deployed build.",
+    "Replace only the paired existing ARM64 gralloc.apollo provider with the exact VNDK31-back-deployed build required by HIDL_FETCH_IMapper."
+  ],
+  "forbidden_changes": [
+    "Mali",
+    "ARM32_mapper_or_gralloc",
+    "mapper_manifest_transport_or_instance",
+    "linker_namespace",
+    "SurfaceFlinger_zygote_or_ABI",
+    "r6_system_or_active_ABI_triplet",
+    "product_a",
+    "BoringSSL32_or_BoringSSL64",
+    "kernel_or_vendor_dlkm",
+    "boot_vendor_boot_fstab_skip_mount",
+    "hardware_HAL_stack",
+    "LP_geometry",
+    "all_other_B1_semantics"
+  ]
+}

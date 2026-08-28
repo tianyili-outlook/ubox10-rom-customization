@@ -1,0 +1,151 @@
+{
+  "schema": 1,
+  "candidate_frontier": "a16-prototype-b-r6",
+  "audit_date": "2026-08-28",
+  "result": "PROVEN_ARM64_MAPPER_AND_GRALLOC_VNDK31_LIBCPP_BACKDEPLOY_FAILURE",
+  "physical_evidence": "docs/m8/candidates/a16-prototype-b-r6-physical-result.json",
+  "source_identity": {
+    "tag": "android-security-16.0.0_r7",
+    "manifest_commit": "ebea28d151539ecf0730b1a4ab92ac33edc17ac9",
+    "frameworks_native_commit": "d862b53356dc26794fb5451782806979c46e6769",
+    "hardware_interfaces_commit": "b553275c84253b074a8532a6ff0f4406c43e606e",
+    "system_libhidl_commit": "93f79786f64c02b71ba899a46c34829266f9c370",
+    "system_core_commit": "68be0c2c0006a0740d0b1809abe4717308f90d15",
+    "bionic_commit": "09a271af557444c9a6b3f3146d6d474156fd6cdb",
+    "hardware_libhardware_commit": "cd2b68d71a1dd9a45668ddd9a507000ccd7ff114"
+  },
+  "surfaceflinger_failure": {
+    "process": "/system/bin/surfaceflinger",
+    "abi": "arm64",
+    "signal": "SIGABRT",
+    "abort": "gralloc-mapper is missing",
+    "source": "frameworks/native/libs/ui/GraphicBufferMapper.cpp:60-82",
+    "source_sha256": "FA8F7BD2614FB7A87CB4F4F4C87E35802A8A94EED9E59FD2787953953C5F2AFB",
+    "meaning": "GraphicBufferMapper tried Gralloc5, Gralloc4, Gralloc3 and Gralloc2 in that order and every mapper object reported not loaded. The fatal is not a Mali-renderer result."
+  },
+  "exact_runtime_path": {
+    "api_order": [
+      "Gralloc5: AIDL allocator v2 plus stable-C mapper.<suffix>.so; not supplied by the retained vendor",
+      "Gralloc4: android.hardware.graphics.mapper@4.0::IMapper/default; no retained implementation",
+      "Gralloc3: android.hardware.graphics.mapper@3.0::IMapper/default; no retained implementation",
+      "Gralloc2: android.hardware.graphics.mapper@2.0::IMapper/default with optional cast to 2.1; retained path"
+    ],
+    "gralloc2_call": "frameworks/native/libs/ui/Gralloc2.cpp:83-98 -> IMapper@2.0::getService(default)",
+    "transport_resolution": "system/libhidl/transport/ServiceManagement.cpp:897-992 asks hwservicemanager getTransport(descriptor, instance); the exact vendor manifest returns PASSTHROUGH",
+    "passthrough_lookup": {
+      "source": "system/libhidl/transport/ServiceManagement.cpp:490-608",
+      "descriptor": "android.hardware.graphics.mapper@2.0::IMapper",
+      "instance": "default",
+      "library_prefix": "android.hardware.graphics.mapper@2.0-impl",
+      "symbol": "HIDL_FETCH_IMapper",
+      "arm64_search_path": "/vendor/lib64/hw/",
+      "selected_file": "/vendor/lib64/hw/android.hardware.graphics.mapper@2.0-impl-2.1.so",
+      "filename_matches": true,
+      "required_symbol_present": true
+    },
+    "mapper_factory": "hardware/interfaces/graphics/mapper/2.1/default/passthrough.cpp:22-23 exports HIDL_FETCH_IMapper and calls GrallocLoader::load()",
+    "gralloc_factory": "GrallocLoader::load() calls hw_get_module(GRALLOC_HARDWARE_MODULE_ID); ro.board.platform=apollo selects /vendor/lib64/hw/gralloc.apollo.so",
+    "call_graph": [
+      "SurfaceFlinger::processDisplayAdded",
+      "SurfaceFlinger::setupNewDisplayDeviceInternal",
+      "GraphicBuffer/allocator path requests GraphicBufferMapper singleton",
+      "GraphicBufferMapper tries Gralloc5 -> Gralloc4 -> Gralloc3 -> Gralloc2",
+      "Gralloc2Mapper calls IMapper@2.0::getService(default)",
+      "hwservicemanager reports PASSTHROUGH from @2.1 IMapper/default manifest entry",
+      "PassthroughServiceManager scans /vendor/lib64/hw for android.hardware.graphics.mapper@2.0-impl*.so",
+      "android_load_sphal_library attempts the installed mapper in the sphal namespace",
+      "Bionic eager relocation fails before HIDL_FETCH_IMapper can run",
+      "Gralloc2 remains unloaded; all generations are absent; GraphicBufferMapper aborts"
+    ]
+  },
+  "manifest_transport": {
+    "vendor_manifest_sha256": "B1EAD5AF35D0397E70693D4AE9855ED1009A7E884906CE60C249ACFC2E890E0F",
+    "name": "android.hardware.graphics.mapper",
+    "transport": "passthrough",
+    "arch": "32+64",
+    "version": "2.1",
+    "fqname": "@2.1::IMapper/default",
+    "r4_arm32_and_r6_equal": true,
+    "conclusion": "NO_MANIFEST_DELTA_REQUIRED"
+  },
+  "linker_namespace": {
+    "generated_ld_config_sha256": "4755CF758460C35A9C92A9E1A6A959D9B7AED057199DDB15F40BF2263527A764",
+    "loader": "system/core/libvndksupport/linker.cpp:64-75 uses android_dlopen_ext with the exported sphal namespace",
+    "sphal_visible": true,
+    "sphal_isolated": true,
+    "search_paths": [
+      "/odm/lib64",
+      "/vendor/lib64",
+      "/vendor/lib64/egl",
+      "/vendor/lib64/hw"
+    ],
+    "libcxx_resolution": "/apex/com.android.vndk.v31/lib64/libc++.so",
+    "vndk31_libcxx_sha256": "DFE00C553710DF290C7DD0928ED6EAFD906C276C68560C12BE8BB97E137CBD98",
+    "vndk31_exports_libcpp_verbose_abort": false,
+    "current_system_libcxx_sha256": "2267F93B8B3C9D1967F1833D5F71C7312213C43BB291250CF772800763037FB9",
+    "current_system_exports_libcpp_verbose_abort": true,
+    "why_system_symbol_cannot_rescue_vendor_dso": "libc++.so is exposed from the vndk link to sphal, not from the default link; namespace isolation therefore selects the VNDK31 snapshot for the vendor DSO."
+  },
+  "r6_provider_failure": {
+    "missing_symbol": "_ZNSt3__122__libcpp_verbose_abortEPKcz",
+    "demangled": "std::__1::__libcpp_verbose_abort(char const*, ...)",
+    "mapper": {
+      "path": "/vendor/lib64/hw/android.hardware.graphics.mapper@2.0-impl-2.1.so",
+      "size": 36080,
+      "sha256": "83A236476CB24DE2514159534A267334A4C8D7BC957497CD25C70C93F757762D",
+      "build_id": "e9198e0d05b08c9fb4a3d54c3f65f994",
+      "unmatched_strong_imports": [
+        "_ZNSt3__122__libcpp_verbose_abortEPKcz"
+      ]
+    },
+    "gralloc": {
+      "path": "/vendor/lib64/hw/gralloc.apollo.so",
+      "size": 77272,
+      "sha256": "842BA5157989B6BCBF7DC800DC5323FAC9BEF37D914FA56A25A4656B97692E1F",
+      "build_id": "59e5e1219b02315d7ac69734c760e0b8",
+      "unmatched_strong_imports": [
+        "_ZNSt3__122__libcpp_verbose_abortEPKcz"
+      ]
+    },
+    "relocation_semantics": "Bionic linker.cpp:2989 states RTLD_LAZY is unsupported; linker_relocate.cpp:121-124 rejects an unresolved non-weak symbol with 'cannot locate symbol'. The mapper therefore fails at dlopen before dlsym/HIDL_FETCH_IMapper.",
+    "downstream_boundary": "Even after mapper relocation is corrected, hw_get_module opens gralloc.apollo.so with RTLD_NOW; the r6 gralloc has the same sole missing symbol. Both ARM64 files are inseparable parts of this one instantiation closure."
+  },
+  "negative_findings": {
+    "missing_mapper_file": false,
+    "wrong_filename": false,
+    "missing_HIDL_FETCH_IMapper": false,
+    "wrong_manifest_transport": false,
+    "sphal_path_invisible": false,
+    "selinux_leading_cause": false,
+    "mali_current_cause": false,
+    "zygote_independent_cause": false
+  },
+  "canonical_remediation": {
+    "mechanism": "Use libc++'s documented _LIBCPP_VERBOSE_ABORT customization hook to preserve abort semantics without importing the post-VNDK31 shared-library symbol.",
+    "architecture_scope": "ARM64_ONLY",
+    "mapper_source_delta": "ARM64 cflag pre-includes vndk31_libcpp_backdeploy.h for the exact r7 passthrough mapper module.",
+    "gralloc_source_delta": "LOCAL_CPPFLAGS_64 pre-includes the same bounded header for gralloc.apollo; ARM32 candidate bytes remain the frozen r6 control.",
+    "fatal_hook": "#define _LIBCPP_VERBOSE_ABORT(...) __builtin_abort()",
+    "behavioral_scope": "Only libc++ fatal diagnostics lose formatted text; the path remains fatal. Normal mapper/gralloc behavior and interfaces are unchanged."
+  },
+  "r7_decision": {
+    "authorized": true,
+    "status": "ROOT_CAUSE_PROVEN_SINGLE_CAUSE_R7_AUTHORIZED",
+    "allowed_vendor_tree_delta": [
+      "/vendor/lib64/hw/android.hardware.graphics.mapper@2.0-impl-2.1.so",
+      "/vendor/lib64/hw/gralloc.apollo.so"
+    ],
+    "why_two_files_are_one_cause": "They are sequential, same-process parts of the same HIDL mapper factory: the mapper must relocate before its fetch function runs, then that fetch function must load gralloc with RTLD_NOW. Both old files fail on the same single VNDK31 libc++ symbol.",
+    "forbidden": [
+      "Mali",
+      "manifest or transport",
+      "linker namespace",
+      "SurfaceFlinger fatal bypass",
+      "zygote or ABI properties",
+      "kernel or vendor_dlkm",
+      "BoringSSL",
+      "any ARM32 provider"
+    ],
+    "physical_status": "NOT_YET_VALIDATED"
+  }
+}

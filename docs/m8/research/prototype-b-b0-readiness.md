@@ -66,9 +66,19 @@ that active source is `system_a:/system/product/etc/build.prop`. R4 is therefore
 to exact r3 bytes. Physical UART now proves this correction and canonical global mixed ABI PASS;
 retained BoringSSL32 also exits 0. The newly activated vendor BoringSSL64 trigger then fails before
 exec because its named executable is absent. Exact source/vendor audit authorized strict r6, which
-adds only canonical r7 AArch64 `boringssl_self_test_vendor` output and is **OFFLINE CHECKED / READY
-FOR PHYSICAL VALIDATION / NOT YET VALIDATED**. Full VINTF remains inherited NFS exit 65, not PASS;
-graphics remains unchanged and independently unresolved.
+adds only canonical r7 AArch64 `boringssl_self_test_vendor` output. Physical r6 crosses the old reboot
+gate, starts both ART/Zygote runtimes and reaches primary preload. Its zygote restart is a downstream
+result of repeated ARM64 SurfaceFlinger `gralloc-mapper is missing` crashes, not an independent
+zygote failure.
+
+Mapper execution update, 2026-08-28: exact r7 SurfaceFlinger/UI, Gralloc2, HIDL passthrough loader,
+manifest, `sphal` namespace and working ARM32 control evidence uniquely proves that the r6 ARM64
+mapper and its factory-loaded gralloc each import the same newer libc++ verbose-abort symbol absent
+from the selected VNDK31 snapshot. Discovery name/path/export/transport are correct; eager relocation
+fails before `HIDL_FETCH_IMapper`, and fixing mapper alone would make gralloc fail on the same symbol.
+Strict r7 uses libc++'s documented ARM64 back-deploy hook for only this inseparable pair. Its exact
+two-file vendor delta and full offline acceptance pass; status is **OFFLINE CHECKED / READY FOR
+PHYSICAL VALIDATION / NOT YET VALIDATED**. Full VINTF remains inherited NFS exit 65, not PASS.
 
 This record is the integration contract for the first Prototype B build task. B0 was read-only:
 no Android or kernel build ran, no source or accepted image was modified, no candidate was created,
@@ -369,5 +379,6 @@ locked, static Mali dependency closure passes, the AOSP-mapper/donor-gralloc spl
 the cross-bitness handle path has no known contradiction, mixed ABI and vendor property ownership
 are exact, the existing VINTF/linker contract admits the providers, every changed partition and AVB
 consequence is enumerated, and no mandatory same-process ARM64 provider class remains unknown.
-Exact-board runtime compatibility is not claimed; B1 is the bounded, rollback-safe test of that
-remaining uncertainty. B0 did not build or create B1.
+Exact-board runtime compatibility was not claimed by B0. Subsequent r1-r6 physical evidence and r7
+offline closure are execution updates, not retroactive changes to this preflight decision. The next
+bounded test is exact r7 physical mapper instantiation; B0 itself did not build or create B1.

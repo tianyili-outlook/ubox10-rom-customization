@@ -1,0 +1,50 @@
+From: UBOX10 Architecture Ceiling Study <noreply@example.invalid>
+Subject: [PATCH] graphics: back-deploy ARM64 mapper to VNDK 31 libc++
+
+The retained API-31 vendor namespace supplies libc++ from the VNDK 31 APEX.
+Android 16 libc++ headers otherwise emit an import of
+std::__libcpp_verbose_abort, which that snapshot does not export.  Use the
+libc++-documented fatal-hook override only for the ARM64 passthrough mapper.
+---
+ graphics/mapper/2.1/default/Android.bp                  | 7 +++++++
+ graphics/mapper/2.1/default/vndk31_libcpp_backdeploy.h | 11 +++++++++++
+ 2 files changed, 18 insertions(+)
+ create mode 100644 graphics/mapper/2.1/default/vndk31_libcpp_backdeploy.h
+
+diff --git a/graphics/mapper/2.1/default/Android.bp b/graphics/mapper/2.1/default/Android.bp
+index 8dfdbbd..a85f7c9 100644
+--- a/graphics/mapper/2.1/default/Android.bp
++++ b/graphics/mapper/2.1/default/Android.bp
+@@ -29,6 +29,13 @@ cc_library_shared {
+     vendor: true,
+     relative_install_path: "hw",
+     srcs: ["passthrough.cpp"],
++    arch: {
++        arm64: {
++            cflags: [
++                "-include hardware/interfaces/graphics/mapper/2.1/default/vndk31_libcpp_backdeploy.h",
++            ],
++        },
++    },
+     header_libs: [
+         "android.hardware.graphics.mapper@2.1-passthrough",
+     ],
+diff --git a/graphics/mapper/2.1/default/vndk31_libcpp_backdeploy.h b/graphics/mapper/2.1/default/vndk31_libcpp_backdeploy.h
+new file mode 100644
+index 0000000..a0d4847
+--- /dev/null
++++ b/graphics/mapper/2.1/default/vndk31_libcpp_backdeploy.h
+@@ -0,0 +1,11 @@
++/*
++ * The retained API-31 vendor namespace resolves libc++ from the VNDK 31 APEX.
++ * Android 16 libc++ headers otherwise emit a dependency on the newer
++ * std::__libcpp_verbose_abort symbol.  libc++ explicitly permits callers to
++ * override this fatal-only hook for back deployment.
++ */
++#pragma once
++
++#if defined(__aarch64__) && !defined(_LIBCPP_VERBOSE_ABORT)
++#define _LIBCPP_VERBOSE_ABORT(...) __builtin_abort()
++#endif
+-- 
+2.43.0

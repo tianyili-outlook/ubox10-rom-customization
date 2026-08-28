@@ -1,6 +1,7 @@
 # Android 16 Prototype B r6
 
-状态：**OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**。物理状态：**NOT YET VALIDATED**。
+离线状态：**OFFLINE CHECKED**。物理状态：**PHYSICAL FAIL — BORINGSSL64 GATE CROSSED;
+ARM64 SURFACEFLINGER GRAPHICS MAPPER RUNTIME DISCOVERY FAILURE**。
 
 R5 已物理证明 active embedded product source 与 canonical global mixed ABI；retained vendor
 BoringSSL32 随后 exit 0。新的首个 fatal 不是 crypto/linker/SELinux 失败，而是既有 vendor rc 在
@@ -19,7 +20,34 @@ vendor libcrypto、system/ABI、graphics、kernel、TEE 或其他 service。
 | base | exact r5, 1,641,760,768 bytes / `418CDC6B...6FE2E` |
 | Android | `android-security-16.0.0_r7`; manifest `ebea28d151539ecf0730b1a4ab92ac33edc17ac9` |
 | source action | targeted `boringssl_self_test_vendor` build only; no system/kernel rebuild |
-| physical action | none; r6 is not a physical PASS |
+| physical result | exact image flashed; BoringSSL64 intended gate PASS, then ARM64 SurfaceFlinger repeatedly aborts `gralloc-mapper is missing` |
+
+## Physical result (2026-08-28)
+
+Externally collected UART/root-console evidence proves that r6 preserves the canonical mixed ABI
+triplet and no longer enters the r5 `boringssl-self-check-failed` reboot loop. This is a
+**PHYSICAL PASS at the exact r6 missing-executable boundary**, not a claim that the whole crypto
+subsystem has been validated. Kernel, first stage, `/metadata`, canonical `/vendor`, SwitchRoot and
+second stage remain crossed; the device stays alive with a root console.
+
+Both `app_process64` and `app_process32` enter ART/Zygote startup. The primary reaches `Zygote:
+begin preload` and `ZygoteHooks.beginPreload()`. Its restart is not an independent zygote failure:
+ARM64 SurfaceFlinger receives SIGABRT four times before boot completion, the updatable-process
+health path fires, and init explicitly sends signal 9 to primary `zygote`. System_server is therefore
+**NOT REACHED / INDIRECTLY BLOCKED**, not independently failed.
+
+The unique current primary blocker is the repeating ARM64 SurfaceFlinger abort:
+
+```text
+Abort message: gralloc-mapper is missing
+```
+
+The backtrace reaches `SurfaceFlinger::setupNewDisplayDeviceInternal`, `processDisplayAdded`,
+`init`, and `main`. The UI remains black. Presence and offline closure of the three ARM64 graphics
+providers do not establish runtime mapper instantiation, and this result proves nothing negative
+about Mali yet. The original raw UART/crash captures were supplied externally and are not present
+on this VM; `a16-prototype-b-r6-physical-result.json` records the reviewed facts without inventing
+a raw-file hash.
 
 ## Proven root cause and exact delta
 
@@ -89,13 +117,15 @@ Machine records: `a16-prototype-b-r6-offline-result.json` and
 `a16-prototype-b-r6-preservation.json`. Build/audit logs remain under
 `/work/build-logs/a16-prototype-b-r6-20260828T141804Z/`.
 
-## Physical gate
+## Closed and open physical gates
 
-First prove canonical ABI still holds, BoringSSL32 exits 0, BoringSSL64 starts and exits 0, and no
-`boringssl-self-check-failed` reboot occurs. Then record both zygote service states and
-`pidof system_server`. A later first fatal must become a separate evidence point. In particular,
-the known `gralloc-mapper is missing` failure is not part of r6 and must not make a physically
-successful BoringSSL closure disappear.
+Canonical ABI and the r6 BoringSSL missing-executable/reboot boundary are physically closed. Both
+ART runtimes and primary zygote preload are physically reached. The subsequent exact Android 16 r7
+mapper audit proves filename/manifest/instance/export/SP-HAL discovery correct, but both r6 ARM64
+mapper and its factory-loaded gralloc import one strong libc++ diagnostic symbol absent from the
+selected VNDK31 snapshot. Bionic eager relocation fails before `HIDL_FETCH_IMapper`; this uniquely
+explains the physical abort. Strict r7 closes only that inseparable two-file instantiation contract.
+No zygote, Mali, kernel or broad graphics change is authorized by the r6 evidence.
 
 Rollback remains frozen Android 16 ARM32 `a16-prototype-a-r4`; frozen Android 12
 `m8b-remote-r1` remains final working fallback.

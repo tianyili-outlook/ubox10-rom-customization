@@ -1,0 +1,108 @@
+{
+  "schema": 1,
+  "candidate": "a16-prototype-b-r6",
+  "physical_date": "2026-08-28",
+  "evidence_provenance": {
+    "source": "AUTHORITATIVE_USER_SUPPLIED_EXTERNAL_UART_AND_ROOT_CONSOLE_EVIDENCE",
+    "raw_capture_present_on_gcp": false,
+    "raw_capture_sha256": null,
+    "note": "This tracked record preserves the reviewed facts and exact excerpts supplied by the user. It does not claim that the original UART, crash-buffer, tombstone, or root-console captures are archived in Git."
+  },
+  "candidate_identity": {
+    "path": "out/candidates/a16-prototype-b-r6/x12-a16-prototype-b-r6.img",
+    "size": 1641773056,
+    "sha256": "2AAF8E2CA89DDE486A9416FDE7ACFF7BCD6DB80CDCB161598ABF99A7CB2DBD53",
+    "repository_commit": "94ac531940cc390b72a8446a34a9778938ca27a4"
+  },
+  "decision": "PHYSICAL FAIL — BORINGSSL64 GATE CROSSED; ARM64 SURFACEFLINGER GRAPHICS MAPPER RUNTIME DISCOVERY FAILURE",
+  "classification": "ARM64_RUNTIME_REACHED_SURFACEFLINGER_GRALLOC_MAPPER_MISSING_UNIQUE_PRIMARY_BLOCKER",
+  "boot_boundaries": {
+    "kernel_5_4_302_plus": "PASS",
+    "first_stage": "PASS",
+    "r2_metadata_fix": "PHYSICAL_PASS_STILL_PRESERVED",
+    "r3_vendor_fix": "PHYSICAL_PASS_STILL_PRESERVED",
+    "switch_root": "PASS",
+    "second_stage": "PASS_AND_REMAINS_ALIVE",
+    "root_console": "AVAILABLE",
+    "ui": "BLACK"
+  },
+  "mixed_abi": {
+    "result": "PHYSICAL_PASS_STILL_PRESERVED",
+    "runtime_values": {
+      "ro.product.cpu.abilist": "arm64-v8a,armeabi-v7a,armeabi",
+      "ro.product.cpu.abilist32": "armeabi-v7a,armeabi",
+      "ro.product.cpu.abilist64": "arm64-v8a"
+    },
+    "old_empty_ro_product_cpu_abilist64_blocker": "CLOSED",
+    "app_process64": "PHYSICAL_REACHED",
+    "app_process32": "PHYSICAL_REACHED",
+    "art64": "PHYSICAL_REACHED",
+    "art32": "PHYSICAL_REACHED"
+  },
+  "boringssl_vendor": {
+    "self_test32": "PHYSICAL_PASS_PRESERVED",
+    "self_test64_missing_executable_correction": "PHYSICAL_PASS_AT_INTENDED_BOUNDARY",
+    "previous_reboot_reason": "reboot,boringssl-self-check-failed",
+    "previous_reboot_loop_observed_in_r6": false,
+    "scope_limit": "Crossing the missing-executable/reboot boundary does not by itself prove the complete cryptographic subsystem."
+  },
+  "zygote_causal_correction": {
+    "primary": {
+      "architecture": "ARM64",
+      "android_runtime_start": "PHYSICAL_REACHED",
+      "zygote_init": "PHYSICAL_REACHED",
+      "preload": "PHYSICAL_REACHED",
+      "exact_excerpts": [
+        "AndroidRuntime: >>>>>> START com.android.internal.os.ZygoteInit uid 0 <<<<<<",
+        "Zygote: begin preload",
+        "Zygote: Calling ZygoteHooks.beginPreload()"
+      ],
+      "independent_crash_proven": false
+    },
+    "secondary": {
+      "architecture": "ARM32",
+      "android_runtime_start": "PHYSICAL_REACHED",
+      "zygote_init": "PHYSICAL_REACHED",
+      "independent_crash_proven": false
+    },
+    "service_restarting": "SECONDARY_EFFECT",
+    "causal_sequence": [
+      "SurfaceFlinger received signal 6",
+      "process with updatable components 'surfaceflinger' exited 4 times before boot completed",
+      "Sending signal 9 to service 'zygote'"
+    ],
+    "termination": "INIT_SIGKILL_AFTER_SURFACEFLINGER_UPDATABLE_PROCESS_CRASH_THRESHOLD",
+    "system_server": "NOT_REACHED_BLOCKED_INDIRECTLY_BY_GRAPHICS_CRASH_HEALTH_ACTION"
+  },
+  "graphics_failure": {
+    "result": "PHYSICAL_FAIL_ARM64_GRAPHICS_MAPPER_RUNTIME_DISCOVERY_OR_INSTANTIATION",
+    "current_unique_primary_blocker": true,
+    "process": "/system/bin/surfaceflinger",
+    "abi": "arm64",
+    "signal": "SIGABRT",
+    "abort_message": "gralloc-mapper is missing",
+    "repeated": true,
+    "backtrace_boundary": [
+      "android::SurfaceFlinger::setupNewDisplayDeviceInternal(...) ",
+      "android::SurfaceFlinger::processDisplayAdded(...) ",
+      "android::SurfaceFlinger::init()",
+      "main"
+    ],
+    "health_action": "Repeated SIGABRT reaches the updatable-process crash threshold and init then kills the primary zygote.",
+    "providers_present_offline": {
+      "/vendor/lib64/egl/libGLES_mali.so": "03333D495E3566C7D85CA2E000DA569A16CE8F022EA25C0EA61950C891D5C7F8",
+      "/vendor/lib64/hw/android.hardware.graphics.mapper@2.0-impl-2.1.so": "83A236476CB24DE2514159534A267334A4C8D7BC957497CD25C70C93F757762D",
+      "/vendor/lib64/hw/gralloc.apollo.so": "842BA5157989B6BCBF7DC800DC5323FAC9BEF37D914FA56A25A4656B97692E1F"
+    },
+    "mali_runtime_result": "NOT_YET_PROVEN",
+    "selinux_leading_cause_proven": false
+  },
+  "not_proven": [
+    "stable system_server PID",
+    "independent zygote64 failure",
+    "independent zygote32 failure",
+    "runtime mapper discovery or instantiation success",
+    "Mali runtime",
+    "Android UI"
+  ]
+}

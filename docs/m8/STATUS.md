@@ -319,9 +319,52 @@ strong import unmatched 0；不需要 vendor libcrypto、rc bypass 或第二项�
 one/changed zero/removed zero；r5 system/active ABI/product、boot/vendor_dlkm、root objects、Mali/
 mapper/gralloc、kernel/hardware stack 均保持。Ext4、AVB、LP/no-shrink、sparse roundtrip、IMAGEWTY、
 46/50 outer preservation、mixed ELF/APEX/VNDK/linker/SP-HAL/Mali 297/0/split SELinux/system VINTF
-全部 offline PASS。Full VINTF 仍仅 inherited NFS exit 65，**NOT PASS**。R6 当前是 **OFFLINE
-CHECKED / READY FOR PHYSICAL VALIDATION / NOT YET VALIDATED**；下次只先验 BoringSSL64 start/exit
-与跨过 reboot gate，再测 zygotes/system_server。Independent graphics mapper failure 仍未修。
+全部 offline PASS。Full VINTF 仍仅 inherited NFS exit 65，**NOT PASS**。这是 r6 physical test
+之前的历史 **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION** 结论。
+
+Exact r6 physical validation 现已跨过 intended BoringSSL boundary：旧
+`boringssl-self-check-failed` reboot loop 消失，second stage 持续运行且 root console available，故
+r6 missing-executable correction 为 **PHYSICAL PASS AT ITS INTENDED GATE**。Canonical global mixed
+ABI 仍 PHYSICAL PASS。`app_process64` 与 `app_process32` 均进入 ART/ZygoteInit，primary ARM64
+zygote 到达 `begin preload`；没有独立 zygote crash。重复的 restart 是 downstream health action：
+ARM64 SurfaceFlinger SIGABRT 四次后，init 明确 `Sending signal 9 to service 'zygote'`。因此
+system_server 是 **NOT REACHED / INDIRECTLY BLOCKED BY GRAPHICS CRASH HEALTH ACTION**，不是新的
+system_server/zygote root cause。
+
+R6 正式冻结为 **PHYSICAL FAIL — BORINGSSL64 GATE CROSSED / ARM64 SURFACEFLINGER GRAPHICS MAPPER
+RUNTIME FAILURE**。唯一 current primary blocker 是 ARM64 SurfaceFlinger 重复 abort
+`gralloc-mapper is missing`；UI black，Mali runtime 尚无结论。Exact r7 source、signed-image 与
+working ARM32 control comparison 已将其唯一收敛：r7 `GraphicBufferMapper` 尝试 Gralloc5→4→3→2，
+retained path 为 `IMapper@2.0::getService(default)`，manifest 返回 HIDL 2.1 passthrough，loader 在
+`sphal` namespace 扫描正确的 `/vendor/lib64/hw/android.hardware.graphics.mapper@2.0-impl-2.1.so`
+并要求 `HIDL_FETCH_IMapper`。文件名、export、manifest、instance、search path 和 label 全正确；
+失败发生在 fetch 之前的 eager relocation。
+
+R6 ARM64 mapper 与随后由 factory 以 `RTLD_NOW` 加载的 `gralloc.apollo.so` 各自只有一个 direct
+strong unmatched import：`std::__1::__libcpp_verbose_abort(char const*, ...)`。Isolated `sphal`
+解析 vendor DSO 的 `libc++.so` 到 VNDK31 snapshot，而该 snapshot 不导出此新 symbol；system libc++
+虽导出但不是该 namespace 的 provider。Bionic 不支持 lazy relocation，故 mapper `dlopen` 在
+`HIDL_FETCH_IMapper` 前失败；只改 mapper 后 gralloc 会在同一 symbol 上立即失败。Working ARM32
+两文件没有该 import 且 unmatched 0。这是唯一 architecture-dependent difference，root cause
+**PROVEN**，不是 wrong name/manifest/SELinux/Mali。
+
+严格 single-cause `a16-prototype-b-r7` 只用 libc++ 官方 `_LIBCPP_VERBOSE_ABORT` back-deploy hook
+为 ARM64 mapper 和其 inseparable gralloc factory pair 保持 fatal semantics、去除 unavailable
+diagnostic import；ARM32 provider 不重建。最终 vendor tree 相对 r6 仅 changed 两个既有 lib64
+文件，added/removed 均空。Candidate
+`out/candidates/a16-prototype-b-r7/x12-a16-prototype-b-r7.img` 为 1,641,773,056 bytes / SHA-256
+`A1F58668AEFFC9DC83CFFD8A49A309839332B6616C02153DCC00A71136A7AA27`。新 mapper 36,056 bytes /
+`D0FC49B3...C7461E8`，新 gralloc 77,248 bytes / `B03BFE24...837CFE7`；各自 exact SP-HAL
+strong-import closure unmatched 0，required exports 保持。
+
+R7 的 system/active ABI/product/boot/vendor_dlkm/BoringSSL32/64/Mali/ARM32 graphics control 全部
+byte-preserved。Ext4、system/vendor AVB、rollback location、LP/no-shrink、sparse roundtrip、
+IMAGEWTY、46/50 outer preservation、mixed ELF、35/35 APEX、both-ABI VNDK31、linker/SP-HAL、Mali
+297/0、split SELinux、system VINTF、kernel/22 modules/AIC 均 offline PASS。Full VINTF 仍严格是
+exit 65 / inherited `CONFIG_NFS_FS=y` 对 FCM-6 `n` / **NOT PASS**。R7 当前状态仅为 **OFFLINE
+CHECKED / READY FOR PHYSICAL VALIDATION / NOT YET VALIDATED**。Focused r1-r7 candidate/prebuild 64/64 与 full
+lightweight 170/170 PASS（34 declared fixture skips）；79 JSON parses、Python compile 和
+`git diff --check` PASS。
 
 2026-08-21 Android 16 Gate 1 状态为 **OFFLINE CHECKED / SUCCESS**。Source 为 exact `android-16.0.0_r4` / `BP4A.251205.006`，manifest commit `15128c9e27cfa599c48d294babd39286ee8f1426`，pinned manifest SHA-256 `4E8BEB5D1B590DFF3D631B1DBB957138DBDA4E608A3183C625683DA4BC84918F`；Prototype A 为 `ubox10_ceiling_arm-bp4a-userdebug`、ARMv7-A NEON、无 secondary arch、shipping API 31、extra VNDK 31、pKVM off。GCP native Ubuntu 24.04 / ext4 / 8 vCPU / 62.8 GiB RAM / no swap 上使用 relative `OUT_DIR=out-ceiling`、`BUILD_NUMBER=DISPOSABLE_CEILING_R4`、unset `SOONG_GOMEMLIMIT GOMEMLIMIT` 和 `m -j8 systemimage`，123,197/123,197 actions 成功，wall 30,314 秒（8:25:14）。最低 available RAM 12,295,132 KiB；swap I/O 为 0；平均 CPU user/system 约 88.05%/9.48%、I/O wait 0.05%；`/work` 最低 free 231,671,357,440 bytes。完整 raw log 仅保留在 GCP ignored 路径，未进入 Git。
 
@@ -688,11 +731,13 @@ AVB consequences；必须保持 5.4.302 六项 Path-A config、22 modules、AIC 
 Wi-Fi/Ethernet/audio、ARM32 HWC/allocator/OMX/Cedar/TEE/DRM、remote、HDMI/display 和 exact r4
 rollback。Vulkan、GMS、5.10、25Q4、full vendor rewrite 与 product polish 禁止混入。
 
-Historical B0 **PROTOTYPE B1 BUILD READINESS GO** 已正确触发这一次 bounded implementation；
-它没有预证明实际 filesystem fit。B1 现已把该 unknown 转化为 exact
-**VENDOR_A PARTITION FIT BLOCKER**。Mali、mapper/gralloc 与 handle ABI gates 通过，不存在新的
-mandatory provider class；但在项目明确批准一种精确 storage contract 前，不得继续打包或请求
-physical validation。
+Historical B0 **PROTOTYPE B1 BUILD READINESS GO** 已正确触发 bounded implementation。其后
+observed vendor partition-fit blocker 已由用户明确授权的 exact 144 MiB extent、只取 `sb_a`
+unallocated space 且无 shrink 的 contract 关闭；r1 之后按 first-fatal-first 演进到 r6 physical
+ARM64 runtime。R6 现已证明 dual ART/Zygote startup 与 primary preload，current failure 已唯一定位
+为 mapper/gralloc 对 retained VNDK31 libc++ 的 back-deploy relocation。Strict r7 只闭合该
+two-file single mapper-instantiation cause，并已完成 full offline gate；physical mapper runtime
+仍待验证。
 
 ## Accepted audio milestone
 
@@ -919,7 +964,7 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - r10 已在实机完成 framework boot；r9 Lights/Watchdog/llkd 方向保持关闭，不再修改。
 - r13 是当前 GOLDEN BASELINE；Projectivy、provisioning、遥控和 Power sleep/wake/shutdown 均以实机 UART 为准。
 - M8B native rc-core 遥控迁移已在 r5 设备验收并关闭；Mouse mode intentionally dropped，legacy multi_ir 工件保留为 inert reference，其 Android 12 清理已随 freeze 延期。
-- 当前 board、DT 与 runtime 证据识别为 H616。历史 A16 ARM32 r2 稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛；历史 kernel r1-r4 AIC failure 已收敛到错误 `0x00110000` FMAC contract。r5 恢复 working BSP `0x00120000` 后物理 boot/HDMI/remote/Wi-Fi/ADB 与 Wi-Fi OFF→ON reinitialization PASS，preservation checkpoint **CLOSED / PASS**。Exact QPR0 r7 audit 与 Prototype A r4 physical pass 已关闭 Architecture Gate 2；A r4 frozen。Boot-time legacy audio HAL SIGSEGV 保持 post-Gate P1，不称 fixed。Prototype B0 complete；B r1 `/metadata` FAIL，r2 `/metadata` PASS 后 `/vendor` FAIL，r3 `/vendor` PASS 后到达 ARM64 second stage并停在 global ABI 与独立 mapper，r4 因 patch inactive product_a 重复 ABI failure。B r5 active embedded product correction 及 global mixed ABI 已 **PHYSICAL PASS**，随后 retained BoringSSL32 PASS，但首个 fatal 推进为缺失 vendor BoringSSL64 executable。Strict r6 只加入 exact r7 AArch64 self-test，完整 offline gate PASS，状态 **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION / NOT YET VALIDATED**；graphics、TEE/PRNG warnings 与其他 service 未在 r6 修复。
+- 当前 board、DT 与 runtime 证据识别为 H616。历史 A16 ARM32 r2 稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛；历史 kernel r1-r4 AIC failure 已收敛到错误 `0x00110000` FMAC contract。r5 恢复 working BSP `0x00120000` 后物理 boot/HDMI/remote/Wi-Fi/ADB 与 Wi-Fi OFF→ON reinitialization PASS，preservation checkpoint **CLOSED / PASS**。Exact QPR0 r7 audit 与 Prototype A r4 physical pass 已关闭 Architecture Gate 2；A r4 frozen。Boot-time legacy audio HAL SIGSEGV 保持 post-Gate P1，不称 fixed。Prototype B0 complete；B r1 `/metadata` FAIL，r2 `/metadata` PASS 后 `/vendor` FAIL，r3 `/vendor` PASS 后到达 ARM64 second stage并停在 global ABI 与独立 mapper，r4 因 patch inactive product_a 重复 ABI failure。B r5 active embedded product/global mixed ABI PHYSICAL PASS 后暴露 BoringSSL64 missing；r6 物理跨过该 gate、启动两套 ART/Zygote 并到达 primary preload。Zygote restart 现已证明是 SurfaceFlinger crash-health 的 downstream effect。Exact mapper audit 唯一证明 ARM64 mapper/gralloc 的 VNDK31 libc++ back-deploy relocation cause；strict r7 only changes that pair and is **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION / NOT YET VALIDATED**。
 - `m8b-audio-r2` 只启用产品级 Treble/VNDK 合同；未修改 VNDK payload、mixer、audio platform XML、DTS、machine driver 或已验收功能，现已设备验收为 AUDIO PASS。
 - 2026-08-16 ADB-only 补验未刷机、未重启且未修改 ROM/device properties：VP9 为 Allwinner OMX/Cedar hardware-runtime PASS；Widevine 为可操作 L3，HDCP `NONE`，无 secure decoder 要求。物理画面/逐帧质量与商业服务认证或播放仍未证明。
 - 遥控器 Menu 与 Settings 当前均打开 Projectivy menu。两键语义分离为独立延期项，不回改已验收的 rc-core、keylayout 选择或其他按键行为。
@@ -928,10 +973,10 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 ## Next action
 
 保持 frozen Android 12 `m8b-remote-r1`、frozen Android 16 ARM32 `a16-prototype-a-r4`、Test8r2/
-stock rollback、A16 r1-r3 与 kernel r1-r5 artifacts 不变；冻结 exact B r1-r5 为各自不可变物理
-evidence points。R5 已物理关闭 runtime-active product/global ABI，并冻结 missing vendor
-BoringSSL64 为其新 first fatal。Single-cause B r6 已完成全离线验收；下一步只验证 exact r6 保留
-canonical ABI/BoringSSL32、启动并通过 BoringSSL64、跨过 `boringssl-self-check-failed` reboot gate，
-然后记录两 zygote 与 AArch64 system_server。若独立 mapper abort 仍复现，应单独记录 graphics
-failure，不否定已跨过的 BoringSSL/ABI boundary，也不在本次 physical 判定中猜修。Vulkan、GMS、
-5.10、25Q4、full vendor rewrite、Audio fix、TEE/PRNG、SELinux/NFS/HDMI polish 与产品 feature 均不得混入。
+stock rollback、A16/kernel artifacts 与 exact B r1-r6 immutable physical chain。下一步只做 exact
+`a16-prototype-b-r7` physical mapper gate：先确认 ARM64 SurfaceFlinger 不再 abort
+`gralloc-mapper is missing`，然后记录 `init.svc.surfaceflinger`、两 zygote 与 system_server PID。
+若 mapper instantiate 后出现 gralloc allocation、allocator、HWC/composer、EGL 或 Mali 的新首错，
+先把 r7 mapper correction 单独记为 PHYSICAL PASS，再冻结下一 frontier；不得把它倒写成 mapper
+失败。Vulkan、GMS、5.10、25Q4、full vendor rewrite、Audio fix、TEE/PRNG、SELinux/NFS/HDMI polish
+与产品 feature 均不得混入。

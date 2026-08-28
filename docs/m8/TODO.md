@@ -2,7 +2,7 @@
 
 ## Freeze decision
 
-`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为稳定日用回退。`a16-prototype-a-r4` 现已冻结为 **PHYSICAL PASS / ACCEPTED Android 16 ARM32 ARCHITECTURE BASELINE / Prototype B ROLLBACK CONTROL**。用户明确把一次性、自动恢复的 boot-time `getAudioPort` SIGSEGV 从旧 Gate 2 startup-stability 条件改列为 **KNOWN / UNFIXED / POST-GATE P1 STABILIZATION DEBT**；故 Gate 2 为 **CLOSED / PASS**，不是静默弱化证据。当前不实施 Android 12 M8B feature、Prototype A r5 或 P1 polish；Prototype B r1-r5 均冻结为 immutable physical evidence。R5 已物理证明 active product/global mixed ABI 并关闭旧 ABI blocker，随后首次暴露 missing vendor BoringSSL64。唯一活跃候选是 strict one-file successor `a16-prototype-b-r6`，状态 **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**。
+`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为稳定日用回退。`a16-prototype-a-r4` 现已冻结为 **PHYSICAL PASS / ACCEPTED Android 16 ARM32 ARCHITECTURE BASELINE / Prototype B ROLLBACK CONTROL**。用户明确把一次性、自动恢复的 boot-time `getAudioPort` SIGSEGV 从旧 Gate 2 startup-stability 条件改列为 **KNOWN / UNFIXED / POST-GATE P1 STABILIZATION DEBT**；故 Gate 2 为 **CLOSED / PASS**，不是静默弱化证据。当前不实施 Android 12 M8B feature、Prototype A r5 或 P1 polish；Prototype B r1-r6 均冻结为 immutable physical evidence。R5 已物理证明 active product/global mixed ABI；r6 已物理关闭 BoringSSL64 missing-executable gate并证明 dual ART/Zygote startup与 primary preload。唯一活跃候选是 strict mapper-instantiation successor `a16-prototype-b-r7`，状态 **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION / NOT YET VALIDATED**。
 
 ## Android 16 Gate 1 / Gate 2 — Prototype A ARM32
 
@@ -158,10 +158,26 @@
   hardware保持。IMG 1,641,773,056 bytes / `2AAF8E2C...B2DBD53`；dependency closure、ext4、AVB、
   LP/no-shrink、IMAGEWTY、46/50 preservation、mixed ELF/APEX/VNDK/linker/Mali/SELinux/system VINTF
   PASS。Full VINTF 仍 inherited NFS exit 65，**NOT PASS**。
-- [ ] **29 — r6 physical first gate（当前唯一任务）：**先确认 mixed ABI 与 BoringSSL32 无回归，
-  `boringssl_self_test64_vendor` 能启动并 exit 0，且不再触发 `boringssl-self-check-failed` reboot；
-  随后记录 `zygote`、`zygote_secondary` 和 system_server boundary。若下一首错改变，按独立 revision
-  冻结；不得把 mapper、TEE/PRNG 或其他 census 项混入 r6。
+- [x] **29 — r6 physical gate与 zygote causal correction：**canonical mixed ABI保持；旧
+  `boringssl-self-check-failed` reboot loop消失，故 BoringSSL64 missing-executable correction按 intended
+  boundary为 PHYSICAL PASS。`app_process64`/`app_process32`进入 ART/ZygoteInit，primary到达 preload。
+  Zygote restart不是独立 blocker：SurfaceFlinger SIGABRT达到 crash threshold后 init明确 SIGKILL
+  primary zygote；system_server未到达是 downstream effect。
+- [x] **30 — exact r7 mapper root-cause closure：**exact SurfaceFlinger/GraphicBufferMapper、Gralloc2、
+  HIDL passthrough loader、manifest/default instance、SP-HAL namespace与 working ARM32 control证明当前
+  name/path/export/transport均正确。R6 ARM64 mapper和其 factory立即加载的 gralloc各只有同一个
+  VNDK31-unavailable `__libcpp_verbose_abort` strong import；Bionic eager relocation令 mapper在
+  `HIDL_FETCH_IMapper`前 fail。Root cause **UNIQUE / PROVEN**；Mali、zygote、SELinux、manifest均排除。
+- [x] **31 — bounded `a16-prototype-b-r7` offline closure：**只对 ARM64 mapper/gralloc用 libc++ documented
+  back-deploy hook保持 fatal semantics并去除 unavailable diagnostic import；vendor tree changed exact
+  two、added/removed zero，ARM32 control/Mali/BoringSSL/system/kernel保持。IMG 1,641,773,056 bytes /
+  `A1F58668AEFFC9DC83CFFD8A49A309839332B6616C02153DCC00A71136A7AA27`；两 provider exact SP-HAL closure
+  unmatched 0，ext4/AVB/LP/IMAGEWTY/46-of-50 preservation/mixed ELF/APEX/VNDK/linker/SELinux/system
+  VINTF/kernel gates PASS。Full VINTF仍 inherited NFS exit 65，**NOT PASS**。
+- [ ] **32 — r7 physical mapper gate（当前唯一任务）：**先确认 ARM64 SurfaceFlinger不再 abort
+  `gralloc-mapper is missing`，再记录 surfaceflinger、两 zygote与 system_server。若 mapper之后出现
+  gralloc allocation、allocator、HWC/composer、EGL或Mali新首错，分别冻结，不能倒写为 r7 mapper
+  failure；不得创建 r8 或混入其它 graphics/product work。
 
 ## Post-Gate stabilization / release hardening
 
@@ -226,4 +242,4 @@
 - [x] 完成限定只读 system-quality audit：无 P0；stability、retry loop、audio residual、SELinux、CPU/thermal/idle、graphics 与 memory 证据见 `docs/m8/device-tests/20260816-m8b-system-quality-audit/`。
 - [ ] **DEFERRED / P2 / 不修：**Wi-Fi HAL link-layer statistics 每约 3 秒返回 `ERROR_UNKNOWN`；网络 ADB 稳定且 Wi-Fi 进程未重启。
 - [x] 保持 Mouse mode dropped；不重新引入 vendor mouse framework。
-- [x] architecture-ceiling study 与 B0 已锁定 paired AArch64 Mali、AOSP mapper adapter、multilib gralloc-1.x、lawful-local fail-closed intake、vendor property 与 AVB scope；ARM32 OMX/Cedar/media/HWC/audio/Wi-Fi/BT/DRM/TEE 继续进程隔离复用。R1 `/metadata`、r2 `/vendor` 与 r3 global ABI root causes 均已证明；r4 证明 logical product_a inactive；r5 active embedded product/global ABI 已物理 PASS。R6 只闭合随后首个 missing vendor BoringSSL64 并完整离线验收。当前唯一执行合同是上文 29 的 r6 physical gate；graphics 与 TEE/PRNG warnings 保持独立未修边界。
+- [x] architecture-ceiling study 与 B0 已锁定 paired AArch64 Mali、AOSP mapper adapter、multilib gralloc-1.x、lawful-local fail-closed intake、vendor property 与 AVB scope；ARM32 OMX/Cedar/media/HWC/audio/Wi-Fi/BT/DRM/TEE 继续进程隔离复用。R1 `/metadata`、r2 `/vendor` 与 r3 global ABI root causes 均已证明；r4 证明 logical product_a inactive；r5 active embedded product/global ABI 已物理 PASS；r6 物理关闭 BoringSSL64 gate并进入 dual ART/Zygote preload。Exact mapper cause现已证明，r7仅闭合 mapper/gralloc的 VNDK31 back-deploy pair并离线通过。当前唯一执行合同是上文 32 的 r7 physical mapper gate；Mali及 TEE/PRNG warnings保持独立未修边界。
