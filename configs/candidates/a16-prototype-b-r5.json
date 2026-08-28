@@ -1,0 +1,168 @@
+{
+  "schema": 1,
+  "id": "a16-prototype-b-r5",
+  "milestone": "Prototype B B1 active runtime product-property continuation",
+  "status": "ROOT_CAUSE_PROVEN_SINGLE_CAUSE_R5_AUTHORIZED",
+  "inherits": "configs/candidates/a16-prototype-b-r1.json",
+  "base_candidate": {
+    "id": "a16-prototype-b-r4",
+    "path": "out/candidates/a16-prototype-b-r4/x12-a16-prototype-b-r4.img",
+    "size": 1641760768,
+    "sha256": "9A7E9FE31CBC16E17B458D8832739056B2A17F5B47BC221730B78EB0DDDCBBEC"
+  },
+  "assembly_control": {
+    "id": "a16-prototype-b-r3",
+    "reason": "r4 changed only inactive logical product_a; using exact r3 product/super restores that dead delta while retaining the byte-identical r3/r4 system root as the active-source patch base"
+  },
+  "base_artifacts": {
+    "system_a": {
+      "path": "out/candidates/a16-prototype-b-r3/system_a.img",
+      "size": 1651167232,
+      "sha256": "F77559D602C780C5FBB1183FB7F26009EF7B66781BC2FC57DE9341997B8260EB"
+    },
+    "product_a": {
+      "path": "out/candidates/a16-prototype-b-r3/candidate-logical/product_a.img",
+      "size": 272629760,
+      "sha256": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974"
+    },
+    "vendor_a": {
+      "path": "out/candidates/a16-prototype-b-r3/vendor_a.img",
+      "size": 150994944,
+      "sha256": "0166B5FB1718715E79F68D5A9FEAAE02439DC59DBE2379D4C1DA670541C7EC9B"
+    },
+    "vendor_dlkm": {
+      "path": "out/candidates/a16-prototype-b-r3/vendor_dlkm_a.img",
+      "size": 6680576,
+      "sha256": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07"
+    },
+    "super_raw": {
+      "path": "out/candidates/a16-prototype-b-r3/super.raw.img",
+      "size": 3221225472,
+      "sha256": "2DB09C51686BAB041C0EC66A18B8F31990A4136B3783171596F1D599D0556C75"
+    },
+    "vbmeta_vendor": {
+      "path": "out/candidates/a16-prototype-b-r3/vbmeta_vendor.fex",
+      "size": 1600,
+      "sha256": "DE14183FAFBBEA3EC0D2B0E8737FF9F71BA001186A0DE0D58E24891706ACE6C5"
+    },
+    "boot": {
+      "path": "out/candidates/a16-prototype-b-r3/boot.fex",
+      "size": 67108864,
+      "sha256": "527CF878B015CFAE4E8600BD750C7C73F45F4290B5CFEFEDBD1AD9AC347B8063"
+    }
+  },
+  "root_cause": {
+    "result": "PROVEN_R4_PATCHED_INACTIVE_LOGICAL_PRODUCT_A",
+    "audit": "docs/m8/candidates/a16-prototype-b-r4-runtime-product-source-audit.json",
+    "physical_result": "PATCHED_INACTIVE_PRODUCT_A_RUNTIME_SOURCE_IS_SYSTEM_EMBEDDED_PRODUCT",
+    "active_runtime_path": "/system/product/etc/build.prop",
+    "runtime_alias": "/product/etc/build.prop",
+    "inactive_path": "logical product_a:/etc/build.prop"
+  },
+  "root_mountpoint_contract": {
+    "path": "/product",
+    "type": "symlink",
+    "target": "/system/product",
+    "metadata": {
+      "path": "/metadata",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "selinux": "u:object_r:metadata_file:s0"
+    },
+    "vendor": {
+      "path": "/vendor",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 2000,
+      "selinux": "u:object_r:vendor_file:s0"
+    }
+  },
+  "active_product_property_contract": {
+    "root_object": {
+      "path": "/product",
+      "type": "symlink",
+      "target": "/system/product",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "selinux": "u:object_r:system_file:s0"
+    },
+    "active_path": "/system/product/etc/build.prop",
+    "base_size": 1657,
+    "base_sha256": "62A8B2F676AA7FCAA06516EC0F7447ADFAAEB11CC8B1EACE084ABDD25105BD73",
+    "source_relative": "configs/aosp/architecture-ceiling-a16/device/ubox/ceiling/ubox10_ceiling_arm64.mk",
+    "source_sha256": "1EE047D6824B31B8CCA4F239F949CC0F4E8E403194B84BBB818DF04A1F487341",
+    "aosp_relative": "device/ubox/ceiling/ubox10_ceiling_arm64.mk",
+    "generated_path": "/work/src/ubox10-a16-ceiling/out-ceiling-b1/target/product/ubox10_ceiling_arm64/system/product/etc/build.prop",
+    "target_copy_out_product": "system/product",
+    "properties": {
+      "ro.product.product.cpu.abilist": "arm64-v8a,armeabi-v7a,armeabi",
+      "ro.product.product.cpu.abilist32": "armeabi-v7a,armeabi",
+      "ro.product.product.cpu.abilist64": "arm64-v8a"
+    },
+    "must_equal_build_variables": {
+      "ro.product.product.cpu.abilist": "TARGET_CPU_ABI_LIST",
+      "ro.product.product.cpu.abilist32": "TARGET_CPU_ABI_LIST_32_BIT",
+      "ro.product.product.cpu.abilist64": "TARGET_CPU_ABI_LIST_64_BIT"
+    },
+    "expected_global_derivation": {
+      "source": "product",
+      "ro.product.cpu.abilist": "arm64-v8a,armeabi-v7a,armeabi",
+      "ro.product.cpu.abilist32": "armeabi-v7a,armeabi",
+      "ro.product.cpu.abilist64": "arm64-v8a"
+    }
+  },
+  "skip_mount_contract": {
+    "path": "/system/system_ext/etc/init/config/skip_mount.cfg",
+    "size": 143,
+    "sha256": "7C28485E025157ACBBD0ABF9505A212AF3B4A96211B5AA3BC3D858A560A3AEFD",
+    "required_pattern": "/product"
+  },
+  "inactive_product_contract": {
+    "treatment": "RESTORE_EXACT_R3_BYTES",
+    "product_scoped_abi_triplet": "MUST_BE_ABSENT",
+    "normal_boot_mount": "SKIPPED"
+  },
+  "avb_system": {
+    "partition_size": 1651167232,
+    "original_filesystem_size": 1250484224,
+    "salt": "6131362d70726f746f747970652d622d7231",
+    "rollback_index": 1644019200,
+    "rollback_index_location": 1,
+    "key_relative": "tools/testkey_rsa2048.pem",
+    "algorithm": "SHA256_RSA2048",
+    "fec": "none"
+  },
+  "outer_delta": {
+    "changed_payloads_from_base": [
+      "Vsuper.fex",
+      "Vvbmeta_system.fex",
+      "super.fex",
+      "vbmeta_system.fex"
+    ],
+    "preserved_payload_count_from_base": 46
+  },
+  "allowed_semantic_delta": [
+    "Add exactly the source-generated canonical mixed ABI triplet to signed system_a:/system/product/etc/build.prop, the proven normal-boot /product property source.",
+    "Restore inactive logical product_a to exact r3 bytes so no dead r4 property delta can satisfy the active-source audit."
+  ],
+  "forbidden_changes": [
+    "runtime_setprop_or_init_workaround",
+    "mount_logical_product_a",
+    "ODM_or_vendor_ABI_masking",
+    "zygote_source",
+    "kernel",
+    "boot_or_vendor_boot",
+    "fstab_or_skip_mount",
+    "metadata_or_vendor_root_contract",
+    "vendor_a",
+    "vendor_dlkm_a",
+    "Mali_mapper_gralloc",
+    "hardware_HAL_stack",
+    "LP_geometry",
+    "all_other_B1_semantics"
+  ]
+}

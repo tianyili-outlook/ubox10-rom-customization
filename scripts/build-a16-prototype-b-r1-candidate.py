@@ -180,6 +180,7 @@ class Builder:
             "OFFLINE_CHECKED_READY_FOR_PHYSICAL_VALIDATION",
             "ROOT_CAUSE_PROVEN_SINGLE_CAUSE_R2_AUTHORIZED",
             "ROOT_CAUSE_PROVEN_SINGLE_CAUSE_R3_AUTHORIZED",
+            "ROOT_CAUSE_PROVEN_SINGLE_CAUSE_R5_AUTHORIZED",
         }:
             raise RuntimeError("B1 storage continuation is not in the authorized pre-pack state")
         fit = self.cfg["partition_fit"]

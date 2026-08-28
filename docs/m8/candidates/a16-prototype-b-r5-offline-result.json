@@ -1,0 +1,147 @@
+{
+  "schema": 1,
+  "candidate": "a16-prototype-b-r5",
+  "date": "2026-08-28",
+  "decision": "OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION",
+  "physical_status": "NOT_YET_VALIDATED",
+  "physical_device_actions_performed": false,
+  "root_cause": "PROVEN_R4_PATCHED_INACTIVE_LOGICAL_PRODUCT_A_WHILE_RUNTIME_PRODUCT_RESOLVED_TO_SYSTEM_EMBEDDED_PRODUCT",
+  "artifacts": {
+    "candidate": {
+      "path": "out/candidates/a16-prototype-b-r5/x12-a16-prototype-b-r5.img",
+      "size": 1641760768,
+      "sha256": "418CDC6BBFC44E4BDD346D3AE2861BC44522F321288A570E9CA1729439F6FE2E"
+    },
+    "system_a": {
+      "path": "out/candidates/a16-prototype-b-r5/system_a.img",
+      "size": 1651167232,
+      "sha256": "93D968693A2EEDA2BA53D4EE74BBA8EB73E341EA9BC63EFCD5878609C7DE80BE"
+    },
+    "product_a": {
+      "path": "out/candidates/a16-prototype-b-r5/candidate-logical/product_a.img",
+      "size": 272629760,
+      "sha256": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974"
+    },
+    "vendor_a": {
+      "path": "out/candidates/a16-prototype-b-r5/candidate-logical/vendor_a.img",
+      "size": 150994944,
+      "sha256": "0166B5FB1718715E79F68D5A9FEAAE02439DC59DBE2379D4C1DA670541C7EC9B"
+    },
+    "super_raw": {
+      "path": "out/candidates/a16-prototype-b-r5/super.raw.img",
+      "size": 3221225472,
+      "sha256": "8B3CB4A62C5E398CEB41A7D74F6D8536A25AED6B8DD5F213B18FA0694863C616"
+    },
+    "super_sparse": {
+      "path": "out/candidates/a16-prototype-b-r5/super.fex",
+      "size": 1461963904,
+      "sha256": "BAA52F8103A1322F0C93841E3B10E2EBFAD2019CC27C4B4ED65FA5D5065EF894"
+    },
+    "vbmeta_system": {
+      "path": "out/candidates/a16-prototype-b-r5/vbmeta_system.fex",
+      "size": 1472,
+      "sha256": "40732C64F88194DB3CFC35E7F7CFA1DD13CF48B274D8B997152D71E2DA6FC9AA"
+    },
+    "vbmeta_vendor": {
+      "path": "out/candidates/a16-prototype-b-r5/vbmeta_vendor.fex",
+      "size": 1600,
+      "sha256": "DE14183FAFBBEA3EC0D2B0E8737FF9F71BA001186A0DE0D58E24891706ACE6C5"
+    }
+  },
+  "source": {
+    "tag": "android-security-16.0.0_r7",
+    "manifest_commit": "ebea28d151539ecf0730b1a4ab92ac33edc17ac9",
+    "build_id": "BP2A.250805.034",
+    "api": 36,
+    "spl": "2025-08-05",
+    "lunch": "ubox10_ceiling_arm64-bp2a-userdebug",
+    "product_build_number": "UBOX10_A16_QPR0_B5",
+    "android_system_rebuilt": false,
+    "product_build_prop_target_regenerated": true
+  },
+  "single_cause_delta": {
+    "active_path": "system_a:/system/product/etc/build.prop",
+    "runtime_alias": "/product/etc/build.prop via /product -> /system/product",
+    "tree_added": [],
+    "tree_removed": [],
+    "tree_changed": [
+      "system/product/etc/build.prop"
+    ],
+    "property_before_sha256": "62A8B2F676AA7FCAA06516EC0F7447ADFAAEB11CC8B1EACE084ABDD25105BD73",
+    "property_after_sha256": "2C652F39E5A9BF178A0F437F7AFBDF2E5D36E0263812477719E058E28E982638",
+    "added_properties": {
+      "ro.product.product.cpu.abilist": "arm64-v8a,armeabi-v7a,armeabi",
+      "ro.product.product.cpu.abilist32": "armeabi-v7a,armeabi",
+      "ro.product.product.cpu.abilist64": "arm64-v8a"
+    },
+    "inactive_product_a": "RESTORED_EXACT_R3_BYTES_NO_PRODUCT_SCOPED_ABI_TRIPLET"
+  },
+  "runtime_source_guard": {
+    "result": "PASS_ACTIVE_RUNTIME_PRODUCT_SOURCE_AND_EXACT_R7_ABI_DERIVATION",
+    "target_copy_out_product": "system/product",
+    "patch_location_equals_runtime_resolved_source": true,
+    "final_build_variables_equal_active_triplet": true,
+    "inactive_logical_product_cannot_satisfy_gate": true,
+    "expected_global": {
+      "ro.product.cpu.abilist": "arm64-v8a,armeabi-v7a,armeabi",
+      "ro.product.cpu.abilist32": "armeabi-v7a,armeabi",
+      "ro.product.cpu.abilist64": "arm64-v8a"
+    },
+    "scope": "OFFLINE_EXACT_R7_DERIVATION_NOT_PHYSICAL_RUNTIME_PROOF"
+  },
+  "offline_gates": {
+    "filesystem_e2fsck": "PASS_SYSTEM_VENDOR_PRODUCT_VENDOR_DLKM",
+    "system_avb": "PASS_SHA256_RSA2048_HASHTREE_NO_FEC",
+    "vendor_avb": "PASS_INHERITED_HASHTREE_FEC",
+    "vbmeta_system": "PASS_SHA256_RSA2048_ROLLBACK_INDEX_1644019200_LOCATION_1",
+    "vbmeta_vendor": "PASS_BYTE_PRESERVED_ROLLBACK_LOCATION_0",
+    "lp_geometry": "PASS_EXACT_R4_NO_SHRINK_B_SLOTS_EMPTY",
+    "super_sparse_roundtrip": "PASS",
+    "imagewty": "PASS_50_PAYLOADS",
+    "outer_delta": "PASS_4_CHANGED_46_PRESERVED",
+    "root_metadata": "PASS_PRESERVED_PHYSICALLY_CROSSED_R2_CONTRACT",
+    "root_vendor": "PASS_PRESERVED_PHYSICALLY_CROSSED_R3_CONTRACT",
+    "root_product": "PASS_SYMLINK_TO_SYSTEM_PRODUCT",
+    "active_product_property_source": "PASS",
+    "mixed_elf": "PASS_2517_TOTAL_1471_SYSTEM_AARCH64_701_SYSTEM_ARM",
+    "app_process32": "PASS_PRESENT",
+    "app_process64": "PASS_PRESENT",
+    "zygote_contract": "PASS_OFFLINE_ZYGOTE64_32",
+    "apex": "PASS_35_INSTALLED_35_ACTIVATED",
+    "vndk31": "PASS_ARM64_AND_ARM32_LIBAUDIOROUTE",
+    "linkerconfig": "PASS_MIXED_LIB_EXPANSION_VENDOR_VNDK31",
+    "sphal": "PASS_ARM64_VISIBILITY",
+    "mali_symbol_closure": "PASS_297_STRONG_IMPORTS_0_UNMATCHED",
+    "selinux": "PASS_SPLIT_COMPILE_OFFLINE_ONLY",
+    "system_vintf": "PASS_EXIT_0",
+    "full_vintf": "INCOMPATIBLE_EXPECTED_INHERITED_NFS_EXCEPTION_ONLY",
+    "full_vintf_exit": 65,
+    "kernel": "PASS_BYTE_PRESERVED_5.4.302_PATH_A_SIX_CONFIGS",
+    "vendor_dlkm": "PASS_BYTE_PRESERVED_22_MODULES",
+    "aic_fmac": "PASS_PRESERVED_0x00120000_CONTRACT",
+    "graphics_providers": "PASS_BYTE_PRESERVED_EXACT_THREE",
+    "preservation": "PASS"
+  },
+  "known_residuals": {
+    "graphics": "INDEPENDENT_PHYSICAL_FAIL_GRALLOC_MAPPER_MISSING_UNCHANGED_NOT_FIXED",
+    "full_vintf": "INHERITED_CONFIG_NFS_FS_Y_VS_FCM6_N_EXIT_65_NOT_PASS",
+    "audio": "INHERITED_POST_GATE_P1_BOOT_TIME_GETAUDIOPORT_CRASH_UNFIXED",
+    "selinux": "ENFORCING_RUNTIME_NOT_PROVEN"
+  },
+  "build_logs": "/work/build-logs/a16-prototype-b-r5-20260828T125538Z",
+  "repository_validation": {
+    "focused_r5": "PASS_6_OF_6",
+    "full_lightweight_suite": "PASS_154_TESTS_34_DECLARED_FIXTURE_SKIPS",
+    "json_parse": "PASS_65_FILES",
+    "python_compile": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "next_physical_gate": [
+    "default boot preserves /metadata and /vendor crossed boundaries and reaches second stage",
+    "product-scoped and global ABI triplets equal canonical mixed values",
+    "zygote and zygote_secondary are running",
+    "app_process64 no longer aborts on ro.product.cpu.abilist64",
+    "AArch64 system_server PID is present",
+    "graphics is classified separately if SurfaceFlinger still aborts with gralloc-mapper is missing"
+  ]
+}

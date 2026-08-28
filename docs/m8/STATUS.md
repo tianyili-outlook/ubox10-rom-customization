@@ -251,15 +251,52 @@ hardware stack byte-preserved；LP geometry 不变，outer 仅 `super.fex`/`Vsup
 payload preserved。Ext4/product AVB、sparse roundtrip/IMAGEWTY、mixed ELF、35 APEX、both-ABI
 VNDK31、linker/SP-HAL、Mali 297/0、split SELinux、kernel/22 modules/AIC 与 preservation 全 PASS。
 Full VINTF 仍严格为 exit 65，仅 inherited NFS exception，**不是 PASS**。R4 当前正式状态为
-**OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION；PHYSICAL NOT YET VALIDATED**。
+历史 **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**，但后续已冻结为 **PHYSICAL FAIL —
+PATCHED INACTIVE LOGICAL PRODUCT_A / RUNTIME PRODUCT SOURCE IS EMBEDDED `/SYSTEM/PRODUCT` /
+ZYGOTE64 ABI FAILURE UNCHANGED**。
+
+R4 实机仍跨过 kernel、first stage、`/metadata`、canonical `/vendor`、SwitchRoot 和 second stage；
+`apexd` running，root console available，故 r2/r3 修复保持 physical PASS。ABI runtime 却与 r3
+相同：global abilist ARM32-only、abilist64 empty、三项 product-scoped ABI property 全 absent，
+`app_process64` 重复同一 SIGABRT，system_server 未到达。Decisive layout probe 证明
+`/product -> /system/product`，`/proc/mounts` 无 product/product_a mount，active 1657-byte
+`/product/etc/build.prop` 与 `/system/product/etc/build.prop` 是同一无 triplet 对象；虽然
+`/dev/block/mapper/product_a -> /dev/block/dm-1` 已创建，logical product_a 并未成为 runtime
+`/product`。因此 r4 正确 triplet 被写入 inactive storage object；tracked physical record 不虚构
+未在 GCP 的 raw UART capture。
 
 独立 graphics read-only audit 证明 ARM64 mapper 的 ELF/SONAME/DT_NEEDED、global
 `HIDL_FETCH_IMapper` export、exact r7 passthrough lookup 与 `gralloc.apollo.so` loader chain 均符合
 静态合同，并排除 missing package、wrong ELF/name/export、永久 linkerconfig 缺失与 leading SELinux
 denial。缺少能区分 mapper `dlopen`、fetch invocation、`hw_get_module` 与 gralloc initialization
 的运行时前置记录，因此 graphics root cause 为 **PARTIALLY PROVEN / NOT UNIQUE**；r4 没有 graphics
-修改。下一步仅物理验证 r4 的 global ABI triplet、两 zygote 与 AArch64 system_server；若独立
-`gralloc-mapper is missing` 仍在，不得把它误判为 ABI correction failure。
+修改。下一步先只读唯一证明 normal-boot active product source、skip_mount 与 exact r7 property
+load chain，并补上“patched path 必须等于 runtime-resolved source”的 fail-closed invariant。当时在
+该链闭合前不得创建 r5；独立 `gralloc-mapper is missing` 保持未修。
+
+后续 exact signed-root、retained first-stage 与 r7 property-source audit 已把这条链唯一闭合。
+Signed root 的 `/product` 是指向 `/system/product` 的 symlink；byte-preserved
+`system_ext/etc/init/config/skip_mount.cfg` 明确包含 `/product`，retained Android 12
+`SkipMountingPartitions()` 因而在 normal boot 移除 fstab 的 product mount。R4 实机
+`/proc/mounts` 无 product/product_a、而 mapper device 存在，正好印证 standalone logical
+product_a 只被创建却不成为 runtime `/product`。Exact r7 `PropertyLoadBootDefaults()` 读取
+`/product/etc/build.prop`，所以 active source 是 `system_a:/system/product/etc/build.prop`；其后按
+`product, odm, vendor, system` 派生 global ABI。R4 离线审计遗漏的 invariant 是“patched file 必须
+等于 runtime-resolved property source”，不是 canonical triplet 内容错误。
+
+该唯一证明已授权并完成严格 single-cause `a16-prototype-b-r5`。R5 只让 source-generated
+canonical mixed triplet 落入 active embedded product build.prop，并把 inactive logical product_a
+恢复为 exact r3 bytes；没有 runtime/init workaround、没有挂载 product_a，也没有改变 ODM、vendor
+或 graphics。唯一 signed system tree delta 是 `system/product/etc/build.prop`。Candidate
+`out/candidates/a16-prototype-b-r5/x12-a16-prototype-b-r5.img` 为 1,641,760,768 bytes / SHA-256
+`418CDC6BBFC44E4BDD346D3AE2861BC44522F321288A570E9CA1729439F6FE2E`；signed system_a 为
+`93D968693A2EEDA2BA53D4EE74BBA8EB73E341EA9BC63EFCD5878609C7DE80BE`，inactive product_a 为
+exact r3 `6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974`，vendor_a byte-preserved。
+Active-source/dumpvars/r7 derivation、ext4、AVB、LP/sparse/IMAGEWTY、46/50 outer preservation、
+mixed ELF、35 APEX、both-ABI VNDK31、linker/SP-HAL、Mali 297/0、split SELinux、system VINTF、
+kernel/22 modules/AIC audits PASS。Full VINTF 仍严格为 exit 65，仅 inherited NFS exception，
+**不是 PASS**。R5 当前正式状态为 **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION / NOT YET
+PHYSICALLY VALIDATED**；独立 `gralloc-mapper is missing` physical failure 保持未修。
 
 2026-08-21 Android 16 Gate 1 状态为 **OFFLINE CHECKED / SUCCESS**。Source 为 exact `android-16.0.0_r4` / `BP4A.251205.006`，manifest commit `15128c9e27cfa599c48d294babd39286ee8f1426`，pinned manifest SHA-256 `4E8BEB5D1B590DFF3D631B1DBB957138DBDA4E608A3183C625683DA4BC84918F`；Prototype A 为 `ubox10_ceiling_arm-bp4a-userdebug`、ARMv7-A NEON、无 secondary arch、shipping API 31、extra VNDK 31、pKVM off。GCP native Ubuntu 24.04 / ext4 / 8 vCPU / 62.8 GiB RAM / no swap 上使用 relative `OUT_DIR=out-ceiling`、`BUILD_NUMBER=DISPOSABLE_CEILING_R4`、unset `SOONG_GOMEMLIMIT GOMEMLIMIT` 和 `m -j8 systemimage`，123,197/123,197 actions 成功，wall 30,314 秒（8:25:14）。最低 available RAM 12,295,132 KiB；swap I/O 为 0；平均 CPU user/system 约 88.05%/9.48%、I/O wait 0.05%；`/work` 最低 free 231,671,357,440 bytes。完整 raw log 仅保留在 GCP ignored 路径，未进入 Git。
 
@@ -857,7 +894,7 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - r10 已在实机完成 framework boot；r9 Lights/Watchdog/llkd 方向保持关闭，不再修改。
 - r13 是当前 GOLDEN BASELINE；Projectivy、provisioning、遥控和 Power sleep/wake/shutdown 均以实机 UART 为准。
 - M8B native rc-core 遥控迁移已在 r5 设备验收并关闭；Mouse mode intentionally dropped，legacy multi_ir 工件保留为 inert reference，其 Android 12 清理已随 freeze 延期。
-- 当前 board、DT 与 runtime 证据识别为 H616。历史 A16 ARM32 r2 稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛；历史 kernel r1-r4 AIC failure 已收敛到错误 `0x00110000` FMAC contract。r5 恢复 working BSP `0x00120000` 后物理 boot/HDMI/remote/Wi-Fi/ADB 与 Wi-Fi OFF→ON reinitialization PASS，preservation checkpoint **CLOSED / PASS**。Exact QPR0 r7 audit 与 r4 physical pass 已关闭 Architecture Gate 2；r4 frozen。Boot-time legacy audio HAL SIGSEGV 保持 post-Gate P1，不称 fixed。Prototype B0 complete；B r1 为 **PHYSICAL FAIL — `/METADATA` TARGET MISSING**。Single-cause r2 物理关闭该错误后停在 proven noncanonical `/vendor` symlink，仍为 **PHYSICAL FAIL / NOT ACCEPTED**。Single-cause r3 物理关闭 `/vendor` 错误并到达 ARM64 second stage，但分别停在 global ABI-property zygote64 abort 与独立 ARM64 mapper abort，仍为 **PHYSICAL FAIL / NOT ACCEPTED**。
+- 当前 board、DT 与 runtime 证据识别为 H616。历史 A16 ARM32 r2 稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛；历史 kernel r1-r4 AIC failure 已收敛到错误 `0x00110000` FMAC contract。r5 恢复 working BSP `0x00120000` 后物理 boot/HDMI/remote/Wi-Fi/ADB 与 Wi-Fi OFF→ON reinitialization PASS，preservation checkpoint **CLOSED / PASS**。Exact QPR0 r7 audit 与 Prototype A r4 physical pass 已关闭 Architecture Gate 2；A r4 frozen。Boot-time legacy audio HAL SIGSEGV 保持 post-Gate P1，不称 fixed。Prototype B0 complete；B r1 为 **PHYSICAL FAIL — `/METADATA` TARGET MISSING**，r2 物理关闭该错误后停在 noncanonical `/vendor`，r3 再关闭 `/vendor` 并到达 ARM64 second stage，但停在 global ABI-property zygote64 abort 与独立 ARM64 mapper abort。B r4 把正确 triplet 写进 runtime-inactive logical product_a，实机 ABI abort 不变，已冻结为 **PHYSICAL FAIL / NOT ACCEPTED**。Exact runtime-source audit 后，single-cause B r5 已把 triplet 放入 active embedded `/system/product` 并完成全离线验收，状态 **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION / NOT YET PHYSICALLY VALIDATED**。
 - `m8b-audio-r2` 只启用产品级 Treble/VNDK 合同；未修改 VNDK payload、mixer、audio platform XML、DTS、machine driver 或已验收功能，现已设备验收为 AUDIO PASS。
 - 2026-08-16 ADB-only 补验未刷机、未重启且未修改 ROM/device properties：VP9 为 Allwinner OMX/Cedar hardware-runtime PASS；Widevine 为可操作 L3，HDCP `NONE`，无 secure decoder 要求。物理画面/逐帧质量与商业服务认证或播放仍未证明。
 - 遥控器 Menu 与 Settings 当前均打开 Projectivy menu。两键语义分离为独立延期项，不回改已验收的 rc-core、keylayout 选择或其他按键行为。
@@ -867,9 +904,10 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 
 保持 frozen Android 12 `m8b-remote-r1`、frozen Android 16 ARM32 `a16-prototype-a-r4`、Test8r2/
 stock rollback、A16 r1-r3 与 kernel r1-r5 artifacts 不变；冻结 exact B r1/r2/r3 为各自不可变物理
-失败 evidence points。Global ABI root cause 已唯一证明，single-cause B r4 已完成全离线验收。
-下一步只对 exact r4 做 UART-first physical ABI gate：确认已通过的 `/metadata`、`/vendor` 与 second
-stage 不回归，核对 canonical global ABI triplet、两 zygote 与 AArch64 system_server。若独立 mapper
+失败 evidence points；另冻结 exact B r4 为 inactive-product-source physical failure。Runtime-active
+product source 与 r4 assembly mistake 已唯一证明，single-cause B r5 已完成全离线验收。下一步只对
+exact r5 做 UART-first physical ABI gate：确认已通过的 `/metadata`、`/vendor` 与 second stage 不回归，
+核对 product-scoped/global canonical ABI triplet、两 zygote 与 AArch64 system_server。若独立 mapper
 abort 仍复现，应单独记录 graphics failure，不否定已跨过的 ABI boundary，也不在本次 physical
 判定中猜修。Vulkan、GMS、5.10、25Q4、full vendor rewrite、Audio fix、SELinux/NFS/HDMI polish 与
 产品 feature 均不得混入。

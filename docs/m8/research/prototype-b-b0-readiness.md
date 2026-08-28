@@ -55,6 +55,18 @@ VALIDATION**, not physical PASS. Graphics remains unchanged and separately unres
 r1-r4 candidate records, `a16-prototype-b-r1-first-stage-audit.json`,
 `a16-prototype-b-r2-root-layout-audit.json`, and the r3 physical/root-cause machine records.
 
+Runtime-source update, 2026-08-28: exact r4 physically retained the r2/r3 root closures and reached
+second stage, but repeated the same zygote64 ABI abort. The decisive live layout was
+`/product -> /system/product` with no product/product_a mount; logical product_a existed as dm-1 but
+was inactive, so r4's correct triplet never entered the active 1657-byte embedded build.prop. Exact
+signed root, retained `/product` skip-list, first-stage source and r7 property loading uniquely prove
+that active source is `system_a:/system/product/etc/build.prop`. R4 is therefore an immutable
+**PHYSICAL FAIL — PATCHED INACTIVE LOGICAL PRODUCT_A**. Strict single-cause
+`a16-prototype-b-r5` source-generates the triplet in that active file, restores inactive product_a to
+exact r3 bytes, preserves every unrelated B0 contract, and is **OFFLINE CHECKED / READY FOR PHYSICAL
+VALIDATION / NOT YET PHYSICALLY VALIDATED**. Full VINTF remains inherited NFS exit 65, not PASS;
+graphics remains unchanged and independently unresolved.
+
 This record is the integration contract for the first Prototype B build task. B0 was read-only:
 no Android or kernel build ran, no source or accepted image was modified, no candidate was created,
 and no donor proprietary binary was committed or installed. Exact QPR0 source, the r4 candidate and

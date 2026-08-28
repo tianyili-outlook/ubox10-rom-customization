@@ -4,8 +4,42 @@ Date: 2026-08-28
 
 Offline status: **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**
 
-Physical status: **NOT YET VALIDATED**. This is a single-cause ABI-property successor to immutable
-physical-fail r3, not a graphics repair and not a mixed-runtime physical PASS.
+Physical status: **PHYSICAL FAIL — PATCHED INACTIVE LOGICAL PRODUCT_A / RUNTIME PRODUCT SOURCE IS
+EMBEDDED `/SYSTEM/PRODUCT` / ZYGOTE64 ABI FAILURE UNCHANGED**. This remains an immutable evidence
+point, not a graphics repair and not a mixed-runtime physical PASS.
+
+## Physical result
+
+The user physically tested the exact image below. The original UART/root-console capture is not
+present on this GCP VM; `a16-prototype-b-r4-physical-result.json` preserves the reviewed external
+facts/excerpts without inventing a raw file or hash.
+
+R4 crosses kernel 5.4.302+, first stage, the prior `/metadata` and canonical `/vendor` contracts,
+SwitchRoot and second-stage userspace. Root console is available; `apexd` is running and
+`vold`/`logd`/`keystore2` are reached. Thus r2 and r3 fixes remain physically preserved and r4 does
+not regress to early boot.
+
+The ABI correction itself fails. Live `ro.zygote=zygote64_32`, but global abilist remains
+`armeabi-v7a,armeabi`, global abilist64 remains empty, and all three
+`ro.product.product.cpu.abilist*` properties are absent. Primary and secondary zygotes plus
+SurfaceFlinger restart; system_server is not reached. ARM64 `app_process64` repeats the exact r3
+SIGABRT: `Unable to determine ABI list from property ro.product.cpu.abilist64.`
+
+The decisive layout probe explains why the correct logical-product bytes had no runtime effect:
+
+```text
+/product -> /system/product
+/proc/mounts: no /product or product_a mount
+/product/etc/build.prop == /system/product/etc/build.prop, 1657 bytes
+both active paths: no product-scoped ABI triplet
+/dev/block/mapper/product_a -> /dev/block/dm-1, but not mounted as /product
+```
+
+R4 therefore modified an inactive logical `product_a`. Runtime product properties came from the
+embedded `system_a:/system/product/etc/build.prop`, so retained ARM32 ODM continued to win exact r7
+global ABI priority. Formal result: **PHYSICAL FAIL — R4 PATCHED INACTIVE LOGICAL PRODUCT_A;
+RUNTIME PRODUCT SOURCE REMAINS EMBEDDED `/SYSTEM/PRODUCT`; ZYGOTE64 ABI FAILURE UNCHANGED**.
+The independent ARM64 `gralloc-mapper is missing` failure is also unchanged.
 
 ## Why r4 was authorized
 
@@ -106,14 +140,13 @@ evidence cannot uniquely distinguish `dlopen`, fetch invocation, `hw_get_module`
 failure. Graphics root cause is therefore **PARTIALLY PROVEN / NOT UNIQUE** and no graphics fix is
 mixed into this revision.
 
-## Next physical gate
+## Current handoff
 
-Validate the exact image above UART-first. First confirm default boot still crosses `/metadata`,
-canonical `/vendor`, and second stage. Then record global `ro.product.cpu.abilist*`, both zygote
-service states/processes, and AArch64 `system_server`. The ABI correction passes physically only if
-`app_process64` no longer aborts for an empty ABI list and both primary/secondary zygotes stabilize.
-
-SurfaceFlinger's independent `gralloc-mapper is missing` result is a separate gate. If it remains
-while ABI/zygote/system_server cross their boundary, r4 is an ABI-fix physical PASS and a graphics
-physical FAIL; it must not be misclassified as an ABI regression. No UI, Mali runtime, mixed-runtime
-viability or physical candidate PASS is claimed before that test.
+Freeze r4 as an immutable physical failure. Before authorizing r5, prove from exact signed roots,
+vendor_boot fstab/skip list and r7 property source that `/system/product/etc/build.prop` is the
+active normal-boot product source and that the standalone logical `product_a` is intentionally
+inactive. The r4 audit's missing invariant was runtime-source identity: finding the triplet in some
+logical product image was insufficient. That read-only chain has since been uniquely closed; bounded
+r5 changes only the active embedded product property source and has completed its offline gate.
+R4 remains frozen as the immutable failure point, and the independent graphics failure remains
+unmodified.

@@ -1,0 +1,197 @@
+{
+  "schema": 1,
+  "candidate": "a16-prototype-b-r4",
+  "date": "2026-08-28",
+  "result": "PROVEN_PATCHED_INACTIVE_LOGICAL_PRODUCT_A_RUNTIME_SOURCE_IS_EMBEDDED_SYSTEM_PRODUCT",
+  "physical_evidence": {
+    "provenance": "Authoritative external physical UART/root-console observations supplied by the user; original raw captures are not present on this VM and no raw-capture hash is claimed.",
+    "runtime_product": {
+      "object": "symlink",
+      "path": "/product",
+      "target": "/system/product",
+      "readlink_f": "/system/product",
+      "proc_mounts_product_match": "EMPTY",
+      "active_build_prop": "/system/product/etc/build.prop",
+      "active_build_prop_size": 1657,
+      "active_product_scoped_abi_triplet": "ABSENT"
+    },
+    "inactive_logical_product": {
+      "mapper_path": "/dev/block/mapper/product_a",
+      "mapper_target": "/dev/block/dm-1",
+      "mounted_at_product": false
+    },
+    "runtime_global_abi": {
+      "ro.product.cpu.abilist": "armeabi-v7a,armeabi",
+      "ro.product.cpu.abilist32": "armeabi-v7a,armeabi",
+      "ro.product.cpu.abilist64": ""
+    },
+    "runtime_product_scoped_abi": {
+      "ro.product.product.cpu.abilist": "",
+      "ro.product.product.cpu.abilist32": "",
+      "ro.product.product.cpu.abilist64": ""
+    },
+    "runtime_odm_scoped_abi": {
+      "ro.odm.product.cpu.abilist": "armeabi-v7a,armeabi",
+      "ro.odm.product.cpu.abilist64": ""
+    },
+    "zygote64_abort": "app_process: Unable to determine ABI list from property ro.product.cpu.abilist64."
+  },
+  "signed_image_evidence": {
+    "r4_system_a": {
+      "path": "out/candidates/a16-prototype-b-r4/system_a.img",
+      "size": 1651167232,
+      "sha256": "F77559D602C780C5FBB1183FB7F26009EF7B66781BC2FC57DE9341997B8260EB",
+      "root_product": {
+        "type": "symlink",
+        "target": "/system/product",
+        "mode": "0644",
+        "uid": 0,
+        "gid": 0,
+        "selinux": "u:object_r:system_file:s0"
+      },
+      "embedded_product": {
+        "path": "/system/product",
+        "type": "directory",
+        "mode": "0755",
+        "uid": 0,
+        "gid": 0,
+        "selinux": "u:object_r:system_file:s0"
+      },
+      "active_build_prop": {
+        "path": "/system/product/etc/build.prop",
+        "size": 1657,
+        "sha256": "62A8B2F676AA7FCAA06516EC0F7447ADFAAEB11CC8B1EACE084ABDD25105BD73",
+        "product_scoped_abi_triplet": "ABSENT",
+        "byte_identical_to_r3": true
+      }
+    },
+    "r4_product_a": {
+      "path": "out/candidates/a16-prototype-b-r4/product_a.img",
+      "size": 272629760,
+      "sha256": "C9050355ABB7C92D985275DBCF8D71E0796B371B0439D382464C8EA0E541A476",
+      "build_prop": {
+        "path": "/etc/build.prop",
+        "size": 1315,
+        "sha256": "A0C0404BBDA81492D8B35D2CEB0B66FC979BFD4BD0A2990EEF743618312ADB7B",
+        "product_scoped_abi_triplet": "PRESENT_CANONICAL_MIXED"
+      },
+      "normal_boot_role": "LOGICAL_MAPPING_CREATED_BUT_FSTAB_ENTRY_REMOVED_BY_SIGNED_GSI_SKIP_MOUNT_CONFIG"
+    },
+    "r3_product_a_control": {
+      "path": "out/candidates/a16-prototype-b-r3/candidate-logical/product_a.img",
+      "size": 272629760,
+      "sha256": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974",
+      "build_prop_size": 1158,
+      "build_prop_sha256": "62745843C6E22B2168E72055D931CF523ECF74D112B38AC6BFFFC6D99CABA4F1",
+      "product_scoped_abi_triplet": "ABSENT"
+    }
+  },
+  "first_stage_contract": {
+    "fstab": {
+      "source": "vendor_boot:first_stage_ramdisk/fstab.sun50iw9p1",
+      "runtime_path": "/fstab.sun50iw9p1",
+      "sha256": "6C771313A6F9DEDAEFA4061B14FE142F050F4AB13D360FF2F60FB9361277F701",
+      "product_entry": "product /product ext4 ro,barrier=1 wait,first_stage_mount,logical,slotselect"
+    },
+    "skip_mount": {
+      "signed_system_path": "/system/system_ext/etc/init/config/skip_mount.cfg",
+      "signed_sha256": "7C28485E025157ACBBD0ABF9505A212AF3B4A96211B5AA3BC3D858A560A3AEFD",
+      "signed_size": 143,
+      "byte_identical_in_prototype_a_r4_and_prototype_b_r3_r4": true,
+      "patterns": [
+        "/oem",
+        "/product",
+        "/system_ext",
+        "/oem/*",
+        "/product/*",
+        "/system_ext/*",
+        "/system/*"
+      ],
+      "effect": "SkipMountingPartitions removes the /product fstab entry before first-stage MountPartition; the product logical mapping may exist without a /product mount."
+    },
+    "retained_init_source_corroboration": {
+      "system_core_commit": "1d37c4499249b17f143df12cebc5ee9ea3600ce3",
+      "file": "fs_mgr/fs_mgr_fstab.cpp",
+      "logic": "SkipMountingPartitions reads /system/system_ext/etc/init/config/skip_mount.cfg and erases matching fstab entries; comments explicitly describe GSI-embedded /system/product and /system/system_ext.",
+      "scope": "The executed first-stage init is independently byte-pinned; this source is exact retained-lineage corroboration, not a claim of an unavailable vendor build manifest."
+    }
+  },
+  "android16_property_contract": {
+    "tag": "android-security-16.0.0_r7",
+    "system_core_commit": "68be0c2c0006a0740d0b1809abe4717308f90d15",
+    "property_service_file": "system/core/init/property_service.cpp",
+    "property_service_sha256": "A48EEE58722F41C717323E853F1777C1E3D1ED264FDFF45DAD6796ADA03E39E7",
+    "load": "PropertyLoadBootDefaults loads /product/etc/build.prop before property_initialize_ro_cpu_abilist(). On the proven symlink layout this path resolves to /system/product/etc/build.prop.",
+    "derivation_priority": [
+      "product",
+      "odm",
+      "vendor",
+      "system"
+    ],
+    "selection_rule": "The first partition scope with a non-empty abilist32 or abilist64 wins, then global abilist is 64-bit list followed by 32-bit list."
+  },
+  "build_generation_contract": {
+    "lunch": "ubox10_ceiling_arm64-bp2a-userdebug",
+    "target_copy_out_product": "system/product",
+    "final_build_variables": {
+      "TARGET_ARCH": "arm64",
+      "TARGET_CPU_ABI_LIST": "arm64-v8a,armeabi-v7a,armeabi",
+      "TARGET_CPU_ABI_LIST_32_BIT": "armeabi-v7a,armeabi",
+      "TARGET_CPU_ABI_LIST_64_BIT": "arm64-v8a",
+      "TARGET_2ND_ARCH": "arm"
+    },
+    "source": {
+      "path": "configs/aosp/architecture-ceiling-a16/device/ubox/ceiling/ubox10_ceiling_arm64.mk",
+      "sha256": "1EE047D6824B31B8CCA4F239F949CC0F4E8E403194B84BBB818DF04A1F487341",
+      "variable": "PRODUCT_PRODUCT_PROPERTIES"
+    },
+    "generator": {
+      "build_soong_commit": "4e8a4d55b99fce2bacf24b4942abf13d6cda2e12",
+      "path": "build/soong/scripts/gen_build_prop.py",
+      "sha256": "D2C77F1CD6C76AFA29BE61AFAE8330B2A715E07B989FF960B57294D81009E346",
+      "module": "product-build.prop",
+      "installed_path_derivation": "TARGET_OUT_PRODUCT/etc/build.prop = PRODUCT_OUT/TARGET_COPY_OUT_PRODUCT/etc/build.prop"
+    },
+    "generated_active_source": {
+      "path": "/work/src/ubox10-a16-ceiling/out-ceiling-b1/target/product/ubox10_ceiling_arm64/system/product/etc/build.prop",
+      "size": 1814,
+      "sha256": "7508D4DDA27B68D52D7CBDC891F15D3DD91CB942E9DBB3E590D35697A4997729",
+      "canonical_triplet_present_once": true
+    }
+  },
+  "predicted_exact_r7_derivation_after_active_source_correction": {
+    "selected_source": "product",
+    "ro.product.cpu.abilist": "arm64-v8a,armeabi-v7a,armeabi",
+    "ro.product.cpu.abilist32": "armeabi-v7a,armeabi",
+    "ro.product.cpu.abilist64": "arm64-v8a"
+  },
+  "why_r4_offline_audit_missed_runtime_failure": {
+    "missing_invariant": "THE_PATCHED_PARTITION_AND_FILE_MUST_EQUAL_THE_RUNTIME_RESOLVED_PROPERTY_SOURCE_UNDER_THE_RETAINED_FIRST_STAGE_LAYOUT",
+    "r4_checked": [
+      "logical product_a exact source-generated ABI lines",
+      "logical product_a AVB",
+      "LP geometry and outer packaging",
+      "literal expected property values"
+    ],
+    "r4_did_not_check": [
+      "signed root /product object and symlink target",
+      "signed skip_mount.cfg effect on the product fstab entry",
+      "runtime-active /product/etc/build.prop resolution",
+      "direct equality with the final TARGET_CPU_ABI_LIST variables"
+    ]
+  },
+  "r5_decision": {
+    "root_cause": "UNIQUE_PROVEN_WRONG_ASSEMBLY_TARGET_INACTIVE_LOGICAL_PRODUCT_A",
+    "authorized": true,
+    "allowed_single_cause_delta": "Publish the source-generated canonical product ABI triplet only in signed system_a:/system/product/etc/build.prop, the proven active /product property source.",
+    "product_a_treatment": "RESTORE_EXACT_R3_BYTES_TO_REMOVE_THE_DEAD_R4_SEMANTIC_DELTA_AND_PREVENT_AN_INACTIVE_FILE_FROM_PASSING_THE_NEW_AUDIT",
+    "forbidden": [
+      "mount standalone product_a",
+      "runtime setprop or init workaround",
+      "ODM or vendor ABI masking",
+      "zygote source changes",
+      "graphics changes",
+      "any unrelated subsystem change"
+    ]
+  }
+}

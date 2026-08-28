@@ -1,0 +1,111 @@
+{
+  "schema": 1,
+  "candidate": "a16-prototype-b-r4",
+  "physical_date": "2026-08-28",
+  "evidence_origin": "AUTHORITATIVE_USER_SUPPLIED_EXTERNAL_PHYSICAL_UART_AND_ROOT_CONSOLE_FACTS",
+  "raw_capture_locally_archived": false,
+  "decision": "PHYSICAL FAIL — R4 PATCHED INACTIVE LOGICAL PRODUCT_A; RUNTIME PRODUCT SOURCE REMAINS EMBEDDED /SYSTEM/PRODUCT; ZYGOTE64 ABI FAILURE UNCHANGED",
+  "classification": "PATCHED_INACTIVE_PRODUCT_A_RUNTIME_SOURCE_IS_SYSTEM_EMBEDDED_PRODUCT",
+  "candidate_identity": {
+    "path": "out/candidates/a16-prototype-b-r4/x12-a16-prototype-b-r4.img",
+    "size": 1641760768,
+    "sha256": "9A7E9FE31CBC16E17B458D8832739056B2A17F5B47BC221730B78EB0DDDCBBEC"
+  },
+  "boot_boundaries": {
+    "kernel_5_4_302_plus": "PASS",
+    "first_stage": "PASS",
+    "r2_metadata_fix": "PHYSICAL_PASS_STILL_PRESERVED",
+    "r3_vendor_fix": "PHYSICAL_PASS_STILL_PRESERVED",
+    "second_stage": "REACHED",
+    "root_console": "AVAILABLE",
+    "apexd": "REACHED_RUNNING",
+    "vold_logd_keystore2": "REACHED",
+    "returned_to_uboot_fastboot": false
+  },
+  "runtime_abi": {
+    "ro.zygote": "zygote64_32",
+    "global": {
+      "ro.product.cpu.abilist": "armeabi-v7a,armeabi",
+      "ro.product.cpu.abilist32": "armeabi-v7a,armeabi",
+      "ro.product.cpu.abilist64": ""
+    },
+    "product_scoped": {
+      "ro.product.product.cpu.abilist": "",
+      "ro.product.product.cpu.abilist32": "",
+      "ro.product.product.cpu.abilist64": "",
+      "classification": "ABSENT_AT_RUNTIME"
+    },
+    "odm_scoped": {
+      "ro.odm.product.cpu.abilist": "armeabi-v7a,armeabi",
+      "ro.odm.product.cpu.abilist64": ""
+    }
+  },
+  "services": {
+    "zygote": "restarting",
+    "zygote_secondary": "restarting",
+    "surfaceflinger": "restarting",
+    "system_server": "NOT_REACHED"
+  },
+  "zygote64_failure": {
+    "cmdline": "/system/bin/app_process64 -Xzygote /system/bin --zygote --start-system-server --socket-name=zygote",
+    "abi": "arm64",
+    "signal": "SIGABRT",
+    "abort_message": "app_process: Unable to determine ABI list from property ro.product.cpu.abilist64.",
+    "deterministic_repetition": true,
+    "result": "PHYSICAL_FAIL_UNCHANGED_FROM_R3"
+  },
+  "runtime_product_layout": {
+    "/product": {
+      "type": "symlink",
+      "target": "/system/product",
+      "readlink": "/system/product",
+      "readlink_f": "/system/product"
+    },
+    "/system/product": {
+      "type": "directory"
+    },
+    "proc_mounts_product_or_product_a_match": "NO_OUTPUT",
+    "runtime_product_build_prop": {
+      "path": "/product/etc/build.prop",
+      "size": 1657,
+      "same_object_as": "/system/product/etc/build.prop",
+      "product_scoped_abi_match": "NONE_EXIT_1"
+    },
+    "embedded_system_product_build_prop": {
+      "path": "/system/product/etc/build.prop",
+      "size": 1657,
+      "product_scoped_abi_match": "NONE_EXIT_1"
+    },
+    "logical_product_mapping": {
+      "/dev/block/mapper/product_a": "symlink to /dev/block/dm-1",
+      "/dev/block/by-name/product_a": "ABSENT",
+      "created": true,
+      "mounted_as_runtime_product": false
+    }
+  },
+  "causal_result": {
+    "logical_product_a_contains_r4_triplet": true,
+    "logical_product_a_is_runtime_property_source": false,
+    "active_runtime_product_source": "/system/product/etc/build.prop",
+    "active_product_scoped_triplet_present": false,
+    "retained_arm32_odm_wins_exact_r7_priority": true,
+    "derived_global_abilist": "armeabi-v7a,armeabi",
+    "derived_global_abilist64": "",
+    "r4_abi_correction": "PHYSICAL_FAIL_WRONG_INACTIVE_STORAGE_OBJECT"
+  },
+  "graphics": {
+    "result": "INDEPENDENT_PHYSICAL_FAIL_UNCHANGED",
+    "surfaceflinger_abi": "arm64",
+    "abort_message": "gralloc-mapper is missing",
+    "root_cause": "PARTIALLY_PROVEN_NOT_UNIQUE",
+    "r4_graphics_change": false
+  },
+  "not_proven": [
+    "stable zygote64",
+    "stable zygote32 secondary",
+    "system_server reached",
+    "Mali runtime",
+    "Android UI",
+    "mixed runtime viability"
+  ]
+}

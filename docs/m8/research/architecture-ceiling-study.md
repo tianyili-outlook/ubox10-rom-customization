@@ -15,9 +15,9 @@ formal Gate 2 policy/closure, the 2026-08-26 Prototype B B0 read-only preflight,
 same-r1 B1 intake/provider/handle implementation, authorized 144 MiB vendor geometry correction,
 mixed build, packaging and complete offline audit, the r1 first-stage physical failure/root-cause
 audit, the strict single-cause r2 physical boundary/root-layout audit, r3 physical ARM64-runtime
-evidence, exact ABI-property provenance, the independent mapper read-only audit, and bounded r4
-offline successor. R1, r2 and r3 have user-supplied UART/runtime evidence; r4 is not yet physically
-tested.
+evidence, exact ABI-property provenance, the independent mapper read-only audit, r4 physical
+inactive-product-source evidence, the exact runtime-source audit, and bounded r5 offline successor.
+R1 through r4 have user-supplied UART/runtime evidence; r5 is not yet physically tested.
 
 Confidence labels in this report have the following strict meanings: **PROVEN** is direct
 binary, build, runtime, repository, or authoritative-source evidence; **HIGH CONFIDENCE**
@@ -140,16 +140,36 @@ and no relevant AVC was observed. R3 is therefore **PHYSICAL FAIL — ARM64 RUNT
 ZYGOTE64 ABI PROPERTY FAILURE + INDEPENDENT ARM64 GRAPHICS MAPPER FAILURE**. System_server, stable
 secondary zygote, Mali runtime and UI remain unproven.
 
-Exact signed-image and r7 source provenance uniquely proves the ABI chain. Product_a has no scoped
+Exact signed-image and r7 source provenance uniquely proved the r3 ABI chain. Product_a had no scoped
 ABI triplet; retained ODM is ARM32-only; exact r7 init derives global ABI lists in priority order
 `product, odm, vendor, system`, so ODM wins and produces the exact live ARM32-only global list plus
 empty 64-bit list. Primary `ro.product.cpu.abi` is generated separately and remains arm64. This
-authorizes only `a16-prototype-b-r4`: source-generated product-scoped mixed metadata that preempts
+authorized only `a16-prototype-b-r4`: source-generated product-scoped mixed metadata intended to preempt
 ODM through the canonical r7 path. Signed product changes only `etc/build.prop` by three lines;
 system/vendor/kernel/root-mountpoint/graphics/hardware contracts are preserved. Complete offline
-status is **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**. IMG is 1,641,760,768 bytes / SHA-256
+status was **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**. IMG is 1,641,760,768 bytes / SHA-256
 `9A7E9FE31CBC16E17B458D8832739056B2A17F5B47BC221730B78EB0DDDCBBEC`; outer delta is only
 `super.fex`/`Vsuper.fex`, 48/50 preserved. Full VINTF remains inherited NFS exit 65, **not PASS**.
+
+R4 physical evidence then proved the correct triplet was written to the wrong storage object.
+Runtime `/product -> /system/product`, `/proc/mounts` had no product/product_a mount, and the active
+1657-byte embedded build.prop had no triplet; logical product_a existed as dm-1 but was inactive.
+Consequently the exact r3 zygote64 ABI abort repeated and r4 is frozen as **PHYSICAL FAIL — PATCHED
+INACTIVE LOGICAL PRODUCT_A / RUNTIME PRODUCT SOURCE IS EMBEDDED `/SYSTEM/PRODUCT`**. Exact signed
+root, retained `/product` skip-list and first-stage source prove this is the intentional normal-boot
+layout. Exact r7 property loading follows the symlink and consumes the embedded build.prop before
+the same product→odm→vendor→system derivation. The missing r4 offline invariant was runtime-source
+identity, not triplet content.
+
+This uniquely authorized bounded `a16-prototype-b-r5`. It source-generates the canonical triplet in
+active `system_a:/system/product/etc/build.prop`, restores inactive product_a to exact r3 bytes, and
+changes no ODM/vendor/graphics/kernel/hardware semantics. The signed system tree changes only that
+one file. R5 IMG is 1,641,760,768 bytes / SHA-256
+`418CDC6BBFC44E4BDD346D3AE2861BC44522F321288A570E9CA1729439F6FE2E`; active-source and final
+dumpvars comparison, exact-r7 derivation, ext4/AVB/LP/IMAGEWTY, 46/50 outer preservation, mixed
+ELF/APEX/VNDK/linker/SP-HAL/Mali, SELinux, system VINTF and kernel/module/AIC gates pass. Full VINTF
+remains inherited NFS exit 65, **not PASS**. R5 is **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION
+/ NOT YET PHYSICALLY VALIDATED**.
 
 The graphics audit is deliberately read-only. Mapper ELF/name/dependencies/global
 `HIDL_FETCH_IMapper`, exact r7 passthrough lookup, provider presence, linker visibility and SELinux
@@ -866,8 +886,10 @@ proven missing `/system/metadata` switch-root target. Single-cause r2 physically
 but then fails at the independently proven noncanonical `/vendor` symlink. Single-cause r3 restores
 the accepted r4 root `/vendor` directory contract and physically crosses into ARM64 second stage,
 then fails independently on empty global ABI64 metadata and mapper discovery. Exact property
-provenance uniquely closes the first cause; bounded r4 corrects only product-scoped ABI generation
-and is offline checked, awaiting physical ABI validation. Graphics remains separately unresolved.
+provenance uniquely closed the r3 cause, but bounded r4 placed its triplet in runtime-inactive
+logical product_a and physically failed unchanged. Exact runtime-source proof then authorized
+bounded r5, which puts the triplet in active embedded `/system/product` and closes all offline
+gates. R5 now awaits physical ABI validation; graphics remains separately unresolved.
 
 #### QPR0 r7 source-only closure
 
@@ -1228,8 +1250,11 @@ but then physically failed on its uniquely proven missing `/system/metadata` swi
 Strict single-cause r2 physically closes that target but then fails at the proven noncanonical
 root `/vendor` symlink. Strict single-cause r3 restores the accepted directory contract and
 physically reaches ARM64 second stage, then fails on empty global ABI64 metadata and an independent
-mapper chain. Strict single-cause r4 corrects only canonical product-scoped ABI generation and is
-**OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**; no mixed-ABI physical PASS is claimed.
+mapper chain. Strict single-cause r4 put canonical product-scoped ABI generation in inactive logical
+product_a and physically reproduced the same ABI failure. Exact runtime-source proof identifies
+embedded `system_a:/system/product/etc/build.prop` as active. Strict single-cause r5 changes only
+that active file, restores inactive product_a to r3 bytes and is **OFFLINE CHECKED / READY FOR
+PHYSICAL VALIDATION**; no mixed-ABI physical PASS is claimed.
 
 ## 12. Target A/B/C/D comparison
 
@@ -1266,7 +1291,7 @@ The 5.4.302 wireless checkpoint is closed; D remains dominated on engineering ec
 |---|---|---|---|---|---|
 | Target A — Mature Legacy | **PROVEN now** | Accepted stability and hardware completeness | API 31 age and no 64-bit native apps; security/platform life is short | Low | Keep as rollback/reference, not final investment ceiling |
 | Target B — Modern Framework / Legacy Architecture | **PHYSICAL PASS / GATE 2 CLOSED / FROZEN** | Maximum vendor reuse and proven hardware viability | QPR0 only; boot-time audio P1 remains and ARM32 excludes 64-bit-only native apps | Medium; accepted architecture control | Freeze r4; no Prototype A r5 polish |
-| Target C — Modern Hybrid | **r1/r2/r3 PHYSICAL FAIL / r4 OFFLINE READY / MEDIUM** | API 36 plus AArch64 apps while preserving working 32-bit HALs/kernel | r3 crosses ARM64 second stage but exposes empty global ABI64 metadata and independent mapper failure; r4 corrects only the uniquely proven ABI source chain | High but bounded | Freeze r1-r3 evidence; physically validate r4 ABI/zygote boundary, keeping graphics separate |
+| Target C — Modern Hybrid | **r1-r4 PHYSICAL FAIL / r5 OFFLINE READY / MEDIUM** | API 36 plus AArch64 apps while preserving working 32-bit HALs/kernel | r3 crosses ARM64 second stage; r4 proves logical product_a is inactive; r5 moves only the mixed triplet to active embedded product; mapper remains independent | High but bounded | Freeze r1-r4 evidence; physically validate r5 ABI/zygote boundary, keeping graphics separate |
 | Target D — Full Modern Port | **LOW** | Clean contemporary architecture in theory | No complete H616 5.10+ graphics/media/display/DRM provider; becomes multiple subsystem rewrites | Extreme | **NO-GO** |
 
 ## 13. Reuse versus rewrite map
@@ -1375,13 +1400,14 @@ the application/framework benefit of ARM64 without paying that subsystem-rewrite
 
 **Overall confidence: HIGH for ARM32 architecture viability, r4 functional integration and formal
 Prototype A closure; MEDIUM for the end-state hybrid.** The r1/r2/r3 progression proves
-first stage through ARM64 second-stage runtime, r5 closes the same-lineage 5.4.302 wireless checkpoint, and exact r7/r3/r4 outputs
-close the bounded offline contracts. r4 physically proves no-runtime EGL, Remote OK, stable HDMI,
+first stage through ARM64 second-stage runtime, kernel r5 closes the same-lineage 5.4.302 wireless checkpoint, and exact r7/B-r3-r5 outputs
+close the bounded offline contracts. Prototype A r4 physically proves no-runtime EGL, Remote OK, stable HDMI,
 full Wi-Fi L3 and real audible Android media. The explicit policy change closes Gate 2 while keeping
 the reproduced `getAudioPort` crash as post-Gate P1. Prototype B0 closes the bounded provider,
-property, linker/VINTF and partition/AVB preflight. The ABI cause is now source-proven and r4 closes
-its single-cause product-property build, packaging and complete offline audit. Runtime compatibility
-remains appropriately MEDIUM until r4 physical ABI and independent mapper validation run.
+property, linker/VINTF and partition/AVB preflight. R4 physical evidence exposes the inactive
+logical-product assumption; r5 closes the corrected active-source build, packaging and complete
+offline audit. Runtime compatibility remains appropriately MEDIUM until r5 physical ABI and
+independent mapper validation run.
 
 ## 15. Go / No-Go decisions and remaining decisive gates
 
@@ -1392,7 +1418,7 @@ remains appropriately MEDIUM until r4 physical ABI and independent mapper valida
 | Recommended modern Android target | **PATH A PHYSICALLY PROVEN / GATE 2 CLOSED** | r4 physically passes the functional architecture contract and is frozen; boot audio crash remains post-Gate P1 |
 | Android 16 r4 / 25Q4 | **NO-GO with retained 5.4** | Physical and source evidence agree on the 5.10/5.10.210 requirement |
 | Android 16 QPR0 / 25Q2 | **SELECTED / r4 PHYSICAL PASS / GATE 2 CLOSED** | Exact r7 requires 5.4.277+; 5.4.302 and r4 runtime pass; audio boot crash is post-Gate P1 |
-| Mixed ARM64/ARM32 userspace | **r1/r2/r3 PHYSICAL FAIL / r4 OFFLINE CHECKED** | r3 physically crosses both prior root contracts into ARM64 second stage; exact r7 provenance proves its global ABI64 failure. R4 changes only product-scoped ABI generation and awaits physical validation; mapper remains an independent unresolved chain. |
+| Mixed ARM64/ARM32 userspace | **r1-r4 PHYSICAL FAIL / r5 OFFLINE CHECKED** | r3 reaches ARM64 second stage; r4 proves its patched logical product_a is runtime inactive. Exact layout/r7 provenance authorizes r5's one active embedded-product change; r5 awaits physical validation while mapper remains independent. |
 | Full ARM64 userspace | **NO-GO** | Would convert/replace working proprietary service stack for little user value |
 | Kernel 5.4 as final architecture | **CLOSED / PASS AT 5.4.302 r5** | Boot/HDMI/remote/Wi-Fi/ADB and physical wireless reinitialization pass after restoring the working FMAC address contract |
 | Kernel 5.10+ migration | **NO-GO IN THIS PHASE** | No complete exact-SoC/board Android provider; regression surface is a new BSP port |
@@ -1408,9 +1434,10 @@ remains appropriately MEDIUM until r4 physical ABI and independent mapper valida
    `getAudioPort` SIGSEGV remains known/unfixed post-Gate P1, not a Prototype A successor trigger.
 3. Continue to carry full-VINTF exit 65 solely for inherited `CONFIG_NFS_FS=y` versus FCM-6 `n`;
    never report it PASS. Enforcing SELinux remains later release hardening, not a Gate 2 substitute.
-4. **r1-r3 immutable physical chain / r4 physical pending:** r2 passes r1 `/metadata`, r3 passes r2
-   `/vendor` and reaches ARM64 second stage. Exact r7 property priority proves r3's empty global
-   ABI64 cause. R4 changes only product-scoped ABI generation and closes all offline gates; zygote64,
+4. **r1-r4 immutable physical chain / r5 physical pending:** r2 passes r1 `/metadata`, r3 passes r2
+   `/vendor` and reaches ARM64 second stage. R4 proves logical product_a is inactive under the
+   retained `/product -> /system/product`/skip-mount contract. Exact r7 loading and final build vars
+   uniquely authorize r5's active embedded-product triplet. R5 closes all offline gates; zygote64,
    system_server and the independent mapper chain still require separate physical adjudication.
 
 ## 16. Direct route to the target
@@ -1456,11 +1483,15 @@ remains appropriately MEDIUM until r4 physical ABI and independent mapper valida
 14. **Completed — exact single-cause r3 physical boundary:** `/vendor` correction passes and ARM64
     second stage is reached; immutable failure is empty global ABI64 plus an independent mapper
     abort. Exact source/signed-image provenance uniquely explains the ABI chain.
-15. **Current — exact single-cause r4:** generate only canonical product-scoped mixed ABI metadata;
-    preserve r3 system/vendor/graphics/kernel/hardware contracts and 48/50 outer payloads. Full
-    offline audit passes; request UART-first ABI/dual-zygote/system_server validation. Treat any
-    surviving mapper abort as a separate graphics result.
-16. **Final acceptance:** sustained daily-use regression, 4K30-or-1080p evidence-led media
+15. **Completed — freeze and explain r4 physical failure:** r4 preserved prior boot boundaries but
+    its correct triplet lived only in logical product_a. Physical `/product -> /system/product`, no
+    product mount, signed skip-list and exact r7 loading uniquely prove the active source is the
+    embedded system product; the zygote64 ABI abort therefore remained unchanged.
+16. **Current — exact single-cause r5:** generate the canonical triplet only in active
+    `system_a:/system/product/etc/build.prop`, restore inactive product_a to exact r3, and preserve
+    every unrelated B1 contract. Full offline audit passes; request UART-first ABI/dual-zygote/
+    system_server validation. Treat any surviving mapper abort as a separate graphics result.
+17. **Final acceptance:** sustained daily-use regression, 4K30-or-1080p evidence-led media
     ceiling, enforcing/release hardening, recovery rehearsal and a hash-locked accepted architecture
     image.
 

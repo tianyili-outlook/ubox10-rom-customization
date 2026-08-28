@@ -2,7 +2,7 @@
 
 ## Freeze decision
 
-`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为稳定日用回退。`a16-prototype-a-r4` 现已冻结为 **PHYSICAL PASS / ACCEPTED Android 16 ARM32 ARCHITECTURE BASELINE / Prototype B ROLLBACK CONTROL**。用户明确把一次性、自动恢复的 boot-time `getAudioPort` SIGSEGV 从旧 Gate 2 startup-stability 条件改列为 **KNOWN / UNFIXED / POST-GATE P1 STABILIZATION DEBT**；故 Gate 2 为 **CLOSED / PASS**，不是静默弱化证据。当前不实施 Android 12 M8B feature、Prototype A r5 或 P1 polish；Prototype B r1/r2/r3 均冻结为 immutable physical-fail evidence，唯一活跃候选是完成离线验收、等待首次实机验证的 single-cause ABI successor `a16-prototype-b-r4`。
+`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为稳定日用回退。`a16-prototype-a-r4` 现已冻结为 **PHYSICAL PASS / ACCEPTED Android 16 ARM32 ARCHITECTURE BASELINE / Prototype B ROLLBACK CONTROL**。用户明确把一次性、自动恢复的 boot-time `getAudioPort` SIGSEGV 从旧 Gate 2 startup-stability 条件改列为 **KNOWN / UNFIXED / POST-GATE P1 STABILIZATION DEBT**；故 Gate 2 为 **CLOSED / PASS**，不是静默弱化证据。当前不实施 Android 12 M8B feature、Prototype A r5 或 P1 polish；Prototype B r1/r2/r3/r4 均冻结为各自 immutable physical-fail evidence，唯一活跃候选是完成离线验收、等待首次实机验证的 single-cause runtime-product successor `a16-prototype-b-r5`。
 
 ## Android 16 Gate 1 / Gate 2 — Prototype A ARM32
 
@@ -122,12 +122,32 @@
   48-of-50 preservation/ELF/APEX/VNDK/linker/Mali/SELinux/kernel audits PASS。Full VINTF 保持仅
   inherited NFS exit 65，**NOT PASS**。状态 **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**，
   physical mixed-runtime 仍未证明。
-- [ ] **22 — r4 physical ABI gate（唯一下一步）：**UART-first default boot；确认 `/metadata` 与
-  canonical `/vendor` 继续跨过、second stage reached；读取 global `ro.product.cpu.abilist*`；证明
-  `app_process64` 不再因 empty abilist64 abort、`zygote`/`zygote_secondary` 均稳定且 AArch64
-  system_server reached/running。SurfaceFlinger mapper failure 为独立 gate：若 ABI/zygote/
-  system_server 已跨过但 mapper 仍失败，r4 应记 ABI fix physical PASS + graphics physical FAIL，
-  不得误记 ABI regression，也不得在同次候选混入 graphics 修复。
+- [x] **22 — r4 physical ABI result：**r4 保持 `/metadata`、canonical `/vendor`、second stage 与
+  `apexd`，但三项 product-scoped ABI property 仍 absent，global list 仍 ARM32-only/64 empty，
+  `app_process64` 重复同一 abort，system_server 未到达。Live `/product -> /system/product`，无
+  product/product_a mount；active 1657-byte embedded build.prop 无 triplet。Logical product_a 虽
+  映射为 dm-1 却 inactive。R4 冻结为 **PHYSICAL FAIL / NOT ACCEPTED**；graphics mapper failure
+  独立且 unchanged。
+- [x] **23 — active product-source provenance：**比较 exact signed r3/r4 system/
+  product roots、fstab/skip_mount/vendor_boot 与 r7 property loading，唯一证明 normal boot 的
+  `/product` symlink、active `/system/product/etc/build.prop`、logical product_a inactivity 和
+  canonical triplet 的 exact r7 global derivation。R4 实机 `/proc/mounts`、mapper device 与 signed
+  skip-list/source evidence 完全一致；root cause **UNIQUE / PROVEN**。
+- [x] **24 — runtime-layout fail-closed audit：**r5 auditor 验证 candidate patch location
+  等于 runtime-resolved property source，并把 actual final build-variable census 与 active triplet
+  直接比较；inactive product_a 必须没有 triplet，不得再以“某个 product_a 含有 triplet”作为
+  充分条件。Focused negative cases fail closed。
+- [x] **25 — bounded `a16-prototype-b-r5` offline closure：**triplet 由 exact product config 生成到
+  active `system_a:/system/product/etc/build.prop`；inactive product_a 恢复 exact r3，vendor/graphics/
+  kernel/hardware stack 与 LP geometry 保持。IMG 1,641,760,768 bytes /
+  `418CDC6BBFC44E4BDD346D3AE2861BC44522F321288A570E9CA1729439F6FE2E`；active-source、signed-tree、
+  ext4/AVB/LP/IMAGEWTY、46/50 preservation、ELF/APEX/VNDK/linker/Mali/SELinux/system-VINTF/kernel
+  audits PASS。Full VINTF 仍为 inherited NFS exit 65，**NOT PASS**。Physical **NOT YET VALIDATED**。
+- [ ] **26 — r5 UART-first physical ABI gate（当前唯一任务）：**确认 `/metadata`、canonical
+  `/vendor`、SwitchRoot 与 second stage 不回归；采集 product-scoped/global 三项 ABI property，确认
+  `zygote` 与 `zygote_secondary` running、旧 app_process64 ABI abort 消失并到达 AArch64
+  system_server。若 `gralloc-mapper is missing` 仍复现，单独判 graphics FAIL，不否定已跨过的 ABI
+  boundary；不得在同一 revision 修 graphics。
 
 ## Post-Gate stabilization / release hardening
 
@@ -192,4 +212,4 @@
 - [x] 完成限定只读 system-quality audit：无 P0；stability、retry loop、audio residual、SELinux、CPU/thermal/idle、graphics 与 memory 证据见 `docs/m8/device-tests/20260816-m8b-system-quality-audit/`。
 - [ ] **DEFERRED / P2 / 不修：**Wi-Fi HAL link-layer statistics 每约 3 秒返回 `ERROR_UNKNOWN`；网络 ADB 稳定且 Wi-Fi 进程未重启。
 - [x] 保持 Mouse mode dropped；不重新引入 vendor mouse framework。
-- [x] architecture-ceiling study 与 B0 已锁定 paired AArch64 Mali、AOSP mapper adapter、multilib gralloc-1.x、lawful-local fail-closed intake、vendor property 与 AVB scope；ARM32 OMX/Cedar/media/HWC/audio/Wi-Fi/BT/DRM/TEE 继续进程隔离复用。R1 `/metadata`、r2 `/vendor` 与 r3 global ABI root causes 均已证明；r4 single-cause ABI successor 已完整离线关闭，当前唯一执行合同是上文 22 的 r4 physical ABI gate，graphics 保持独立未修边界。
+- [x] architecture-ceiling study 与 B0 已锁定 paired AArch64 Mali、AOSP mapper adapter、multilib gralloc-1.x、lawful-local fail-closed intake、vendor property 与 AVB scope；ARM32 OMX/Cedar/media/HWC/audio/Wi-Fi/BT/DRM/TEE 继续进程隔离复用。R1 `/metadata`、r2 `/vendor` 与 r3 global ABI root causes 均已证明；r4 进一步证明 logical product_a 在 retained normal-boot layout 中 inactive，r5 已把 canonical triplet 放入 active embedded `/system/product` 并完整离线关闭。当前唯一执行合同是上文 26 的 r5 physical ABI gate；graphics 保持独立未修边界。

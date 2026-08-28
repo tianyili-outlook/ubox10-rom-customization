@@ -3,7 +3,7 @@
 ## 当前状态
 
 - 最后报告的物理验收镜像：`out/candidates/a16-prototype-a-r4/x12-a16-prototype-a-r4.img`，1,239,746,560 bytes / SHA-256 `E125DD8FFB9F5B4A7B2B9B86DD8377367409AB00D1B29BE1E719CE25768E2111`
-- 当前项目状态：**ANDROID 16 PATH-A PHYSICAL PASS / GATE 2 CLOSED**。QPR0 r4 无 UART/runtime EGL intervention 即 boot complete；source-level EGL、Mali-G31/UI、Remote OK、stable HDMI、Wi-Fi association/DHCP/validated L3、direct HDMI audible audio 和 VLC video/audio 均 PASS。Boot-time legacy audio HAL `getAudioPort` null-address SIGSEGV 仍复现并 auto-recover；用户明确把该 defect 从旧 startup-stability gate 改列为 **KNOWN / UNFIXED / POST-GATE P1**。r4 已冻结为 accepted Android 16 ARM32 architecture baseline；Prototype B0 complete，B1 readiness GO for one bounded build。
+- 当前项目状态：**ANDROID 16 PATH-A PHYSICAL PASS / GATE 2 CLOSED**。QPR0 Prototype A r4 无 UART/runtime EGL intervention 即 boot complete；source-level EGL、Mali-G31/UI、Remote OK、stable HDMI、Wi-Fi association/DHCP/validated L3、direct HDMI audible audio 和 VLC video/audio 均 PASS。Boot-time legacy audio HAL `getAudioPort` null-address SIGSEGV 仍复现并 auto-recover；用户明确把该 defect 从旧 startup-stability gate 改列为 **KNOWN / UNFIXED / POST-GATE P1**。Prototype A r4 已冻结为 accepted Android 16 ARM32 architecture baseline。Prototype B r1-r4 已冻结为各自 immutable physical-fail evidence；最新 single-cause r5 已完成全离线验收，物理状态 **NOT YET VALIDATED**，下一步仅做 r5 UART-first ABI/zygote/system_server gate，graphics 独立判定。
 - 保留的设备验收基线：`out/candidates/m8b-remote-r1/x12-m8b-remote-r1.img`，状态 **DEVICE ACCEPTED / REMOTE PASS**（继承 **AUDIO PASS / IME PASS**）。
 - 大小 / SHA-256：1031723008 bytes / `F3B09E5565AC4ED4E5EE326D392622E7B036A8519B8444B966E77CC4751B814A`
 - 用户当前在设备现场，可执行物理交互、重启、suspend/resume、HDMI 观察与恢复；任何新候选刷写仍需该候选的单独明确授权。

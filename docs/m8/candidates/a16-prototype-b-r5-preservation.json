@@ -1,0 +1,122 @@
+{
+  "schema": 1,
+  "candidate": "a16-prototype-b-r5",
+  "result": "PASS_R5_SINGLE_ACTIVE_SOURCE_DELTA_AND_B1_PRESERVATION",
+  "physical_base": {
+    "candidate": "a16-prototype-b-r4",
+    "status": "PHYSICAL_FAIL_PATCHED_INACTIVE_PRODUCT_A",
+    "path": "out/candidates/a16-prototype-b-r4/x12-a16-prototype-b-r4.img",
+    "size": 1641760768,
+    "sha256": "9A7E9FE31CBC16E17B458D8832739056B2A17F5B47BC221730B78EB0DDDCBBEC"
+  },
+  "assembly_control": {
+    "candidate": "a16-prototype-b-r3",
+    "reason": "r3/r4 system_a are byte-identical; r3 supplies the pre-r4 product_a so the inactive triplet is not carried forward"
+  },
+  "candidate_artifact": {
+    "path": "out/candidates/a16-prototype-b-r5/x12-a16-prototype-b-r5.img",
+    "size": 1641760768,
+    "sha256": "418CDC6BBFC44E4BDD346D3AE2861BC44522F321288A570E9CA1729439F6FE2E"
+  },
+  "semantic_delta": {
+    "active_system_tree_added": [],
+    "active_system_tree_removed": [],
+    "active_system_tree_changed": [
+      "system/product/etc/build.prop"
+    ],
+    "active_properties_added": [
+      "ro.product.product.cpu.abilist=arm64-v8a,armeabi-v7a,armeabi",
+      "ro.product.product.cpu.abilist32=armeabi-v7a,armeabi",
+      "ro.product.product.cpu.abilist64=arm64-v8a"
+    ],
+    "inactive_product_a": "EXACT_R3_BYTES_TRIPLET_ABSENT"
+  },
+  "root_layout": {
+    "/metadata": "PRESERVED_DIRECTORY_0755_0_0_METADATA_FILE_PHYSICALLY_CROSSED_IN_R2",
+    "/vendor": "PRESERVED_DIRECTORY_0755_0_2000_VENDOR_FILE_PHYSICALLY_CROSSED_IN_R3",
+    "/product": "PRESERVED_SYMLINK_TO_/system/product_0644_0_0_SYSTEM_FILE",
+    "skip_mount.cfg": "BYTE_PRESERVED_PRODUCT_PATTERN_PRESENT"
+  },
+  "logical_partitions": {
+    "system_a": {
+      "status": "CHANGED_ONLY_ACTIVE_EMBEDDED_PRODUCT_BUILD_PROP_AND_REQUIRED_AVB",
+      "size": 1651167232,
+      "sha256": "93D968693A2EEDA2BA53D4EE74BBA8EB73E341EA9BC63EFCD5878609C7DE80BE"
+    },
+    "product_a": {
+      "status": "RESTORED_EXACT_R3_BYTES_RUNTIME_INACTIVE",
+      "size": 272629760,
+      "sha256": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974"
+    },
+    "vendor_a": {
+      "status": "BYTE_PRESERVED",
+      "size": 150994944,
+      "sha256": "0166B5FB1718715E79F68D5A9FEAAE02439DC59DBE2379D4C1DA670541C7EC9B"
+    },
+    "vendor_dlkm_a": {
+      "status": "BYTE_PRESERVED_22_MODULES",
+      "size": 6680576,
+      "sha256": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07"
+    },
+    "all_b_slots": "BYTE_PRESERVED_EMPTY",
+    "lp_geometry": "BYTE_PRESERVED_NO_PARTITION_SHRINK"
+  },
+  "outer": {
+    "changed": [
+      "Vsuper.fex",
+      "Vvbmeta_system.fex",
+      "super.fex",
+      "vbmeta_system.fex"
+    ],
+    "changed_count": 4,
+    "preserved_count": 46,
+    "top_level_vbmeta": "BYTE_PRESERVED",
+    "vbmeta_vendor": "BYTE_PRESERVED",
+    "boot_vendor_boot_fstab": "BYTE_PRESERVED",
+    "DT_DTBO_TEE_DRM_bootloader_factory_security_recovery": "BYTE_PRESERVED",
+    "imagewty": "PASS"
+  },
+  "avb": {
+    "system": {
+      "algorithm": "SHA256_RSA2048",
+      "rollback_index": 0,
+      "rollback_index_location": 0,
+      "fec": "none",
+      "root_digest": "C648476254E0CCB0285FB8D3D88C067CA9FEB5723154BC4DBC1A0B609EFD4C7B"
+    },
+    "vbmeta_system": {
+      "algorithm": "SHA256_RSA2048",
+      "rollback_index": 1644019200,
+      "rollback_index_location": 1,
+      "sha256": "40732C64F88194DB3CFC35E7F7CFA1DD13CF48B274D8B997152D71E2DA6FC9AA"
+    },
+    "vendor_and_vbmeta_vendor": "BYTE_PRESERVED_AND_REVERIFIED"
+  },
+  "kernel": {
+    "rebuilt": false,
+    "release": "5.4.302+",
+    "image_size": 23498760,
+    "image_sha256": "287A82F799982FB58D02ADE88150A9EAB22D4C0956BE3CE50765F6FD1DB24F40",
+    "path_a_six_configs": "PRESERVED",
+    "vendor_dlkm_modules": 22,
+    "aic_fmac_contract": "PRESERVED_0x00120000_UPLOAD_AND_START_0x00120180_PATCH_READ"
+  },
+  "graphics": {
+    "runtime_status": "INDEPENDENT_PHYSICAL_FAIL_UNCHANGED_NOT_FIXED",
+    "Mali": "03333D495E3566C7D85CA2E000DA569A16CE8F022EA25C0EA61950C891D5C7F8",
+    "mapper": "83A236476CB24DE2514159534A267334A4C8D7BC957497CD25C70C93F757762D",
+    "gralloc": "842BA5157989B6BCBF7DC800DC5323FAC9BEF37D914FA56A25A4656B97692E1F"
+  },
+  "hardware_authority": {
+    "Wi-Fi": "UNCHANGED",
+    "Ethernet": "UNCHANGED",
+    "audio": "UNCHANGED_KNOWN_POST_GATE_P1_DEBT",
+    "HWC_composer_allocator": "UNCHANGED_ARM32",
+    "OMX_Cedar": "UNCHANGED_ARM32",
+    "Bluetooth": "UNCHANGED_ARM32",
+    "TEE_DRM": "UNCHANGED",
+    "remote": "UNCHANGED",
+    "HDMI_display": "UNCHANGED"
+  },
+  "full_vintf": "INHERITED_CONFIG_NFS_FS_Y_VS_FCM6_N_EXIT_65_NOT_PASS"
+}
