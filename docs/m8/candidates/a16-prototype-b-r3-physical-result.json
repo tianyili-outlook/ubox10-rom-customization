@@ -1,0 +1,124 @@
+{
+  "schema": 1,
+  "candidate": "a16-prototype-b-r3",
+  "physical_date": "2026-08-28",
+  "evidence_provenance": {
+    "source": "USER_SUPPLIED_EXTERNAL_PHYSICAL_UART_AND_ROOT_CONSOLE_EVIDENCE",
+    "raw_capture_present_on_gcp": false,
+    "raw_capture_sha256": null,
+    "note": "This tracked record preserves the reviewed facts and exact excerpts supplied by the user. It does not claim that the original UART, tombstone or console captures are archived in Git."
+  },
+  "candidate_identity": {
+    "path": "out/candidates/a16-prototype-b-r3/x12-a16-prototype-b-r3.img",
+    "size": 1641760768,
+    "sha256": "7948D1B9AE4DC9E7B61EEF39876145BFCB4E6966FC12BC82925583477E5CB9D2",
+    "repository_commit": "fbb0015dda0e1545ffdeab4ea435c1c8d2d8321d"
+  },
+  "decision": "PHYSICAL FAIL — ARM64 RUNTIME REACHED / ZYGOTE64 ABI PROPERTY FAILURE + INDEPENDENT ARM64 GRAPHICS MAPPER FAILURE",
+  "r3_single_cause_vendor_fix": "PHYSICAL_PASS",
+  "crossed_boundaries": [
+    "kernel boot",
+    "first-stage init",
+    "metadata mount",
+    "dynamic partition setup",
+    "/metadata SwitchRoot contract",
+    "/vendor canonical mount contract",
+    "system root switch",
+    "second-stage userspace",
+    "root console",
+    "apexd running",
+    "vold reached",
+    "logd reached",
+    "keystore2 reached"
+  ],
+  "zygote64_failure": {
+    "result": "PHYSICAL_FAIL_GLOBAL_ABI_PROPERTY_CONTRACT",
+    "service": "restarting",
+    "cmdline": "/system/bin/app_process64 -Xzygote /system/bin --zygote --start-system-server --socket-name=zygote",
+    "abi": "arm64",
+    "signal": "SIGABRT",
+    "abort_message": "app_process: Unable to determine ABI list from property ro.product.cpu.abilist64.",
+    "deterministic": true,
+    "runtime_global_properties": {
+      "ro.zygote": "zygote64_32",
+      "ro.product.cpu.abi": "arm64-v8a",
+      "ro.product.cpu.abilist": "armeabi-v7a,armeabi",
+      "ro.product.cpu.abilist32": "armeabi-v7a,armeabi",
+      "ro.product.cpu.abilist64": ""
+    },
+    "runtime_system_scoped_properties": {
+      "ro.system.product.cpu.abilist": "arm64-v8a,armeabi-v7a,armeabi",
+      "ro.system.product.cpu.abilist32": "armeabi-v7a,armeabi",
+      "ro.system.product.cpu.abilist64": "arm64-v8a",
+      "ro.product.cpu.abi": "arm64-v8a"
+    },
+    "runtime_vendor_scoped_properties": {
+      "ro.vendor.product.cpu.abilist": "arm64-v8a,armeabi-v7a,armeabi",
+      "ro.vendor.product.cpu.abilist32": "armeabi-v7a,armeabi",
+      "ro.vendor.product.cpu.abilist64": "arm64-v8a",
+      "ro.zygote": "zygote64_32"
+    },
+    "executables": {
+      "/system/bin/app_process": "symlink to app_process64",
+      "/system/bin/app_process32": "present",
+      "/system/bin/app_process64": "present"
+    },
+    "service_states": {
+      "zygote": "restarting",
+      "zygote_secondary": "restarting",
+      "surfaceflinger": "restarting",
+      "apexd": "running"
+    }
+  },
+  "graphics_failure": {
+    "result": "PHYSICAL_FAIL_ARM64_GRAPHICS_MAPPER_RUNTIME",
+    "independent_of_zygote_failure": true,
+    "process": "/system/bin/surfaceflinger",
+    "abi": "arm64",
+    "signal": "SIGABRT",
+    "abort_message": "gralloc-mapper is missing",
+    "providers_present": {
+      "/vendor/lib64/egl/libGLES_mali.so": {
+        "sha256": "03333D495E3566C7D85CA2E000DA569A16CE8F022EA25C0EA61950C891D5C7F8"
+      },
+      "/vendor/lib64/hw/android.hardware.graphics.mapper@2.0-impl-2.1.so": {
+        "size": 36080,
+        "sha256": "83A236476CB24DE2514159534A267334A4C8D7BC957497CD25C70C93F757762D",
+        "selinux": "u:object_r:same_process_hal_file:s0"
+      },
+      "/vendor/lib64/hw/gralloc.apollo.so": {
+        "size": 77272,
+        "sha256": "842BA5157989B6BCBF7DC800DC5323FAC9BEF37D914FA56A25A4656B97692E1F",
+        "selinux": "u:object_r:same_process_hal_file:s0"
+      }
+    },
+    "linkerconfig": {
+      "path": "/linkerconfig/ld.config.txt",
+      "size": 108497,
+      "runtime_present": true,
+      "sphal_isolated": true,
+      "sphal_visible": true,
+      "vendor_lib64_search_paths_present": true,
+      "early_missing_generated_config_warning_is_not_a_final_runtime_absence": true
+    },
+    "hidl": {
+      "allocator_and_composer_visible": true,
+      "mapper_2_1_descriptor_enumerated": true,
+      "arm32_mapper_passthrough_evidence_present": true,
+      "arm64_mapper_equivalent_active_client_evidence_present": false,
+      "current_boundary": "ARM64 HIDL passthrough mapper discovery/load/instantiation contract"
+    }
+  },
+  "selinux": {
+    "relevant_zygote_surfaceflinger_mapper_gralloc_avc_denials_observed": false,
+    "classification": "NOT_LEADING_CAUSE_IN_CURRENT_PERMISSIVE_PROTOTYPE_RUNTIME"
+  },
+  "not_proven": [
+    "system_server reached or running",
+    "stable zygote32 secondary",
+    "mixed ABI runtime viability",
+    "Mali runtime",
+    "Android UI"
+  ],
+  "display_observation": "UI black because framework and graphics are both incomplete; this is not a generic r3 black-screen classification."
+}

@@ -1,11 +1,48 @@
 # Android 16 QPR0 Prototype B r3
 
-Date: 2026-08-27
+Date: 2026-08-27; physical result recorded 2026-08-28
 
-Status: **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**
+Offline status: **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**
 
-Physical status: **NOT YET VALIDATED**. This record authorizes no device action and makes no
-second-stage, mixed-runtime or graphics-runtime PASS claim.
+Physical status: **PHYSICAL FAIL — ARM64 RUNTIME REACHED / ZYGOTE64 ABI PROPERTY FAILURE +
+INDEPENDENT ARM64 GRAPHICS MAPPER FAILURE**. R3 is not accepted, but its single-cause `/vendor`
+correction is **PHYSICAL PASS**.
+
+## Physical result
+
+The user physically tested the exact candidate identified below. The original UART, tombstone and
+root-console captures are not present on this GCP VM; the tracked machine record preserves the
+reviewed user-supplied facts/excerpts and does not invent raw files or hashes.
+
+R3 crossed kernel boot, first-stage init, metadata and dynamic-partition setup, both prior
+SwitchRoot mountpoint failures, the system-root switch and second-stage userspace. A root console
+was available; `apexd` was running and `vold`, `logd` and `keystore2` were reached. The r2
+`realpath(/vendor) -> /system/vendor` failure disappeared, so the r3 `/vendor` directory restoration
+is physically closed. Prototype B is no longer a first-stage failure.
+
+Two independent deterministic runtime chains now block viability:
+
+1. ARM64 `app_process64` repeatedly aborts with
+   `Unable to determine ABI list from property ro.product.cpu.abilist64.` Runtime
+   `ro.zygote=zygote64_32` and `ro.product.cpu.abi=arm64-v8a`, but global
+   `ro.product.cpu.abilist=armeabi-v7a,armeabi` and `ro.product.cpu.abilist64` is empty. In contrast,
+   both `/system/build.prop` and `/vendor/build.prop` contain correct mixed partition-scoped
+   `abilist`, `abilist32` and `abilist64` values. `app_process64` and `app_process32` both exist;
+   `zygote` and `zygote_secondary` are restarting. The present primary blocker is therefore the
+   generated global ABI property contract, not a blanket failure of `TARGET_ARCH`/
+   `TARGET_2ND_ARCH`.
+2. ARM64 SurfaceFlinger is physically reached but repeatedly aborts with `gralloc-mapper is
+   missing`. Exact ARM64 Mali, mapper and gralloc files are present at their planned vendor paths
+   with the offline-locked hashes; runtime linkerconfig exists and exposes the SP-HAL namespace;
+   allocator/composer and the mapper 2.1 descriptor are visible; no relevant AVC denial was
+   observed. This excludes missing packaging, wrong `vendor_a`, permanent linkerconfig absence and
+   SELinux as leading explanations. It does not yet prove which ARM64 HIDL passthrough mapper
+   discovery/load/instantiation condition fails.
+
+`system_server`, a stable secondary zygote, mixed runtime viability, Mali runtime and UI remain
+**NOT YET PROVEN**. The physical black UI is the consequence of incomplete framework and graphics
+chains; it must not be simplified to a generic “r3 black screen.” Exact evidence fields are in
+`a16-prototype-b-r3-physical-result.json`.
 
 ## Decision and exact delta
 
@@ -114,10 +151,11 @@ audio P1 and inherited VINTF/SELinux limitations remain unchanged.
 Machine records are `a16-prototype-b-r3-offline-result.json` and
 `a16-prototype-b-r3-preservation.json`. The proprietary Mali blob remains outside Git.
 
-## Next physical question
+## Current handoff
 
-The next separately authorized test should use exact r3 and UART first. It must first prove the
-former `/vendor` canonical error is absent, `vendor_a` and remaining required early partitions
-mount, and second-stage init/APEX are reached. Only after that boundary is crossed should it test
-`zygote64_32`, AArch64 system_server/SurfaceFlinger/Mali and frozen-r4 hardware preservation. Do
-not create r4 or add another speculative fix before exact r3 physical evidence exists.
+R3 is frozen as an immutable physical failure. Exact signed-property and r7 source provenance now
+uniquely proves retained ARM32 ODM won global ABI derivation because product-scoped ABI metadata was
+absent. This authorized bounded r4, which adds only canonical product-scoped mixed ABI generation
+and is **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**. The independent ARM64 mapper audit is
+only partially conclusive; its fix is not mixed into r4. See the r3 root-cause/graphics machine
+records and `a16-prototype-b-r4.md`.

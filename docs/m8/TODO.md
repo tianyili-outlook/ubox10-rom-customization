@@ -2,7 +2,7 @@
 
 ## Freeze decision
 
-`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为稳定日用回退。`a16-prototype-a-r4` 现已冻结为 **PHYSICAL PASS / ACCEPTED Android 16 ARM32 ARCHITECTURE BASELINE / Prototype B ROLLBACK CONTROL**。用户明确把一次性、自动恢复的 boot-time `getAudioPort` SIGSEGV 从旧 Gate 2 startup-stability 条件改列为 **KNOWN / UNFIXED / POST-GATE P1 STABILIZATION DEBT**；故 Gate 2 为 **CLOSED / PASS**，不是静默弱化证据。当前不实施 Android 12 M8B feature、Prototype A r5 或 P1 polish；B1 r1/r2 已分别冻结为物理失败证据点，活跃执行合同是下述 exact single-cause r3 physical validation。
+`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为稳定日用回退。`a16-prototype-a-r4` 现已冻结为 **PHYSICAL PASS / ACCEPTED Android 16 ARM32 ARCHITECTURE BASELINE / Prototype B ROLLBACK CONTROL**。用户明确把一次性、自动恢复的 boot-time `getAudioPort` SIGSEGV 从旧 Gate 2 startup-stability 条件改列为 **KNOWN / UNFIXED / POST-GATE P1 STABILIZATION DEBT**；故 Gate 2 为 **CLOSED / PASS**，不是静默弱化证据。当前不实施 Android 12 M8B feature、Prototype A r5 或 P1 polish；Prototype B r1/r2/r3 均冻结为 immutable physical-fail evidence，唯一活跃候选是完成离线验收、等待首次实机验证的 single-cause ABI successor `a16-prototype-b-r4`。
 
 ## Android 16 Gate 1 / Gate 2 — Prototype A ARM32
 
@@ -99,10 +99,35 @@
   provider/hardware preservation PASS，46/50 outer payload byte-preserved，full VINTF 仍仅
   inherited NFS exit 65。R3 focused 6/6、combined r1/r2/r3 23/23、full lightweight 142 tests
   PASS（34 skips）。状态 **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**。
-- [ ] **18 — r3 physical architecture validation：**另行授权后只测试 exact r3。先证明旧
-  `/vendor` canonical error 消失、vendor/remaining early mounts PASS 并进入 second-stage/APEX；
-  再检查 `zygote64_32`、AArch64 system_server/SurfaceFlinger/Mali 与 r4 hardware preservation。
-  没有 r3 物理结果前不创建 r4。
+- [x] **18 — r3 physical architecture validation：**exact r3 已物理关闭 `/vendor` canonical
+  blocker 并跨过 first stage/system root switch，进入 second-stage ARM64 userspace；`apexd`
+  running。R3 的 `/vendor` fix **PHYSICAL PASS**，但总体冻结为 **PHYSICAL FAIL / NOT ACCEPTED**：
+  `app_process64` 因 global `ro.product.cpu.abilist64` 为空 deterministic abort；独立 ARM64
+  SurfaceFlinger 因 `gralloc-mapper is missing` abort。System/vendor scoped mixed ABI metadata
+  正确；三个 ARM64 provider 实机存在；system_server/stable zygote32/Mali/UI 均未证明。
+- [x] **19 — primary ABI provenance：**signed r3 product 没有 scoped ABI triplet，retained ODM
+  为 ARM32-only，system/vendor scoped mixed metadata 正确。Exact r7 init 在 partition load 后按
+  `product, odm, vendor, system` 生成 global list，所以 ODM 胜出并精确产生 live ARM32-only
+  `abilist`/empty `abilist64`；primary DeviceAbi 另行生成 arm64 `ro.product.cpu.abi`。Root cause
+  **UNIQUE / PROVEN**；无 runtime `setprop`、init/vendor workaround 或 arbitrary global patch。
+- [x] **20 — independent graphics read-only audit：**exact ARM64 mapper 是 ELF64/AArch64，SONAME/
+  DT_NEEDED 合同正确且导出 global `HIDL_FETCH_IMapper`；exact r7 HIDL passthrough loader 扫描该
+  filename，再以 `ro.board.platform=apollo` 载入 gralloc。实机 packaging/linkerconfig/SP-HAL/AVC
+  排除项成立，但缺少区分 `dlopen`/fetch/`hw_get_module`/gralloc init 的前置运行时记录，故 graphics
+  root cause **PARTIALLY PROVEN / NOT UNIQUE**。没有把 graphics fix 混入 r4。
+- [x] **21 — bounded `a16-prototype-b-r4` offline closure：**正确 product source generation 只在
+  product_a `etc/build.prop` 加 canonical mixed scoped triplet；r3 system/vendor/graphics/kernel/
+  boot/vendor_boot/fstab/hardware stack byte-preserved。IMG 1,641,760,768 bytes /
+  `9A7E9FE31CBC16E17B458D8832739056B2A17F5B47BC221730B78EB0DDDCBBEC`；ext4/AVB/LP/IMAGEWTY/
+  48-of-50 preservation/ELF/APEX/VNDK/linker/Mali/SELinux/kernel audits PASS。Full VINTF 保持仅
+  inherited NFS exit 65，**NOT PASS**。状态 **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**，
+  physical mixed-runtime 仍未证明。
+- [ ] **22 — r4 physical ABI gate（唯一下一步）：**UART-first default boot；确认 `/metadata` 与
+  canonical `/vendor` 继续跨过、second stage reached；读取 global `ro.product.cpu.abilist*`；证明
+  `app_process64` 不再因 empty abilist64 abort、`zygote`/`zygote_secondary` 均稳定且 AArch64
+  system_server reached/running。SurfaceFlinger mapper failure 为独立 gate：若 ABI/zygote/
+  system_server 已跨过但 mapper 仍失败，r4 应记 ABI fix physical PASS + graphics physical FAIL，
+  不得误记 ABI regression，也不得在同次候选混入 graphics 修复。
 
 ## Post-Gate stabilization / release hardening
 
@@ -167,4 +192,4 @@
 - [x] 完成限定只读 system-quality audit：无 P0；stability、retry loop、audio residual、SELinux、CPU/thermal/idle、graphics 与 memory 证据见 `docs/m8/device-tests/20260816-m8b-system-quality-audit/`。
 - [ ] **DEFERRED / P2 / 不修：**Wi-Fi HAL link-layer statistics 每约 3 秒返回 `ERROR_UNKNOWN`；网络 ADB 稳定且 Wi-Fi 进程未重启。
 - [x] 保持 Mouse mode dropped；不重新引入 vendor mouse framework。
-- [x] architecture-ceiling study 与 B0 已锁定 paired AArch64 Mali、AOSP mapper adapter、multilib gralloc-1.x、lawful-local fail-closed intake、vendor property 与 AVB scope；ARM32 OMX/Cedar/media/HWC/audio/Wi-Fi/BT/DRM/TEE 继续进程隔离复用。R1 `/metadata` 与 r2 `/vendor` root causes 均已证明；single-cause r3 已完整离线闭合，当前执行合同是上文 18 的 exact r3 physical validation。
+- [x] architecture-ceiling study 与 B0 已锁定 paired AArch64 Mali、AOSP mapper adapter、multilib gralloc-1.x、lawful-local fail-closed intake、vendor property 与 AVB scope；ARM32 OMX/Cedar/media/HWC/audio/Wi-Fi/BT/DRM/TEE 继续进程隔离复用。R1 `/metadata`、r2 `/vendor` 与 r3 global ABI root causes 均已证明；r4 single-cause ABI successor 已完整离线关闭，当前唯一执行合同是上文 22 的 r4 physical ABI gate，graphics 保持独立未修边界。

@@ -21,6 +21,16 @@ DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE += \
 PRODUCT_SYSTEM_PROPERTIES += \
     ro.hardware.egl=mali
 
+# The retained API-31 ODM declares only the mature ARM32 ABI. Android 16 init
+# derives the global ABI triplet from product, odm, vendor, then system. Publish
+# this mixed product's exact BoardConfig-derived ABI contract at the highest
+# standard partition scope; the candidate builder fails closed if these values
+# ever diverge from TARGET_CPU_ABI_LIST{,_32_BIT,_64_BIT}.
+PRODUCT_PRODUCT_PROPERTIES += \
+    ro.product.product.cpu.abilist=arm64-v8a,armeabi-v7a,armeabi \
+    ro.product.product.cpu.abilist32=armeabi-v7a,armeabi \
+    ro.product.product.cpu.abilist64=arm64-v8a
+
 PRODUCT_COPY_FILES += \
     device/ubox/ceiling/sunxi-ir.kl:system/usr/keylayout/sunxi-ir.kl
 

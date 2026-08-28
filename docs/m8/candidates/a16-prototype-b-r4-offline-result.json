@@ -1,0 +1,117 @@
+{
+  "schema": 1,
+  "candidate": "a16-prototype-b-r4",
+  "status": "OFFLINE_CHECKED_READY_FOR_PHYSICAL_VALIDATION",
+  "decision": "OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION",
+  "physical_status": "NOT_YET_VALIDATED",
+  "full_vintf": "INCOMPATIBLE_EXIT_65_INHERITED_CONFIG_NFS_FS_EXCEPTION_ONLY_NOT_PASS",
+  "physical_device_actions_performed": false,
+  "flash_authorized_by_offline_audit": false,
+  "base": {
+    "candidate": "a16-prototype-b-r3",
+    "path": "out/candidates/a16-prototype-b-r3/x12-a16-prototype-b-r3.img",
+    "size": 1641760768,
+    "sha256": "7948D1B9AE4DC9E7B61EEF39876145BFCB4E6966FC12BC82925583477E5CB9D2",
+    "physical_status": "PHYSICAL_FAIL_ARM64_RUNTIME_REACHED_ZYGOTE64_ABI_PROPERTY_AND_GRAPHICS_MAPPER"
+  },
+  "artifacts": {
+    "candidate": {"path": "out/candidates/a16-prototype-b-r4/x12-a16-prototype-b-r4.img", "size": 1641760768, "sha256": "9A7E9FE31CBC16E17B458D8832739056B2A17F5B47BC221730B78EB0DDDCBBEC"},
+    "system_a": {"size": 1651167232, "sha256": "F77559D602C780C5FBB1183FB7F26009EF7B66781BC2FC57DE9341997B8260EB"},
+    "vendor_a": {"size": 150994944, "sha256": "0166B5FB1718715E79F68D5A9FEAAE02439DC59DBE2379D4C1DA670541C7EC9B"},
+    "product_a": {"size": 272629760, "sha256": "C9050355ABB7C92D985275DBCF8D71E0796B371B0439D382464C8EA0E541A476"},
+    "super_raw": {"size": 3221225472, "sha256": "C09454E672090677554BC1B299DB50EA3978809B2D6F558D28270FF1797959E6"},
+    "super_sparse": {"size": 1461963904, "sha256": "62A69A8C4A719E050D4C6BDFC46E4CFF04F14951D26F9ABC34FFE58610EC4249"},
+    "vbmeta_system": {"size": 1472, "sha256": "DC7067B9AD494967968BF496E9B6D211EA84479815B77DF1EF845E2E8BF9D29C"},
+    "vbmeta_vendor": {"size": 1600, "sha256": "DE14183FAFBBEA3EC0D2B0E8737FF9F71BA001186A0DE0D58E24891706ACE6C5"}
+  },
+  "source": {
+    "tag": "android-security-16.0.0_r7",
+    "manifest_commit": "ebea28d151539ecf0730b1a4ab92ac33edc17ac9",
+    "build_id": "BP2A.250805.034",
+    "lunch": "ubox10_ceiling_arm64-bp2a-userdebug",
+    "repository_starting_head": "fbb0015dda0e1545ffdeab4ea435c1c8d2d8321d",
+    "generated_property_build_number": "UBOX10_A16_QPR0_B4",
+    "source_file_sha256": "1EE047D6824B31B8CCA4F239F949CC0F4E8E403194B84BBB818DF04A1F487341",
+    "generated_product_build_prop_sha256": "7508D4DDA27B68D52D7CBDC891F15D3DD91CB942E9DBB3E590D35697A4997729",
+    "android_system_rebuilt": false,
+    "kernel_rebuilt": false
+  },
+  "root_cause": {
+    "result": "PROVEN_R7_GLOBAL_ABI_DERIVATION_SELECTED_RETAINED_ARM32_ODM_BECAUSE_PRODUCT_SCOPED_ABI_METADATA_WAS_ABSENT",
+    "priority": ["product", "odm", "vendor", "system"],
+    "r3_product_scoped_abi": "ABSENT",
+    "r3_odm_scoped_abi": "ARM32_ONLY",
+    "r3_system_and_vendor_scoped_abi": "CORRECT_MIXED",
+    "r3_live_global_abilist": "armeabi-v7a,armeabi",
+    "r3_live_global_abilist64": "",
+    "separate_primary_abi": "ro.product.cpu.abi=arm64-v8a"
+  },
+  "single_cause_delta": {
+    "partition": "product_a",
+    "tree_added": [],
+    "tree_removed": [],
+    "tree_changed": ["etc/build.prop"],
+    "added_lines": [
+      "ro.product.product.cpu.abilist=arm64-v8a,armeabi-v7a,armeabi",
+      "ro.product.product.cpu.abilist32=armeabi-v7a,armeabi",
+      "ro.product.product.cpu.abilist64=arm64-v8a"
+    ],
+    "expected_r7_global_derivation": {
+      "source": "product",
+      "ro.product.cpu.abilist": "arm64-v8a,armeabi-v7a,armeabi",
+      "ro.product.cpu.abilist32": "armeabi-v7a,armeabi",
+      "ro.product.cpu.abilist64": "arm64-v8a"
+    }
+  },
+  "architecture": {
+    "result": "PASS_OFFLINE_MIXED_ARM64_PRIMARY_ARM32_SECONDARY",
+    "zygote": "zygote64_32",
+    "app_process32": "PRESENT",
+    "app_process64": "PRESENT",
+    "system_aarch64_elf": 1471,
+    "system_arm_elf": 701,
+    "vendor_aarch64_services": 0,
+    "vendor_aarch64_provider_count": 3
+  },
+  "offline_gates": {
+    "filesystem_e2fsck": "PASS",
+    "product_avb": "PASS_SHA256_RSA2048_HASHTREE_NO_FEC_ROLLBACK_0_LOCATION_0",
+    "system_vendor_avb": "PASS_BYTE_PRESERVED_FROM_R3",
+    "lp_geometry": "PASS_BYTE_PRESERVED_FROM_R3",
+    "super_sparse_roundtrip": "PASS",
+    "imagewty": "PASS",
+    "outer_payloads": "PASS_48_OF_50_BYTE_PRESERVED",
+    "apex": "PASS_35_INSTALLED_AND_ACTIVATED",
+    "vndk31": "PASS_BOTH_ARCHITECTURES",
+    "linkerconfig": "PASS_MIXED_LIB_AND_ARM64_SPHAL",
+    "mali_symbol_closure": "PASS_297_STRONG_IMPORTS_ZERO_UNMATCHED",
+    "selinux": "PASS_OFFLINE_SPLIT_COMPILE_ONLY",
+    "system_vintf": "PASS",
+    "full_vintf": "INCOMPATIBLE_EXPECTED_INHERITED_NFS_EXCEPTION_ONLY",
+    "full_vintf_exit": 65,
+    "unexpected_vintf_incompatibilities": 0,
+    "kernel": "PASS_PRESERVED_5.4.302_PATH_A",
+    "vendor_dlkm": "PASS_PRESERVED_22_MODULES",
+    "aic_fmac": "PASS_PRESERVED",
+    "root_mountpoints": "PASS_METADATA_AND_VENDOR_BYTE_PRESERVED_FROM_PHYSICALLY_CROSSED_R3",
+    "preservation": "PASS",
+    "focused_tests": "PASS_6_OF_6",
+    "full_lightweight_tests": "OK_148_DISCOVERED_WITH_34_DECLARED_FIXTURE_SKIPS",
+    "json_parse": "PASS_56_FILES",
+    "python_compile": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "graphics_read_only_audit": {
+    "classification": "PARTIALLY_PROVEN_NOT_UNIQUE",
+    "fix_in_r4": false,
+    "eliminated": ["missing providers", "wrong mapper ELF class or filename", "missing HIDL_FETCH_IMapper export", "permanent linkerconfig absence", "leading SELinux denial"],
+    "remaining_boundary": "ARM64 HIDL passthrough mapper dlopen/fetch/hw_get_module/gralloc initialization"
+  },
+  "limitations": [
+    "r4 has not been flashed or physically validated.",
+    "Offline global ABI derivation does not prove zygote64 runtime until physical testing.",
+    "The independent SurfaceFlinger gralloc-mapper failure is unchanged and unresolved.",
+    "Full VINTF remains exit 65 solely for inherited CONFIG_NFS_FS=y versus FCM-6 n.",
+    "The known auto-recovered Prototype A r4 boot-time audio defect remains post-Gate P1 and unfixed."
+  ]
+}

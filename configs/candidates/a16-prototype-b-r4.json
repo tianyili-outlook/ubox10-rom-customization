@@ -1,0 +1,173 @@
+{
+  "schema": 1,
+  "id": "a16-prototype-b-r4",
+  "milestone": "Prototype B single-cause global ABI property continuation",
+  "status": "ROOT_CAUSE_PROVEN_SINGLE_CAUSE_R4_AUTHORIZED",
+  "inherits": "configs/candidates/a16-prototype-b-r1.json",
+  "base_candidate": {
+    "id": "a16-prototype-b-r3",
+    "path": "out/candidates/a16-prototype-b-r3/x12-a16-prototype-b-r3.img",
+    "size": 1641760768,
+    "sha256": "7948D1B9AE4DC9E7B61EEF39876145BFCB4E6966FC12BC82925583477E5CB9D2"
+  },
+  "base_artifacts": {
+    "system_a": {
+      "path": "out/candidates/a16-prototype-b-r3/system_a.img",
+      "size": 1651167232,
+      "sha256": "F77559D602C780C5FBB1183FB7F26009EF7B66781BC2FC57DE9341997B8260EB"
+    },
+    "product_a": {
+      "path": "out/candidates/a16-prototype-b-r3/candidate-logical/product_a.img",
+      "size": 272629760,
+      "sha256": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974"
+    },
+    "vendor_a": {
+      "path": "out/candidates/a16-prototype-b-r3/vendor_a.img",
+      "size": 150994944,
+      "sha256": "0166B5FB1718715E79F68D5A9FEAAE02439DC59DBE2379D4C1DA670541C7EC9B"
+    },
+    "vendor_dlkm_a": {
+      "path": "out/candidates/a16-prototype-b-r3/vendor_dlkm_a.img",
+      "size": 6680576,
+      "sha256": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07"
+    },
+    "super_raw": {
+      "path": "out/candidates/a16-prototype-b-r3/super.raw.img",
+      "size": 3221225472,
+      "sha256": "2DB09C51686BAB041C0EC66A18B8F31990A4136B3783171596F1D599D0556C75"
+    },
+    "vbmeta_system": {
+      "path": "out/candidates/a16-prototype-b-r3/vbmeta_system.fex",
+      "size": 1472,
+      "sha256": "DC7067B9AD494967968BF496E9B6D211EA84479815B77DF1EF845E2E8BF9D29C"
+    },
+    "vbmeta_vendor": {
+      "path": "out/candidates/a16-prototype-b-r3/vbmeta_vendor.fex",
+      "size": 1600,
+      "sha256": "DE14183FAFBBEA3EC0D2B0E8737FF9F71BA001186A0DE0D58E24891706ACE6C5"
+    },
+    "boot": {
+      "path": "out/candidates/a16-prototype-b-r3/boot.fex",
+      "size": 67108864,
+      "sha256": "527CF878B015CFAE4E8600BD750C7C73F45F4290B5CFEFEDBD1AD9AC347B8063"
+    }
+  },
+  "root_cause": {
+    "result": "PROVEN_GLOBAL_ABI_DERIVATION_SELECTS_RETAINED_ARM32_ODM_METADATA",
+    "physical_abort": "app_process: Unable to determine ABI list from property ro.product.cpu.abilist64.",
+    "property_source_order": [
+      "product",
+      "odm",
+      "vendor",
+      "system"
+    ],
+    "r3_product_scoped_abi": "ABSENT",
+    "r3_odm_scoped_abi": "armeabi-v7a,armeabi / abilist64 empty",
+    "r3_vendor_and_system_scoped_abi": "arm64-v8a,armeabi-v7a,armeabi",
+    "derived_r3_global": "armeabi-v7a,armeabi / abilist64 empty",
+    "exact_audit": "docs/m8/candidates/a16-prototype-b-r3-abi-root-cause.json",
+    "fstab": {
+      "sha256": "6C771313A6F9DEDAEFA4061B14FE142F050F4AB13D360FF2F60FB9361277F701",
+      "vendor_entry": "vendor /vendor ext4 ro,barrier=1 wait,first_stage_mount,logical,slotselect"
+    },
+    "first_stage_init": {
+      "r2_sha256": "2A7D6E125583C79E925B5D916C54C51E4AE8EE145F2D7422B2DD77D0B6C62751"
+    }
+  },
+  "generated_product_property_contract": {
+    "source_relative": "configs/aosp/architecture-ceiling-a16/device/ubox/ceiling/ubox10_ceiling_arm64.mk",
+    "source_sha256": "1EE047D6824B31B8CCA4F239F949CC0F4E8E403194B84BBB818DF04A1F487341",
+    "aosp_relative": "device/ubox/ceiling/ubox10_ceiling_arm64.mk",
+    "generated_path": "/work/src/ubox10-a16-ceiling/out-ceiling-b1/target/product/ubox10_ceiling_arm64/system/product/etc/build.prop",
+    "generated_size": 1814,
+    "generated_sha256": "7508D4DDA27B68D52D7CBDC891F15D3DD91CB942E9DBB3E590D35697A4997729",
+    "properties": {
+      "ro.product.product.cpu.abilist": "arm64-v8a,armeabi-v7a,armeabi",
+      "ro.product.product.cpu.abilist32": "armeabi-v7a,armeabi",
+      "ro.product.product.cpu.abilist64": "arm64-v8a"
+    },
+    "must_equal_build_variables": {
+      "ro.product.product.cpu.abilist": "TARGET_CPU_ABI_LIST",
+      "ro.product.product.cpu.abilist32": "TARGET_CPU_ABI_LIST_32_BIT",
+      "ro.product.product.cpu.abilist64": "TARGET_CPU_ABI_LIST_64_BIT"
+    }
+  },
+  "avb_product": {
+    "partition_size": 272629760,
+    "original_filesystem_size": 268435456,
+    "salt": "6d38622d696d652d7231",
+    "rollback_index": 0,
+    "rollback_index_location": 0,
+    "key_relative": "tools/testkey_rsa2048.pem",
+    "algorithm": "SHA256_RSA2048",
+    "fec": "none"
+  },
+  "avb_system": {
+    "partition_size": 1651167232,
+    "original_filesystem_size": 1250484224,
+    "salt": "6131362d70726f746f747970652d622d7231",
+    "rollback_index": 1644019200,
+    "rollback_index_location": 1,
+    "key_relative": "tools/testkey_rsa2048.pem",
+    "algorithm": "SHA256_RSA2048",
+    "fec": "none"
+  },
+  "root_mountpoint_contract": {
+    "path": "/vendor",
+    "r4": {
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 2000,
+      "selinux": "u:object_r:vendor_file:s0"
+    },
+    "r2": {
+      "type": "symlink",
+      "target": "/system/vendor",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "selinux": "u:object_r:vendor_file:s0"
+    },
+    "audited_root_objects": [
+      "/vendor",
+      "/product",
+      "/odm",
+      "/system_ext",
+      "/metadata",
+      "/vendor_dlkm",
+      "/oem"
+    ]
+  },
+  "product_extent": {
+    "sector_size": 512,
+    "first_sector": 3461120,
+    "sector_count": 532480,
+    "lp_geometry_must_remain_exact": true
+  },
+  "outer_delta": {
+    "changed_payloads_from_base": [
+      "Vsuper.fex",
+      "super.fex"
+    ],
+    "preserved_payload_count_from_base": 48
+  },
+  "allowed_semantic_delta": [
+    "Add exactly the three source-generated ro.product.product.cpu.abilist* lines to retained product_a:/etc/build.prop."
+  ],
+  "forbidden_changes": [
+    "system_a",
+    "vendor_a",
+    "vendor_dlkm_a",
+    "kernel",
+    "boot_or_vendor_boot",
+    "fstab",
+    "metadata_or_vendor_root_contract",
+    "Mali_mapper_gralloc",
+    "zygote_or_mixed_architecture",
+    "hardware_HAL_stack",
+    "LP_geometry",
+    "vbmeta_system_or_vbmeta_vendor",
+    "all_other_B1_semantics"
+  ]
+}

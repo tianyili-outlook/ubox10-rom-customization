@@ -1,0 +1,134 @@
+{
+  "schema": 1,
+  "candidate": "a16-prototype-b-r3",
+  "audit_date": "2026-08-28",
+  "result": "PROVEN_GLOBAL_ABI_DERIVATION_SELECTS_RETAINED_ARM32_ODM_METADATA",
+  "signed_image_census": {
+    "system_a:/system/build.prop": {
+      "size": 5542,
+      "sha256": "5AFFAE0EE9287DB808B3BF7E363BC5119B8D93C6FBEFC2F9E6B701E24DFF3A0C",
+      "properties": {
+        "ro.system.product.cpu.abilist": "arm64-v8a,armeabi-v7a,armeabi",
+        "ro.system.product.cpu.abilist32": "armeabi-v7a,armeabi",
+        "ro.system.product.cpu.abilist64": "arm64-v8a",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "ro.product.cpu.abi2": null,
+        "ro.product.cpu.abilist": null,
+        "ro.product.cpu.abilist32": null,
+        "ro.product.cpu.abilist64": null
+      }
+    },
+    "product_a:/etc/build.prop": {
+      "size": 1158,
+      "sha256": "62745843C6E22B2168E72055D931CF523ECF74D112B38AC6BFFFC6D99CABA4F1",
+      "properties": {
+        "ro.product.product.cpu.abilist": null,
+        "ro.product.product.cpu.abilist32": null,
+        "ro.product.product.cpu.abilist64": null,
+        "ro.product.cpu.abi": null,
+        "ro.product.cpu.abi2": null,
+        "ro.product.cpu.abilist": null,
+        "ro.product.cpu.abilist32": null,
+        "ro.product.cpu.abilist64": null
+      }
+    },
+    "system_a:/system/product/etc/build.prop_hidden_by_product_mount": {
+      "size": 1657,
+      "sha256": "62A8B2F676AA7FCAA06516EC0F7447ADFAAEB11CC8B1EACE084ABDD25105BD73",
+      "cpu_abi_properties": "NONE_EXCEPT_CPU_PAGESIZE"
+    },
+    "system_a:/system/system_ext/etc/build.prop": {
+      "size": 1128,
+      "sha256": "A80122640637DF71CDD9FD90B91D15AFBDEF144CA4FF2F89CEB6859964AD777E",
+      "cpu_abi_properties": "NONE"
+    },
+    "vendor_a:/build.prop": {
+      "size": 4196,
+      "sha256": "060065F369F4C9CD3D506D92397B67337D841D41AA057447D345D251B12145B1",
+      "properties": {
+        "ro.vendor.product.cpu.abilist": "arm64-v8a,armeabi-v7a,armeabi",
+        "ro.vendor.product.cpu.abilist32": "armeabi-v7a,armeabi",
+        "ro.vendor.product.cpu.abilist64": "arm64-v8a",
+        "ro.zygote": "zygote64_32"
+      }
+    },
+    "vendor_a:/odm/etc/build.prop": {
+      "size": 1167,
+      "sha256": "06E5694B7CA10F04F5CE18C8CB1AA58E9833D294C9EB8F37C9E5288031C2083A",
+      "properties": {
+        "ro.odm.product.cpu.abilist": "armeabi-v7a,armeabi",
+        "ro.odm.product.cpu.abilist32": "armeabi-v7a,armeabi",
+        "ro.odm.product.cpu.abilist64": ""
+      }
+    }
+  },
+  "build_variable_census": {
+    "lunch": "ubox10_ceiling_arm64-bp2a-userdebug",
+    "TARGET_ARCH": "arm64",
+    "TARGET_ARCH_VARIANT": "armv8-a",
+    "TARGET_CPU_VARIANT": "generic",
+    "TARGET_CPU_ABI": "arm64-v8a",
+    "TARGET_CPU_ABI2": "",
+    "TARGET_2ND_ARCH": "arm",
+    "TARGET_2ND_ARCH_VARIANT": "armv7-a-neon",
+    "TARGET_2ND_CPU_VARIANT": "cortex-a15",
+    "TARGET_2ND_CPU_ABI": "armeabi-v7a",
+    "TARGET_2ND_CPU_ABI2": "armeabi",
+    "TARGET_SUPPORTS_32_BIT_APPS": "true",
+    "TARGET_SUPPORTS_64_BIT_APPS": "true",
+    "TARGET_CPU_ABI_LIST": "arm64-v8a,armeabi-v7a,armeabi",
+    "TARGET_CPU_ABI_LIST_32_BIT": "armeabi-v7a,armeabi",
+    "TARGET_CPU_ABI_LIST_64_BIT": "arm64-v8a",
+    "PRODUCT_PRODUCT_PROPERTIES_before_fix_contains_cpu_abi": false,
+    "PRODUCT_VENDOR_PROPERTIES_ro_zygote": "zygote64_32"
+  },
+  "exact_source": {
+    "tag": "android-security-16.0.0_r7",
+    "manifest_commit": "ebea28d151539ecf0730b1a4ab92ac33edc17ac9",
+    "build_soong_commit": "4e8a4d55b99fce2bacf24b4942abf13d6cda2e12",
+    "build_make_commit": "e780ae328060afca5ed007c34322bfa7ce9b4e60",
+    "system_core_commit": "68be0c2c0006a0740d0b1809abe4717308f90d15",
+    "build/soong/scripts/gen_build_prop.py_sha256": "D2C77F1CD6C76AFA29BE61AFAE8330B2A715E07B989FF960B57294D81009E346",
+    "build/make/core/board_config.mk_sha256": "2CF651C6D05243B04AB81A0931960107353D18B967C9D82B100DFFD8604E6668",
+    "system/core/init/property_service.cpp_sha256": "A48EEE58722F41C717323E853F1777C1E3D1ED264FDFF45DAD6796ADA03E39E7"
+  },
+  "source_logic": {
+    "partition_generation": "gen_build_prop.py emits ro.<partition>.product.cpu.abilist* automatically only for system, vendor and odm; product has no automatic ABI triplet.",
+    "global_derivation": "property_initialize_ro_cpu_abilist() derives an absent global triplet from the first source with a non-empty 32- or 64-bit list in fixed order product, odm, vendor, system.",
+    "property_load": "PropertyLoadBootDefaults loads system, system_ext, vendor, odm and product property files before global ABI derivation.",
+    "obsolete_abi": "ro.product.cpu.abi is emitted separately by gen_build_prop.py from DeviceAbi[0] and is not rewritten by property_initialize_ro_cpu_abilist()."
+  },
+  "causal_evaluation": {
+    "product": "ABSENT",
+    "odm": {
+      "abilist32": "armeabi-v7a,armeabi",
+      "abilist64": "",
+      "selected": true
+    },
+    "vendor": "CORRECT_BUT_NOT_REACHED_DUE_TO_ODM_PRIORITY",
+    "system": "CORRECT_BUT_NOT_REACHED_DUE_TO_ODM_PRIORITY",
+    "derived_global": {
+      "ro.product.cpu.abilist": "armeabi-v7a,armeabi",
+      "ro.product.cpu.abilist32": "armeabi-v7a,armeabi",
+      "ro.product.cpu.abilist64": ""
+    },
+    "matches_physical_runtime_exactly": true,
+    "explains_ro_product_cpu_abi_arm64_independently": true
+  },
+  "bounded_fix_contract": {
+    "source": "PRODUCT_PRODUCT_PROPERTIES in the mixed ARM64 product",
+    "generated_partition": "product",
+    "properties": {
+      "ro.product.product.cpu.abilist": "arm64-v8a,armeabi-v7a,armeabi",
+      "ro.product.product.cpu.abilist32": "armeabi-v7a,armeabi",
+      "ro.product.product.cpu.abilist64": "arm64-v8a"
+    },
+    "why": "Product is the documented highest-priority ABI source. Adding its canonical build-derived mixed triplet makes init derive the canonical global values without changing retained ODM/vendor, init, runtime scripts or architecture.",
+    "required_fail_closed_check": "The three source-generated product values must equal TARGET_CPU_ABI_LIST, TARGET_CPU_ABI_LIST_32_BIT and TARGET_CPU_ABI_LIST_64_BIT before candidate assembly.",
+    "runtime_setprop": false,
+    "init_workaround": false,
+    "vendor_workaround": false,
+    "vendor_a_change": false
+  },
+  "r4_authorization": "AUTHORIZED_SINGLE_CAUSE_PRODUCT_SCOPED_ABI_PROPERTY_GENERATION"
+}

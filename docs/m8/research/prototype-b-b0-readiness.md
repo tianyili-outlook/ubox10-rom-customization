@@ -46,9 +46,14 @@ physically passes the `/metadata` correction, then fails at the next first-stage
 root `/vendor` is a symlink to `/system/vendor` and cannot be the canonical target for the
 independent vendor mount. Exact r4/r2 root, BoardConfig, root-generation, fstab and init evidence
 uniquely proves that cause. `a16-prototype-b-r3` restores only the exact accepted r4 root `/vendor`
-directory contract and is **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**; no mixed-runtime
-PASS is claimed. See the r1/r2/r3 candidate records, `a16-prototype-b-r1-first-stage-audit.json`
-and `a16-prototype-b-r2-root-layout-audit.json`.
+directory contract and completed its historical offline gate. Its later physical test closes
+`/vendor`, reaches ARM64 second stage, then freezes independent zygote64 ABI-property and mapper
+failures. Exact r7 priority (`product, odm, vendor, system`) proves retained ARM32 ODM wins because
+r3 product has no scoped ABI metadata. Bounded `a16-prototype-b-r4` therefore adds only the canonical
+product-scoped mixed triplet; its complete audit is **OFFLINE CHECKED / READY FOR PHYSICAL
+VALIDATION**, not physical PASS. Graphics remains unchanged and separately unresolved. See the
+r1-r4 candidate records, `a16-prototype-b-r1-first-stage-audit.json`,
+`a16-prototype-b-r2-root-layout-audit.json`, and the r3 physical/root-cause machine records.
 
 This record is the integration contract for the first Prototype B build task. B0 was read-only:
 no Android or kernel build ran, no source or accepted image was modified, no candidate was created,

@@ -282,7 +282,9 @@ Python syntax compilation, JSON parsing and `git diff --check` also pass.
 r1 remains the immutable failed physical evidence point and is not accepted. Its exact root cause
 authorized one strict `a16-prototype-b-r2`, whose `/metadata` correction later physically passed.
 R2 then froze a new first-stage failure at a noncanonical `/vendor` symlink. Exact root/build
-provenance uniquely proved that next cause and authorized single-cause `a16-prototype-b-r3`; r3 is
-**OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**. See the separate r2/r3 candidate records. The
+provenance uniquely proved that next cause and authorized single-cause `a16-prototype-b-r3`. R3
+later physically closed `/vendor`, reached ARM64 second stage, then froze global-ABI and independent
+mapper failures. Exact ABI provenance authorized single-cause `a16-prototype-b-r4`, now **OFFLINE
+CHECKED / READY FOR PHYSICAL VALIDATION**. See the separate r2/r3/r4 candidate records. The
 known r4 auto-recovered boot-time legacy audio failure remains unchanged and unfixed. Vulkan,
 enforcing SELinux, commercial DRM and release-hardening work remain outside this failure boundary.

@@ -133,6 +133,9 @@ same symlinks in r4/r2 and are excluded by identical `skip_mount.cfg`; `/odm`, `
 `/vendor_dlkm` and `/oem` are matching canonical directories. Thus `/vendor` is the unique next
 root-layout cause.
 
-That proof authorizes one strict successor, `a16-prototype-b-r3`, which replaces only this root
-symlink with the exact r4 empty-directory contract. See
-`a16-prototype-b-r2-root-layout-audit.json`; do not reinterpret r2 itself as accepted.
+That proof authorized one strict successor, `a16-prototype-b-r3`, which replaced only this root
+symlink with the exact r4 empty-directory contract. R3 later physically passed that correction and
+reached ARM64 second stage before exposing separate ABI-property and mapper failures; bounded r4
+now carries only the proven ABI-property correction and awaits physical validation. See
+`a16-prototype-b-r2-root-layout-audit.json` and the r3/r4 records; do not reinterpret r2 itself as
+accepted.
