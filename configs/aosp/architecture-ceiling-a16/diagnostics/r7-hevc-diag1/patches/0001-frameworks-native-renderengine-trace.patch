@@ -1,0 +1,88 @@
+Subject: [DIAGNOSTIC ONLY] trace YV12 RenderEngine import contract
+
+NO FUNCTIONAL REPAIR.  This patch only emits bounded UBOX_R7_DIAG1 records.
+
+diff --git a/libs/renderengine/skia/SkiaRenderEngine.cpp b/libs/renderengine/skia/SkiaRenderEngine.cpp
+index 46c58b0c27..1ce8cc74a3 100644
+--- a/libs/renderengine/skia/SkiaRenderEngine.cpp
++++ b/libs/renderengine/skia/SkiaRenderEngine.cpp
+@@ -433,6 +433,17 @@ void SkiaRenderEngine::mapExternalTextureBuffer(const sp<GraphicBuffer>& buffer,
+     if (isProtectedBuffer || isProtected() || !isGpuSampleable) {
+         return;
+     }
++    if (buffer->getPixelFormat() == HAL_PIXEL_FORMAT_YV12 && buffer->getWidth() >= 1280 &&
++        buffer->getHeight() >= 720) {
++        ALOGI("UBOX_R7_DIAG1 stage=RENDERENGINE_MAP buffer_id=%" PRIu64
++              " w=%u h=%u stride=%u layers=%u format_dec=%d format_hex=0x%08x"
++              " usage=0x%016" PRIx64 " protected=%d writeable=%d readable=%d"
++              " generation=%u name=unavailable_gralloc2",
++              buffer->getId(), buffer->getWidth(), buffer->getHeight(), buffer->getStride(),
++              buffer->getLayerCount(), static_cast<int32_t>(buffer->getPixelFormat()),
++              static_cast<uint32_t>(buffer->getPixelFormat()), buffer->getUsage(),
++              isProtectedBuffer, isRenderable, !isRenderable, buffer->getGenerationNumber());
++    }
+     SFTRACE_CALL();
+ 
+     // If we were to support caching protected buffers then we will need to switch the
+diff --git a/libs/renderengine/skia/compat/GaneshBackendTexture.cpp b/libs/renderengine/skia/compat/GaneshBackendTexture.cpp
+index 88282e7f5a..73a8a41387 100644
+--- a/libs/renderengine/skia/compat/GaneshBackendTexture.cpp
++++ b/libs/renderengine/skia/compat/GaneshBackendTexture.cpp
+@@ -35,6 +35,8 @@
+ #include <common/trace.h>
+ #include <log/log_main.h>
+ 
++#include <inttypes.h>
++
+ namespace android::renderengine::skia {
+ 
+ GaneshBackendTexture::GaneshBackendTexture(sk_sp<GrDirectContext> grContext,
+@@ -43,13 +45,34 @@ GaneshBackendTexture::GaneshBackendTexture(sk_sp<GrDirectContext> grContext,
+     SFTRACE_CALL();
+     AHardwareBuffer_Desc desc;
+     AHardwareBuffer_describe(buffer, &desc);
++    uint64_t bufferId = 0;
++    const int bufferIdStatus = AHardwareBuffer_getId(buffer, &bufferId);
+     const bool createProtectedImage = 0 != (desc.usage & AHARDWAREBUFFER_USAGE_PROTECTED_CONTENT);
++    const bool isR7DiagBuffer = desc.format == 0x32315659u &&  // HAL_PIXEL_FORMAT_YV12
++            desc.width >= 1280 && desc.height >= 720;
++
++    if (isR7DiagBuffer) {
++        ALOGI("UBOX_R7_DIAG1 stage=AHB_DESC buffer_id=%" PRIu64
++              " id_status=%d w=%u h=%u layers=%u format_dec=%u format_hex=0x%08x"
++              " usage=0x%016" PRIx64 " stride=%u protected=%d writeable=%d readable=%d",
++              bufferId, bufferIdStatus, desc.width, desc.height, desc.layers, desc.format,
++              desc.format, desc.usage, desc.stride, createProtectedImage, isOutputBuffer,
++              !isOutputBuffer);
++    }
+ 
+     GrBackendFormat backendFormat;
+     const GrBackendApi graphicsApi = grContext->backend();
+     if (graphicsApi == GrBackendApi::kOpenGL) {
+         backendFormat =
+                 GrAHardwareBufferUtils::GetGLBackendFormat(grContext.get(), desc.format, false);
++        if (isR7DiagBuffer) {
++            const GrGLenum backendGlFormat =
++                    backendFormat.isValid() ? GrBackendFormats::AsGLFormatEnum(backendFormat)
++                                            : 0;
++            ALOGI("UBOX_R7_DIAG1 stage=AHB_DESC buffer_id=%" PRIu64
++                  " graphics_api=opengl backend_format=0x%08x backend_format_valid=%d",
++                  bufferId, backendGlFormat, backendFormat.isValid());
++        }
+         mBackendTexture =
+                 GrAHardwareBufferUtils::MakeGLBackendTexture(grContext.get(), buffer, desc.width,
+                                                              desc.height, &mDeleteProc,
+@@ -69,6 +92,13 @@ GaneshBackendTexture::GaneshBackendTexture(sk_sp<GrDirectContext> grContext,
+         LOG_ALWAYS_FATAL("Unexpected graphics API %u", static_cast<unsigned>(graphicsApi));
+     }
+ 
++    if (isR7DiagBuffer) {
++        ALOGI("UBOX_R7_DIAG1 stage=BACKEND_TEXTURE buffer_id=%" PRIu64
++              " valid=%d w=%d h=%d protected=%d writeable=%d",
++              bufferId, mBackendTexture.isValid(), mBackendTexture.width(),
++              mBackendTexture.height(), createProtectedImage, isOutputBuffer);
++    }
++
+     if (!mBackendTexture.isValid() || !desc.width || !desc.height) {
+         LOG_ALWAYS_FATAL("Failed to create a valid texture. [%p]:[%d,%d] isProtected:%d "
+                          "isWriteable:%d format:%d",

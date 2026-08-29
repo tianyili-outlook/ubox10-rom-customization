@@ -3,7 +3,7 @@
 ## 当前状态
 
 - 最后报告的 Android 16 物理架构验收镜像：`out/candidates/a16-prototype-b-r7/x12-a16-prototype-b-r7.img`，1,641,773,056 bytes / SHA-256 `A1F58668AEFFC9DC83CFFD8A49A309839332B6616C02153DCC00A71136A7AA27`
-- 当前项目状态：**ANDROID 16 ARM64 MIXED ARCHITECTURE — PROVEN VIABLE / R7 PHYSICAL ARCHITECTURE PASS / FROZEN ARCHITECTURE BASELINE / PENDING GATE 3 FUNCTIONAL PRESERVATION**。Exact r7 物理证明 canonical mixed ABI、dual zygote、ARM64-parented system_server、stable ARM64 SurfaceFlinger、mapper/gralloc allocation 与 Mali-G31 GLES/UI。R5 ABI、r6 BoringSSL64 与 r7 `gralloc-mapper is missing` blockers 均已关闭。r7 仍不是 daily-use release；下一步只在同一镜像执行 Gate 3，不构建 r8。
+- 当前项目状态：**ANDROID 16 ARM64 MIXED ARCHITECTURE — PROVEN VIABLE / R7 PHYSICAL ARCHITECTURE PASS / FROZEN ARCHITECTURE BASELINE / GATE 3 HOLD — H.264 PASS / HEVC BLOCKER**。Exact r7 物理证明 canonical mixed ABI、dual zygote、ARM64-parented system_server、stable ARM64 SurfaceFlinger、mapper/gralloc allocation 与 Mali-G31 GLES/UI。R5 ABI、r6 BoringSSL64 与 r7 `gralloc-mapper is missing` blockers 均已关闭。Exact-r7-derived `a16-prototype-b-r7-diag1`（1,641,781,248 bytes / `A68E7BD75D9819794BE22E9E05BE76969B2883DF8965DC277482E8C99231C6A4`）现已 offline checked，只授权同一 build 的 paired AVC/HEVC diagnosis；不是 repair 或 r8。
 - Android 16 ARM32 control：`a16-prototype-a-r4` **FROZEN / PHYSICAL PASS**。Boot-time legacy audio crash 保持 **KNOWN / UNFIXED / POST-ARCHITECTURE P1**；full VINTF 保持 inherited NFS exit 65 / **NOT PASS**。
 - 保留的设备验收基线：`out/candidates/m8b-remote-r1/x12-m8b-remote-r1.img`，状态 **DEVICE ACCEPTED / REMOTE PASS**（继承 **AUDIO PASS / IME PASS**）。
 - 大小 / SHA-256：1031723008 bytes / `F3B09E5565AC4ED4E5EE326D392622E7B036A8519B8444B966E77CC4751B814A`
@@ -29,10 +29,42 @@ accepted baseline 已确认 Treble/VNDK、primary HAL/output、HEVC+AAC HDMI 音
 
 ## Gate 3 — Android 16 Mixed-Architecture Functional Preservation
 
-状态：**DEFINED / READY FOR PHYSICAL EXECUTION**。Gate 3 只使用上述 exact r7 image；不重建、
-不刷入新候选、不创建 r8，也不在失败发生前修改功能。目标是证明 mature ARM32 hardware-facing
+状态：**HOLD — R7-DIAG1 READY FOR PAIRED AVC/HEVC PHYSICAL DIAGNOSTIC VALIDATION**。Gate 3
+architecture/functional baseline仍是上述 exact r7；当前只允许刷入 logging-only diag1取得同一 build的
+AVC control和HEVC reproduction，不创建 r8，也不在失败发生前修改功能。目标是证明 mature ARM32 hardware-facing
 vendor stack 在已接受 ARM64 framework/system architecture 下仍提供核心 TV 功能。结果严格使用
 `PASS`、`FAIL` 或 `NOT TESTED — FIXTURE UNAVAILABLE`。
+
+### R7-diag1 paired HEVC boundary capture
+
+Diag1不用于重跑或提升 Gate 3 verdict。它只回答 AVC buffer与HEVC buffer首次在哪个
+codec/native-window/gralloc/AHardwareBuffer/RenderEngine/EGL/GL contract字段分叉。顺序必须为：
+
+1. flash exact hash-pinned diag1并确认 architecture baseline；
+2. `Baseline`、`AVCPre`，手工播放 known-good H.264 fixture一次并确认 visible video + audible HDMI，
+   再执行 `AVCPost`；
+3. `HEVCPre`，手工启动 known HEVC fixture一次，不循环；
+4. 若 SurfaceFlinger/framework userspace restart令ADB暂时消失，等待`:7896`恢复，不自动reboot；
+5. 执行 `HEVCPostRestart`与`Final`，保存 crash/tombstone/restart evidence；
+6. 对 AVC/HEVC `UBOX_R7_DIAG1`记录按 buffer ID、backing-store ID、timestamp和immutable buffer fields
+   做paired diff；只有 first discriminating field/operation才能决定minimum repair boundary。
+
+PowerShell 7入口（port默认7896，输出位于用户Downloads下的timestamped目录）：
+
+```powershell
+$Endpoint = '<device-LAN-address-or-hostname>'
+.\scripts\capture-a16-prototype-b-r7-diag1-media-paired.ps1 -DeviceEndpoint $Endpoint -Phase Baseline
+.\scripts\capture-a16-prototype-b-r7-diag1-media-paired.ps1 -DeviceEndpoint $Endpoint -Phase AVCPre -ClearLogcat
+# 手工播放 AVC 一次，然后：
+.\scripts\capture-a16-prototype-b-r7-diag1-media-paired.ps1 -DeviceEndpoint $Endpoint -Phase AVCPost
+.\scripts\capture-a16-prototype-b-r7-diag1-media-paired.ps1 -DeviceEndpoint $Endpoint -Phase HEVCPre -ClearLogcat
+# 手工启动 HEVC 一次；userspace recovery后：
+.\scripts\capture-a16-prototype-b-r7-diag1-media-paired.ps1 -DeviceEndpoint $Endpoint -Phase HEVCPostRestart
+.\scripts\capture-a16-prototype-b-r7-diag1-media-paired.ps1 -DeviceEndpoint $Endpoint -Phase Final
+```
+
+`-ClearLogcat`只允许在Pre phase先保存baseline后，经用户输入确认再执行；failure之后绝不clear logcat，
+也不clear pstore/tombstones。脚本不自动reboot、不改HDMI/`wm size`、不fix quarter-screen、不循环HEVC。
 
 ### 3A — architecture regression confirmation
 

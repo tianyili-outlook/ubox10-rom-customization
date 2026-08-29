@@ -1,0 +1,166 @@
+Subject: [DIAGNOSTIC ONLY] trace YV12 gralloc allocation and import handles
+
+NO FUNCTIONAL REPAIR.  The allocator fields are read after decisions complete;
+remote-import logging occurs after the existing mutex is released and does not
+mutate handle metadata.
+
+--- a/hardware/aw/gpu/mali-bifrost/gralloc/src/mali_gralloc_bufferallocation.cpp
++++ b/hardware/aw/gpu/mali-bifrost/gralloc/src/mali_gralloc_bufferallocation.cpp
+@@ -1194,6 +1194,59 @@
+ 			/* each buffer will have an unique backing store id.*/
+ 			hnd->backing_store_id = getUniqueId();
+ 		}
++		if ((hnd->req_format == HAL_PIXEL_FORMAT_YV12 ||
++		     (hnd->alloc_format & MALI_GRALLOC_INTFMT_FMT_MASK) ==
++		             MALI_GRALLOC_FORMAT_INTERNAL_YV12) &&
++		    hnd->width >= 1280 && hnd->height >= 720)
++		{
++			uint32_t plane_count = 1;
++			for (uint32_t plane = 1; plane < MAX_PLANES; plane++)
++			{
++				if (hnd->plane_info[plane].byte_stride != 0)
++				{
++					plane_count++;
++				}
++			}
++			const uint64_t modifier = hnd->alloc_format & ~MALI_GRALLOC_INTFMT_FMT_MASK;
++			const uint64_t private_usage = usage & GRALLOC_USAGE_PRIVATE_MASK;
++			ALOGI("UBOX_R7_DIAG1 stage=GRALLOC_ALLOC backing_store_id=%" PRIu64
++			      " requested_format_dec=%d requested_format_hex=0x%08x"
++			      " internal_format=0x%016" PRIx64 " allocation_format=0x%016" PRIx64
++			      " modifier=0x%016" PRIx64 " afbc=%d producer_usage=0x%016" PRIx64
++			      " consumer_usage=0x%016" PRIx64 " combined_usage=0x%016" PRIx64
++			      " private_usage=0x%016" PRIx64 " logical_w=%d logical_h=%d"
++			      " pixel_stride=%d allocation_w=%u allocation_h=%u total_size=%d layers=%u"
++			      " plane_count=%u p0_offset=%u p0_byte_stride=%u p0_pixel_stride=unavailable"
++			      " p0_alloc_w=%u p0_alloc_h=%u p0_derived_size=%" PRIu64
++			      " p1_offset=%u p1_byte_stride=%u p1_pixel_stride=unavailable"
++			      " p1_alloc_w=%u p1_alloc_h=%u p1_derived_size=%" PRIu64
++			      " p2_offset=%u p2_byte_stride=%u p2_pixel_stride=unavailable"
++			      " p2_alloc_w=%u p2_alloc_h=%u p2_derived_size=%" PRIu64
++			      " aw_format=%d ion_metadata_flag=0x%08x second_fbm=not_represented"
++			      " flags=0x%08x handle_version=%d num_fds=%d num_ints=%d"
++			      " aw_align0=%d aw_align1=%d aw_align2=%d",
++			      hnd->backing_store_id, hnd->req_format, static_cast<uint32_t>(hnd->req_format),
++			      hnd->internal_format, hnd->alloc_format, modifier,
++			      (hnd->alloc_format & MALI_GRALLOC_INTFMT_AFBCENABLE_MASK) != 0,
++			      hnd->producer_usage, hnd->consumer_usage, usage, private_usage, hnd->width,
++			      hnd->height, hnd->stride, hnd->plane_info[0].alloc_width,
++			      hnd->plane_info[0].alloc_height, hnd->size, hnd->layer_count, plane_count,
++			      hnd->plane_info[0].offset, hnd->plane_info[0].byte_stride,
++			      hnd->plane_info[0].alloc_width, hnd->plane_info[0].alloc_height,
++			      static_cast<uint64_t>(hnd->plane_info[0].byte_stride) *
++			              hnd->plane_info[0].alloc_height,
++			      hnd->plane_info[1].offset, hnd->plane_info[1].byte_stride,
++			      hnd->plane_info[1].alloc_width, hnd->plane_info[1].alloc_height,
++			      static_cast<uint64_t>(hnd->plane_info[1].byte_stride) *
++			              hnd->plane_info[1].alloc_height,
++			      hnd->plane_info[2].offset, hnd->plane_info[2].byte_stride,
++			      hnd->plane_info[2].alloc_width, hnd->plane_info[2].alloc_height,
++			      static_cast<uint64_t>(hnd->plane_info[2].byte_stride) *
++			              hnd->plane_info[2].alloc_height,
++			      bufDescriptor->aw_format, hnd->ion_metadata_flag, hnd->flags, hnd->version,
++			      hnd->numFds, hnd->numInts, hnd->aw_byte_align[0], hnd->aw_byte_align[1],
++			      hnd->aw_byte_align[2]);
++		}
+ 		ALOGI("alloc buffer:W:%d H:%d S:%d PL[%d %d] SZ:%d fmt:%d if:%lld af:%lld usg:%llx fg:%08x",
+ 			hnd->width, hnd->height, hnd->stride,
+ 			hnd->plane_info[0].alloc_width, hnd->plane_info[0].alloc_height, hnd->size,
+--- a/hardware/aw/gpu/mali-bifrost/gralloc/src/mali_gralloc_reference.cpp
++++ b/hardware/aw/gpu/mali-bifrost/gralloc/src/mali_gralloc_reference.cpp
+@@ -16,6 +16,8 @@
+  * limitations under the License.
+  */
+ 
++#include <inttypes.h>
++
+ #if GRALLOC_VERSION_MAJOR == 1
+ #include <hardware/gralloc1.h>
+ #elif GRALLOC_VERSION_MAJOR == 0
+@@ -29,6 +31,8 @@
+ #include "gralloc_buffer_priv.h"
+ #include "mali_gralloc_bufferallocation.h"
+ #include "mali_gralloc_debug.h"
++#include "mali_gralloc_formats.h"
++#include "mali_gralloc_usages.h"
+ 
+ static pthread_mutex_t s_map_lock = PTHREAD_MUTEX_INITIALIZER;
+ 
+@@ -43,6 +47,7 @@
+ 	}
+ 
+ 	private_handle_t *hnd = (private_handle_t *)handle;
++	bool remote_import = false;
+ 	pthread_mutex_lock(&s_map_lock);
+ 
+ 	if (hnd->allocating_pid == getpid() || hnd->remote_pid == getpid())
+@@ -55,6 +60,7 @@
+ 	{
+ 		hnd->remote_pid = getpid();
+ 		hnd->ref_count = 1;
++		remote_import = true;
+ 	}
+ 
+ 	int retval = -EINVAL;
+@@ -73,6 +79,61 @@
+ 	}
+ 
+ 	pthread_mutex_unlock(&s_map_lock);
++	if (remote_import &&
++	    (hnd->req_format == HAL_PIXEL_FORMAT_YV12 ||
++	     (hnd->alloc_format & MALI_GRALLOC_INTFMT_FMT_MASK) ==
++	             MALI_GRALLOC_FORMAT_INTERNAL_YV12) &&
++	    hnd->width >= 1280 && hnd->height >= 720)
++	{
++		uint32_t plane_count = 1;
++		for (uint32_t plane = 1; plane < MAX_PLANES; plane++)
++		{
++			if (hnd->plane_info[plane].byte_stride != 0)
++			{
++				plane_count++;
++			}
++		}
++		const uint64_t usage = hnd->producer_usage | hnd->consumer_usage;
++		const uint64_t modifier = hnd->alloc_format & ~MALI_GRALLOC_INTFMT_FMT_MASK;
++		ALOGI("UBOX_R7_DIAG1 stage=GRALLOC_HANDLE event=REMOTE_IMPORT result=%d"
++		      " backing_store_id=%" PRIu64 " requested_format_dec=%d"
++		      " requested_format_hex=0x%08x internal_format=0x%016" PRIx64
++		      " allocation_format=0x%016" PRIx64 " modifier=0x%016" PRIx64
++		      " afbc=%d producer_usage=0x%016" PRIx64 " consumer_usage=0x%016" PRIx64
++		      " combined_usage=0x%016" PRIx64 " private_usage=0x%016" PRIx64
++		      " logical_w=%d logical_h=%d pixel_stride=%d allocation_w=%u allocation_h=%u"
++		      " total_size=%d layers=%u plane_count=%u"
++		      " p0_offset=%u p0_byte_stride=%u p0_pixel_stride=unavailable"
++		      " p0_alloc_w=%u p0_alloc_h=%u p0_derived_size=%" PRIu64
++		      " p1_offset=%u p1_byte_stride=%u p1_pixel_stride=unavailable"
++		      " p1_alloc_w=%u p1_alloc_h=%u p1_derived_size=%" PRIu64
++		      " p2_offset=%u p2_byte_stride=%u p2_pixel_stride=unavailable"
++		      " p2_alloc_w=%u p2_alloc_h=%u p2_derived_size=%" PRIu64
++		      " aw_format=unavailable_in_private_handle ion_metadata_flag=0x%08x"
++		      " second_fbm=not_represented flags=0x%08x handle_version=%d num_fds=%d"
++		      " num_ints=%d aw_align0=%d aw_align1=%d aw_align2=%d",
++		      retval, hnd->backing_store_id, hnd->req_format,
++		      static_cast<uint32_t>(hnd->req_format), hnd->internal_format, hnd->alloc_format,
++		      modifier, (hnd->alloc_format & MALI_GRALLOC_INTFMT_AFBCENABLE_MASK) != 0,
++		      hnd->producer_usage, hnd->consumer_usage, usage,
++		      usage & GRALLOC_USAGE_PRIVATE_MASK, hnd->width, hnd->height, hnd->stride,
++		      hnd->plane_info[0].alloc_width, hnd->plane_info[0].alloc_height, hnd->size,
++		      hnd->layer_count, plane_count, hnd->plane_info[0].offset,
++		      hnd->plane_info[0].byte_stride, hnd->plane_info[0].alloc_width,
++		      hnd->plane_info[0].alloc_height,
++		      static_cast<uint64_t>(hnd->plane_info[0].byte_stride) *
++		              hnd->plane_info[0].alloc_height,
++		      hnd->plane_info[1].offset, hnd->plane_info[1].byte_stride,
++		      hnd->plane_info[1].alloc_width, hnd->plane_info[1].alloc_height,
++		      static_cast<uint64_t>(hnd->plane_info[1].byte_stride) *
++		              hnd->plane_info[1].alloc_height,
++		      hnd->plane_info[2].offset, hnd->plane_info[2].byte_stride,
++		      hnd->plane_info[2].alloc_width, hnd->plane_info[2].alloc_height,
++		      static_cast<uint64_t>(hnd->plane_info[2].byte_stride) *
++		              hnd->plane_info[2].alloc_height,
++		      hnd->ion_metadata_flag, hnd->flags, hnd->version, hnd->numFds, hnd->numInts,
++		      hnd->aw_byte_align[0], hnd->aw_byte_align[1], hnd->aw_byte_align[2]);
++	}
+ 	return retval;
+ }
+ 

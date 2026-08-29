@@ -1,0 +1,102 @@
+Subject: [DIAGNOSTIC ONLY] trace the first EGL or GL import failure
+
+NO FUNCTIONAL REPAIR.  Existing eglGetError/glGetError consumption and all
+existing returns are preserved exactly; successful unchecked operations are
+reported as not_queried_preserve_state.
+
+diff --git a/src/gpu/ganesh/gl/AHardwareBufferGL.cpp b/src/gpu/ganesh/gl/AHardwareBufferGL.cpp
+index 22dc18bda6..b70db44082 100644
+--- a/src/gpu/ganesh/gl/AHardwareBufferGL.cpp
++++ b/src/gpu/ganesh/gl/AHardwareBufferGL.cpp
+@@ -24,6 +24,9 @@
+ #include <EGL/eglext.h>
+ #include <GLES/gl.h>
+ #include <GLES/glext.h>
++#include <log/log.h>
++
++#include <inttypes.h>
+ 
+ #define PROT_CONTENT_EXT_STR "EGL_EXT_protected_content"
+ #define EGL_PROTECTED_CONTENT_EXT 0x32C0
+@@ -122,7 +125,19 @@ static GrBackendTexture make_gl_backend_texture(
+         bool isRenderable) {
+     while (GL_NO_ERROR != glGetError()) {} //clear GL errors
+ 
++    AHardwareBuffer_Desc desc;
++    AHardwareBuffer_describe(hardwareBuffer, &desc);
++    uint64_t bufferId = 0;
++    const int bufferIdStatus = AHardwareBuffer_getId(hardwareBuffer, &bufferId);
++    const bool isR7DiagBuffer = desc.format == 0x32315659u &&  // HAL_PIXEL_FORMAT_YV12
++            desc.width >= 1280 && desc.height >= 720;
++
+     EGLClientBuffer clientBuffer = eglGetNativeClientBufferANDROID(hardwareBuffer);
++    if (isR7DiagBuffer) {
++        ALOGI("UBOX_R7_DIAG1 stage=NATIVE_CLIENT_BUFFER buffer_id=%" PRIu64
++              " id_status=%d result_null=%d client_buffer=%p",
++              bufferId, bufferIdStatus, clientBuffer == nullptr, clientBuffer);
++    }
+     EGLint attribs[] = { EGL_IMAGE_PRESERVED_KHR, EGL_TRUE,
+                          isProtectedContent ? EGL_PROTECTED_CONTENT_EXT : EGL_NONE,
+                          isProtectedContent ? EGL_TRUE : EGL_NONE,
+@@ -132,29 +147,56 @@ static GrBackendTexture make_gl_backend_texture(
+     EGLImageKHR image = eglCreateImageKHR(display, EGL_NO_CONTEXT, EGL_NATIVE_BUFFER_ANDROID,
+                                           clientBuffer, attribs);
+     if (EGL_NO_IMAGE_KHR == image) {
+-        SkDebugf("Could not create EGL image, err = (%#x)", (int) eglGetError() );
++        const EGLint status = eglGetError();
++        if (isR7DiagBuffer) {
++            ALOGI("UBOX_R7_DIAG1 stage=EGL_CREATE_IMAGE buffer_id=%" PRIu64
++                  " result=0 image=%p egl_error=0x%04x",
++                  bufferId, image, status);
++        }
++        SkDebugf("Could not create EGL image, err = (%#x)", (int) status);
+         return GrBackendTexture();
+     }
++    if (isR7DiagBuffer) {
++        ALOGI("UBOX_R7_DIAG1 stage=EGL_CREATE_IMAGE buffer_id=%" PRIu64
++              " result=1 image=%p egl_error=not_queried_preserve_state",
++              bufferId, image);
++    }
+ 
+     GrGLuint texID;
++    const GrGLuint target = isRenderable ? GR_GL_TEXTURE_2D : GR_GL_TEXTURE_EXTERNAL;
+     glGenTextures(1, &texID);
++    if (isR7DiagBuffer) {
++        ALOGI("UBOX_R7_DIAG1 stage=GL_GEN_TEXTURE buffer_id=%" PRIu64
++              " result=%d texture=%u target=0x%04x gl_error=not_queried_preserve_state",
++              bufferId, texID != 0, texID, target);
++    }
+     if (!texID) {
+         eglDestroyImageKHR(display, image);
+         return GrBackendTexture();
+     }
+ 
+-    GrGLuint target = isRenderable ? GR_GL_TEXTURE_2D : GR_GL_TEXTURE_EXTERNAL;
+-
+     glBindTexture(target, texID);
+     GLenum status = GL_NO_ERROR;
+-    if ((status = glGetError()) != GL_NO_ERROR) {
++    status = glGetError();
++    if (isR7DiagBuffer) {
++        ALOGI("UBOX_R7_DIAG1 stage=GL_BIND_TEXTURE buffer_id=%" PRIu64
++              " result=%d texture=%u target=0x%04x gl_error=0x%04x",
++              bufferId, status == GL_NO_ERROR, texID, target, status);
++    }
++    if (status != GL_NO_ERROR) {
+         SkDebugf("glBindTexture failed (%#x)", (int) status);
+         glDeleteTextures(1, &texID);
+         eglDestroyImageKHR(display, image);
+         return GrBackendTexture();
+     }
+     glEGLImageTargetTexture2DOES(target, image);
+-    if ((status = glGetError()) != GL_NO_ERROR) {
++    status = glGetError();
++    if (isR7DiagBuffer) {
++        ALOGI("UBOX_R7_DIAG1 stage=GL_EGL_IMAGE_TARGET buffer_id=%" PRIu64
++              " result=%d texture=%u target=0x%04x image=%p gl_error=0x%04x",
++              bufferId, status == GL_NO_ERROR, texID, target, image, status);
++    }
++    if (status != GL_NO_ERROR) {
+         SkDebugf("glEGLImageTargetTexture2DOES failed (%#x)", (int) status);
+         glDeleteTextures(1, &texID);
+         eglDestroyImageKHR(display, image);

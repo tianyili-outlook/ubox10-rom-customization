@@ -1,0 +1,327 @@
+{
+  "schema": 1,
+  "id": "a16-prototype-b-r7-diag1",
+  "milestone": "Exact-r7 paired AVC/HEVC buffer-import instrumentation",
+  "status": "INSTRUMENTATION_ONLY_DIAGNOSTIC_AUTHORIZED",
+  "label": "INSTRUMENTATION ONLY / NOT A REPAIR / NOT r8 / NOT A RELEASE",
+  "inherits": "configs/candidates/a16-prototype-b-r1.json",
+  "root_cause": {
+    "result": "PROVEN_RENDERENGINE_FIRST_FATAL_BOUNDARY_BUFFER_CONTRACT_DELTA_UNPROVEN",
+    "audit": "docs/m8/research/a16-prototype-b-r7-gate3-hevc-renderengine-audit.json",
+    "first_fatal": "invalid Ganesh backend texture followed by unchanged LOG_ALWAYS_FATAL",
+    "repair_status": "NOT_IMPLEMENTED"
+  },
+  "root_mountpoint_contract": {
+    "metadata": {
+      "path": "/metadata",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 0,
+      "selinux": "u:object_r:metadata_file:s0"
+    },
+    "vendor": {
+      "path": "/vendor",
+      "type": "directory",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 2000,
+      "selinux": "u:object_r:vendor_file:s0"
+    },
+    "product": {
+      "path": "/product",
+      "type": "symlink",
+      "target": "/system/product"
+    }
+  },
+  "avb_system": {
+    "partition_size": 1651167232,
+    "original_filesystem_size": 1250484224,
+    "salt": "6131362d70726f746f747970652d622d7231",
+    "rollback_index": 1644019200,
+    "rollback_index_location": 1,
+    "key_relative": "tools/testkey_rsa2048.pem",
+    "algorithm": "SHA256_RSA2048",
+    "fec": "none"
+  },
+  "active_product_property_contract": {
+    "root_object": {
+      "path": "/product",
+      "type": "symlink",
+      "target": "/system/product",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "selinux": "u:object_r:system_file:s0"
+    },
+    "active_path": "/system/product/etc/build.prop",
+    "generated_path": "/work/src/ubox10-a16-ceiling/out-ceiling-b1/target/product/ubox10_ceiling_arm64/system/product/etc/build.prop",
+    "target_copy_out_product": "system/product",
+    "properties": {
+      "ro.product.product.cpu.abilist": "arm64-v8a,armeabi-v7a,armeabi",
+      "ro.product.product.cpu.abilist32": "armeabi-v7a,armeabi",
+      "ro.product.product.cpu.abilist64": "arm64-v8a"
+    },
+    "must_equal_build_variables": {
+      "ro.product.product.cpu.abilist": "TARGET_CPU_ABI_LIST",
+      "ro.product.product.cpu.abilist32": "TARGET_CPU_ABI_LIST_32_BIT",
+      "ro.product.product.cpu.abilist64": "TARGET_CPU_ABI_LIST_64_BIT"
+    },
+    "expected_global_derivation": {
+      "source": "product",
+      "ro.product.cpu.abilist": "arm64-v8a,armeabi-v7a,armeabi",
+      "ro.product.cpu.abilist32": "armeabi-v7a,armeabi",
+      "ro.product.cpu.abilist64": "arm64-v8a"
+    }
+  },
+  "skip_mount_contract": {
+    "path": "/system/system_ext/etc/init/config/skip_mount.cfg",
+    "size": 143,
+    "sha256": "7C28485E025157ACBBD0ABF9505A212AF3B4A96211B5AA3BC3D858A560A3AEFD",
+    "required_pattern": "/product"
+  },
+  "base_candidate": {
+    "id": "a16-prototype-b-r7",
+    "path": "out/candidates/a16-prototype-b-r7/x12-a16-prototype-b-r7.img",
+    "size": 1641773056,
+    "sha256": "A1F58668AEFFC9DC83CFFD8A49A309839332B6616C02153DCC00A71136A7AA27"
+  },
+  "base_artifacts": {
+    "system_a": {
+      "path": "out/candidates/a16-prototype-b-r7/system_a.img",
+      "size": 1651167232,
+      "sha256": "93D968693A2EEDA2BA53D4EE74BBA8EB73E341EA9BC63EFCD5878609C7DE80BE"
+    },
+    "product_a": {
+      "path": "out/candidates/a16-prototype-b-r7/candidate-logical/product_a.img",
+      "size": 272629760,
+      "sha256": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974"
+    },
+    "vendor_a": {
+      "path": "out/candidates/a16-prototype-b-r7/vendor_a.img",
+      "size": 150994944,
+      "sha256": "C1B13363A10B0EBD8BE21706A5AC7E7696E5F409BBDD2FED6AB4D78A59490D9A"
+    },
+    "vendor_dlkm": {
+      "path": "out/candidates/a16-prototype-b-r7/vendor_dlkm_a.img",
+      "size": 6680576,
+      "sha256": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07"
+    },
+    "boot": {
+      "path": "out/candidates/a16-prototype-b-r7/boot.fex",
+      "size": 67108864,
+      "sha256": "527CF878B015CFAE4E8600BD750C7C73F45F4290B5CFEFEDBD1AD9AC347B8063"
+    },
+    "super_raw": {
+      "path": "out/candidates/a16-prototype-b-r7/super.raw.img",
+      "size": 3221225472,
+      "sha256": "D4B38DBDAD77DD7A6AC798731FB8CDD9F559270EA91C0BCA55827333371AE4BE"
+    },
+    "vbmeta_system": {
+      "path": "out/candidates/a16-prototype-b-r7/vbmeta_system.fex",
+      "size": 1472,
+      "sha256": "40732C64F88194DB3CFC35E7F7CFA1DD13CF48B274D8B997152D71E2DA6FC9AA"
+    },
+    "vbmeta_vendor": {
+      "path": "out/candidates/a16-prototype-b-r7/vbmeta_vendor.fex",
+      "size": 1600,
+      "sha256": "60440F276ECFFB27EDF0D623271D7E95CFEB08EB3D215A1D94F49511E25A1408"
+    }
+  },
+  "governance": {
+    "architecture_ceiling": "PASS_FROZEN",
+    "gate3": "HOLD",
+    "h264": "PHYSICAL_PASS",
+    "hevc": "FAIL_BLOCKER",
+    "r8_audit_decision": "HOLD_FOR_MORE_EVIDENCE",
+    "r8_authorized": false,
+    "development_branch_authorized": false,
+    "audit": "docs/m8/research/a16-prototype-b-r7-gate3-hevc-renderengine-audit.json"
+  },
+  "diagnostic": {
+    "prefix": "UBOX_R7_DIAG1",
+    "purpose": "Identify the first AVC-versus-HEVC buffer/import contract field or EGL/GL operation that differs before the unchanged RenderEngine fatal.",
+    "stages": [
+      "CODEC_SELECT",
+      "CODEC_OUTPUT",
+      "NATIVE_WINDOW",
+      "GRALLOC_ALLOC",
+      "GRALLOC_HANDLE",
+      "AHB_DESC",
+      "RENDERENGINE_MAP",
+      "NATIVE_CLIENT_BUFFER",
+      "EGL_CREATE_IMAGE",
+      "GL_GEN_TEXTURE",
+      "GL_BIND_TEXTURE",
+      "GL_EGL_IMAGE_TARGET",
+      "BACKEND_TEXTURE"
+    ],
+    "correlation": {
+      "codec_renderengine_skia": "GraphicBuffer ID / AHardwareBuffer ID",
+      "gralloc_allocation_import": "private_handle_t backing_store_id",
+      "domain_bridge": "timestamp plus width, height, format, usage, allocation metadata",
+      "limitation": "The public GraphicBuffer/AHardwareBuffer ID is not the donor private-handle backing_store_id; no new ioctl, syscall, or cross-process registry is added."
+    },
+    "error_state_semantics": "The failed eglCreateImageKHR path still calls eglGetError exactly once and reuses that value. Existing post-bind and post-image-target glGetError calls remain exactly one each. No EGL/GL error query is added on successful or previously unchecked operations.",
+    "filter": "AVC/HEVC configuration and large video state; YV12 buffers at least 1280x720; allocation/import events rather than per-frame rendering",
+    "hwc_instrumented": false,
+    "hwc_reason": "Optional corroboration was omitted to minimize delta; eager RenderEngine import is the proven causal boundary."
+  },
+  "source_contract": {
+    "tag": "android-security-16.0.0_r7",
+    "build_id": "BP2A.250805.034",
+    "api": 36,
+    "manifest_commit": "ebea28d151539ecf0730b1a4ab92ac33edc17ac9",
+    "repositories": {
+      "frameworks/native": "d862b53356dc26794fb5451782806979c46e6769",
+      "external/skia": "4c18a9680d52c2cd5e35cfef2f548635a445fafe",
+      "frameworks/av": "d1137ad4b24b686d9b00fd1b7be1b520f7b6ee2b",
+      "hardware/interfaces": "b553275c84253b074a8532a6ff0f4406c43e606e"
+    },
+    "overlay": "configs/aosp/architecture-ceiling-a16/diagnostics/r7-hevc-diag1",
+    "files": {
+      "frameworks/native/libs/renderengine/skia/SkiaRenderEngine.cpp": {
+        "base_sha256": "026AAE9505BAEAD76E4031ABE46CFDB9410CD03E2172A718F0E73F40BBF204C8",
+        "patched_sha256": "055C8F0516F16C948EA2D95C1FCAE7306E7092E50ADB4B686335AC2BC0942920"
+      },
+      "frameworks/native/libs/renderengine/skia/compat/GaneshBackendTexture.cpp": {
+        "base_sha256": "B6FC78AC41B519753666C222594F954FE014EFC3DD856E001CDAF8E0F3342E94",
+        "patched_sha256": "F5DDD5CF31927671FB39F72741B5C5780EEA2D9EC6CD7E410FC58E0140DF4A68"
+      },
+      "external/skia/src/gpu/ganesh/gl/AHardwareBufferGL.cpp": {
+        "base_sha256": "E236B1B942F349FB23FD5507347937C245A500299DDF1CC53E23526358552633",
+        "patched_sha256": "EEF014953484F637E9B22F689E56D126E7A8EE8AABE8831CDA91BC532ECF9C30"
+      },
+      "frameworks/av/media/libstagefright/MediaCodec.cpp": {
+        "base_sha256": "06A686E91E5D56140B23E13A452C5AB4EC7775FB683664AEC6FC2517110E69EE",
+        "patched_sha256": "9808E8A87AE9A595311318C9C95BF8577EB4A6AD0D4E1D4B48AFE4DB9E5EF71B"
+      },
+      "frameworks/av/media/libstagefright/ACodec.cpp": {
+        "base_sha256": "1E3C7A3453DB970412EA67C580F242D50056E7E17FFA34EC4987939C4E6443A2",
+        "patched_sha256": "88D26648F93A043951844E4AD90C6D748931F76D1EC20CFF74D0A3B479687FE6"
+      },
+      "frameworks/av/media/libstagefright/SurfaceUtils.cpp": {
+        "base_sha256": "9DB9DD8BA83F22C2FD09804D95D27C406490C502F265F23A3ADC8B3323F4F71F",
+        "patched_sha256": "D130D9240ADF7A62511FF53D86B9462BAE585F83863A98F01FEC1A2C26AFDF74"
+      },
+      "hardware/aw/gpu/mali-bifrost/gralloc/src/mali_gralloc_bufferallocation.cpp": {
+        "base_sha256": "1108E1512C5062EE44FCD22A5C8C75A414E1F7ABD7AD2BB7EB608C289DFC593C",
+        "patched_sha256": "DD4A45DA3DC29BCB12ED0A9DECC8B9AD3261FDDF30AF0B231906B3557909566D"
+      },
+      "hardware/aw/gpu/mali-bifrost/gralloc/src/mali_gralloc_reference.cpp": {
+        "base_sha256": "7CEE72EB2603059DC28ADAD1705E978846800CA05790AAE45C8AFCAEBB4B04A3",
+        "patched_sha256": "1C1481D2F3A9A2B5B76E54482DCC1667FC3ABF89B58CBED492D7826C1C15E12F"
+      }
+    }
+  },
+  "runtime_files": {
+    "surfaceflinger": {
+      "source_path": "/work/src/ubox10-a16-ceiling/out-ceiling-b1/target/product/ubox10_ceiling_arm64/system/bin/surfaceflinger",
+      "install_path": "/system/bin/surfaceflinger",
+      "partition_path": "/system/bin/surfaceflinger",
+      "old_size": 8565296,
+      "old_sha256": "582E1B0B075DE069370A7565196D32423A21EEE03E21403375C5BDF33C9F3C61",
+      "size": 8565352,
+      "sha256": "E2B780E955FC87356533FC9B50C0F9D78561070681C5D2D4DAD877AC777A2A73",
+      "build_id": "f2b3507844a268e39cec894ca73343a5",
+      "elf_class": "ELF64",
+      "architecture": "AArch64",
+      "mode": "0755",
+      "uid": 0,
+      "gid": 2000,
+      "selinux": "u:object_r:surfaceflinger_exec:s0",
+      "ctime": "0x6a8ff745",
+      "atime": "0x6a8ff745",
+      "mtime": "0x6a8ff745",
+      "crtime": "0x6a8ffae5",
+      "reason": "RenderEngine, AHardwareBuffer, Skia EGL/GL, backend validity logging"
+    },
+    "libstagefright64": {
+      "source_path": "/work/src/ubox10-a16-ceiling/out-ceiling-b1/target/product/ubox10_ceiling_arm64/system/lib64/libstagefright.so",
+      "install_path": "/system/lib64/libstagefright.so",
+      "partition_path": "/system/lib64/libstagefright.so",
+      "old_size": 2067672,
+      "old_sha256": "F765E06369D0181A147790621327D217F63768C4C0D3BFA835EE44549C05FDC4",
+      "size": 2067648,
+      "sha256": "B0D1E7D72DFCEA20B72088AC9F3BC3E57AE983FD2DC5470494C6AB7404A5B16F",
+      "build_id": "01f30acc9fd1b0b395002980914b5cd0",
+      "soname": "libstagefright.so",
+      "elf_class": "ELF64",
+      "architecture": "AArch64",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "selinux": "u:object_r:system_lib_file:s0",
+      "ctime": "0x6a8fd377",
+      "atime": "0x6a8fd377",
+      "mtime": "0x6a8fd377",
+      "crtime": "0x6a8ffae8",
+      "reason": "MediaCodec/ACodec/native-window logging for the ARM64 VLC path"
+    },
+    "gralloc32": {
+      "source_path": "/work/src/ubox10-a16-ceiling/out-ceiling-b1/target/product/ubox10_ceiling_arm64/system/vendor/lib/hw/gralloc.apollo.so",
+      "install_path": "/lib/hw/gralloc.apollo.so",
+      "partition_path": "/vendor/lib/hw/gralloc.apollo.so",
+      "old_size": 56588,
+      "old_sha256": "7325BD8B0562F4A01CDF283DAAA8DB660AAFF4E31F6FC7AD5D6DFABC4ABF8AAC",
+      "size": 57660,
+      "sha256": "2833B9B8115D2516891CCD295D97E5BDBDB014F7EC8E336868E575D3BDFF36B5",
+      "build_id": "230481b4434fbbb4c8bfa062d277f208",
+      "soname": "gralloc.apollo.so",
+      "elf_class": "ELF32",
+      "architecture": "ARM",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "selinux": "u:object_r:same_process_hal_file:s0",
+      "ctime": "0x652f7ab5",
+      "atime": "0x652f7ab5",
+      "mtime": "0x652f7ab5",
+      "crtime": "0x65379527",
+      "reason": "Private allocation/backing-store logging in the retained ELF32 allocator service"
+    },
+    "gralloc64": {
+      "source_path": "/work/src/ubox10-a16-ceiling/out-ceiling-b1/target/product/ubox10_ceiling_arm64/system/vendor/lib64/hw/gralloc.apollo.so",
+      "install_path": "/lib64/hw/gralloc.apollo.so",
+      "partition_path": "/vendor/lib64/hw/gralloc.apollo.so",
+      "old_size": 77248,
+      "old_sha256": "B03BFE24802C73E158A365CB5D15E1BC7598BB73C98DEF86533183678837CFE7",
+      "size": 81344,
+      "sha256": "F12C8F1B3CA3F967367E32A44EF043BF0EE660B1D36B175D3736B059A31947F8",
+      "build_id": "1dd94e2b0eb912a9160052d1b610423f",
+      "soname": "gralloc.apollo.so",
+      "elf_class": "ELF64",
+      "architecture": "AArch64",
+      "mode": "0644",
+      "uid": 0,
+      "gid": 0,
+      "selinux": "u:object_r:same_process_hal_file:s0",
+      "ctime": "0x6a8fff2c",
+      "atime": "0x6a8fff2c",
+      "mtime": "0x6a8fff2c",
+      "crtime": "0x6a8fff2c",
+      "reason": "Private imported-handle/backing-store logging in ARM64 SurfaceFlinger"
+    }
+  },
+  "allowed_semantic_delta": [
+    "Conditional bounded UBOX_R7_DIAG1 logging in exactly four runtime ELF files"
+  ],
+  "forbidden_changes": [
+    "HEVC repair or fatal suppression",
+    "format, usage, allocation, AFBC, codec-ranking, native-window, or HWC decision change",
+    "proprietary Mali or media blob modification",
+    "kernel, HDMI, quarter-screen, audio, SELinux, VINTF, Wi-Fi, GMS, or Vulkan change",
+    "r8 build or codex/m8-a16-development branch creation"
+  ],
+  "outer_delta": {
+    "changed_payloads_from_base": [
+      "super.fex",
+      "Vsuper.fex",
+      "vbmeta_system.fex",
+      "Vvbmeta_system.fex",
+      "vbmeta_vendor.fex",
+      "Vvbmeta_vendor.fex"
+    ],
+    "preserved_payload_count": 44
+  }
+}

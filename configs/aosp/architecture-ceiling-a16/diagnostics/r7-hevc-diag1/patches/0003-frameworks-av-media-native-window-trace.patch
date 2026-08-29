@@ -1,0 +1,188 @@
+Subject: [DIAGNOSTIC ONLY] trace codec selection and video window contract
+
+NO FUNCTIONAL REPAIR.  This patch observes AVC/HEVC configuration, unique YV12
+GraphicBuffers, usage handoff, and crop state without changing any value.
+
+diff --git a/media/libstagefright/ACodec.cpp b/media/libstagefright/ACodec.cpp
+index bacf7581ab..3b01d74ad0 100644
+--- a/media/libstagefright/ACodec.cpp
++++ b/media/libstagefright/ACodec.cpp
+@@ -1140,6 +1140,20 @@ status_t ACodec::setupNativeWindowSizeFormatAndUsage(
+     usage |= kVideoGrallocUsage;
+     *finalUsage = usage;
+ 
++    if (static_cast<uint32_t>(def.format.video.eColorFormat) ==
++                static_cast<uint32_t>(HAL_PIXEL_FORMAT_YV12) ||
++        (def.format.video.nFrameWidth >= 1280 && def.format.video.nFrameHeight >= 720)) {
++        ALOGI("UBOX_R7_DIAG1 stage=CODEC_OUTPUT event=OMX_PORT component=%s"
++              " coded_w=%u coded_h=%u color_format_dec=%u color_format_hex=0x%08x"
++              " omx_usage=0x%08x producer_usage=0x%08x",
++              mComponentName.c_str(), def.format.video.nFrameWidth,
++              def.format.video.nFrameHeight,
++              static_cast<uint32_t>(def.format.video.eColorFormat),
++              static_cast<uint32_t>(def.format.video.eColorFormat),
++              static_cast<uint32_t>(omxUsage),
++              static_cast<uint32_t>(usage));
++    }
++
+     memset(&mLastNativeWindowCrop, 0, sizeof(mLastNativeWindowCrop));
+     mLastNativeWindowDataSpace = HAL_DATASPACE_UNKNOWN;
+ 
+@@ -1307,6 +1321,17 @@ status_t ACodec::allocateOutputBuffersFromNativeWindow() {
+ 
+         mBuffers[kPortIndexOutput][i].mBufferID = bufferId;
+ 
++        if (graphicBuffer->getPixelFormat() == HAL_PIXEL_FORMAT_YV12 &&
++            graphicBuffer->getWidth() >= 1280 && graphicBuffer->getHeight() >= 720) {
++            ALOGI("UBOX_R7_DIAG1 stage=CODEC_OUTPUT event=BUFFER_REGISTER component=%s"
++                  " buffer_id=%" PRIu64 " omx_buffer_id=%u w=%u h=%u stride=%u layers=%u"
++                  " format_dec=%d format_hex=0x%08x usage=0x%016" PRIx64,
++                  mComponentName.c_str(), graphicBuffer->getId(), bufferId,
++                  graphicBuffer->getWidth(), graphicBuffer->getHeight(), graphicBuffer->getStride(),
++                  graphicBuffer->getLayerCount(), static_cast<int32_t>(graphicBuffer->getPixelFormat()),
++                  static_cast<uint32_t>(graphicBuffer->getPixelFormat()), graphicBuffer->getUsage());
++        }
++
+         ALOGV("[%s] Registered graphic buffer with ID %u (pointer = %p)",
+              mComponentName.c_str(),
+              bufferId, graphicBuffer.get());
+@@ -1555,6 +1580,19 @@ ACodec::BufferInfo *ACodec::dequeueBufferFromNativeWindow() {
+     oldest->mStatus = BufferInfo::OWNED_BY_US;
+     oldest->setWriteFence(fenceFd, "dequeueBufferFromNativeWindow for oldest");
+ 
++    if (oldest->mGraphicBuffer->getPixelFormat() == HAL_PIXEL_FORMAT_YV12 &&
++        oldest->mGraphicBuffer->getWidth() >= 1280 && oldest->mGraphicBuffer->getHeight() >= 720) {
++        ALOGI("UBOX_R7_DIAG1 stage=CODEC_OUTPUT event=BUFFER_REGISTER component=%s"
++              " buffer_id=%" PRIu64 " omx_buffer_id=%u w=%u h=%u stride=%u layers=%u"
++              " format_dec=%d format_hex=0x%08x usage=0x%016" PRIx64,
++              mComponentName.c_str(), oldest->mGraphicBuffer->getId(), oldest->mBufferID,
++              oldest->mGraphicBuffer->getWidth(), oldest->mGraphicBuffer->getHeight(),
++              oldest->mGraphicBuffer->getStride(), oldest->mGraphicBuffer->getLayerCount(),
++              static_cast<int32_t>(oldest->mGraphicBuffer->getPixelFormat()),
++              static_cast<uint32_t>(oldest->mGraphicBuffer->getPixelFormat()),
++              oldest->mGraphicBuffer->getUsage());
++    }
++
+     ALOGV("replaced oldest buffer #%u with age %u, graphicBuffer %p",
+             (unsigned)(oldest - &mBuffers[kPortIndexOutput][0]),
+             mDequeueCounter - oldest->mDequeuedAt,
+@@ -6833,6 +6871,13 @@ void ACodec::BaseState::onOutputBufferDrained(const sp<AMessage> &msg) {
+             if (memcmp(&crop, &mCodec->mLastNativeWindowCrop, sizeof(crop)) != 0) {
+                 mCodec->mLastNativeWindowCrop = crop;
+                 status_t err = native_window_set_crop(mCodec->mNativeWindow.get(), &crop);
++                if (crop.right - crop.left >= 1280 && crop.bottom - crop.top >= 720) {
++                    ALOGI("UBOX_R7_DIAG1 stage=NATIVE_WINDOW event=CROP component=%s"
++                          " crop_l=%d crop_t=%d crop_r_exclusive=%d crop_b_exclusive=%d"
++                          " crop_w=%d crop_h=%d result=%d",
++                          mCodec->mComponentName.c_str(), crop.left, crop.top, crop.right,
++                          crop.bottom, crop.right - crop.left, crop.bottom - crop.top, err);
++                }
+                 ALOGW_IF(err != NO_ERROR, "failed to set crop: %d", err);
+             }
+         }
+diff --git a/media/libstagefright/MediaCodec.cpp b/media/libstagefright/MediaCodec.cpp
+index 97a9f18130..d6e3e88ab1 100644
+--- a/media/libstagefright/MediaCodec.cpp
++++ b/media/libstagefright/MediaCodec.cpp
+@@ -4707,6 +4707,41 @@ void MediaCodec::onMessageReceived(const sp<AMessage> &msg) {
+                     }
+                     sp<AMessage> interestingFormat =
+                             (mFlags & kFlagIsEncoder) ? mOutputFormat : mInputFormat;
++                    AString diagMime;
++                    if (mInputFormat->findString("mime", &diagMime) &&
++                        (diagMime == MEDIA_MIMETYPE_VIDEO_AVC ||
++                         diagMime == MEDIA_MIMETYPE_VIDEO_HEVC)) {
++                        int32_t codedWidth = -1;
++                        int32_t codedHeight = -1;
++                        int32_t profile = -1;
++                        int32_t level = -1;
++                        int32_t bitDepth = -1;
++                        int32_t colorFormat = -1;
++                        int32_t cropLeft = -1;
++                        int32_t cropTop = -1;
++                        int32_t cropRight = -1;
++                        int32_t cropBottom = -1;
++                        mOutputFormat->findInt32("width", &codedWidth);
++                        mOutputFormat->findInt32("height", &codedHeight);
++                        mInputFormat->findInt32("profile", &profile);
++                        mInputFormat->findInt32("level", &level);
++                        if (!mOutputFormat->findInt32("bit-depth", &bitDepth)) {
++                            mInputFormat->findInt32("bit-depth", &bitDepth);
++                        }
++                        mOutputFormat->findInt32("color-format", &colorFormat);
++                        const bool hasCrop =
++                                mOutputFormat->findRect("crop", &cropLeft, &cropTop, &cropRight,
++                                                        &cropBottom);
++                        ALOGI("UBOX_R7_DIAG1 stage=CODEC_OUTPUT event=CONFIGURED mime=%s"
++                              " component=%s encoder=%d profile=%d level=%d bit_depth=%d"
++                              " coded_w=%d coded_h=%d color_format_dec=%d"
++                              " color_format_hex=0x%08x crop_present=%d crop_l=%d crop_t=%d"
++                              " crop_r=%d crop_b=%d",
++                              diagMime.c_str(), mComponentName.c_str(),
++                              (mFlags & kFlagIsEncoder) != 0, profile, level, bitDepth, codedWidth,
++                              codedHeight, colorFormat, static_cast<uint32_t>(colorFormat), hasCrop,
++                              cropLeft, cropTop, cropRight, cropBottom);
++                    }
+                     ALOGV("[%s] configured as input format: %s, output format: %s",
+                             mComponentName.c_str(),
+                             mInputFormat->debugString(4).c_str(),
+@@ -5412,6 +5447,38 @@ void MediaCodec::onMessageReceived(const sp<AMessage> &msg) {
+             uint32_t flags;
+             CHECK(msg->findInt32("flags", (int32_t *)&flags));
+ 
++            AString diagMime;
++            if (format->findString("mime", &diagMime) &&
++                (diagMime == MEDIA_MIMETYPE_VIDEO_AVC ||
++                 diagMime == MEDIA_MIMETYPE_VIDEO_HEVC)) {
++                int32_t width = -1;
++                int32_t height = -1;
++                int32_t profile = -1;
++                int32_t level = -1;
++                int32_t bitDepth = -1;
++                int32_t colorFormat = -1;
++                int32_t cropLeft = -1;
++                int32_t cropTop = -1;
++                int32_t cropRight = -1;
++                int32_t cropBottom = -1;
++                format->findInt32("width", &width);
++                format->findInt32("height", &height);
++                format->findInt32("profile", &profile);
++                format->findInt32("level", &level);
++                format->findInt32("bit-depth", &bitDepth);
++                format->findInt32("color-format", &colorFormat);
++                const bool hasCrop = format->findRect("crop", &cropLeft, &cropTop, &cropRight,
++                                                      &cropBottom);
++                ALOGI("UBOX_R7_DIAG1 stage=CODEC_SELECT mime=%s component=%s encoder=%d"
++                      " profile=%d level=%d bit_depth=%d coded_w=%d coded_h=%d"
++                      " color_format_dec=%d color_format_hex=0x%08x crop_present=%d"
++                      " crop_l=%d crop_t=%d crop_r=%d crop_b=%d native_window=%d",
++                      diagMime.c_str(), mComponentName.c_str(),
++                      (flags & CONFIGURE_FLAG_ENCODE) != 0, profile, level, bitDepth, width,
++                      height, colorFormat, static_cast<uint32_t>(colorFormat), hasCrop, cropLeft,
++                      cropTop, cropRight, cropBottom, obj != nullptr);
++            }
++
+             if (android::media::codec::provider_->null_output_surface_support()) {
+                 if (obj == nullptr
+                         && (flags & CONFIGURE_FLAG_DETACHED_SURFACE)
+diff --git a/media/libstagefright/SurfaceUtils.cpp b/media/libstagefright/SurfaceUtils.cpp
+index 74432a6c30..d9c3a851ef 100644
+--- a/media/libstagefright/SurfaceUtils.cpp
++++ b/media/libstagefright/SurfaceUtils.cpp
+@@ -112,6 +112,16 @@ status_t setNativeWindowSizeFormatAndUsage(
+     }
+ 
+     uint64_t finalUsage = (uint32_t) usage | (uint32_t) consumerUsage;
++    if (format == HAL_PIXEL_FORMAT_YV12 || (width >= 1280 && height >= 720)) {
++        ALOGI("UBOX_R7_DIAG1 stage=NATIVE_WINDOW event=CONFIG requested_w=%d requested_h=%d"
++              " format_dec=%d format_hex=0x%08x producer_usage=0x%016" PRIx64
++              " consumer_usage=0x%016" PRIx64 " combined_usage=0x%016" PRIx64
++              " rotation=%d reconnect=%d crop=not_set_at_config",
++              width, height, format, static_cast<uint32_t>(format),
++              static_cast<uint64_t>(static_cast<uint32_t>(usage)),
++              static_cast<uint64_t>(static_cast<uint32_t>(consumerUsage)), finalUsage, rotation,
++              reconnect);
++    }
+     ALOGV("gralloc usage: %#x(producer) + %#x(consumer) = 0x%" PRIx64,
+             usage, consumerUsage, finalUsage);
+     err = native_window_set_usage(nativeWindow, finalUsage);

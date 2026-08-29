@@ -27,10 +27,13 @@ so the audit decision is `HOLD_FOR_MORE_EVIDENCE`. The architecture pass itself 
 | Android 12 daily-use rollback `m8b-remote-r1` | **FROZEN** |
 | Android 16 ARM32 architecture control `a16-prototype-a-r4` | **FROZEN** |
 | Android 16 ARM64 mixed-architecture control `a16-prototype-b-r7` | **PHYSICAL ARCHITECTURE PASS / FROZEN / GATE 3 HOLD — H.264 PASS / HEVC BLOCKER** |
+| Instrumentation derivative `a16-prototype-b-r7-diag1` | **OFFLINE CHECKED / READY FOR PAIRED AVC/HEVC PHYSICAL DIAGNOSTIC VALIDATION / NOT A REPAIR / NOT r8** |
 
-The only active P0 is **Gate 3 — Android 16 Mixed-Architecture Functional Preservation** on this
-exact r7 image. The next boundary is a paired AVC/HEVC diagnostic capture of the full gralloc handle,
-AHardwareBuffer and EGL/GL import contract; no r8 or image rebuild is authorized. The separate
+The only active P0 is **Gate 3 — Android 16 Mixed-Architecture Functional Preservation**. Exact-r7-derived
+`a16-prototype-b-r7-diag1` is now offline checked and ready for one paired AVC/HEVC physical capture of
+the full gralloc handle, AHardwareBuffer and EGL/GL import contract. It changes only four logging
+binaries through a separate diagnostic patch path; canonical r7 remains frozen. No r8 repair or new
+development branch is authorized. The separate
 post-restart quarter-screen is strongly supported to be a retained display recovery defect that
 selects proven 3840x2160p60 HDMI mode 34 while SurfaceFlinger remains 1920x1080. The known boot-time
 legacy audio-service crash occurs after the SurfaceFlinger restart and

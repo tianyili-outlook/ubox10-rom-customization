@@ -180,7 +180,7 @@
   gralloc allocation和 Mali-G31 GLES/UI composition可见。R7 mapper/gralloc closure **PHYSICAL PASS**，
   r6 blocker **CLOSED**；Vulkan/HDR/4K60/所有 HWC与 protected playback不由此提升为 PASS。
 - [ ] **33 — Gate 3 — Android 16 Mixed-Architecture Functional Preservation（当前唯一 P0）：**只在
-  exact frozen r7 上执行，不构建、不刷写新镜像、不创建 r8。按 `docs/DEVICE_TEST.md` 依次复核
+  exact frozen r7 architecture lineage上执行，不创建 r8。按 `docs/DEVICE_TEST.md` 依次复核
   architecture runtime；实测 H.264+AAC、HEVC/H.265+AAC、VP9（区分 playback 与 hardware-path proof）；
   完成 UP/DOWN/LEFT/RIGHT/OK/BACK/HOME/MENU/VOL±/POWER physical→Linux→Android key matrix；完成
   Wi-Fi connected→OFF→ON→reassociation→DHCP/L3/DNS/network-ADB recovery；验证 `/data`、package/
@@ -190,8 +190,11 @@
   audio startup crash在 framework restart之后，**NOT CAUSAL**。AVC/HEVC eventual CLIENT/DEVICE type均
   未捕获，且 AOSP source证明 external texture mapping先于 HWC composition decision，故“AVC仅因 overlay
   避免 RenderEngine import”不是成立的因果解释。Exact usage/internal format/planes/AFBC/private metadata
-  与首个 EGL/GL error缺失，`R8_AUDIT_DECISION = HOLD_FOR_MORE_EVIDENCE`。下一步只做 AVC/HEVC paired
-  instrumentation；在 exact delta证明前不授权 repair、r8或新 branch。Gate 3 PASS 前不创建
+  与首个 EGL/GL error缺失，`R8_AUDIT_DECISION = HOLD_FOR_MORE_EVIDENCE`。Exact-r7-derived
+  `a16-prototype-b-r7-diag1` instrumentation-only candidate现已构建并完成 offline preservation audit；
+  状态 **READY FOR PAIRED AVC/HEVC PHYSICAL DIAGNOSTIC VALIDATION / NOT A REPAIR / NOT r8**。下一步刷写
+  diag1，在同一 build各采集一次 known-good AVC和一次 failing HEVC，再 diff首个 buffer/private-handle/
+  EGL/GL contract差异；在 exact delta证明前不授权 repair、r8或新 branch。Gate 3 PASS 前不创建
   `codex/m8-a16-development`，该 branch 目前不存在。
 
 ## Post-Gate stabilization / release hardening

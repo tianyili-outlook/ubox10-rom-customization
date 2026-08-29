@@ -1,0 +1,282 @@
+{
+  "schema": 1,
+  "candidate": "a16-prototype-b-r7-diag1",
+  "label": "INSTRUMENTATION ONLY / NOT A REPAIR / NOT r8 / NOT A RELEASE",
+  "purpose": "Run one identical diagnostic build for the known-good AVC control and failing HEVC reproduction, then identify the first discriminating buffer/import contract field or EGL/GL operation.",
+  "baseline": {
+    "candidate": "a16-prototype-b-r7",
+    "image": "out/candidates/a16-prototype-b-r7/x12-a16-prototype-b-r7.img",
+    "size": 1641773056,
+    "sha256": "A1F58668AEFFC9DC83CFFD8A49A309839332B6616C02153DCC00A71136A7AA27"
+  },
+  "image": {
+    "path": "out/candidates/a16-prototype-b-r7-diag1/x12-a16-prototype-b-r7-diag1.img",
+    "size": 1641781248,
+    "sha256": "A68E7BD75D9819794BE22E9E05BE76969B2883DF8965DC277482E8C99231C6A4"
+  },
+  "source": {
+    "tag": "android-security-16.0.0_r7",
+    "build_id": "BP2A.250805.034",
+    "api": 36,
+    "manifest": "ebea28d151539ecf0730b1a4ab92ac33edc17ac9",
+    "repositories": {
+      "frameworks/native": "d862b53356dc26794fb5451782806979c46e6769",
+      "external/skia": "4c18a9680d52c2cd5e35cfef2f548635a445fafe",
+      "frameworks/av": "d1137ad4b24b686d9b00fd1b7be1b520f7b6ee2b",
+      "hardware/interfaces": "b553275c84253b074a8532a6ff0f4406c43e606e"
+    },
+    "kernel_repository": "027ef79e8facb73cb2419b4a08c0bd3f13a2206e",
+    "kernel_rebuilt": false,
+    "targeted_modules": [
+      "surfaceflinger",
+      "libstagefright",
+      "gralloc.apollo"
+    ]
+  },
+  "patches": [
+    "configs/aosp/architecture-ceiling-a16/diagnostics/r7-hevc-diag1/patches/0001-frameworks-native-renderengine-trace.patch",
+    "configs/aosp/architecture-ceiling-a16/diagnostics/r7-hevc-diag1/patches/0002-external-skia-egl-gl-trace.patch",
+    "configs/aosp/architecture-ceiling-a16/diagnostics/r7-hevc-diag1/patches/0003-frameworks-av-media-native-window-trace.patch",
+    "configs/aosp/architecture-ceiling-a16/diagnostics/r7-hevc-diag1/patches/0004-gralloc-private-contract-trace.patch"
+  ],
+  "logging": {
+    "prefix": "UBOX_R7_DIAG1",
+    "stages": [
+      "CODEC_SELECT",
+      "CODEC_OUTPUT",
+      "NATIVE_WINDOW",
+      "GRALLOC_ALLOC",
+      "GRALLOC_HANDLE",
+      "AHB_DESC",
+      "RENDERENGINE_MAP",
+      "NATIVE_CLIENT_BUFFER",
+      "EGL_CREATE_IMAGE",
+      "GL_GEN_TEXTURE",
+      "GL_BIND_TEXTURE",
+      "GL_EGL_IMAGE_TARGET",
+      "BACKEND_TEXTURE"
+    ],
+    "filter": "AVC/HEVC configuration and large video state; YV12 buffers at least 1280x720; allocation/import/buffer-registration events instead of frame rendering",
+    "hwc_instrumented": false,
+    "hwc_reason": "HWC is optional corroboration and eager RenderEngine import is the proven causal boundary; omitting HWC minimizes policy-path delta."
+  },
+  "instrumentation_points": [
+    {
+      "repository": "frameworks/av",
+      "path": "media/libstagefright/MediaCodec.cpp",
+      "function": "MediaCodec::onMessageReceived",
+      "stages": ["CODEC_SELECT", "CODEC_OUTPUT"],
+      "fields": ["mime", "component", "encoder", "profile", "level", "bit_depth", "coded dimensions", "color format", "crop", "native window presence"]
+    },
+    {
+      "repository": "frameworks/av",
+      "path": "media/libstagefright/ACodec.cpp",
+      "functions": ["ACodec::setupNativeWindowSizeFormatAndUsage", "ACodec::allocateOutputBuffersFromNativeWindow", "ACodec::dequeueBufferFromNativeWindow", "ACodec::BaseState::onOutputBufferDrained"],
+      "stages": ["CODEC_OUTPUT", "NATIVE_WINDOW"],
+      "fields": ["component", "OMX port dimensions/color/usage", "GraphicBuffer ID", "OMX buffer ID", "dimensions", "stride", "layers", "format", "usage", "crop", "crop result"]
+    },
+    {
+      "repository": "frameworks/av",
+      "path": "media/libstagefright/SurfaceUtils.cpp",
+      "function": "setNativeWindowSizeFormatAndUsage",
+      "stages": ["NATIVE_WINDOW"],
+      "fields": ["requested dimensions", "format", "producer usage", "consumer usage", "combined usage", "rotation", "reconnect"]
+    },
+    {
+      "repository": "hardware/aw donor gralloc",
+      "path": "hardware/aw/gpu/mali-bifrost/gralloc/src/mali_gralloc_bufferallocation.cpp",
+      "function": "mali_gralloc_buffer_allocate",
+      "stages": ["GRALLOC_ALLOC"],
+      "fields": ["backing_store_id", "requested/internal/allocation format", "modifier", "AFBC", "producer/consumer/combined/private usage", "logical/allocation dimensions", "total size", "layers", "plane count", "three plane offsets/byte strides/allocation dimensions/derived sizes", "aw_format", "ion_metadata_flag", "handle flags/version/fd/int counts", "Allwinner alignments"]
+    },
+    {
+      "repository": "hardware/aw donor gralloc",
+      "path": "hardware/aw/gpu/mali-bifrost/gralloc/src/mali_gralloc_reference.cpp",
+      "function": "mali_gralloc_reference_retain",
+      "stages": ["GRALLOC_HANDLE"],
+      "fields": ["first remote import result", "backing_store_id", "private handle allocation/format/usage/plane/metadata fields"]
+    },
+    {
+      "repository": "frameworks/native",
+      "path": "libs/renderengine/skia/SkiaRenderEngine.cpp",
+      "function": "SkiaRenderEngine::mapExternalTextureBuffer",
+      "stages": ["RENDERENGINE_MAP"],
+      "fields": ["GraphicBuffer ID", "dimensions", "stride", "layers", "format", "usage", "protected", "writeable/readable intent", "generation"]
+    },
+    {
+      "repository": "frameworks/native",
+      "path": "libs/renderengine/skia/compat/GaneshBackendTexture.cpp",
+      "function": "GaneshBackendTexture::GaneshBackendTexture",
+      "stages": ["AHB_DESC", "BACKEND_TEXTURE"],
+      "fields": ["AHardwareBuffer ID/status", "complete AHardwareBuffer_Desc", "protected/writeable/readable intent", "graphics API", "Skia GL backend format/validity", "GrBackendTexture dimensions/validity"]
+    },
+    {
+      "repository": "external/skia",
+      "path": "src/gpu/ganesh/gl/AHardwareBufferGL.cpp",
+      "function": "make_gl_backend_texture",
+      "stages": ["NATIVE_CLIENT_BUFFER", "EGL_CREATE_IMAGE", "GL_GEN_TEXTURE", "GL_BIND_TEXTURE", "GL_EGL_IMAGE_TARGET"],
+      "fields": ["AHardwareBuffer ID", "native client buffer/null", "EGLImage/result/error", "GL texture name", "texture target", "GL bind/image-target result/error"]
+    }
+  ],
+  "correlation": {
+    "codec_to_renderengine_to_skia": "GraphicBuffer ID / AHardwareBuffer ID",
+    "gralloc_allocation_to_import": "private_handle_t backing_store_id",
+    "between_domains": "timestamp plus dimensions, format, usage, allocation dimensions, plane layout and private metadata",
+    "added_syscalls_or_ioctls": false,
+    "limitation": "The public GraphicBuffer/AHardwareBuffer ID is not the donor private-handle backing_store_id; no cross-process registry was introduced."
+  },
+  "egl_gl_error_semantics": {
+    "egl_create_image_failure": "The production failure branch still calls eglGetError exactly once; the value is saved, logged conditionally, and reused by the existing SkDebugf.",
+    "gl_bind_texture": "The one existing glGetError call is saved and logged before the unchanged branch test.",
+    "gl_egl_image_target": "The one existing glGetError call is saved and logged before the unchanged branch test.",
+    "native_client_buffer_and_gl_gen": "No new error query is made; success lines say not_queried_preserve_state.",
+    "control_flow": "All original returns, cleanup and the LOG_ALWAYS_FATAL backend-validity boundary remain unchanged."
+  },
+  "runtime_delta": [
+    {
+      "partition_path": "/system/bin/surfaceflinger",
+      "old_size": 8565296,
+      "old_sha256": "582E1B0B075DE069370A7565196D32423A21EEE03E21403375C5BDF33C9F3C61",
+      "new_size": 8565352,
+      "new_sha256": "E2B780E955FC87356533FC9B50C0F9D78561070681C5D2D4DAD877AC777A2A73",
+      "elf_class": "ELF64",
+      "architecture": "AArch64",
+      "reason": "RenderEngine, AHardwareBuffer, Skia EGL/GL and backend-validity logging"
+    },
+    {
+      "partition_path": "/system/lib64/libstagefright.so",
+      "old_size": 2067672,
+      "old_sha256": "F765E06369D0181A147790621327D217F63768C4C0D3BFA835EE44549C05FDC4",
+      "new_size": 2067648,
+      "new_sha256": "B0D1E7D72DFCEA20B72088AC9F3BC3E57AE983FD2DC5470494C6AB7404A5B16F",
+      "elf_class": "ELF64",
+      "architecture": "AArch64",
+      "reason": "MediaCodec/ACodec/native-window logging for the ARM64 VLC path"
+    },
+    {
+      "partition_path": "/vendor/lib/hw/gralloc.apollo.so",
+      "old_size": 56588,
+      "old_sha256": "7325BD8B0562F4A01CDF283DAAA8DB660AAFF4E31F6FC7AD5D6DFABC4ABF8AAC",
+      "new_size": 57660,
+      "new_sha256": "2833B9B8115D2516891CCD295D97E5BDBDB014F7EC8E336868E575D3BDFF36B5",
+      "elf_class": "ELF32",
+      "architecture": "ARM",
+      "reason": "Private allocation/backing-store logging in the retained ELF32 allocator service",
+      "abi_note": "DT_NEEDED, SONAME, ELF class and all strong dynamic exports are preserved. Nine accidental weak libc++ template exports in the frozen donor binary are absent from both the diagnostic and a no-instrumentation current-toolchain rebuild; no consumer/import was found and the HMI strong entry contract remains present."
+    },
+    {
+      "partition_path": "/vendor/lib64/hw/gralloc.apollo.so",
+      "old_size": 77248,
+      "old_sha256": "B03BFE24802C73E158A365CB5D15E1BC7598BB73C98DEF86533183678837CFE7",
+      "new_size": 81344,
+      "new_sha256": "F12C8F1B3CA3F967367E32A44EF043BF0EE660B1D36B175D3736B059A31947F8",
+      "elf_class": "ELF64",
+      "architecture": "AArch64",
+      "reason": "Private imported-handle/backing-store logging in ARM64 SurfaceFlinger"
+    }
+  ],
+  "partition_delta": {
+    "system_added": [],
+    "system_removed": [],
+    "system_changed": ["system/bin/surfaceflinger", "system/lib64/libstagefright.so"],
+    "vendor_added": [],
+    "vendor_removed": [],
+    "vendor_changed": ["lib/hw/gralloc.apollo.so", "lib64/hw/gralloc.apollo.so"],
+    "product_changed": [],
+    "vendor_dlkm_changed": [],
+    "outer_changed_payloads": ["Vsuper.fex", "Vvbmeta_system.fex", "Vvbmeta_vendor.fex", "super.fex", "vbmeta_system.fex", "vbmeta_vendor.fex"],
+    "outer_payloads_preserved": 44,
+    "lp_metadata_and_extents": "EXACT_R7",
+    "sparse_raw_roundtrip": "PASS"
+  },
+  "unchanged_critical_assets": {
+    "boot_sha256": "527CF878B015CFAE4E8600BD750C7C73F45F4290B5CFEFEDBD1AD9AC347B8063",
+    "kernel_sha256": "287A82F799982FB58D02ADE88150A9EAB22D4C0956BE3CE50765F6FD1DB24F40",
+    "vendor_dlkm_sha256": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07",
+    "vendor_dlkm_module_count": 22,
+    "product_sha256": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974",
+    "mali_blob_sha256": "03333D495E3566C7D85CA2E000DA569A16CE8F022EA25C0EA61950C891D5C7F8",
+    "mapper64_sha256": "D0FC49B3C216441BDEA66C015CE17B494523E3EB4D1659DE9BBA31693C7461E8",
+    "mapper32_sha256": "5D18BB597F91C90CC9A17BDAD4CD3F525B33B903C7AA188A04D79B1273768BE3",
+    "boringssl32_sha256": "CD2BCD98343AE5B6DB3FB1DF0599692E0DA52FBC599322EDF2E60A2AE9731166",
+    "boringssl64_sha256": "E8F3B67A7BADC94FE034A74F5C59F085138D5D8E38A27CF3ADEB676AE60C058F",
+    "boringssl_rc_sha256": "459FEA4E63E78A19B04B37E6298E4CE22A816F2F5604B17289D04C3A57E1FE1D",
+    "audio_wifi_other_vendor_files": "EXACT_R7_BY_COMPLETE_VENDOR_TREE_DIFF",
+    "other_system_and_product_files": "EXACT_R7_BY_COMPLETE_TREE_DIFF"
+  },
+  "offline_gates": {
+    "filesystem_integrity": "PASS",
+    "android_identity": "ANDROID_16_API_36_PRESERVED",
+    "mixed_abi": "PASS_ARM64_PRIMARY_ARM32_SECONDARY",
+    "abilist": "arm64-v8a,armeabi-v7a,armeabi",
+    "abilist64": "arm64-v8a",
+    "abilist32": "armeabi-v7a,armeabi",
+    "zygote": "zygote64_32",
+    "app_process64": "PRESENT",
+    "app_process32": "PRESENT",
+    "vndk31_dual_arch": "PASS",
+    "boringssl32_64": "EXACT_R7",
+    "arm64_mapper_gralloc_mali_sphal": "PASS_ZERO_UNMATCHED",
+    "avb": "PASS",
+    "lp_geometry": "EXACT_R7",
+    "outer_integrity": "PASS",
+    "boot_kernel": "EXACT_R7_5.4.302_PLUS",
+    "kernel_path_a_config_sha256": "2A159B7EAF3ED96988F169A022A927B440A5D786F20C490D7AF004760F4B4F29",
+    "vendor_dlkm": "EXACT_R7_22_MODULES",
+    "system_vintf": "PASS_EXIT_0",
+    "full_vintf": "EXIT_65_INHERITED_CONFIG_NFS_FS_EXCEPTION_NOT_PASS",
+    "selinux": "PASS_OFFLINE_COMPILE_ONLY"
+  },
+  "canonical_r7_isolation": {
+    "canonical_patch_path_contains_diag1": false,
+    "canonical_runtime_marker_present": false,
+    "diag1_overlay_is_separate": true,
+    "diag1_runtime_markers_present_in_all_four_files": true,
+    "fatal_path_present": true,
+    "repair_logic_added": false
+  },
+  "capture_helper": {
+    "path": "scripts/capture-a16-prototype-b-r7-diag1-media-paired.ps1",
+    "powershell": 7,
+    "default_port": 7896,
+    "phases": ["Baseline", "AVCPre", "AVCPost", "HEVCPre", "HEVCPostRestart", "Final"],
+    "output": "timestamped directories below Downloads/UBOX10-r7-diag1-paired",
+    "playback": "manual one fixture once per codec",
+    "logcat_clear": "optional explicit confirmation only in AVCPre or HEVCPre, after pre-capture; never after failure",
+    "automatic_reboot": false
+  },
+  "repository_validation": {
+    "python_compileall": "PASS",
+    "new_json_validation": "PASS",
+    "diagnostic_static_isolation": "PASS",
+    "focused_pytest": "21_PASSED",
+    "broad_lightweight_pytest": "157_PASSED_52_SKIPPED",
+    "broad_skip_classification": "Repository-declared absent ignored historical candidate/binary/generated fixtures; no skipped test is reported as a pass.",
+    "powershell_static_structure_and_safety": "PASS",
+    "powershell_parser_runtime": "NOT_RUN_PWSH_NOT_INSTALLED"
+  },
+  "physical_status": "OFFLINE_CHECKED_READY_FOR_PAIRED_PHYSICAL_DIAGNOSTIC_VALIDATION",
+  "limitations": [
+    "No physical UBOX action occurred in this task.",
+    "HEVC first fatal is proven, but the first discriminating AVC-versus-HEVC contract field is not yet proven.",
+    "aw_format is available at allocation but not transported in the private handle at remote import; plane pixel stride and second-FBM state are not represented by this donor handle.",
+    "GraphicBuffer/AHardwareBuffer ID and gralloc backing_store_id remain separate correlation domains.",
+    "Readable intent is inferred at the existing map/constructor boundary because only writeable intent is forwarded internally.",
+    "HWC composition is not instrumented because it is corroborative and follows eager RenderEngine import.",
+    "Full VINTF remains exit 65 for the inherited NFS exception and is not a pass."
+  ],
+  "governance": {
+    "architecture_ceiling": "PASS_FROZEN_UNCHANGED",
+    "gate3": "HOLD",
+    "h264": "PHYSICAL_PASS",
+    "hevc": "FAIL_BLOCKER_NOT_FIXED",
+    "r8_audit_decision": "HOLD_FOR_MORE_EVIDENCE",
+    "r8_authorized": false,
+    "r8_built": false,
+    "quarter_screen_fixed": false,
+    "audio_modified": false,
+    "kernel_modified": false,
+    "mali_blob_modified": false,
+    "development_branch_created": false
+  }
+}
