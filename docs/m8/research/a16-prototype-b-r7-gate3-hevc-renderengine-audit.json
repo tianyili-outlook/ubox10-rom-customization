@@ -1,0 +1,510 @@
+{
+  "schema": 1,
+  "date": "2026-08-29",
+  "baseline_commit": "4affb0b304ba51e4acaa7063c7c15a8f18c2ccf6",
+  "branch": "codex/m8-architecture-ceiling",
+  "candidate": {
+    "id": "a16-prototype-b-r7",
+    "image_size": 1641773056,
+    "image_sha256": "A1F58668AEFFC9DC83CFFD8A49A309839332B6616C02153DCC00A71136A7AA27",
+    "architecture_status": "PASS",
+    "architecture_classification": "PHYSICAL_ARCHITECTURE_PASS_FROZEN_ANDROID_16_ARM64_MIXED_ARCHITECTURE_BASELINE",
+    "functional_preservation_status": "HOLD",
+    "new_development_branch_authorized": false
+  },
+  "forensic_inputs_and_hashes": [
+    {
+      "filename": "gate3-h264-physical-validation-20260829-142314.txt",
+      "bytes": 493236,
+      "sha256": "844c928d44f0b79d3aa55c7b7be3869ec1cf184bb6d014dca9d7ed6941e3fa31",
+      "hash_result": "PASS",
+      "provenance": "USER_SUPPLIED_EXACT_R7_PHYSICAL_VALIDATION_LOCAL_NON_GIT_EVIDENCE"
+    },
+    {
+      "filename": "r7-hevc-reboot-quarter-screen-forensics.txt",
+      "bytes": 2916649,
+      "sha256": "4c650fda2180f74131f476cb0312063f2ad4d43e97415dc487894a0bddac4d60",
+      "hash_result": "PASS",
+      "provenance": "USER_SUPPLIED_EXACT_R7_POST_FAILURE_FORENSICS_LOCAL_NON_GIT_EVIDENCE"
+    },
+    {
+      "filename": "post-reboot-quarter-screen-screencap.png",
+      "bytes": 49375,
+      "sha256": "4e2d31f57eabb707a0b9f6c57faf28975ce888f0b17a448c179c6f392651f6e7",
+      "hash_result": "PASS",
+      "png_dimensions": "1920x1080",
+      "provenance": "USER_SUPPLIED_EXACT_R7_POST_RESTART_ANDROID_SCREENCAP_LOCAL_NON_GIT_EVIDENCE"
+    }
+  ],
+  "source_revisions": {
+    "frameworks_native": "d862b53356dc26794fb5451782806979c46e6769",
+    "external_skia": "4c18a9680d52c2cd5e35cfef2f548635a445fafe",
+    "hardware_interfaces": "b553275c84253b074a8532a6ff0f4406c43e606e",
+    "gralloc_donor_commit": "316cd80ca43fa17b0385eacd7f6f3652bbd66b2a",
+    "gralloc_tree": "8a231b4f821fc0e30fd9010fb6b51ab01325d616",
+    "kernel_control": "027ef79e8facb73cb2419b4a08c0bd3f13a2206e"
+  },
+  "h264_control_result": {
+    "result": "PASS",
+    "physical_video": "PASS",
+    "physical_hdmi_audio": "PASS",
+    "continuous_playback": "PASS",
+    "pause_resume_back": "PASS",
+    "decoder_selection_status": "PROVEN",
+    "decoder": "OMX.allwinner.video.decoder.avc",
+    "chain": [
+      "ARM64_VLC",
+      "MEDIACODEC_NDK",
+      "ARM32_OMX_ALLWINNER_AVC",
+      "CEDAR_VE_696MHZ",
+      "LINEAR_NON_AFBC_1920X1088_YV12_NATIVE_WINDOW",
+      "SURFACEFLINGER_SUNXI_HWC_DISPLAY",
+      "VISIBLE_HDMI_VIDEO"
+    ],
+    "aac_chain": [
+      "VLC_FFMPEG_AVCODEC_SOFTWARE_DECODE",
+      "ANDROID_AUDIOTRACK",
+      "RETAINED_ARM32_APOLLO_AUDIO_HAL",
+      "AUDIBLE_HDMI"
+    ],
+    "decisive_evidence": [
+      "06:19:21.740 VLC selects OMX.allwinner.video.decoder.avc",
+      "06:19:21.833 OMXStore instantiates OMX.allwinner.video.decoder.avc",
+      "06:19:21.944 VeSetEnableAfbcFlag is 0",
+      "06:19:21.944 FBM is 1920x1088 with align 32",
+      "06:19:21.960 native window is 1920x1088 format 0x32315659 usage 0x402d00",
+      "06:19:22.018 first picture is received",
+      "sunxihwc inspects buffers with ion_metadata_flag 0"
+    ]
+  },
+  "hevc_failure_result": {
+    "result": "FAIL",
+    "gate3_status": "HOLD",
+    "decoder_selection_status": "NOT_PROVEN",
+    "decoder": "NOT_OBSERVABLE_FROM_CURRENT_EVIDENCE",
+    "hardware_media_activity": "PROVEN",
+    "physical_visibility": "FAIL",
+    "decisive_evidence": [
+      "06:27:53.544 VLC VideoPlayerActivity launch",
+      "06:27:53.929 Cedar hardware clock enabled",
+      "06:27:53.981 VE frequency 696000000",
+      "06:27:54.070 ARM64 SurfaceFlinger RenderEngine SIGABRT",
+      "06:27:54.450 invalid 1920x1088 YV12 Ganesh texture abort",
+      "06:27:54.567 init detects SurfaceFlinger signal 6",
+      "06:27:54.640 SurfaceFlinger onrestart zygote action succeeds"
+    ]
+  },
+  "kernel_reboot_result": {
+    "result": "PROVEN",
+    "occurred": false,
+    "classification": "NO_KERNEL_REBOOT_USERSPACE_SURFACEFLINGER_FRAMEWORK_RESTART",
+    "evidence": [
+      "post-failure uptime is 7902.54 seconds",
+      "SurfaceFlinger tombstone process uptime is 7526 seconds",
+      "/sys/fs/pstore is empty",
+      "last_kmsg is unavailable and DropBox SYSTEM_LAST_KMSG has no entry",
+      "DropBox SYSTEM_SERVER_WATCHDOG has no entry",
+      "init explicitly restarts SurfaceFlinger and primary zygote",
+      "SYSTEM_RESTART exists without a new SYSTEM_BOOT"
+    ]
+  },
+  "surfaceflinger_first_fatal": {
+    "status": "PROVEN",
+    "process": "/system/bin/surfaceflinger",
+    "abi": "ARM64",
+    "thread": "RenderEngine",
+    "signal": "SIGABRT",
+    "timestamp": "2026-08-29T06:27:54.070Z",
+    "abort_text": "Failed to create a valid texture. [0xb40000764a6120b0]:[1920,1088] isProtected:0 isWriteable:0 format:842094169",
+    "backtrace": [
+      "GaneshBackendTexture::GaneshBackendTexture",
+      "GaneshGpuContext::makeBackendTexture",
+      "SkiaRenderEngine::mapExternalTextureBuffer",
+      "RenderEngineThreaded::mapExternalTextureBuffer",
+      "abort"
+    ],
+    "causal_chain": "HEVC_LAUNCH_TO_CEDAR_VE_TO_GPU_SAMPLEABLE_YV12_BUFFER_TO_EAGER_GANESH_GL_IMPORT_TO_INVALID_BACKEND_TEXTURE_TO_SIGABRT_TO_SURFACEFLINGER_ZYGOTE_RESTART"
+  },
+  "buffer_geometry": {
+    "h264_decoder_input_port": "1920x1080",
+    "h264_fbm": "1920x1088",
+    "h264_crop": "1920x1080",
+    "h264_native_window_final": "1920x1088",
+    "h264_luma_stride": 1920,
+    "hevc_fatal_ahardwarebuffer": "1920x1088",
+    "hevc_crop": "NOT_OBSERVABLE",
+    "conclusion": "NOMINAL_1920X1088_GEOMETRY_IS_SHARED_AND_DOES_NOT_EXPLAIN_THE_DIVERGENCE"
+  },
+  "pixel_format": {
+    "decimal": 842094169,
+    "hex": "0x32315659",
+    "fourcc": "YV12",
+    "android_name": "HAL_PIXEL_FORMAT_YV12",
+    "h264": "PROVEN_SAME_NOMINAL_FORMAT",
+    "hevc": "PROVEN_SAME_NOMINAL_FORMAT",
+    "format_alone_is_root_cause": false
+  },
+  "aosp_failure_site": {
+    "status": "PROVEN",
+    "buffer_receipt": "frameworks/native/services/surfaceflinger/SurfaceFlinger.cpp:5035-5055,8518-8563",
+    "eager_map": "frameworks/native/libs/renderengine/ExternalTexture.cpp:25-30",
+    "thread_dispatch": "frameworks/native/libs/renderengine/threaded/RenderEngineThreaded.cpp:178-190",
+    "eligibility_and_call": "frameworks/native/libs/renderengine/skia/SkiaRenderEngine.cpp:417-452",
+    "fatal_assertion": "frameworks/native/libs/renderengine/skia/compat/GaneshBackendTexture.cpp:40-76",
+    "gl_import": "external/skia/src/gpu/ganesh/gl/AHardwareBufferGL.cpp:33-62,113-176,201-225",
+    "what_causes_abort": "GRBACKENDTEXTURE_IS_INVALID_WITH_NONZERO_WIDTH_AND_HEIGHT",
+    "backend_format_behavior": "YV12_HAS_NO_EXPLICIT_GL_CASE_AND_USES_RGBA8_EXTERNAL_FALLBACK_WHEN_REQUIRE_KNOWN_FORMAT_IS_FALSE",
+    "possible_open_gl_import_sequence": [
+      "eglGetNativeClientBufferANDROID",
+      "eglCreateImageKHR_EGL_NATIVE_BUFFER_ANDROID",
+      "glGenTextures",
+      "glBindTexture_GL_TEXTURE_EXTERNAL",
+      "glEGLImageTargetTexture2DOES"
+    ],
+    "exact_lower_failure_status": "NOT_PROVEN",
+    "exact_lower_failure": "NO_DISCRIMINATING_EGL_OR_GL_ERROR_WAS_CAPTURED",
+    "excluded": [
+      "ZERO_WIDTH",
+      "ZERO_HEIGHT",
+      "PROTECTED_CONTENT_REJECTION"
+    ]
+  },
+  "h264_vs_hevc_differences": [
+    {
+      "field": "decoder_selection",
+      "h264": "PROVEN_OMX_ALLWINNER_VIDEO_DECODER_AVC",
+      "hevc": "NOT_OBSERVABLE"
+    },
+    {
+      "field": "mediacodec_omx",
+      "h264": "PROVEN_MEDIACODEC_NDK_AND_EXACT_OMX_INSTANCE",
+      "hevc": "NOT_PROVEN_EXACT_COMPONENT"
+    },
+    {
+      "field": "cedar_ve",
+      "h264": "PROVEN_696MHZ",
+      "hevc": "PROVEN_696MHZ_HARDWARE_MEDIA_ACTIVITY"
+    },
+    {
+      "field": "decoder_output_dimensions",
+      "h264": "PROVEN_1920X1088_ALIGNED_FROM_1920X1080",
+      "hevc": "PROVEN_1920X1088_AT_FAILING_CONSUMER_DECODER_PORT_NOT_OBSERVABLE"
+    },
+    {
+      "field": "crop",
+      "h264": "PROVEN_1920X1080",
+      "hevc": "NOT_OBSERVABLE"
+    },
+    {
+      "field": "native_window_dimensions",
+      "h264": "PROVEN_1920X1080_THEN_1920X1088",
+      "hevc": "STRONGLY_SUPPORTED_SIMILAR_SURFACE_SEQUENCE_EXACT_ALLOCATION_NOT_OBSERVABLE"
+    },
+    {
+      "field": "android_pixel_format",
+      "h264": "PROVEN_YV12",
+      "hevc": "PROVEN_YV12"
+    },
+    {
+      "field": "gralloc_requested_format",
+      "h264": "PROVEN_YV12",
+      "hevc": "NOT_OBSERVABLE_SEPARATELY_FROM_AHB_PUBLIC_FORMAT"
+    },
+    {
+      "field": "gralloc_internal_format",
+      "h264": "NOT_OBSERVABLE",
+      "hevc": "NOT_OBSERVABLE"
+    },
+    {
+      "field": "stride_plane_layout",
+      "h264": "PARTIAL_LUMA_STRIDE_1920_FBM_ALIGN32_PLANES_NOT_OBSERVABLE",
+      "hevc": "NOT_OBSERVABLE"
+    },
+    {
+      "field": "combined_usage",
+      "h264": "PROVEN_0X402D00",
+      "hevc": "PARTIAL_GPU_TEXTURE_BIT_PROVEN_REMAINING_MASK_NOT_OBSERVABLE"
+    },
+    {
+      "field": "producer_usage",
+      "h264": "VIDEO_DECODER_BIT_PRESENT_EXACT_SPLIT_NOT_OBSERVABLE",
+      "hevc": "NOT_OBSERVABLE"
+    },
+    {
+      "field": "consumer_usage",
+      "h264": "COMPONENT_REPORTS_0X400400_EXACT_SPLIT_NOT_OBSERVABLE",
+      "hevc": "GPU_TEXTURE_CONSUMPTION_PROVEN_REMAINING_MASK_NOT_OBSERVABLE"
+    },
+    {
+      "field": "afbc_modifier",
+      "h264": "PROVEN_AFBC_DISABLED",
+      "hevc": "NOT_OBSERVABLE"
+    },
+    {
+      "field": "private_handle_metadata",
+      "h264": "PARTIAL_ION_METADATA_FLAG_ZERO_OTHER_FIELDS_NOT_OBSERVABLE",
+      "hevc": "NOT_OBSERVABLE"
+    },
+    {
+      "field": "ahardwarebuffer_description",
+      "h264": "PARTIAL_PUBLIC_NATIVE_WINDOW_FIELDS",
+      "hevc": "PARTIAL_1920X1088_YV12_NONPROTECTED_NONWRITEABLE"
+    },
+    {
+      "field": "hwc_composition_type",
+      "h264": "NOT_OBSERVABLE_HWC_INSPECTION_ONLY",
+      "hevc": "NOT_OBSERVABLE"
+    },
+    {
+      "field": "client_vs_device",
+      "h264": "NOT_OBSERVABLE",
+      "hevc": "NOT_OBSERVABLE"
+    },
+    {
+      "field": "surfaceflinger_renderengine_import",
+      "h264": "STRONGLY_SUPPORTED_SUCCESSFUL_EAGER_IMPORT",
+      "hevc": "PROVEN_IMPORT_ATTEMPT"
+    },
+    {
+      "field": "eglimage_gl_texture_import",
+      "h264": "STRONGLY_SUPPORTED_SUCCESS",
+      "hevc": "PROVEN_INVALID_BACKEND_EXACT_CALL_NOT_PROVEN"
+    },
+    {
+      "field": "mali_import",
+      "h264": "STRONGLY_SUPPORTED_SUCCESS",
+      "hevc": "NO_VALID_BACKEND_EXACT_MALI_INVOCATION_OR_ERROR_NOT_PROVEN"
+    },
+    {
+      "field": "first_observable_divergence",
+      "h264": "VALID_TEXTURE_AND_FIRST_PICTURE",
+      "hevc": "INVALID_BACKEND_TEXTURE_AND_SIGABRT"
+    }
+  ],
+  "composition_hypothesis": {
+    "hypothesis": "H264_AVOIDS_RENDERENGINE_THROUGH_HWC_DEVICE_OVERLAY_WHILE_HEVC_USES_CLIENT",
+    "status": "NOT_PROVEN",
+    "audit_result": "CONTRADICTED_BY_AOSP_EAGER_IMPORT_ORDERING_AS_A_CAUSAL_MECHANISM",
+    "h264_eventual_composition_type": "NOT_OBSERVABLE",
+    "hevc_eventual_composition_type": "NOT_OBSERVABLE",
+    "reason": "READABLE_EXTERNAL_TEXTURE_MAPPING_OCCURS_ON_BUFFER_RECEIPT_BEFORE_HWC_VALIDATE_AND_H264_USAGE_INCLUDES_GPU_TEXTURE"
+  },
+  "graphics_provider_contract": {
+    "mapper": {
+      "path": "/vendor/lib64/hw/android.hardware.graphics.mapper@2.0-impl-2.1.so",
+      "sha256": "D0FC49B3C216441BDEA66C015CE17B494523E3EB4D1659DE9BBA31693C7461E8",
+      "build_id": "2f99ba222f5d3eaf2e6217f8b3670537"
+    },
+    "gralloc": {
+      "path": "/vendor/lib64/hw/gralloc.apollo.so",
+      "sha256": "B03BFE24802C73E158A365CB5D15E1BC7598BB73C98DEF86533183678837CFE7",
+      "build_id": "4ea9accdddd3f88f1787aa22de09f009",
+      "source_class": "PINNED_APACHE_2_ARM_SUNXI_GRALLOC_1_X_NOT_GENERIC_AOSP_GRALLOC"
+    },
+    "mali": {
+      "path": "/vendor/lib64/egl/libGLES_mali.so",
+      "sha256": "03333D495E3566C7D85CA2E000DA569A16CE8F022EA25C0EA61950C891D5C7F8",
+      "build_id": "281008657ed1f606be382d076fe69918",
+      "version": "MALI_G31_OPENGL_ES_3_2_V1_R20P0_01REL0"
+    },
+    "yv12_source_support": "PROVEN_LINEAR_GPU_READ_DPU_READ_VPU_READ_AND_THREE_PLANE_LAYOUT",
+    "private_metadata_required_by_mali": "STRONGLY_SUPPORTED_BY_BINARY_IMPORT_DIAGNOSTICS_AND_PAIRED_GRALLOC_SOURCE",
+    "generic_gralloc_vendor_mali_mismatch": "NOT_PROVEN",
+    "rgb_ui_scope": "PASS",
+    "h264_linear_yv12_import_scope": "STRONGLY_SUPPORTED",
+    "hevc_specific_scope": "NOT_PROVEN"
+  },
+  "media_buffer_handoff": {
+    "common_omx_frontend": "PROVEN",
+    "avc_component": "PROVEN_ACTIVE",
+    "hevc_component_registered": true,
+    "hevc_component_active": "NOT_PROVEN",
+    "avc_afbc": "PROVEN_DISABLED",
+    "hevc_afbc": "NOT_OBSERVABLE",
+    "hevc_10bit": "NOT_OBSERVABLE",
+    "hevc_second_fbm": "NOT_OBSERVABLE",
+    "same_output_allocator": "STRONGLY_SUPPORTED_COMMON_FRONTEND_AND_FBM_PLUMBING_BUT_EXACT_RUNTIME_BRANCH_NOT_PROVEN",
+    "legacy_bsp_overlay_only_requirement": "NOT_PROVEN"
+  },
+  "historical_controls": [
+    {
+      "control": "m8b-audio-r2",
+      "result": "PASS",
+      "finding": "ANDROID_12_ARM32_HEVC_AAC_VISIBLE_PLAYBACK_AND_HDMI_AUDIO",
+      "composition_import_detail": "NOT_OBSERVABLE"
+    },
+    {
+      "control": "m8b-rc-core-r5",
+      "result": "PASS",
+      "finding": "ANDROID_12_ARM32_AVC_HEVC_CEDAR_ACCEPTED",
+      "composition_import_detail": "NOT_OBSERVABLE"
+    },
+    {
+      "control": "a16-prototype-a-r4",
+      "result": "PASS",
+      "finding": "ANDROID_16_ARM32_H264_AAC_VISIBLE_PLAYBACK_AND_HDMI_AUDIO",
+      "hevc_detail": "NOT_TESTED_IN_RECORDED_CONTROL"
+    }
+  ],
+  "primary_root_cause_status": "NOT_PROVEN",
+  "primary_root_cause": {
+    "first_fatal_boundary_status": "PROVEN",
+    "smallest_proven_contract_failure": "GPU_SAMPLEABLE_1920X1088_NONPROTECTED_READABLE_YV12_BUFFER_CANNOT_SATISFY_ARM64_GRALLOC_MALI_GLES_EXTERNAL_TEXTURE_IMPORT_CONTRACT",
+    "exact_changed_contract_status": "NOT_PROVEN",
+    "exact_changed_contract": "UNKNOWN_USAGE_INTERNAL_FORMAT_PLANE_LAYOUT_MODIFIER_AFBC_OR_PRIVATE_HANDLE_METADATA_OR_LOWER_IMPORT_STATE",
+    "exact_lower_failure_status": "NOT_PROVEN",
+    "not_supported_as_sufficient_causes": [
+      "NOMINAL_YV12_FORMAT_ALONE",
+      "NOMINAL_1920X1088_GEOMETRY_ALONE",
+      "HEVC_CLIENT_COMPOSITION",
+      "H264_DEVICE_COMPOSITION_AVOIDS_IMPORT",
+      "INHERENT_GENERIC_GRALLOC_MALI_MISMATCH"
+    ]
+  },
+  "secondary_quarter_screen_status": "STRONGLY_SUPPORTED",
+  "secondary_root_cause": {
+    "classification": "DISPLAY_RECOVERY_HDMI_MODE_AND_SCALING_REINITIALIZATION_DEFECT",
+    "mode_decimal": 34,
+    "mode_hex": "0x22",
+    "decoded_mode": "3840X2160P60",
+    "android_surfaceflinger_space": "1920X1080",
+    "physical_geometry_consistency": "PROVEN_HALF_WIDTH_TIMES_HALF_HEIGHT_EQUALS_UPPER_LEFT_ONE_QUARTER_AREA",
+    "property_writer": "PROVEN_HAL_GRAPHICS_COMPOSER_DEFAULT_PID_510",
+    "property_reader_mode_owner": "STRONGLY_SUPPORTED_RETAINED_LIBDISPLAYD_COMPOSER_DISPLAY_STACK",
+    "exact_saved_vs_optimal_selection_branch": "NOT_PROVEN",
+    "exact_scaling_programming_omission": "NOT_PROVEN",
+    "cold_boot_control": "NOT_OBSERVABLE",
+    "fb0_metadata": "NOT_AUTHORITATIVE_WITHOUT_MODERN_HWC_SOURCE_PROOF"
+  },
+  "audio_causality": {
+    "classification": "KNOWN_DEBT",
+    "causal_status": "NOT_CAUSAL",
+    "surfaceflinger_fatal_timestamp": "06:27:54.070",
+    "audio_service_fatal_timestamp": "06:28:08.572",
+    "ordering": "AUDIO_CRASH_APPROXIMATELY_14_5_SECONDS_AFTER_SURFACEFLINGER_FATAL_DURING_RESTART",
+    "conclusion": "AUDIO_STARTUP_CRASH_IS_NOT_THE_HEVC_FIRST_FATAL"
+  },
+  "known_debts": [
+    {
+      "debt": "LEGACY_ARM32_AUDIO_SERVICE_STARTUP_CRASH",
+      "status": "KNOWN_DEBT",
+      "priority": "POST_ARCHITECTURE_P1",
+      "causal_to_hevc": false
+    },
+    {
+      "debt": "FULL_VINTF_CONFIG_NFS_FS_INHERITED_MISMATCH",
+      "status": "KNOWN_DEBT",
+      "result": "FAIL_EXIT_65_NOT_PASS",
+      "causal_to_hevc": false
+    }
+  ],
+  "minimum_fix_candidates": [
+    {
+      "rank": 0,
+      "class": "BOUNDED_CONTROL_PAIRED_INSTRUMENTATION",
+      "status": "RECOMMENDED_NEXT_BOUNDARY_NOT_A_REPAIR",
+      "scope": "EXACT_R7_AVC_AND_HEVC_CODEC_ALLOCATION_HANDLE_AHB_EGL_GL_AND_HWC_DIAGNOSTICS",
+      "risk": "LOW_IF_LOG_ONLY",
+      "impact_h264": "OBSERVATION_ONLY",
+      "impact_rgb_ui": "OBSERVATION_ONLY",
+      "impact_vp9": "OBSERVATION_ONLY"
+    },
+    {
+      "rank": 1,
+      "class": "CORRECT_HEVC_DECODER_OUTPUT_USAGE_FORMAT_METADATA_CONTRACT",
+      "status": "CONDITIONAL",
+      "condition": "HEVC_DIFFERENTIAL_CAPTURE_PROVES_PRODUCER_DESCRIPTOR_IS_INVALID",
+      "architectural_cleanliness": "HIGH_IF_SINGLE_PRODUCER_CONTRACT_FIELD",
+      "regression_risk": "MEDIUM",
+      "impact_h264": "MUST_REMAIN_UNCHANGED",
+      "impact_rgb_ui": "MUST_REMAIN_UNCHANGED",
+      "impact_vp9": "REQUIRES_FOCUSED_REGRESSION",
+      "proprietary_assumptions": true
+    },
+    {
+      "rank": 2,
+      "class": "CORRECT_TARGETED_ARM64_GRALLOC_MALI_IMPORT_CONTRACT",
+      "status": "CONDITIONAL",
+      "condition": "PRODUCER_DESCRIPTOR_IS_VALID_AND_EXACT_MALI_REQUIRED_METADATA_OR_LAYOUT_SUPPORT_IS_MISSING",
+      "architectural_cleanliness": "MEDIUM",
+      "regression_risk": "HIGHER_GRAPHICS_PROVIDER_RISK",
+      "impact_h264": "MUST_PRESERVE_LINEAR_YV12",
+      "impact_rgb_ui": "MUST_PRESERVE_ALL_R7_UI_GATES",
+      "impact_vp9": "REQUIRES_FOCUSED_REGRESSION",
+      "proprietary_assumptions": true
+    },
+    {
+      "rank": 3,
+      "class": "EXPLICIT_TARGETED_YUV_TO_IMPORTABLE_CONVERSION_BOUNDARY",
+      "status": "CONDITIONAL_FALLBACK",
+      "condition": "DECODER_BUFFER_IS_LEGITIMATELY_OVERLAY_ONLY_BUT_CLIENT_SAMPLING_IS_UNAVOIDABLE",
+      "architectural_cleanliness": "MEDIUM_TO_LOW",
+      "regression_risk": "PERFORMANCE_BANDWIDTH_LATENCY",
+      "impact_h264": "MUST_NOT_FORCE_GLOBAL_CONVERSION",
+      "impact_rgb_ui": "MUST_REMAIN_UNCHANGED",
+      "impact_vp9": "MUST_NOT_FORCE_GLOBAL_CONVERSION",
+      "proprietary_assumptions": true
+    },
+    {
+      "rank": 4,
+      "class": "FORCE_HWC_DEVICE_OVERLAY",
+      "status": "REJECTED_AS_STANDALONE_FIX",
+      "reason": "ANDROID_16_EAGER_RENDERENGINE_IMPORT_PRECEDES_HWC_COMPOSITION_DECISION"
+    }
+  ],
+  "recommended_fix_boundary": {
+    "status": "HOLD",
+    "repair_selected": false,
+    "next_boundary": "BOUNDED_CONTROL_PAIRED_DIAGNOSTIC_CAPTURE_ON_EXACT_R7",
+    "required_capture": [
+      "EXACT_CODEC_COMPONENT_PROFILE_AND_BIT_DEPTH",
+      "DECODER_OUTPUT_AND_CROP",
+      "FULL_PRODUCER_AND_CONSUMER_USAGE",
+      "REQUESTED_INTERNAL_AND_ALLOCATION_FORMAT",
+      "ALL_PLANE_OFFSETS_STRIDES_AND_DIMENSIONS",
+      "AFBC_MODIFIER_AW_FORMAT_AND_ION_METADATA",
+      "COMPLETE_AHARDWAREBUFFER_DESC",
+      "EXACT_EGLIMAGE_GL_TARGET_OPERATION_AND_ERROR",
+      "HWC_VIDEO_COMPOSITION_TYPE_AS_CORROBORATION"
+    ],
+    "selection_rule": "CHANGE_ONE_SUBSYSTEM_ONLY_AFTER_THE_FIRST_DISCRIMINATING_FIELD_IS_PROVEN"
+  },
+  "rejected_broad_fixes": [
+    "DISABLE_OR_SUPPRESS_RENDERENGINE_FATAL",
+    "FORCE_ALL_VIDEO_TO_SOFTWARE_DECODE",
+    "REPLACE_ENTIRE_GRAPHICS_STACK",
+    "MIGRATE_KERNEL",
+    "REWRITE_ALL_VENDOR_HALS",
+    "UPGRADE_TO_UNRELATED_BSP",
+    "CHANGE_MULTIPLE_INDEPENDENT_SUBSYSTEMS",
+    "MERGE_QUARTER_SCREEN_RECOVERY_WITH_PRIMARY_HEVC_FIX_WITHOUT_SHARED_CAUSE"
+  ],
+  "r8_audit_decision": "HOLD_FOR_MORE_EVIDENCE",
+  "remaining_unknowns": [
+    "EXACT_HEVC_DECODER_COMPONENT",
+    "HEVC_STREAM_PROFILE_AND_BIT_DEPTH",
+    "HEVC_OUTPUT_CROP",
+    "FULL_AVC_VS_HEVC_USAGE_MASKS",
+    "REQUESTED_INTERNAL_AND_ALLOCATION_FORMATS",
+    "PER_PLANE_LAYOUT_AND_TOTAL_ALLOCATION_SIZE",
+    "AFBC_MODIFIER_AW_FORMAT_ION_METADATA_AND_SECOND_FBM_STATE",
+    "EXACT_EGL_OR_GL_FAILURE_AND_ERROR_CODE",
+    "RUNTIME_VIDEO_CLIENT_VS_DEVICE_COMPOSITION",
+    "EXACT_DISPLAY_SERVICE_MODE_34_SELECTION_AND_SCALING_OMISSION",
+    "COLD_BOOT_QUARTER_SCREEN_CONTROL"
+  ],
+  "non_actions": {
+    "r8_built": false,
+    "android_built": false,
+    "kernel_built": false,
+    "candidate_img_built": false,
+    "new_development_branch_created": false,
+    "device_mutated": false,
+    "android_runtime_modified": false,
+    "kernel_modified": false,
+    "vendor_provider_modified": false,
+    "graphics_media_display_audio_stack_modified": false,
+    "vm_shutdown_during_audit": false,
+    "vm_shutdown_after_completion_authorized": true
+  }
+}

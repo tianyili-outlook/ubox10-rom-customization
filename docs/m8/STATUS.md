@@ -5,8 +5,9 @@ Updated: 2026-08-29
 ## Android 16 architecture ceiling
 
 Exact `a16-prototype-b-r7` is **PHYSICAL ARCHITECTURE PASS / ACCEPTED ANDROID 16 ARM64
-MIXED-ARCHITECTURE ARCHITECTURE BASELINE / FROZEN AGAINST ARCHITECTURE CHANGES / PENDING GATE 3
-FUNCTIONAL PRESERVATION**. The tested image is 1,641,773,056 bytes / SHA-256
+MIXED-ARCHITECTURE ARCHITECTURE BASELINE / FROZEN AGAINST ARCHITECTURE CHANGES / GATE 3
+FUNCTIONAL PRESERVATION HOLD — H.264 PASS / HEVC BLOCKER**. The tested image is 1,641,773,056
+bytes / SHA-256
 `A1F58668AEFFC9DC83CFFD8A49A309839332B6616C02153DCC00A71136A7AA27`.
 
 User-supplied exact-r7 device evidence proves Android 16/API36, canonical `zygote64_32` ABI lists,
@@ -14,16 +15,25 @@ both zygotes, `sys.boot_completed=1`, ARM64-parented `system_server`, stable ARM
 no recurrence of `gralloc-mapper is missing`, real 1920x1080 gralloc allocations and Mali-G31
 OpenGL ES 3.2 UI composition. Basic Wi-Fi association/DHCP/L3/DNS/network ADB and bounded physical
 remote input also pass. These results close the mixed-ABI, BoringSSL64 and mapper architecture
-blockers; they do not yet prove the Gate 3 media, full remote, Wi-Fi lifecycle or platform matrix.
+blockers. Gate 3 now physically proves H.264 hardware video plus audible AAC/HDMI preservation.
+HEVC remains a blocker: its test sends a 1920x1088 YV12 buffer into ARM64 Skia/Ganesh
+RenderEngine, which cannot create a valid backend texture and aborts SurfaceFlinger. This causes a
+userspace SurfaceFlinger/zygote/framework restart, not a kernel reboot. The exact HEVC-only
+usage/internal-format/plane/modifier/private-handle delta and lower EGL/GL error remain unobserved,
+so the audit decision is `HOLD_FOR_MORE_EVIDENCE`. The architecture pass itself is not downgraded.
 
 | Control | State |
 |---|---|
 | Android 12 daily-use rollback `m8b-remote-r1` | **FROZEN** |
 | Android 16 ARM32 architecture control `a16-prototype-a-r4` | **FROZEN** |
-| Android 16 ARM64 mixed-architecture control `a16-prototype-b-r7` | **PHYSICAL ARCHITECTURE PASS / FROZEN / PENDING GATE 3** |
+| Android 16 ARM64 mixed-architecture control `a16-prototype-b-r7` | **PHYSICAL ARCHITECTURE PASS / FROZEN / GATE 3 HOLD — H.264 PASS / HEVC BLOCKER** |
 
 The only active P0 is **Gate 3 — Android 16 Mixed-Architecture Functional Preservation** on this
-exact r7 image; no r8 or image rebuild is authorized. The known boot-time legacy audio-service crash
+exact r7 image. The next boundary is a paired AVC/HEVC diagnostic capture of the full gralloc handle,
+AHardwareBuffer and EGL/GL import contract; no r8 or image rebuild is authorized. The separate
+post-restart quarter-screen is strongly supported to be a retained display recovery defect that
+selects proven 3840x2160p60 HDMI mode 34 while SurfaceFlinger remains 1920x1080. The known boot-time
+legacy audio-service crash occurs after the SurfaceFlinger restart and
 remains **KNOWN / UNFIXED / POST-ARCHITECTURE P1**, and full VINTF remains **exit 65 / inherited
 `CONFIG_NFS_FS=y` versus FCM-6 `n` / NOT PASS**. The intended future
 `codex/m8-a16-development` branch may be created only after Gate 3 PASS and does not yet exist.
@@ -1002,10 +1012,11 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 
 保持 frozen Android 12 `m8b-remote-r1`、frozen Android 16 ARM32 `a16-prototype-a-r4`、frozen
 Android 16 ARM64 architecture control `a16-prototype-b-r7`、Test8r2/stock rollback、A16/kernel
-artifacts与 exact B r1-r6 immutable physical chain。下一步只在 exact r7 上执行 **Gate 3 — Android
-16 Mixed-Architecture Functional Preservation**：architecture regression、H.264/HEVC/VP9实际播放
-与 HDMI audio、full physical remote matrix、Wi-Fi OFF→ON recovery、basic storage/platform sanity及
-action前后 crash/restart census。不得把 playback等同 hardware decode proof；缺少 USB/Ethernet
-fixture时准确记 NOT TESTED。Gate 3本身不构建、不刷写、不创建 r8。Vulkan、GMS、full VINTF NFS、
-SELinux enforcing、audio P1、CEC/HDMI hotplug、suspend与产品 polish继续保持 gate 外。Gate 3 PASS
-前不得创建 `codex/m8-a16-development`。
+artifacts与 exact B r1-r6 immutable physical chain。Gate 3 当前为 **HOLD：H.264+AAC PHYSICAL
+PASS / HEVC RENDERENGINE BLOCKER**。下一步不是构建 r8，而是在 exact r7 上对 AVC control 与 HEVC
+reproduction 成对采集 exact codec/profile/bit depth、producer/consumer usage、requested/internal/
+alloc format、plane layout、AFBC/modifier/private metadata、完整 AHardwareBuffer 描述及首个
+EGL/GL error；HWC CLIENT/DEVICE 仅作佐证。精确差异证明后才允许选择一个 subsystem 的最小修复。
+Gate 3其余 VP9、full remote、Wi-Fi lifecycle与 platform matrix仍未因此自动 PASS。Vulkan、GMS、
+full VINTF NFS、SELinux enforcing、audio P1、CEC/HDMI hotplug、suspend与产品 polish继续保持 gate
+外。Gate 3 PASS前不得创建 `codex/m8-a16-development`；当前未授权 r8、镜像重建或新开发分支。

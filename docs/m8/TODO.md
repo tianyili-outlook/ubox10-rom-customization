@@ -2,7 +2,7 @@
 
 ## Freeze decision
 
-`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为稳定日用回退。`a16-prototype-a-r4` 已冻结为 **PHYSICAL PASS / ACCEPTED Android 16 ARM32 ARCHITECTURE CONTROL**。Exact `a16-prototype-b-r7` 现已物理证明 Android 16/API36、canonical mixed ABI、dual zygote、ARM64-parented system_server、stable ARM64 SurfaceFlinger、mapper/gralloc 与 Mali-G31 UI，故冻结为 **PHYSICAL ARCHITECTURE PASS / ACCEPTED ANDROID 16 ARM64 MIXED-ARCHITECTURE ARCHITECTURE BASELINE / PENDING GATE 3**。用户明确把一次性、自动恢复的 boot-time `getAudioPort` SIGSEGV 从旧 Gate 2 startup-stability 条件改列为 **KNOWN / UNFIXED / POST-GATE P1 STABILIZATION DEBT**；Gate 2 仍为 **CLOSED / PASS**。当前唯一 P0 是 exact-r7 Gate 3 functional preservation；不实施 r8、镜像重建、architecture/provider 变更或 P1 polish。
+`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为稳定日用回退。`a16-prototype-a-r4` 已冻结为 **PHYSICAL PASS / ACCEPTED Android 16 ARM32 ARCHITECTURE CONTROL**。Exact `a16-prototype-b-r7` 现已物理证明 Android 16/API36、canonical mixed ABI、dual zygote、ARM64-parented system_server、stable ARM64 SurfaceFlinger、mapper/gralloc 与 Mali-G31 UI，故冻结为 **PHYSICAL ARCHITECTURE PASS / ACCEPTED ANDROID 16 ARM64 MIXED-ARCHITECTURE ARCHITECTURE BASELINE**。Gate 3 当前为 **HOLD：H.264+AAC PHYSICAL PASS / HEVC ARM64 RenderEngine BLOCKER**；这不降级 r7 architecture pass。HEVC first fatal 已证明为 1920x1088 YV12 external-buffer backend-texture failure并触发 userspace SurfaceFlinger/zygote restart，exact buffer-contract delta与 lower EGL/GL error仍未证明。用户明确把一次性、自动恢复的 boot-time `getAudioPort` SIGSEGV 从旧 Gate 2 startup-stability 条件改列为 **KNOWN / UNFIXED / POST-GATE P1 STABILIZATION DEBT**；本次时间线也证明 audio crash不是 HEVC first fatal。Gate 2 仍为 **CLOSED / PASS**。当前唯一 P0 是 exact-r7 Gate 3 functional preservation；不实施 r8、镜像重建、architecture/provider 变更或 P1 polish。
 
 ## Android 16 Gate 1 / Gate 2 — Prototype A ARM32
 
@@ -185,7 +185,14 @@
   完成 UP/DOWN/LEFT/RIGHT/OK/BACK/HOME/MENU/VOL±/POWER physical→Linux→Android key matrix；完成
   Wi-Fi connected→OFF→ON→reassociation→DHCP/L3/DNS/network-ADB recovery；验证 `/data`、package/
   settings与可用的 USB/Ethernet fixture；并做 action 前后 crash/restart census，严格分离 known audio debt。
-  Gate 3 PASS 前不创建 `codex/m8-a16-development`，该 branch 目前不存在。
+  当前分项：H.264+AAC **PHYSICAL PASS**；HEVC **FAIL / BLOCKER**，first fatal为 ARM64
+  SurfaceFlinger对 1920x1088 YV12 readable buffer建立 Ganesh backend texture失败。无 kernel reboot；
+  audio startup crash在 framework restart之后，**NOT CAUSAL**。AVC/HEVC eventual CLIENT/DEVICE type均
+  未捕获，且 AOSP source证明 external texture mapping先于 HWC composition decision，故“AVC仅因 overlay
+  避免 RenderEngine import”不是成立的因果解释。Exact usage/internal format/planes/AFBC/private metadata
+  与首个 EGL/GL error缺失，`R8_AUDIT_DECISION = HOLD_FOR_MORE_EVIDENCE`。下一步只做 AVC/HEVC paired
+  instrumentation；在 exact delta证明前不授权 repair、r8或新 branch。Gate 3 PASS 前不创建
+  `codex/m8-a16-development`，该 branch 目前不存在。
 
 ## Post-Gate stabilization / release hardening
 
