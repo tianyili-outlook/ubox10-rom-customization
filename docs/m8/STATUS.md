@@ -1,6 +1,32 @@
 # M8 status
 
-Updated: 2026-08-28
+Updated: 2026-08-29
+
+## Android 16 architecture ceiling
+
+Exact `a16-prototype-b-r7` is **PHYSICAL ARCHITECTURE PASS / ACCEPTED ANDROID 16 ARM64
+MIXED-ARCHITECTURE ARCHITECTURE BASELINE / FROZEN AGAINST ARCHITECTURE CHANGES / PENDING GATE 3
+FUNCTIONAL PRESERVATION**. The tested image is 1,641,773,056 bytes / SHA-256
+`A1F58668AEFFC9DC83CFFD8A49A309839332B6616C02153DCC00A71136A7AA27`.
+
+User-supplied exact-r7 device evidence proves Android 16/API36, canonical `zygote64_32` ABI lists,
+both zygotes, `sys.boot_completed=1`, ARM64-parented `system_server`, stable ARM64 SurfaceFlinger,
+no recurrence of `gralloc-mapper is missing`, real 1920x1080 gralloc allocations and Mali-G31
+OpenGL ES 3.2 UI composition. Basic Wi-Fi association/DHCP/L3/DNS/network ADB and bounded physical
+remote input also pass. These results close the mixed-ABI, BoringSSL64 and mapper architecture
+blockers; they do not yet prove the Gate 3 media, full remote, Wi-Fi lifecycle or platform matrix.
+
+| Control | State |
+|---|---|
+| Android 12 daily-use rollback `m8b-remote-r1` | **FROZEN** |
+| Android 16 ARM32 architecture control `a16-prototype-a-r4` | **FROZEN** |
+| Android 16 ARM64 mixed-architecture control `a16-prototype-b-r7` | **PHYSICAL ARCHITECTURE PASS / FROZEN / PENDING GATE 3** |
+
+The only active P0 is **Gate 3 — Android 16 Mixed-Architecture Functional Preservation** on this
+exact r7 image; no r8 or image rebuild is authorized. The known boot-time legacy audio-service crash
+remains **KNOWN / UNFIXED / POST-ARCHITECTURE P1**, and full VINTF remains **exit 65 / inherited
+`CONFIG_NFS_FS=y` versus FCM-6 `n` / NOT PASS**. The intended future
+`codex/m8-a16-development` branch may be created only after Gate 3 PASS and does not yet exist.
 
 ## Golden baseline
 
@@ -361,10 +387,12 @@ R7 的 system/active ABI/product/boot/vendor_dlkm/BoringSSL32/64/Mali/ARM32 grap
 byte-preserved。Ext4、system/vendor AVB、rollback location、LP/no-shrink、sparse roundtrip、
 IMAGEWTY、46/50 outer preservation、mixed ELF、35/35 APEX、both-ABI VNDK31、linker/SP-HAL、Mali
 297/0、split SELinux、system VINTF、kernel/22 modules/AIC 均 offline PASS。Full VINTF 仍严格是
-exit 65 / inherited `CONFIG_NFS_FS=y` 对 FCM-6 `n` / **NOT PASS**。R7 当前状态仅为 **OFFLINE
-CHECKED / READY FOR PHYSICAL VALIDATION / NOT YET VALIDATED**。Focused r1-r7 candidate/prebuild 64/64 与 full
-lightweight 170/170 PASS（34 declared fixture skips）；79 JSON parses、Python compile 和
-`git diff --check` PASS。
+exit 65 / inherited `CONFIG_NFS_FS=y` 对 FCM-6 `n` / **NOT PASS**。以上是 build completion 时的
+historical offline closure。2026-08-29 的 exact-r7 physical result 已进一步证明 dual zygote、
+ARM64-parented system_server、stable SurfaceFlinger、mapper/gralloc allocation 与 Mali-G31 UI，故
+r7 现为 **PHYSICAL ARCHITECTURE PASS / FROZEN ARCHITECTURE BASELINE / PENDING GATE 3**。Focused
+r1-r7 candidate/prebuild 64/64 与当时 full lightweight 170/170 PASS（34 declared fixture skips）；
+79 JSON parses、Python compile 和 `git diff --check` PASS。
 
 2026-08-21 Android 16 Gate 1 状态为 **OFFLINE CHECKED / SUCCESS**。Source 为 exact `android-16.0.0_r4` / `BP4A.251205.006`，manifest commit `15128c9e27cfa599c48d294babd39286ee8f1426`，pinned manifest SHA-256 `4E8BEB5D1B590DFF3D631B1DBB957138DBDA4E608A3183C625683DA4BC84918F`；Prototype A 为 `ubox10_ceiling_arm-bp4a-userdebug`、ARMv7-A NEON、无 secondary arch、shipping API 31、extra VNDK 31、pKVM off。GCP native Ubuntu 24.04 / ext4 / 8 vCPU / 62.8 GiB RAM / no swap 上使用 relative `OUT_DIR=out-ceiling`、`BUILD_NUMBER=DISPOSABLE_CEILING_R4`、unset `SOONG_GOMEMLIMIT GOMEMLIMIT` 和 `m -j8 systemimage`，123,197/123,197 actions 成功，wall 30,314 秒（8:25:14）。最低 available RAM 12,295,132 KiB；swap I/O 为 0；平均 CPU user/system 约 88.05%/9.48%、I/O wait 0.05%；`/work` 最低 free 231,671,357,440 bytes。完整 raw log 仅保留在 GCP ignored 路径，未进入 Git。
 
@@ -964,7 +992,7 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - r10 已在实机完成 framework boot；r9 Lights/Watchdog/llkd 方向保持关闭，不再修改。
 - r13 是当前 GOLDEN BASELINE；Projectivy、provisioning、遥控和 Power sleep/wake/shutdown 均以实机 UART 为准。
 - M8B native rc-core 遥控迁移已在 r5 设备验收并关闭；Mouse mode intentionally dropped，legacy multi_ir 工件保留为 inert reference，其 Android 12 清理已随 freeze 延期。
-- 当前 board、DT 与 runtime 证据识别为 H616。历史 A16 ARM32 r2 稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛；历史 kernel r1-r4 AIC failure 已收敛到错误 `0x00110000` FMAC contract。r5 恢复 working BSP `0x00120000` 后物理 boot/HDMI/remote/Wi-Fi/ADB 与 Wi-Fi OFF→ON reinitialization PASS，preservation checkpoint **CLOSED / PASS**。Exact QPR0 r7 audit 与 Prototype A r4 physical pass 已关闭 Architecture Gate 2；A r4 frozen。Boot-time legacy audio HAL SIGSEGV 保持 post-Gate P1，不称 fixed。Prototype B0 complete；B r1 `/metadata` FAIL，r2 `/metadata` PASS 后 `/vendor` FAIL，r3 `/vendor` PASS 后到达 ARM64 second stage并停在 global ABI 与独立 mapper，r4 因 patch inactive product_a 重复 ABI failure。B r5 active embedded product/global mixed ABI PHYSICAL PASS 后暴露 BoringSSL64 missing；r6 物理跨过该 gate、启动两套 ART/Zygote 并到达 primary preload。Zygote restart 现已证明是 SurfaceFlinger crash-health 的 downstream effect。Exact mapper audit 唯一证明 ARM64 mapper/gralloc 的 VNDK31 libc++ back-deploy relocation cause；strict r7 only changes that pair and is **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION / NOT YET VALIDATED**。
+- 当前 board、DT 与 runtime 证据识别为 H616。历史 A16 ARM32 r2 稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛；历史 kernel r1-r4 AIC failure 已收敛到错误 `0x00110000` FMAC contract。r5 恢复 working BSP `0x00120000` 后物理 boot/HDMI/remote/Wi-Fi/ADB 与 Wi-Fi OFF→ON reinitialization PASS，preservation checkpoint **CLOSED / PASS**。Exact QPR0 r7 audit 与 Prototype A r4 physical pass 已关闭 Architecture Gate 2；A r4 frozen。Boot-time legacy audio HAL SIGSEGV 保持 post-Gate P1，不称 fixed。Prototype B0 complete；B r1 `/metadata` FAIL，r2 `/metadata` PASS 后 `/vendor` FAIL，r3 `/vendor` PASS 后到达 ARM64 second stage并停在 global ABI 与独立 mapper，r4 因 patch inactive product_a 重复 ABI failure。B r5 active embedded product/global mixed ABI PHYSICAL PASS 后暴露 BoringSSL64 missing；r6 物理跨过该 gate、启动两套 ART/Zygote并到达 primary preload。Exact mapper audit证明 r6 ARM64 mapper/gralloc 的 VNDK31 libc++ back-deploy relocation cause；strict r7只改变该 pair。Exact-r7 physical evidence现已证明 mixed ABI、dual zygote、system_server、stable ARM64 SurfaceFlinger、mapper/gralloc和 Mali-G31 UI，状态为 **PHYSICAL ARCHITECTURE PASS / FROZEN / PENDING GATE 3**。
 - `m8b-audio-r2` 只启用产品级 Treble/VNDK 合同；未修改 VNDK payload、mixer、audio platform XML、DTS、machine driver 或已验收功能，现已设备验收为 AUDIO PASS。
 - 2026-08-16 ADB-only 补验未刷机、未重启且未修改 ROM/device properties：VP9 为 Allwinner OMX/Cedar hardware-runtime PASS；Widevine 为可操作 L3，HDCP `NONE`，无 secure decoder 要求。物理画面/逐帧质量与商业服务认证或播放仍未证明。
 - 遥控器 Menu 与 Settings 当前均打开 Projectivy menu。两键语义分离为独立延期项，不回改已验收的 rc-core、keylayout 选择或其他按键行为。
@@ -972,11 +1000,12 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 
 ## Next action
 
-保持 frozen Android 12 `m8b-remote-r1`、frozen Android 16 ARM32 `a16-prototype-a-r4`、Test8r2/
-stock rollback、A16/kernel artifacts 与 exact B r1-r6 immutable physical chain。下一步只做 exact
-`a16-prototype-b-r7` physical mapper gate：先确认 ARM64 SurfaceFlinger 不再 abort
-`gralloc-mapper is missing`，然后记录 `init.svc.surfaceflinger`、两 zygote 与 system_server PID。
-若 mapper instantiate 后出现 gralloc allocation、allocator、HWC/composer、EGL 或 Mali 的新首错，
-先把 r7 mapper correction 单独记为 PHYSICAL PASS，再冻结下一 frontier；不得把它倒写成 mapper
-失败。Vulkan、GMS、5.10、25Q4、full vendor rewrite、Audio fix、TEE/PRNG、SELinux/NFS/HDMI polish
-与产品 feature 均不得混入。
+保持 frozen Android 12 `m8b-remote-r1`、frozen Android 16 ARM32 `a16-prototype-a-r4`、frozen
+Android 16 ARM64 architecture control `a16-prototype-b-r7`、Test8r2/stock rollback、A16/kernel
+artifacts与 exact B r1-r6 immutable physical chain。下一步只在 exact r7 上执行 **Gate 3 — Android
+16 Mixed-Architecture Functional Preservation**：architecture regression、H.264/HEVC/VP9实际播放
+与 HDMI audio、full physical remote matrix、Wi-Fi OFF→ON recovery、basic storage/platform sanity及
+action前后 crash/restart census。不得把 playback等同 hardware decode proof；缺少 USB/Ethernet
+fixture时准确记 NOT TESTED。Gate 3本身不构建、不刷写、不创建 r8。Vulkan、GMS、full VINTF NFS、
+SELinux enforcing、audio P1、CEC/HDMI hotplug、suspend与产品 polish继续保持 gate 外。Gate 3 PASS
+前不得创建 `codex/m8-a16-development`。

@@ -2,8 +2,9 @@
 
 ## 当前状态
 
-- 最后报告的物理验收镜像：`out/candidates/a16-prototype-a-r4/x12-a16-prototype-a-r4.img`，1,239,746,560 bytes / SHA-256 `E125DD8FFB9F5B4A7B2B9B86DD8377367409AB00D1B29BE1E719CE25768E2111`
-- 当前项目状态：**ANDROID 16 PATH-A PHYSICAL PASS / GATE 2 CLOSED**。QPR0 Prototype A r4 无 UART/runtime EGL intervention 即 boot complete；source-level EGL、Mali-G31/UI、Remote OK、stable HDMI、Wi-Fi association/DHCP/validated L3、direct HDMI audible audio 和 VLC video/audio 均 PASS。Boot-time legacy audio HAL `getAudioPort` null-address SIGSEGV 仍复现并 auto-recover；用户明确把该 defect 从旧 startup-stability gate 改列为 **KNOWN / UNFIXED / POST-GATE P1**。Prototype A r4 已冻结为 accepted Android 16 ARM32 architecture baseline。Prototype B r1-r5 已冻结为 chronological physical evidence：r5 active product/global mixed ABI **PHYSICAL PASS**，随后 BoringSSL32 exit 0，新 first fatal 是 missing `/vendor/bin/boringssl_self_test64`。Strict one-file r6 已 **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**；下一步只验证 vendor BoringSSL64 start/exit 与跨过 reboot gate，graphics 独立判定。
+- 最后报告的 Android 16 物理架构验收镜像：`out/candidates/a16-prototype-b-r7/x12-a16-prototype-b-r7.img`，1,641,773,056 bytes / SHA-256 `A1F58668AEFFC9DC83CFFD8A49A309839332B6616C02153DCC00A71136A7AA27`
+- 当前项目状态：**ANDROID 16 ARM64 MIXED ARCHITECTURE — PROVEN VIABLE / R7 PHYSICAL ARCHITECTURE PASS / FROZEN ARCHITECTURE BASELINE / PENDING GATE 3 FUNCTIONAL PRESERVATION**。Exact r7 物理证明 canonical mixed ABI、dual zygote、ARM64-parented system_server、stable ARM64 SurfaceFlinger、mapper/gralloc allocation 与 Mali-G31 GLES/UI。R5 ABI、r6 BoringSSL64 与 r7 `gralloc-mapper is missing` blockers 均已关闭。r7 仍不是 daily-use release；下一步只在同一镜像执行 Gate 3，不构建 r8。
+- Android 16 ARM32 control：`a16-prototype-a-r4` **FROZEN / PHYSICAL PASS**。Boot-time legacy audio crash 保持 **KNOWN / UNFIXED / POST-ARCHITECTURE P1**；full VINTF 保持 inherited NFS exit 65 / **NOT PASS**。
 - 保留的设备验收基线：`out/candidates/m8b-remote-r1/x12-m8b-remote-r1.img`，状态 **DEVICE ACCEPTED / REMOTE PASS**（继承 **AUDIO PASS / IME PASS**）。
 - 大小 / SHA-256：1031723008 bytes / `F3B09E5565AC4ED4E5EE326D392622E7B036A8519B8444B966E77CC4751B814A`
 - 用户当前在设备现场，可执行物理交互、重启、suspend/resume、HDMI 观察与恢复；任何新候选刷写仍需该候选的单独明确授权。
@@ -11,20 +12,122 @@
 Wi-Fi ADB：
 
 ```powershell
-C:\platform-tools\adb.exe -s 192.168.1.8:7896 shell <read-only-command>
+C:\platform-tools\adb.exe -s <device-LAN-address>:7896 shell <read-only-command>
 ```
 
 回滚到 accepted baseline 后的 ADB 检查入口：
 
 ```powershell
-C:\platform-tools\adb.exe -s 192.168.1.8:7896 shell getprop sys.boot_completed
-C:\platform-tools\adb.exe -s 192.168.1.8:7896 shell dumpsys media.player
-C:\platform-tools\adb.exe -s 192.168.1.8:7896 shell dumpsys media.audio_flinger
-C:\platform-tools\adb.exe -s 192.168.1.8:7896 shell dumpsys media.audio_policy
-C:\platform-tools\adb.exe -s 192.168.1.8:7896 logcat -d -b all
+C:\platform-tools\adb.exe -s <device-LAN-address>:7896 shell getprop sys.boot_completed
+C:\platform-tools\adb.exe -s <device-LAN-address>:7896 shell dumpsys media.player
+C:\platform-tools\adb.exe -s <device-LAN-address>:7896 shell dumpsys media.audio_flinger
+C:\platform-tools\adb.exe -s <device-LAN-address>:7896 shell dumpsys media.audio_policy
+C:\platform-tools\adb.exe -s <device-LAN-address>:7896 logcat -d -b all
 ```
 
 accepted baseline 已确认 Treble/VNDK、primary HAL/output、HEVC+AAC HDMI 音频、VP9 Allwinner/Cedar hardware runtime、Widevine 16.1.0 L3、LeanbackIME，以及 official Google TV iPhone Remote discovery/pair/navigation/phone text。刷入任何新候选仍须先获得该候选的单独明确授权。
+
+## Gate 3 — Android 16 Mixed-Architecture Functional Preservation
+
+状态：**DEFINED / READY FOR PHYSICAL EXECUTION**。Gate 3 只使用上述 exact r7 image；不重建、
+不刷入新候选、不创建 r8，也不在失败发生前修改功能。目标是证明 mature ARM32 hardware-facing
+vendor stack 在已接受 ARM64 framework/system architecture 下仍提供核心 TV 功能。结果严格使用
+`PASS`、`FAIL` 或 `NOT TESTED — FIXTURE UNAVAILABLE`。
+
+### 3A — architecture regression confirmation
+
+- Android 16/API36、`zygote64_32` 与 canonical mixed ABI lists；
+- `sys.boot_completed=1`，primary `zygote64`、secondary `zygote`、ARM64-parented
+  `system_server` 与 ARM64 SurfaceFlinger alive；
+- crash buffer 不再出现 `gralloc-mapper is missing`；
+- `ro.hardware.egl=mali`、`ro.board.platform=apollo` 与 Mali-G31 GLES active。
+
+这是回归确认，不是新的 provider/architecture 研究。任一 regression 必须原样冻结，不能先做 r8。
+
+### 3B — real media and HDMI audio
+
+优先复用 `20260826-a16-prototype-a-r4-physical-validation` 与
+`20260816-m8b-audio-r2-vp9-drm` 已知方法/fixture。至少逐项物理运行：
+
+- H.264 + AAC；
+- HEVC/H.265 + AAC；
+- VP9（若 fixture 含 audio，另记 audible result）。
+
+每项都记录真实 app、可见 video、存在 audio track 时的可听 HDMI audio、播放区间前后相关
+process/log，以及是否出现新的 SurfaceFlinger/mapper/gralloc fatal 或 persistent media-service
+restart loop。**PLAYBACK PASS 不自动等于 HARDWARE DECODE PATH PROVEN**；只有 exact codec/runtime
+证据才能提升后者。
+
+### 3C — physical remote matrix
+
+依次测试 `UP`、`DOWN`、`LEFT`、`RIGHT`、`OK/DPAD_CENTER`、`BACK`、`HOME`、`MENU`、
+`VOL+`、`VOL-`、`POWER`。每个键记录 physical scan code → Linux key → Android keycode →
+framework-visible behavior。特殊 policy 或 intentional unsupported 必须按事实记录，不在 Gate 3
+重做 kernel/keylayout。
+
+### 3D — Wi-Fi lifecycle preservation
+
+在 connected 状态记录基线，然后通过**电视端物理 UI/遥控**执行 Wi-Fi OFF→ON。Wi-Fi ADB 在 OFF
+期间断开是预期 transport loss，不是 Wi-Fi FAIL；禁止依赖已断开的 host session发回 ON 命令。
+重新关联后验证 DHCP/IP、external IPv4、DNS 与 ADB `:7896` recovery。若不能建立不依赖 Wi-Fi ADB
+的安全 re-enable path，则本项 fail closed，不改 driver/kernel。
+
+### 3E — storage and basic platform sanity
+
+确认 `/data` writable、package manager responsive、settings/provider responsive。USB host/storage
+和 Ethernet 仅在 fixture 可用时测试；fixture 缺失记 **NOT TESTED — FIXTURE UNAVAILABLE**，不伪造
+PASS，也不单独阻断其他已完成项目。
+
+### Crash/restart census
+
+在所有 user actions 前后分别保存 crash buffer 与 timestamped critical census，覆盖 zygote、
+system_server、SurfaceFlinger、mapper/gralloc/Mali/EGL、audioserver/vendor audio、media codec/
+extractor/vendor media 与 Wi-Fi services。Known boot-time audio debt必须与新 regression分开；旧
+buffered entry不能在缺少 timestamp/boot-context时当作新失败。
+
+### Gate 3 verdict rule
+
+Gate 3 只有在 3A 全部保持、三类 required media playback、intended remote matrix、Wi-Fi lifecycle、
+`/data`/package/settings core sanity均 PASS，且 action前后没有 material new crash/restart regression时
+才可记 **PASS**。Optional USB/Ethernet fixture可保持 NOT TESTED。与 r7 baseline一致的一次性、自动
+恢复 audio startup debt本身不使 Gate 3失败；若变成 loop、service unavailable、无声或 playback
+failure，则是 material regression。任一 required item FAIL 时先记 evidence-backed HOLD；不自动授权 r8。
+
+### Gate 3 exclusions
+
+Gate 3 不要求 SELinux enforcing、full-VINTF NFS cleanup、audio boot SIGSEGV repair、suspend/
+resume、HDMI hotplug、CEC、Bluetooth deep lifecycle、Vulkan、HDR、4K60、commercial Widevine、
+GMS/Play Store/Netflix、launcher/IME/settings polish、thermal tuning或 Wi-Fi statistics cleanup。
+
+Windows PowerShell 只读采证入口：
+
+```powershell
+.\scripts\capture-a16-prototype-b-r7-functional-preservation.ps1 `
+  -Device <device-LAN-address>:7896 -Phase Baseline
+
+# Known-good media playback and manual observations, then:
+.\scripts\capture-a16-prototype-b-r7-functional-preservation.ps1 `
+  -Device <device-LAN-address>:7896 -Phase PostMedia
+
+.\scripts\capture-a16-prototype-b-r7-functional-preservation.ps1 `
+  -Device <device-LAN-address>:7896 -Phase Remote
+
+# Capture connected state; then use the physical UI for OFF -> ON.
+.\scripts\capture-a16-prototype-b-r7-functional-preservation.ps1 `
+  -Device <device-LAN-address>:7896 -Phase WifiPre
+
+# After ADB reconnects:
+.\scripts\capture-a16-prototype-b-r7-functional-preservation.ps1 `
+  -Device <device-LAN-address>:7896 -Phase WifiPost
+
+.\scripts\capture-a16-prototype-b-r7-functional-preservation.ps1 `
+  -Device <device-LAN-address>:7896 -Phase Final
+```
+
+脚本把 timestamped、sanitized raw command output写入 ignored `logs/device/`，不内置 Wi-Fi
+credential、不更改 partition/property/SELinux，也不自动判断“画面可见”或“声音可听”；这些由
+每个 capture directory 的 `manual-observations.txt` 明确填写。R7 architecture evidence见
+`docs/m8/device-tests/20260829-a16-prototype-b-r7-physical-validation/`。
 
 ## Gate 2 physical result: a16-prototype-a-r4
 

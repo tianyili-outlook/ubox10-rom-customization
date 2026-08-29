@@ -77,8 +77,11 @@ mapper and its factory-loaded gralloc each import the same newer libc++ verbose-
 from the selected VNDK31 snapshot. Discovery name/path/export/transport are correct; eager relocation
 fails before `HIDL_FETCH_IMapper`, and fixing mapper alone would make gralloc fail on the same symbol.
 Strict r7 uses libc++'s documented ARM64 back-deploy hook for only this inseparable pair. Its exact
-two-file vendor delta and full offline acceptance pass; status is **OFFLINE CHECKED / READY FOR
-PHYSICAL VALIDATION / NOT YET VALIDATED**. Full VINTF remains inherited NFS exit 65, not PASS.
+two-file vendor delta and full offline acceptance pass. Exact-r7 physical validation on 2026-08-29
+then proves canonical mixed ABI, dual zygote, ARM64-parented system_server, stable ARM64
+SurfaceFlinger, no recurrence of `gralloc-mapper is missing`, real gralloc allocation and Mali-G31
+GLES/UI. R7 is now **PHYSICAL ARCHITECTURE PASS / FROZEN ARCHITECTURE BASELINE / PENDING GATE 3
+FUNCTIONAL PRESERVATION**. Full VINTF remains inherited NFS exit 65, not PASS.
 
 This record is the integration contract for the first Prototype B build task. B0 was read-only:
 no Android or kernel build ran, no source or accepted image was modified, no candidate was created,

@@ -2,7 +2,7 @@
 
 ## Freeze decision
 
-`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为稳定日用回退。`a16-prototype-a-r4` 现已冻结为 **PHYSICAL PASS / ACCEPTED Android 16 ARM32 ARCHITECTURE BASELINE / Prototype B ROLLBACK CONTROL**。用户明确把一次性、自动恢复的 boot-time `getAudioPort` SIGSEGV 从旧 Gate 2 startup-stability 条件改列为 **KNOWN / UNFIXED / POST-GATE P1 STABILIZATION DEBT**；故 Gate 2 为 **CLOSED / PASS**，不是静默弱化证据。当前不实施 Android 12 M8B feature、Prototype A r5 或 P1 polish；Prototype B r1-r6 均冻结为 immutable physical evidence。R5 已物理证明 active product/global mixed ABI；r6 已物理关闭 BoringSSL64 missing-executable gate并证明 dual ART/Zygote startup与 primary preload。唯一活跃候选是 strict mapper-instantiation successor `a16-prototype-b-r7`，状态 **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION / NOT YET VALIDATED**。
+`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为稳定日用回退。`a16-prototype-a-r4` 已冻结为 **PHYSICAL PASS / ACCEPTED Android 16 ARM32 ARCHITECTURE CONTROL**。Exact `a16-prototype-b-r7` 现已物理证明 Android 16/API36、canonical mixed ABI、dual zygote、ARM64-parented system_server、stable ARM64 SurfaceFlinger、mapper/gralloc 与 Mali-G31 UI，故冻结为 **PHYSICAL ARCHITECTURE PASS / ACCEPTED ANDROID 16 ARM64 MIXED-ARCHITECTURE ARCHITECTURE BASELINE / PENDING GATE 3**。用户明确把一次性、自动恢复的 boot-time `getAudioPort` SIGSEGV 从旧 Gate 2 startup-stability 条件改列为 **KNOWN / UNFIXED / POST-GATE P1 STABILIZATION DEBT**；Gate 2 仍为 **CLOSED / PASS**。当前唯一 P0 是 exact-r7 Gate 3 functional preservation；不实施 r8、镜像重建、architecture/provider 变更或 P1 polish。
 
 ## Android 16 Gate 1 / Gate 2 — Prototype A ARM32
 
@@ -174,10 +174,18 @@
   `A1F58668AEFFC9DC83CFFD8A49A309839332B6616C02153DCC00A71136A7AA27`；两 provider exact SP-HAL closure
   unmatched 0，ext4/AVB/LP/IMAGEWTY/46-of-50 preservation/mixed ELF/APEX/VNDK/linker/SELinux/system
   VINTF/kernel gates PASS。Full VINTF仍 inherited NFS exit 65，**NOT PASS**。
-- [ ] **32 — r7 physical mapper gate（当前唯一任务）：**先确认 ARM64 SurfaceFlinger不再 abort
-  `gralloc-mapper is missing`，再记录 surfaceflinger、两 zygote与 system_server。若 mapper之后出现
-  gralloc allocation、allocator、HWC/composer、EGL或Mali新首错，分别冻结，不能倒写为 r7 mapper
-  failure；不得创建 r8 或混入其它 graphics/product work。
+- [x] **32 — r7 physical architecture / mapper gate：**exact r7 上 Android 16/API36、canonical
+  `zygote64_32`/mixed ABI、`boot_completed=1`、primary/secondary zygote、ARM64-parented system_server
+  与 ARM64 SurfaceFlinger均运行；crash-buffer未再出现 `gralloc-mapper is missing`，实际 1920x1080
+  gralloc allocation和 Mali-G31 GLES/UI composition可见。R7 mapper/gralloc closure **PHYSICAL PASS**，
+  r6 blocker **CLOSED**；Vulkan/HDR/4K60/所有 HWC与 protected playback不由此提升为 PASS。
+- [ ] **33 — Gate 3 — Android 16 Mixed-Architecture Functional Preservation（当前唯一 P0）：**只在
+  exact frozen r7 上执行，不构建、不刷写新镜像、不创建 r8。按 `docs/DEVICE_TEST.md` 依次复核
+  architecture runtime；实测 H.264+AAC、HEVC/H.265+AAC、VP9（区分 playback 与 hardware-path proof）；
+  完成 UP/DOWN/LEFT/RIGHT/OK/BACK/HOME/MENU/VOL±/POWER physical→Linux→Android key matrix；完成
+  Wi-Fi connected→OFF→ON→reassociation→DHCP/L3/DNS/network-ADB recovery；验证 `/data`、package/
+  settings与可用的 USB/Ethernet fixture；并做 action 前后 crash/restart census，严格分离 known audio debt。
+  Gate 3 PASS 前不创建 `codex/m8-a16-development`，该 branch 目前不存在。
 
 ## Post-Gate stabilization / release hardening
 
@@ -242,4 +250,4 @@
 - [x] 完成限定只读 system-quality audit：无 P0；stability、retry loop、audio residual、SELinux、CPU/thermal/idle、graphics 与 memory 证据见 `docs/m8/device-tests/20260816-m8b-system-quality-audit/`。
 - [ ] **DEFERRED / P2 / 不修：**Wi-Fi HAL link-layer statistics 每约 3 秒返回 `ERROR_UNKNOWN`；网络 ADB 稳定且 Wi-Fi 进程未重启。
 - [x] 保持 Mouse mode dropped；不重新引入 vendor mouse framework。
-- [x] architecture-ceiling study 与 B0 已锁定 paired AArch64 Mali、AOSP mapper adapter、multilib gralloc-1.x、lawful-local fail-closed intake、vendor property 与 AVB scope；ARM32 OMX/Cedar/media/HWC/audio/Wi-Fi/BT/DRM/TEE 继续进程隔离复用。R1 `/metadata`、r2 `/vendor` 与 r3 global ABI root causes 均已证明；r4 证明 logical product_a inactive；r5 active embedded product/global ABI 已物理 PASS；r6 物理关闭 BoringSSL64 gate并进入 dual ART/Zygote preload。Exact mapper cause现已证明，r7仅闭合 mapper/gralloc的 VNDK31 back-deploy pair并离线通过。当前唯一执行合同是上文 32 的 r7 physical mapper gate；Mali及 TEE/PRNG warnings保持独立未修边界。
+- [x] architecture-ceiling study 与 B0 已锁定 paired AArch64 Mali、AOSP mapper adapter、multilib gralloc-1.x、lawful-local fail-closed intake、vendor property 与 AVB scope；ARM32 OMX/Cedar/media/HWC/audio/Wi-Fi/BT/DRM/TEE 继续进程隔离复用。R1 `/metadata`、r2 `/vendor`、r3 global ABI、r4 inactive product、r5 active ABI 与 r6 BoringSSL64 chain均已冻结。R7仅闭合 mapper/gralloc VNDK31 back-deploy pair并已取得 physical architecture PASS。当前唯一执行合同是上文 33 的 exact-r7 Gate 3；Mali/provider architecture冻结，audio、TEE/PRNG、SELinux与 full-VINTF NFS均保持独立已知边界。

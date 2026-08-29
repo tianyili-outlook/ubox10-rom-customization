@@ -1,14 +1,15 @@
 # UBOX10 Architecture Ceiling Study
 
-Study date: 2026-08-17; build/runtime/source evidence updated: 2026-08-28
+Study date: 2026-08-17; build/runtime/source evidence updated: 2026-08-29
 
 Study branch/evidence base: `codex/m8-architecture-ceiling` / starting commit
 `f40a37b6fd488800b5a1ada89f2ce2cf687e8e33`, plus the hash-locked Linux 5.4.302
 checkpoint inputs and results recorded below
 
-Accepted rollback/runtime baselines: frozen Android 12 `m8b-remote-r1` and frozen Android 16 ARM32
-architecture control `a16-prototype-a-r4`; latest physically accepted kernel checkpoint:
-`m8-kernel-5.4.302-r5`
+Accepted rollback/runtime baselines: frozen Android 12 `m8b-remote-r1`, frozen Android 16 ARM32
+architecture control `a16-prototype-a-r4`, and frozen Android 16 ARM64 mixed-architecture control
+`a16-prototype-b-r7` (**PHYSICAL ARCHITECTURE PASS / PENDING GATE 3 FUNCTIONAL PRESERVATION**);
+latest physically accepted kernel checkpoint: `m8-kernel-5.4.302-r5`
 Scope: architecture decision, bounded offline prototypes, completed physical evidence through
 Linux 5.4.302 r5, exact QPR0 r7 source audit, the Prototype A r3/r4 build and physical evidence,
 formal Gate 2 policy/closure, the 2026-08-26 Prototype B B0 read-only preflight, and the bounded
@@ -18,8 +19,9 @@ audit, the strict single-cause r2 physical boundary/root-layout audit, r3 physic
 evidence, exact ABI-property provenance, the independent mapper read-only audit, r4 physical
 inactive-product-source evidence, the exact runtime-source audit, r5 physical mixed-ABI/BoringSSL
 boundary, r6 physical dual-ART/zygote-preload and mapper frontier, exact r7 source/image/runtime mapper
-root-cause closure, and bounded r7 offline successor. R1 through r6 have user-supplied UART/runtime
-evidence; r7 is not yet physically tested.
+root-cause closure, bounded r7 offline successor, and exact-r7 physical architecture acceptance.
+R1 through r7 have user-supplied UART/runtime evidence; the full r7 raw capture remains outside Git,
+and tracked evidence contains sanitized decisive excerpts rather than a fabricated raw path/hash.
 
 Confidence labels in this report have the following strict meanings: **PROVEN** is direct
 binary, build, runtime, repository, or authoritative-source evidence; **HIGH CONFIDENCE**
@@ -196,7 +198,17 @@ back-deploy hook for the existing mapper/gralloc pair, with fatal behavior retai
 changes exactly those two existing files; Mali, ARM32 graphics, manifest/linker, system/ABI,
 BoringSSL and hardware authority stay exact r6. R7 IMG is 1,641,773,056 bytes / SHA-256
 `A1F58668AEFFC9DC83CFFD8A49A309839332B6616C02153DCC00A71136A7AA27`; full offline acceptance passes,
-while physical mapper/runtime status remains **NOT YET VALIDATED**.
+and the subsequent exact-r7 physical run closes that mapper/runtime gate. Android 16/API36 reports
+canonical mixed ABI and `zygote64_32`; both zygotes, ARM64-parented system_server and ARM64
+SurfaceFlinger remain running with boot complete. The old `gralloc-mapper is missing` abort does not
+recur, real 1920x1080 gralloc allocations appear, and Mali-G31 OpenGL ES 3.2 UI composition is active.
+Therefore Android 16 ARM64 mixed architecture on the retained 5.4.302 BSP is **PROVEN VIABLE**.
+
+This freezes exact r7 as the architecture baseline, not a daily-use release. Core retained-ARM32
+functional preservation remains pending **Gate 3** on the same image: real H.264/HEVC/VP9 media and
+audible HDMI paths, full physical remote matrix, Wi-Fi OFF→ON recovery, basic platform sanity and a
+before/after crash census. Gate 3 does not authorize r8 or an image rebuild. The intended future
+`codex/m8-a16-development` branch may be derived only after Gate 3 PASS and has not been created.
 
 This is a modern hybrid, not a full port. Framework, `system_server`, SurfaceFlinger, and
 eligible apps become AArch64; legacy Allwinner media, audio, HWC/composer, DRM, Wi-Fi,
@@ -1281,8 +1293,10 @@ Bionic dependency closure authorize strict r6, whose only vendor tree addition i
 self-test. R6 physically crosses that boundary and reaches both ART/Zygote starts plus primary
 preload. Its zygote restart is downstream of the repeated ARM64 SurfaceFlinger abort threshold.
 Exact lookup/linker/control audit uniquely proves the mapper/gralloc VNDK31 libc++ back-deploy
-failure. Strict r7 closes only that pair offline and is **OFFLINE CHECKED / READY FOR PHYSICAL
-VALIDATION**; no mapper, stable SurfaceFlinger, system_server or Mali physical PASS is claimed.
+failure. Strict r7 closes only that pair. Exact-r7 physical evidence now proves canonical mixed ABI,
+dual zygote, ARM64-parented system_server, stable ARM64 SurfaceFlinger, real gralloc allocation and
+Mali-G31 GLES/UI. The mapper gate is **PHYSICAL PASS**, and exact r7 is the frozen Android 16 ARM64
+mixed-architecture architecture baseline pending Gate 3 functional preservation.
 
 ## 12. Target A/B/C/D comparison
 
@@ -1319,7 +1333,7 @@ The 5.4.302 wireless checkpoint is closed; D remains dominated on engineering ec
 |---|---|---|---|---|---|
 | Target A — Mature Legacy | **PROVEN now** | Accepted stability and hardware completeness | API 31 age and no 64-bit native apps; security/platform life is short | Low | Keep as rollback/reference, not final investment ceiling |
 | Target B — Modern Framework / Legacy Architecture | **PHYSICAL PASS / GATE 2 CLOSED / FROZEN** | Maximum vendor reuse and proven hardware viability | QPR0 only; boot-time audio P1 remains and ARM32 excludes 64-bit-only native apps | Medium; accepted architecture control | Freeze r4; no Prototype A r5 polish |
-| Target C — Modern Hybrid | **r1-r6 PHYSICAL EVIDENCE / r7 OFFLINE READY / MEDIUM** | API 36 plus AArch64 apps while preserving working 32-bit HALs/kernel | r6 physically crosses BoringSSL and reaches dual ART/Zygote plus primary preload; exact mapper audit proves a bounded VNDK31 back-deploy gap; r7 closes it offline | High but bounded | Physically validate r7 mapper instantiation first; freeze any later graphics layer separately |
+| Target C — Modern Hybrid | **r7 PHYSICAL ARCHITECTURE PASS / PROVEN VIABLE / GATE 3 PENDING** | API 36 plus AArch64 apps while preserving process-isolated 32-bit HALs/kernel | Exact r7 boots with mixed ABI, dual zygote, ARM64-parented system_server, stable ARM64 SurfaceFlinger, mapper/gralloc allocation and Mali-G31 UI | High but bounded | Freeze r7 architecture; execute exact-r7 functional-preservation Gate 3 before productization |
 | Target D — Full Modern Port | **LOW** | Clean contemporary architecture in theory | No complete H616 5.10+ graphics/media/display/DRM provider; becomes multiple subsystem rewrites | Extreme | **NO-GO** |
 
 ## 13. Reuse versus rewrite map
@@ -1426,8 +1440,8 @@ display, audio, wireless and DRM integration without a complete provider. It has
 of better Netflix capability and may lose the current 4K/audio path. The modern hybrid captures
 the application/framework benefit of ARM64 without paying that subsystem-rewrite cost.
 
-**Overall confidence: HIGH for ARM32 architecture viability, r4 functional integration and formal
-Prototype A closure; MEDIUM for the end-state hybrid.** The r1/r2/r3 progression proves
+**Overall confidence: HIGH for ARM32 architecture viability, r4 functional integration, formal
+Prototype A closure and mixed-architecture feasibility; functional preservation remains pending.** The r1/r2/r3 progression proves
 first stage through ARM64 second-stage runtime, kernel r5 closes the same-lineage 5.4.302 wireless checkpoint, and exact r7/B-r3-r5 outputs
 close the bounded offline contracts. Prototype A r4 physically proves no-runtime EGL, Remote OK, stable HDMI,
 full Wi-Fi L3 and real audible Android media. The explicit policy change closes Gate 2 while keeping
@@ -1436,10 +1450,10 @@ property, linker/VINTF and partition/AVB preflight. R4 physical evidence exposes
 logical-product assumption; r5 physically closes the corrected active-source/global-ABI contract
 and then exposes missing vendor BoringSSL64 as the next first fatal. R6 physically crosses that gate,
 starts both ART/Zygote runtimes and reaches primary preload; repeated SurfaceFlinger health failure,
-not an independent zygote crash, prevents system_server. Exact r7 lookup/linker/control evidence now
-closes the mapper root cause and r7 closes that two-file instantiation contract offline. Runtime
-compatibility remains appropriately MEDIUM until r7 physical mapper and subsequent graphics layers
-are adjudicated.
+not an independent zygote crash, prevents system_server. Exact r7 lookup/linker/control evidence
+closed the mapper root cause, and exact-r7 physical evidence now closes the two-file instantiation
+contract plus stable SurfaceFlinger/system_server/Mali UI architecture gate. Confidence in retained
+media/input/network/storage functionality under this mixed runtime remains bounded until Gate 3.
 
 ## 15. Go / No-Go decisions and remaining decisive gates
 
@@ -1450,7 +1464,7 @@ are adjudicated.
 | Recommended modern Android target | **PATH A PHYSICALLY PROVEN / GATE 2 CLOSED** | r4 physically passes the functional architecture contract and is frozen; boot audio crash remains post-Gate P1 |
 | Android 16 r4 / 25Q4 | **NO-GO with retained 5.4** | Physical and source evidence agree on the 5.10/5.10.210 requirement |
 | Android 16 QPR0 / 25Q2 | **SELECTED / r4 PHYSICAL PASS / GATE 2 CLOSED** | Exact r7 requires 5.4.277+; 5.4.302 and r4 runtime pass; audio boot crash is post-Gate P1 |
-| Mixed ARM64/ARM32 userspace | **r6 DUAL ART/ZYGOTE PRELOAD PHYSICAL REACHED / r7 OFFLINE CHECKED** | r5 physically proves active embedded-product/global mixed ABI; r6 crosses BoringSSL, starts both ART/Zygote runtimes and reaches primary preload. Zygote restart is downstream of SurfaceFlinger. Exact r7 audit proves and closes the mapper/gralloc VNDK31 back-deploy contract offline; mapper runtime/system_server remain physical gates. |
+| Mixed ARM64/ARM32 userspace | **R7 PHYSICAL ARCHITECTURE PASS / PROVEN VIABLE / FROZEN** | r5 proves active embedded-product/global mixed ABI; r6 crosses BoringSSL; exact r7 runs dual zygotes, ARM64-parented system_server and stable ARM64 SurfaceFlinger, with mapper/gralloc allocation and Mali-G31 UI. Gate 3 functional preservation remains. |
 | Full ARM64 userspace | **NO-GO** | Would convert/replace working proprietary service stack for little user value |
 | Kernel 5.4 as final architecture | **CLOSED / PASS AT 5.4.302 r5** | Boot/HDMI/remote/Wi-Fi/ADB and physical wireless reinitialization pass after restoring the working FMAC address contract |
 | Kernel 5.10+ migration | **NO-GO IN THIS PHASE** | No complete exact-SoC/board Android provider; regression surface is a new BSP port |
@@ -1466,13 +1480,14 @@ are adjudicated.
    `getAudioPort` SIGSEGV remains known/unfixed post-Gate P1, not a Prototype A successor trigger.
 3. Continue to carry full-VINTF exit 65 solely for inherited `CONFIG_NFS_FS=y` versus FCM-6 `n`;
    never report it PASS. Enforcing SELinux remains later release hardening, not a Gate 2 substitute.
-4. **r1-r6 immutable physical chain / r7 physical pending:** r2 passes r1 `/metadata`, r3 passes r2
+4. **Completed architecture chain / Gate 3 pending:** r2 passes r1 `/metadata`, r3 passes r2
    `/vendor` and reaches ARM64 second stage. R4 proves logical product_a inactive. R5's active
    embedded-product correction physically produces canonical global mixed ABI and passes retained
    BoringSSL32. R6 crosses the BoringSSL64 gate, reaches both ART/Zygote runtimes and primary preload;
-   SurfaceFlinger crash-health then kills zygote. Exact mapper root cause is proven and strict r7
-   closes only its two-file relocation/instantiation contract offline; physical mapper success,
-   stable SurfaceFlinger and system_server remain ordered gates.
+   SurfaceFlinger crash-health then kills zygote. Strict r7 closes only the proven mapper/gralloc
+   relocation pair, and exact-r7 physical evidence proves mapper allocation, Mali UI, stable
+   SurfaceFlinger, dual zygote and ARM64-parented system_server. Remaining P0 is exact-r7 Gate 3
+   functional preservation, not another architecture candidate.
 
 ## 16. Direct route to the target
 
@@ -1528,14 +1543,17 @@ are adjudicated.
     BoringSSL self-test; physical boot crosses the old reboot gate, starts both ART/Zygote runtimes and
     reaches primary preload. Correct the old zygote hypothesis: init SIGKILL after repeated
     SurfaceFlinger crashes is downstream, not an independent zygote blocker.
-18. **Current — exact single-cause r7:** source/image/runtime audit proves mapper discovery metadata
+18. **Completed — exact single-cause r7 architecture acceptance:** source/image/runtime audit proves mapper discovery metadata
     correct and identifies the sole ARM64 mapper/gralloc VNDK31 libc++ relocation incompatibility.
-    Replace only that pair using the documented ARM64 back-deploy hook; full offline audit passes.
-    Physical validation must first close `gralloc-mapper is missing`, then record zygotes and
-    system_server; any later graphics layer becomes a separate revision.
-19. **Final acceptance:** sustained daily-use regression, 4K30-or-1080p evidence-led media
-    ceiling, enforcing/release hardening, recovery rehearsal and a hash-locked accepted architecture
-    image.
+    Only that pair uses the documented ARM64 back-deploy hook; full offline audit passes. Physical
+    validation closes `gralloc-mapper is missing` and proves mixed ABI, dual zygote, system_server,
+    stable SurfaceFlinger, gralloc allocation and Mali-G31 UI. Exact r7 is frozen architecture control.
+19. **Current — Gate 3 functional preservation:** on exact r7 only, reconfirm architecture and test
+    real H.264/HEVC/VP9 media plus HDMI audio, full remote keys, Wi-Fi OFF→ON recovery, basic platform
+    sanity and before/after crash census. This is read-only physical validation, not r8 or a rebuild.
+20. **After Gate 3 PASS:** freeze the Android 16 functional baseline, then derive
+    `codex/m8-a16-development` for stabilization/productization. Enforcing, full-VINTF NFS cleanup,
+    audio P1, product features and broader release hardening remain separate work.
 
 ## 17. Sources and provenance
 

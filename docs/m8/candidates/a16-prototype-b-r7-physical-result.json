@@ -1,0 +1,186 @@
+{
+  "schema": 1,
+  "date": "2026-08-29",
+  "candidate": "a16-prototype-b-r7",
+  "physical_status": "PHYSICAL_ARCHITECTURE_PASS_PENDING_GATE3_FUNCTIONAL_PRESERVATION",
+  "architecture_decision": "ANDROID_16_ARM64_MIXED_ARCHITECTURE_PROVEN_VIABLE",
+  "freeze_status": "ACCEPTED_ARM64_MIXED_ARCHITECTURE_BASELINE_FROZEN_AGAINST_ARCHITECTURE_CHANGES",
+  "candidate_identity": {
+    "image": "out/candidates/a16-prototype-b-r7/x12-a16-prototype-b-r7.img",
+    "size": 1641773056,
+    "sha256": "A1F58668AEFFC9DC83CFFD8A49A309839332B6616C02153DCC00A71136A7AA27",
+    "candidate_commit": "c48cce8bba73af6a2105e9b6ce859698f13f3d47"
+  },
+  "evidence_provenance": {
+    "source": "AUTHORITATIVE_USER_SUPPLIED_PHYSICAL_ADB_AND_RUNTIME_EXCERPTS",
+    "raw_capture_location": "OUTSIDE_REPOSITORY",
+    "raw_capture_tracked": false,
+    "raw_capture_sha256": null,
+    "tracked_scope": "SANITIZED_DECISIVE_EXCERPTS_AND_REVIEWED_RESULT_ONLY",
+    "network_identifiers_retained": false
+  },
+  "android_identity": {
+    "status": "PASS",
+    "release": "16",
+    "sdk": 36,
+    "build_id": "BP2A.250805.034",
+    "source_tag": "android-security-16.0.0_r7",
+    "security_patch": "2025-08-05",
+    "kernel": "5.4.302+"
+  },
+  "mixed_abi": {
+    "status": "PASS",
+    "ro.zygote": "zygote64_32",
+    "ro.product.cpu.abilist": "arm64-v8a,armeabi-v7a,armeabi",
+    "ro.product.cpu.abilist64": "arm64-v8a",
+    "ro.product.cpu.abilist32": "armeabi-v7a,armeabi",
+    "r3_empty_abilist64_blocker": "CLOSED",
+    "r5_active_product_correction": "PHYSICAL_PASS_PRESERVED"
+  },
+  "runtime_architecture": {
+    "status": "PASS",
+    "sys.boot_completed": "1",
+    "dev.bootcomplete": "1",
+    "surfaceflinger_service": "RUNNING",
+    "zygote64_service": "RUNNING",
+    "zygote32_secondary_service": "RUNNING",
+    "system_server": "RUNNING",
+    "processes": {
+      "zygote64": {
+        "pid": 494,
+        "ppid": 1
+      },
+      "zygote32": {
+        "pid": 496,
+        "ppid": 1
+      },
+      "surfaceflinger": {
+        "pid": 541,
+        "ppid": 1
+      },
+      "system_server": {
+        "pid": 786,
+        "ppid": 494
+      }
+    },
+    "r6_surfaceflinger_health_killed_zygote_condition": "CLOSED_AS_ARCHITECTURE_BLOCKER"
+  },
+  "boringssl_vendor_gate": {
+    "status": "PHYSICAL_PASS_AT_INTENDED_EXECUTION_BOUNDARY_PRESERVED_FROM_R6",
+    "r5_missing_64_bit_executable_gap": "CLOSED",
+    "r7_boringssl_reboot_loop": "NOT_OBSERVED_BOOT_COMPLETED",
+    "not_claimed": "GLOBAL_CRYPTOGRAPHIC_SUBSYSTEM_VALIDATION"
+  },
+  "graphics": {
+    "status": "PASS",
+    "surfaceflinger_architecture": "ARM64",
+    "surfaceflinger_runtime": "RUNNING",
+    "r6_abort": "gralloc-mapper is missing",
+    "r6_abort_recurrence_in_validated_run": "NO_MATCH_OBSERVED",
+    "mapper_backdeploy_closure": "PHYSICAL_PASS",
+    "gralloc_runtime_allocation": "PASS_1920X1080_BUFFERS_OBSERVED",
+    "ro.hardware.egl": "mali",
+    "ro.board.platform": "apollo",
+    "gles_vendor": "ARM",
+    "gles_renderer": "Mali-G31",
+    "gles_version": "OpenGL ES 3.2 v1.r20p0-01rel0.f8adc226c43d2b235f75c28496bc8e0f",
+    "ui_composition": "PHYSICAL_PASS",
+    "provider_hashes": {
+      "mapper": "D0FC49B3C216441BDEA66C015CE17B494523E3EB4D1659DE9BBA31693C7461E8",
+      "gralloc": "B03BFE24802C73E158A365CB5D15E1BC7598BB73C98DEF86533183678837CFE7",
+      "mali": "03333D495E3566C7D85CA2E000DA569A16CE8F022EA25C0EA61950C891D5C7F8"
+    },
+    "not_claimed": [
+      "Vulkan",
+      "HDR",
+      "4K60 decode",
+      "all HWC paths",
+      "all media buffer paths",
+      "protected DRM playback"
+    ]
+  },
+  "network": {
+    "status": "PASS",
+    "wifi_driver": "PASS",
+    "wlan0": "UP",
+    "association": "PASS",
+    "dhcp_ipv4": "PASS",
+    "external_ipv4": "PASS_4_OF_4_ZERO_PERCENT_LOSS",
+    "dns": "PASS_4_OF_4_ZERO_PERCENT_LOSS",
+    "network_adb": "PASS",
+    "wifi_off_on_lifecycle": "NOT_TESTED_GATE3"
+  },
+  "input": {
+    "status": "PASS_BASIC_ONLY",
+    "physical_to_android_framework": "PASS",
+    "events": [
+      {
+        "android_key": "DPAD_DOWN",
+        "scan_code": 108,
+        "status": "PASS"
+      },
+      {
+        "android_key": "DPAD_CENTER",
+        "scan_code": 352,
+        "status": "PASS"
+      },
+      {
+        "android_key": "BACK",
+        "scan_code": 158,
+        "status": "PASS"
+      }
+    ],
+    "queue_after_actions": "RESPONSIVE_EMPTY",
+    "full_tv_key_matrix": "NOT_TESTED_GATE3"
+  },
+  "known_debt": {
+    "audio_startup_crash": {
+      "status": "KNOWN_DEBT",
+      "classification": "KNOWN_UNFIXED_POST_ARCHITECTURE_P1_STABILIZATION_DEBT",
+      "current_excerpt": "android.hardware.audio.service SIGSEGV fault address 0x0 with audioserver restart activity",
+      "steady_state_audioflinger": "ALIVE",
+      "exact_r7_subcause": "NOT_PROVEN_BY_CURRENT_EXCERPT",
+      "architecture_gate_impact": "NON_BLOCKING_BY_EXISTING_POLICY"
+    },
+    "full_vintf": {
+      "status": "INHERITED_EXCEPTION_NOT_PASS",
+      "exit": 65,
+      "exception": "CONFIG_NFS_FS=y vs FCM-6 requires n"
+    }
+  },
+  "closed_architecture_blockers": [
+    "GLOBAL_MIXED_ABI_PROPERTY_CONTRACT",
+    "VENDOR_BORINGSSL64_MISSING_EXECUTABLE",
+    "ARM64_GRALLOC_MAPPER_IS_MISSING"
+  ],
+  "gate3": {
+    "status": "DEFINED_READY_FOR_PHYSICAL_EXECUTION",
+    "candidate_must_remain_exact_r7": true,
+    "r8_authorized": false,
+    "pending": {
+      "architecture_regression_reconfirmation": "NOT_TESTED_GATE3",
+      "h264_aac_visible_and_audible_playback": "NOT_TESTED_GATE3",
+      "hevc_aac_visible_and_audible_playback": "NOT_TESTED_GATE3",
+      "vp9_playback": "NOT_TESTED_GATE3",
+      "full_remote_key_matrix": "NOT_TESTED_GATE3",
+      "wifi_off_on_reassociation_dhcp_l3_dns_adb": "NOT_TESTED_GATE3",
+      "storage_and_basic_platform_sanity": "NOT_TESTED_GATE3",
+      "before_after_crash_restart_census": "NOT_TESTED_GATE3"
+    }
+  },
+  "repository_landing_validation": {
+    "focused_r7_tests": 10,
+    "focused_result": "PASS",
+    "full_lightweight_tests": 173,
+    "full_result": "PASS",
+    "declared_fixture_skips": 34,
+    "json_files_parsed": 76,
+    "python_compileall": "PASS",
+    "capture_script_static_safety_test": "PASS",
+    "capture_script_powershell_runtime_selftest": "SKIPPED_POWERSHELL_RUNTIME_NOT_INSTALLED_ON_GCP_VM"
+  },
+  "future_branch": {
+    "intended_name_after_gate3_pass": "codex/m8-a16-development",
+    "created": false
+  }
+}

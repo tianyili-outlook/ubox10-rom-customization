@@ -1,0 +1,60 @@
+ANDROID IDENTITY
+  ro.build.version.release=16
+  ro.build.version.sdk=36
+  ro.build.id=BP2A.250805.034
+
+MIXED ABI
+  ro.zygote=zygote64_32
+  ro.product.cpu.abilist=arm64-v8a,armeabi-v7a,armeabi
+  ro.product.cpu.abilist64=arm64-v8a
+  ro.product.cpu.abilist32=armeabi-v7a,armeabi
+
+BOOT AND SERVICES
+  sys.boot_completed=1
+  dev.bootcomplete=1
+  init.svc.surfaceflinger=running
+  init.svc.zygote=running
+  init.svc.zygote_secondary=running
+
+PROCESS TOPOLOGY
+  root     494     1    ... S zygote64
+  root     496     1    ... S zygote
+  system   541     1    ... S surfaceflinger
+  system   786   494    ... S system_server
+
+MAPPER / GRALLOC
+  logcat -b crash -d | grep -i 'gralloc-mapper'
+  RESULT: EMPTY / NO RECURRENCE IN THE VALIDATED RUN
+
+  I gralloc : alloc buffer:W:1920 H:1080 ...
+
+MALI / EGL
+  ro.hardware.egl=mali
+  ro.board.platform=apollo
+  GLES: ARM, Mali-G31, OpenGL ES 3.2 v1.r20p0-01rel0.f8adc226c43d2b235f75c28496bc8e0f
+
+NETWORK (PRIVATE ENDPOINT AND ADDRESS OMITTED)
+  wlan.driver.status=ok
+  wlan0 UP
+  valid IPv4 assigned
+  Wi-Fi connected
+  ping -c 4 8.8.8.8: 4 transmitted, 4 received, 0% packet loss
+  ping -c 4 www.google.com: 4 transmitted, 4 received, 0% packet loss
+  ADB endpoint state: device
+
+BASIC PHYSICAL INPUT
+  DPAD_DOWN   scanCode=108
+  DPAD_CENTER scanCode=352
+  BACK        scanCode=158
+  Input queue responsive and empty after the actions
+
+KNOWN AUDIO DEBT
+  Fatal signal 11 (SIGSEGV)
+  Cmdline: /vendor/bin/hw/android.hardware.audio.service
+  fault addr 0x0
+  audioserver restart activity observed
+  AudioFlinger subsequently alive
+
+EVIDENCE BOUNDARY
+  Full raw physical capture was supplied by the user outside the repository.
+  This file contains authoritative sanitized excerpts only; no raw path or hash is fabricated.

@@ -1,7 +1,13 @@
 # Android 16 Prototype B r7
 
-离线状态：**OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION**。物理状态：
-**NOT YET VALIDATED**。
+离线状态：**OFFLINE CHECKED / PASS**。物理状态：**PHYSICAL PASS — ARM64
+MIXED-ARCHITECTURE BOOT / DUAL ZYGOTE / SYSTEM_SERVER / SURFACEFLINGER /
+MAPPER-GRALLOC / MALI UI GATE CLOSED**。
+
+R7 现为 **ACCEPTED ANDROID 16 ARM64 MIXED-ARCHITECTURE ARCHITECTURE BASELINE /
+FROZEN AGAINST ARCHITECTURE CHANGES / PENDING GATE 3 FUNCTIONAL PRESERVATION**。这不是 daily-use
+release 或 final functional baseline；Gate 3 必须在 exact r7 上验证 retained ARM32 hardware-facing
+stack 的核心 TV 功能，且不授权 r8 或镜像重建。
 
 R6 已物理证明 canonical mixed ABI、BoringSSL64 gate、`app_process64`/`app_process32`、ART64/ART32
 和 primary zygote preload。Zygote 的 restart 不是独立 failure：ARM64 SurfaceFlinger 连续四次
@@ -29,7 +35,7 @@ VNDK31 `libc++.so` 上的一个已证明 back-deploy relocation contract。
 | SHA-256 | `A1F58668AEFFC9DC83CFFD8A49A309839332B6616C02153DCC00A71136A7AA27` |
 | Android | `android-security-16.0.0_r7`; manifest `ebea28d151539ecf0730b1a4ab92ac33edc17ac9` |
 | build | targeted `android.hardware.graphics.mapper@2.0-impl-2.1` and `gralloc.apollo`; no system/kernel rebuild |
-| physical | `NOT YET VALIDATED`; no physical action occurred during build/audit |
+| physical | `PHYSICAL ARCHITECTURE PASS`; exact r7 tested 2026-08-29; pending Gate 3 functional preservation |
 
 ## Exact runtime lookup and root cause
 
@@ -131,13 +137,40 @@ Machine records: `a16-prototype-b-r7-mapper-root-cause-audit.json`,
 `a16-prototype-b-r7-arm32-arm64-mapper-control.json`,
 `a16-prototype-b-r7-offline-result.json` and `a16-prototype-b-r7-preservation.json`.
 
-## Physical gate
+## Physical architecture result
 
-R7 is not a physical mapper pass. The next test first verifies that ARM64 SurfaceFlinger no longer
-aborts `gralloc-mapper is missing`, then records `init.svc.surfaceflinger`, both zygotes and
-`system_server`. If mapper instantiation succeeds and a later gralloc allocation, allocator,
-HWC/composer, EGL or Mali error appears, r7's mapper closure must be recorded separately as a physical
-PASS before freezing the next first fatal. Vulkan and product polish are not part of this gate.
+The user physically validated the exact hash-pinned candidate on 2026-08-29. Runtime reports Android
+16/API 36, `zygote64_32`, canonical mixed ABI lists, `sys.boot_completed=1`, both zygotes running,
+ARM64 SurfaceFlinger running and `system_server` PID 786 parented by primary `zygote64` PID 494.
+The validated crash-buffer query found no recurrence of `gralloc-mapper is missing`; real 1920x1080
+gralloc allocations and Mali-G31 OpenGL ES 3.2 composition are present. Therefore the bounded r7
+mapper/gralloc back-deploy correction is **PHYSICAL PASS** and the r6 blocker is **CLOSED**.
 
-Rollback remains frozen Android 16 ARM32 `a16-prototype-a-r4`; frozen Android 12
-`m8b-remote-r1` remains final working fallback.
+Basic Wi-Fi association/DHCP/L3/DNS/network ADB and three physical remote paths
+(`DPAD_DOWN`/108, `DPAD_CENTER`/352, `BACK`/158) also pass. Those bounded observations do not prove
+Wi-Fi OFF→ON recovery or the full TV key matrix. Vulkan, HDR, 4K60, every HWC/media buffer path and
+protected DRM playback remain outside the architecture claim.
+
+The r7 boot still records the known legacy vendor audio-service null-address SIGSEGV and audioserver
+restart activity; AudioFlinger later remains alive. The supplied r7 excerpt does not independently
+establish a more specific sub-cause. This remains **KNOWN / UNFIXED / POST-ARCHITECTURE P1** under the
+existing policy, not fixed. Full VINTF remains **exit 65 / inherited `CONFIG_NFS_FS=y` versus FCM-6
+`n` / NOT PASS**.
+
+Tracked physical evidence is intentionally bounded: the full raw ADB/runtime capture remains outside
+Git and was not present on this VM, so no raw path or hash is invented. See
+`a16-prototype-b-r7-physical-result.json` and
+`../device-tests/20260829-a16-prototype-b-r7-physical-validation/`.
+
+## Gate 3 and freeze
+
+Exact r7 is now the frozen Android 16 ARM64 mixed-architecture architecture control. The only active
+P0 is **Gate 3 — Android 16 Mixed-Architecture Functional Preservation**, executed read-only on this
+same image. It must cover architecture regression, real H.264/HEVC/VP9 playback with bounded audible
+HDMI checks, the physical TV-key matrix, Wi-Fi OFF→ON recovery, basic storage/platform sanity and a
+before/after crash census. Exact criteria are in `docs/DEVICE_TEST.md`.
+
+Rollback hierarchy remains frozen Android 12 `m8b-remote-r1`, frozen Android 16 ARM32
+`a16-prototype-a-r4`, then this frozen architecture baseline. The intended future
+`codex/m8-a16-development` line may be created only after Gate 3 PASS and a final functional freeze;
+it was not created here.

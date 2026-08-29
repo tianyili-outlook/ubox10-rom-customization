@@ -1,8 +1,11 @@
 {
   "schema": 1,
   "candidate": "a16-prototype-b-r7",
+  "record_scope": "HISTORICAL_OFFLINE_SNAPSHOT_BEFORE_PHYSICAL_VALIDATION",
   "decision": "OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION",
-  "physical_status": "NOT_YET_VALIDATED",
+  "physical_status_at_record_time": "NOT_YET_VALIDATED",
+  "current_physical_status": "PHYSICAL_ARCHITECTURE_PASS_PENDING_GATE3_FUNCTIONAL_PRESERVATION",
+  "current_physical_result": "docs/m8/candidates/a16-prototype-b-r7-physical-result.json",
   "flash_authorized": false,
   "candidate_identity": {
     "path": "out/candidates/a16-prototype-b-r7/x12-a16-prototype-b-r7.img",
@@ -96,7 +99,8 @@
       "strong_imports": 297,
       "strong_unmatched": 0
     },
-    "runtime_mapper_status": "NOT_YET_VALIDATED"
+    "runtime_mapper_status_at_record_time": "NOT_YET_VALIDATED",
+    "current_runtime_mapper_status": "PHYSICAL_PASS"
   },
   "offline_gates": {
     "vendor_tree_delta": "PASS_CHANGED_EXACT_TWO_ADDED_ZERO_REMOVED_ZERO",
@@ -137,10 +141,10 @@
     "aic_fmac_contract": "PASS_PRESERVED"
   },
   "known_limits": [
-    "No physical UBOX action was performed by the r7 build/audit task.",
-    "Mapper/gralloc runtime discovery, load, allocation and buffer import remain unproven until physical validation.",
-    "Stable SurfaceFlinger, zygotes and system_server remain unproven for r7.",
-    "Mali/EGL/HWC runtime is not established by the mapper relocation closure.",
+    "At this historical offline snapshot, no physical UBOX action had been performed by the r7 build/audit task.",
+    "At this historical offline snapshot, mapper/gralloc runtime discovery and allocation were not yet validated; the current result is linked above.",
+    "At this historical offline snapshot, stable SurfaceFlinger, zygotes and system_server were not yet validated; the current result is linked above.",
+    "At this historical offline snapshot, Mali/EGL/HWC runtime was not established by the mapper relocation closure alone.",
     "Full VINTF is not PASS; inherited CONFIG_NFS_FS remains the sole exception.",
     "SELinux enforcing runtime compatibility is not claimed."
   ],
