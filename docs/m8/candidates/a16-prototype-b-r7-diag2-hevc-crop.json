@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "id": "a16-prototype-b-r7-diag2-hevc-crop",
+  "classification": "DIAGNOSTIC_ONLY_NOT_R8_NOT_RELEASE",
+  "base": {"id": "a16-prototype-b-r7-diag1a", "size": 1641781248, "sha256": "C08F61D326BB49E2F27EEE4A2E38DF0843DA27EB3119F1712C26E2ECC035C765"},
+  "evidence": {
+    "root": "/work/evidence/ubox10/r7-diag2-hevc-crop",
+    "handling": "READ_ONLY_EXTERNAL_NOT_COMMITTED",
+    "sha256_manifest": "6FD308B77A4D19234E3EE33584EE01DC515F701AFC7EEB6E96270091CBBE39C5",
+    "files": {
+      "avc/diag1-lines.txt": "55B8004C242E3EBEAFA2DB38A76E4383A945A9C8B85FD97976742EC1B1B0490C",
+      "avc/gralloc-hwc-lines.txt": "8B956E4FE64A9181448DCED67BA6175B23C3752FF588876EAC9C53982432545A",
+      "avc/media-codec-lines.txt": "2BF890757BEFFDEC2375441CDF568D25F52D76A156E4A445E79BC2BF71F3777B",
+      "avc/renderengine-lines.txt": "C3816E6196D53239315592B101D24776D23247B61BF4C42502BC2E5AF3AB7871",
+      "hevc/critical-live-lines.txt": "6B38A1C201157A0777D8E9797596FF2D43333BF980CB5B49C8FDAADBD39D200D",
+      "hevc/diag1-live-lines.txt": "F6FF80594939E7BAA81437CD04367275C408D575212126D681F118D1468511E9",
+      "hevc/media-live-lines.txt": "0A0D9825764406FA4168CBD4206B454F59F774DDD37277DC379C5DD18EF1880C",
+      "hevc/post-state.txt": "F1A827718D739115311126C743F1ED8C2C6B21790D2E43085E29C523CFFA5EE3",
+      "hevc/pre-state.txt": "7075EC6FB4573EA23ABD05426392CA62A0C30ABD0ADB783886CAB61A34BC9C97",
+      "hevc/surfaceflinger-tombstone.txt": "93753835FE4FCE138F1544AB2118DDBB10E1FD36DA67AA577D2E1D72C1A60507"
+    },
+    "avc": {"component": "OMX.allwinner.video.decoder.avc", "coded": "1920x1088", "crop": "1920x1080", "egl": "SUCCESS", "backend_valid": true},
+    "hevc": {"component": "OMX.allwinner.video.decoder.hevc", "coded": "1920x1088", "crop": "1920x1088", "egl": "EGL_BAD_ALLOC_0x3003", "backend_valid": false},
+    "common": {"format": "YV12_0x32315659", "usage": "0x402d00", "size": 3133504, "strides": [1920, 960, 960], "modifier": 0, "afbc": false, "remote_import": "SUCCESS", "ahb": "SUCCESS"}
+  },
+  "source": {"frameworks_av_revision": "d1137ad4b24b686d9b00fd1b7be1b520f7b6ee2b", "file": "frameworks/av/media/libstagefright/ACodec.cpp", "method": "ACodec::onOutputFormatChanged", "semantic_assignments": 1},
+  "runtime_delta": [{"path": "/system/lib64/libstagefright.so", "old_sha256": "B0D1E7D72DFCEA20B72088AC9F3BC3E57AE983FD2DC5470494C6AB7404A5B16F", "new_sha256": "BD48A7691A42C86916120940A95F2FF4B082836258D60B463D7AD87D90A5D113", "elf": "ELF64_AARCH64", "dt_needed_preserved": true, "strong_exports_preserved": true, "undefined_strong_imports_preserved": true}],
+  "candidate": {"path": "out/candidates/a16-prototype-b-r7-diag2-hevc-crop/x12-a16-prototype-b-r7-diag2-hevc-crop.img", "size": 1641785344, "sha256": "6F67CAE0B8A445D4597DECE9D684A7099ADF3E4E046D54E635D269C9E9E483EE"},
+  "offline": {"decision": "OFFLINE_CHECKED_READY_FOR_PHYSICAL_VALIDATION", "system_vintf": "PASS", "full_vintf": "EXIT_65_INHERITED_CONFIG_NFS_FS_EXCEPTION_NOT_PASS", "runtime_delta_count": 1, "vendor_delta_count": 0, "arm32_graphics_closure": "PASS_ZERO_UNMATCHED", "arm64_graphics_closure": "PASS"},
+  "governance": {"canonical_r7": "PASS_FROZEN_UNCHANGED", "gate3": "HOLD", "h264": "PHYSICAL_PASS_CONTROL", "hevc": "BLOCKED_PENDING_PHYSICAL_VALIDATION", "r8": "NOT_AUTHORIZED_NOT_BUILT", "development_branch": "NOT_CREATED"}
+}

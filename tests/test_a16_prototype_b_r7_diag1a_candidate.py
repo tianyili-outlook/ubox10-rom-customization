@@ -122,7 +122,9 @@ def test_status_todo_and_device_test_gate_media_on_normal_boot() -> None:
     assert "OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE" in status
     assert "READY FOR PHYSICAL BOOT GATE" in todo
     assert "boot PASS之后" in todo
-    assert "R7-DIAG1A READY FOR PHYSICAL BOOT GATE" in device
+    assert "PHYSICAL BOOT PASS / PAIRED EVIDENCE CAPTURED" in status
+    assert "OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION" in todo
+    assert "R7-DIAG2 HEVC CROP SINGLE-VARIABLE DIAGNOSTIC READY FOR PHYSICAL VALIDATION" in device
     assert "blocked until boot PASS" in device
     for text in (status, todo, device):
         assert "Gate 3" in text

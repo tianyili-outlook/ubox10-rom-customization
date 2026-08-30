@@ -2,7 +2,7 @@
 
 ## Freeze decision
 
-`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为稳定日用回退。`a16-prototype-a-r4` 已冻结为 **PHYSICAL PASS / ACCEPTED Android 16 ARM32 ARCHITECTURE CONTROL**。Exact `a16-prototype-b-r7` 现已物理证明 Android 16/API36、canonical mixed ABI、dual zygote、ARM64-parented system_server、stable ARM64 SurfaceFlinger、mapper/gralloc 与 Mali-G31 UI，故冻结为 **PHYSICAL ARCHITECTURE PASS / ACCEPTED ANDROID 16 ARM64 MIXED-ARCHITECTURE ARCHITECTURE BASELINE**。Gate 3 当前为 **HOLD：H.264+AAC PHYSICAL PASS / HEVC ARM64 RenderEngine BLOCKER**；这不降级 r7 architecture pass。HEVC first fatal 已证明为 1920x1088 YV12 external-buffer backend-texture failure并触发 userspace SurfaceFlinger/zygote restart，exact buffer-contract delta与 lower EGL/GL error仍未证明。用户明确把一次性、自动恢复的 boot-time `getAudioPort` SIGSEGV 从旧 Gate 2 startup-stability 条件改列为 **KNOWN / UNFIXED / POST-GATE P1 STABILIZATION DEBT**；本次时间线也证明 audio crash不是 HEVC first fatal。Gate 2 仍为 **CLOSED / PASS**。当前唯一 P0 是 exact-r7 Gate 3 functional preservation；不实施 r8、镜像重建、architecture/provider 变更或 P1 polish。
+`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为稳定日用回退。`a16-prototype-a-r4` 已冻结为 **PHYSICAL PASS / ACCEPTED Android 16 ARM32 ARCHITECTURE CONTROL**。Exact `a16-prototype-b-r7` 现已物理证明 Android 16/API36、canonical mixed ABI、dual zygote、ARM64-parented system_server、stable ARM64 SurfaceFlinger、mapper/gralloc 与 Mali-G31 UI，故冻结为 **PHYSICAL ARCHITECTURE PASS / ACCEPTED ANDROID 16 ARM64 MIXED-ARCHITECTURE ARCHITECTURE BASELINE**。Gate 3 当前为 **HOLD：H.264+AAC PHYSICAL PASS / HEVC ARM64 RenderEngine BLOCKER**；这不降级 r7 architecture pass。Diag1a paired evidence已把HEVC first fatal精确定位为1920x1088 YV12 external buffer的 `eglCreateImageKHR` / `EGL_BAD_ALLOC 0x3003`，并证明首个明确语义差异是port-settings change后AVC visible crop保持1920x1080、HEVC提升为1920x1088。用户明确把一次性、自动恢复的 boot-time `getAudioPort` SIGSEGV 从旧 Gate 2 startup-stability 条件改列为 **KNOWN / UNFIXED / POST-GATE P1 STABILIZATION DEBT**；本次时间线也证明 audio crash不是 HEVC first fatal。Gate 2 仍为 **CLOSED / PASS**。当前唯一 P0 是 exact-r7 Gate 3 functional preservation；不实施 r8、architecture/provider 变更或 P1 polish。
 
 ## Android 16 Gate 1 / Gate 2 — Prototype A ARM32
 
@@ -189,16 +189,21 @@
   SurfaceFlinger对 1920x1088 YV12 readable buffer建立 Ganesh backend texture失败。无 kernel reboot；
   audio startup crash在 framework restart之后，**NOT CAUSAL**。AVC/HEVC eventual CLIENT/DEVICE type均
   未捕获，且 AOSP source证明 external texture mapping先于 HWC composition decision，故“AVC仅因 overlay
-  避免 RenderEngine import”不是成立的因果解释。Exact usage/internal format/planes/AFBC/private metadata
-  与首个 EGL/GL error缺失，`R8_AUDIT_DECISION = HOLD_FOR_MORE_EVIDENCE`。Exact-r7-derived
+  避免 RenderEngine import”不是成立的因果解释。前次audit决定保持
+  `R8_AUDIT_DECISION = HOLD_FOR_MORE_EVIDENCE`；diag1a随后补齐paired usage/planes/AFBC/import与首个
+  EGL error，但仍不自动授权repair。Exact-r7-derived
   `a16-prototype-b-r7-diag1` instrumentation-only candidate offline audit通过，但 exact image物理
   **BOOT FAIL / ROOT CAUSE PROVEN / CLOSED**：ARM32 gralloc强导入 retained VNDK31 libc++未导出的
   `__libcpp_verbose_abort`，SurfaceFlinger `failed to create composer client`为 downstream。Bounded
   `a16-prototype-b-r7-diag1a`只在同一 instrumented ARM32 gralloc复用 r7 documented fatal-hook
-  back-deploy；diag1→diag1a signed runtime delta exact one file，现为 **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE /
-  NOT AN HEVC REPAIR / NOT r8**。下一步只刷写 exact diag1a并先验证 normal boot；
-  boot PASS之后才在该 build各采集一次 known-good AVC和一次 failing HEVC，再 diff首个
-  buffer/private-handle/EGL/GL contract差异。在 exact delta证明前不授权 repair、r8或新 branch。Gate 3 PASS 前不创建
+  back-deploy；它此前达到 **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE**，boot PASS之后的
+  paired/live证据现已证明HEVC首失败为 `eglCreateImageKHR` / `EGL_BAD_ALLOC 0x3003`，
+  且AVC/HEVC allocation/import contract基本一致。首个明确语义差异为port-settings change后AVC crop保持
+  1920x1080、HEVC crop提升为1920x1088。单变量 `a16-prototype-b-r7-diag2-hevc-crop`只在exact HEVC/YV12/
+  1920x1080→1920x1088条件下恢复visible crop，coded/allocation仍为1920x1088；diag1a→diag2 runtime delta
+  exact `/system/lib64/libstagefright.so`一项，现为 **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION /
+  HEVC仍BLOCKED / NOT r8**。下一步刷写exact diag2，先确认normal boot，再各执行一次AVC control与HEVC；
+  在实机证明EGL import及可见播放前不授权repair、r8或新branch。Gate 3 PASS 前不创建
   `codex/m8-a16-development`，该 branch 目前不存在。
 
 ## Post-Gate stabilization / release hardening

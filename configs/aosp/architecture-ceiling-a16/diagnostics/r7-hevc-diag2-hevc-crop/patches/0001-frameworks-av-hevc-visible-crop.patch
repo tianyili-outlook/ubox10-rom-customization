@@ -1,0 +1,41 @@
+From: UBOX10 architecture-ceiling diagnostics
+Subject: [DIAGNOSTIC ONLY] Preserve 1080 visible crop across HEVC 1088 alignment
+
+NOT r8. NOT A RELEASE. Retain the coded/allocation dimensions and change only
+the exact observed Allwinner HEVC 1920x1080-to-1920x1088 visible crop.
+
+--- a/media/libstagefright/ACodec.cpp
++++ b/media/libstagefright/ACodec.cpp
+@@ -5896,1 +5896,30 @@ void ACodec::onOutputFormatChanged(sp<const AMessage> expectedFormat) {
++    int32_t baseWidth, baseHeight, baseColorFormat;
++    int32_t baseCropLeft, baseCropTop, baseCropRight, baseCropBottom;
++    int32_t outputWidth, outputHeight, outputColorFormat;
++    int32_t outputCropLeft, outputCropTop, outputCropRight, outputCropBottom;
++    if (!mIsEncoder
++            && mComponentName == "OMX.allwinner.video.decoder.hevc"
++            && mBaseOutputFormat->findInt32("width", &baseWidth)
++            && mBaseOutputFormat->findInt32("height", &baseHeight)
++            && mBaseOutputFormat->findInt32("color-format", &baseColorFormat)
++            && mBaseOutputFormat->findRect("crop", &baseCropLeft, &baseCropTop,
++                                          &baseCropRight, &baseCropBottom)
++            && mOutputFormat->findInt32("width", &outputWidth)
++            && mOutputFormat->findInt32("height", &outputHeight)
++            && mOutputFormat->findInt32("color-format", &outputColorFormat)
++            && mOutputFormat->findRect("crop", &outputCropLeft, &outputCropTop,
++                                      &outputCropRight, &outputCropBottom)
++            && baseWidth == 1920 && baseHeight == 1080
++            && baseColorFormat == HAL_PIXEL_FORMAT_YV12
++            && baseCropLeft == 0 && baseCropTop == 0
++            && baseCropRight == 1919 && baseCropBottom == 1079
++            && outputWidth == 1920 && outputHeight == 1088
++            && outputColorFormat == HAL_PIXEL_FORMAT_YV12
++            && outputCropLeft == 0 && outputCropTop == 0
++            && outputCropRight == 1919 && outputCropBottom == 1087) {
++        // DIAGNOSTIC ONLY: preserve the stream-visible crop across coded-height alignment.
++        mOutputFormat->setRect("crop", baseCropLeft, baseCropTop,
++                              baseCropRight, baseCropBottom);
++    }
++
+     if (expectedFormat != NULL) {
+         sp<const AMessage> changes = expectedFormat->changesFrom(mOutputFormat);
+         sp<const AMessage> to = mOutputFormat->changesFrom(expectedFormat);
