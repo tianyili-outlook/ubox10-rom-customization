@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed ARM64 mapper/gralloc closure against the exact SP-HAL namespace."""
+"""Fail-closed mapper/gralloc closure against an exact ARM32/ARM64 SP-HAL namespace."""
 from __future__ import annotations
 
 import argparse
@@ -12,6 +12,14 @@ import sys
 
 
 CHUNK = 8 * 1024 * 1024
+PASS_DECISION = {
+    "arm32": "PASS_EXACT_ARM32_MAPPER_GRALLOC_SPHAL_CLOSURE",
+    "arm64": "PASS_EXACT_ARM64_MAPPER_GRALLOC_SPHAL_CLOSURE",
+}
+FAIL_DECISION = {
+    "arm32": "FAIL_CLOSED_ARM32_MAPPER_GRALLOC_SPHAL_CLOSURE",
+    "arm64": "FAIL_CLOSED_ARM64_MAPPER_GRALLOC_SPHAL_CLOSURE",
+}
 
 
 def digest(path: Path) -> str:
@@ -29,12 +37,14 @@ def elf_metadata(path: Path) -> dict[str, object]:
     build_id = re.search(r"\bBuild ID:\s*([0-9a-fA-F]+)", notes)
     soname = re.search(r"\(SONAME\).*\[([^]]+)\]", dynamic)
     needed = re.findall(r"\(NEEDED\).*\[([^]]+)\]", dynamic)
+    elf_class = re.search(r"^\s*Class:\s*(\S+)", header, re.MULTILINE)
+    machine = re.search(r"^\s*Machine:\s*(.+)$", header, re.MULTILINE)
     return {
         "path": str(path),
         "size": path.stat().st_size,
         "sha256": digest(path),
-        "elf_class": "ELF64" if "Class:                             ELF64" in header else "OTHER",
-        "machine": "AArch64" if "Machine:                           AArch64" in header else "OTHER",
+        "elf_class": elf_class.group(1) if elf_class else "UNKNOWN",
+        "machine": machine.group(1).strip() if machine else "UNKNOWN",
         "build_id": build_id.group(1).lower() if build_id else None,
         "soname": soname.group(1) if soname else None,
         "dt_needed": needed,
@@ -78,9 +88,11 @@ def inspect(
     expected_export: str,
     default_libs: set[str],
     vndk_libs: set[str],
-    system_lib64: Path,
-    runtime_lib64: Path,
-    vndk_lib64: Path,
+    system_lib: Path,
+    runtime_lib: Path,
+    vndk_lib: Path,
+    expected_elf_class: str,
+    expected_machine: str,
 ) -> dict[str, object]:
     metadata = elf_metadata(path)
     undefined, own_exports = dynamic_symbols(path)
@@ -90,11 +102,11 @@ def inspect(
     for soname in metadata["dt_needed"]:
         if soname in vndk_libs:
             namespace = "vndk"
-            provider = vndk_lib64 / soname
+            provider = vndk_lib / soname
         elif soname in default_libs:
             namespace = "default"
-            runtime = runtime_lib64 / soname
-            provider = runtime if runtime.exists() else system_lib64 / soname
+            runtime = runtime_lib / soname
+            provider = runtime if runtime.exists() else system_lib / soname
         else:
             missing.append({"soname": soname, "reason": "NOT_EXPORTED_TO_SPHAL"})
             continue
@@ -103,10 +115,19 @@ def inspect(
             continue
         _, exports = dynamic_symbols(provider)
         provider_exports.update(exports)
-        providers.append({"soname": soname, "namespace": namespace, "path": str(provider)})
+        providers.append({
+            "soname": soname,
+            "namespace": namespace,
+            "path": str(provider),
+            "size": provider.stat().st_size,
+            "sha256": digest(provider),
+        })
     unmatched = sorted(undefined - provider_exports)
     failures: list[str] = []
-    if metadata["elf_class"] != "ELF64" or metadata["machine"] != "AArch64":
+    if (
+        metadata["elf_class"] != expected_elf_class
+        or metadata["machine"] != expected_machine
+    ):
         failures.append("WRONG_ELF_ARCHITECTURE")
     if metadata["soname"] != expected_soname:
         failures.append("WRONG_SONAME")
@@ -135,24 +156,31 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mapper", type=Path, required=True)
     parser.add_argument("--gralloc", type=Path, required=True)
-    parser.add_argument("--system-lib64", type=Path, required=True)
-    parser.add_argument("--runtime-lib64", type=Path, required=True)
-    parser.add_argument("--vndk-lib64", type=Path, required=True)
+    parser.add_argument("--architecture", choices=("arm32", "arm64"), default="arm64")
+    parser.add_argument("--system-lib", "--system-lib64", dest="system_lib", type=Path, required=True)
+    parser.add_argument("--runtime-lib", "--runtime-lib64", dest="runtime_lib", type=Path, required=True)
+    parser.add_argument("--vndk-lib", "--vndk-lib64", dest="vndk_lib", type=Path, required=True)
     parser.add_argument("--linker-config", type=Path, required=True)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     linker = args.linker_config.read_text(encoding="utf-8")
     default_libs = linker_set(linker, "namespace.sphal.link.default.shared_libs")
     vndk_libs = linker_set(linker, "namespace.sphal.link.vndk.shared_libs")
+    expected = {
+        "arm32": {"expected_elf_class": "ELF32", "expected_machine": "ARM"},
+        "arm64": {"expected_elf_class": "ELF64", "expected_machine": "AArch64"},
+    }[args.architecture]
     shared = {
         "default_libs": default_libs,
         "vndk_libs": vndk_libs,
-        "system_lib64": args.system_lib64,
-        "runtime_lib64": args.runtime_lib64,
-        "vndk_lib64": args.vndk_lib64,
+        "system_lib": args.system_lib,
+        "runtime_lib": args.runtime_lib,
+        "vndk_lib": args.vndk_lib,
+        **expected,
     }
     result = {
         "schema": 1,
+        "architecture": args.architecture,
         "mapper": inspect(
             args.mapper,
             expected_soname="android.hardware.graphics.mapper@2.0-impl-2.1.so",
@@ -167,9 +195,9 @@ def main() -> None:
         ),
     }
     result["decision"] = (
-        "PASS_EXACT_ARM64_MAPPER_GRALLOC_SPHAL_CLOSURE"
+        PASS_DECISION[args.architecture]
         if result["mapper"]["result"] == result["gralloc"]["result"] == "PASS"
-        else "FAIL_CLOSED_ARM64_MAPPER_GRALLOC_SPHAL_CLOSURE"
+        else FAIL_DECISION[args.architecture]
     )
     rendered = json.dumps(result, indent=2, sort_keys=True) + "\n"
     if args.output:

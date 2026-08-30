@@ -174,10 +174,13 @@ def test_candidate_docs_when_present_keep_gate3_hold() -> None:
         pytest.skip("candidate documentation not generated yet")
     doc = DOC.read_text(encoding="utf-8")
     record = json.loads(RECORD.read_text(encoding="utf-8"))
-    assert "OFFLINE CHECKED / READY FOR PAIRED PHYSICAL DIAGNOSTIC VALIDATION" in doc
+    assert "OFFLINE PASS / PHYSICAL BOOT FAIL / CLOSED DIAGNOSTIC CANDIDATE" in doc
+    assert "__libcpp_verbose_abort" in doc
+    assert "failed to create composer client" in doc
     assert "HEVC is not fixed" in doc
-    assert record["physical_status"] == (
-        "OFFLINE_CHECKED_READY_FOR_PAIRED_PHYSICAL_DIAGNOSTIC_VALIDATION"
+    assert record["physical_status"] == "PHYSICAL_BOOT_FAIL_CLOSED_DIAGNOSTIC_CANDIDATE"
+    assert record["physical_result"]["root_cause"] == (
+        "PROVEN_ARM32_GRALLOC_UNMATCHED_VNDK31_LIBCPP_STRONG_IMPORT"
     )
     assert record["governance"]["gate3"] == "HOLD"
     assert record["governance"]["r8_authorized"] is False
@@ -187,11 +190,9 @@ def test_status_and_todo_keep_architecture_pass_and_gate3_hold() -> None:
     status = (ROOT / "docs/m8/STATUS.md").read_text(encoding="utf-8")
     todo = (ROOT / "docs/m8/TODO.md").read_text(encoding="utf-8")
     assert "PHYSICAL ARCHITECTURE PASS / FROZEN / GATE 3 HOLD" in status
-    assert (
-        "OFFLINE CHECKED / READY FOR PAIRED AVC/HEVC PHYSICAL DIAGNOSTIC VALIDATION"
-        in status
-    )
+    assert "PHYSICAL BOOT FAIL / ROOT CAUSE PROVEN / CLOSED" in status
+    assert "OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE" in status
     assert "[ ] **33 — Gate 3" in todo
-    assert "READY FOR PAIRED AVC/HEVC PHYSICAL DIAGNOSTIC VALIDATION" in todo
+    assert "READY FOR PHYSICAL BOOT GATE" in todo
     assert "R8_AUDIT_DECISION = HOLD_FOR_MORE_EVIDENCE" in todo
     assert "Gate 3 PASS 前不创建" in todo

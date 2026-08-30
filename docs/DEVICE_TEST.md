@@ -3,7 +3,7 @@
 ## 当前状态
 
 - 最后报告的 Android 16 物理架构验收镜像：`out/candidates/a16-prototype-b-r7/x12-a16-prototype-b-r7.img`，1,641,773,056 bytes / SHA-256 `A1F58668AEFFC9DC83CFFD8A49A309839332B6616C02153DCC00A71136A7AA27`
-- 当前项目状态：**ANDROID 16 ARM64 MIXED ARCHITECTURE — PROVEN VIABLE / R7 PHYSICAL ARCHITECTURE PASS / FROZEN ARCHITECTURE BASELINE / GATE 3 HOLD — H.264 PASS / HEVC BLOCKER**。Exact r7 物理证明 canonical mixed ABI、dual zygote、ARM64-parented system_server、stable ARM64 SurfaceFlinger、mapper/gralloc allocation 与 Mali-G31 GLES/UI。R5 ABI、r6 BoringSSL64 与 r7 `gralloc-mapper is missing` blockers 均已关闭。Exact-r7-derived `a16-prototype-b-r7-diag1`（1,641,781,248 bytes / `A68E7BD75D9819794BE22E9E05BE76969B2883DF8965DC277482E8C99231C6A4`）现已 offline checked，只授权同一 build 的 paired AVC/HEVC diagnosis；不是 repair 或 r8。
+- 当前项目状态：**ANDROID 16 ARM64 MIXED ARCHITECTURE — PROVEN VIABLE / R7 PHYSICAL ARCHITECTURE PASS / FROZEN ARCHITECTURE BASELINE / GATE 3 HOLD — H.264 PASS / HEVC BLOCKER**。Exact r7 物理证明 canonical mixed ABI、dual zygote、ARM64-parented system_server、stable ARM64 SurfaceFlinger、mapper/gralloc allocation 与 Mali-G31 GLES/UI。R5 ABI、r6 BoringSSL64 与 r7 `gralloc-mapper is missing` blockers 均已关闭。`a16-prototype-b-r7-diag1`现为 **PHYSICAL BOOT FAIL / ROOT CAUSE PROVEN / CLOSED**。Successor `a16-prototype-b-r7-diag1a`（1,641,781,248 bytes / `C08F61D326BB49E2F27EEE4A2E38DF0843DA27EB3119F1712C26E2ECC035C765`）现为 **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE**；不是 HEVC repair 或 r8。
 - Android 16 ARM32 control：`a16-prototype-a-r4` **FROZEN / PHYSICAL PASS**。Boot-time legacy audio crash 保持 **KNOWN / UNFIXED / POST-ARCHITECTURE P1**；full VINTF 保持 inherited NFS exit 65 / **NOT PASS**。
 - 保留的设备验收基线：`out/candidates/m8b-remote-r1/x12-m8b-remote-r1.img`，状态 **DEVICE ACCEPTED / REMOTE PASS**（继承 **AUDIO PASS / IME PASS**）。
 - 大小 / SHA-256：1031723008 bytes / `F3B09E5565AC4ED4E5EE326D392622E7B036A8519B8444B966E77CC4751B814A`
@@ -29,18 +29,30 @@ accepted baseline 已确认 Treble/VNDK、primary HAL/output、HEVC+AAC HDMI 音
 
 ## Gate 3 — Android 16 Mixed-Architecture Functional Preservation
 
-状态：**HOLD — R7-DIAG1 READY FOR PAIRED AVC/HEVC PHYSICAL DIAGNOSTIC VALIDATION**。Gate 3
-architecture/functional baseline仍是上述 exact r7；当前只允许刷入 logging-only diag1取得同一 build的
-AVC control和HEVC reproduction，不创建 r8，也不在失败发生前修改功能。目标是证明 mature ARM32 hardware-facing
+状态：**HOLD — R7-DIAG1 PHYSICAL BOOT FAIL / R7-DIAG1A READY FOR PHYSICAL BOOT GATE**。Gate 3
+architecture/functional baseline仍是上述 exact r7。Diag1因 ARM32 gralloc unresolved
+`__libcpp_verbose_abort`在 conditional YV12 logging前 eager-link失败，现已关闭；SurfaceFlinger
+`failed to create composer client`为 downstream。当前只允许刷入 logging-only diag1a先验证 normal boot，
+boot PASS之前不得执行 paired media。Diag1a未修改HEVC行为，不创建 r8，也不在失败发生前修改功能。目标是证明 mature ARM32 hardware-facing
 vendor stack 在已接受 ARM64 framework/system architecture 下仍提供核心 TV 功能。结果严格使用
 `PASS`、`FAIL` 或 `NOT TESTED — FIXTURE UNAVAILABLE`。
 
-### R7-diag1 paired HEVC boundary capture
+### R7-diag1a physical boot gate
 
-Diag1不用于重跑或提升 Gate 3 verdict。它只回答 AVC buffer与HEVC buffer首次在哪个
+1. flash exact hash-pinned diag1a：`C08F61D326BB49E2F27EEE4A2E38DF0843DA27EB3119F1712C26E2ECC035C765`；
+2. 保留UART，从上电到launcher出现，全程检查不再出现 ARM32 gralloc unresolved
+   `__libcpp_verbose_abort`；
+3. 确认 `sys.boot_completed=1`、`vendor.gralloc-2-0`、`vendor.hwcomposer-2-2`、SurfaceFlinger、zygote与
+   system_server稳定，不把瞬时状态写成PASS；
+4. 检查crash buffer与tombstone，确认没有 `failed to create composer client` restart loop；
+5. 只有normal boot通过后，才进入下一节的一次AVC control与一次HEVC reproduction。
+
+### R7-diag1a paired HEVC boundary capture (blocked until boot PASS)
+
+Diag1a不用于重跑或提升 Gate 3 verdict。它只回答 AVC buffer与HEVC buffer首次在哪个
 codec/native-window/gralloc/AHardwareBuffer/RenderEngine/EGL/GL contract字段分叉。顺序必须为：
 
-1. flash exact hash-pinned diag1并确认 architecture baseline；
+1. 先完成上一节diag1a normal-boot PASS并确认 architecture baseline；
 2. `Baseline`、`AVCPre`，手工播放 known-good H.264 fixture一次并确认 visible video + audible HDMI，
    再执行 `AVCPost`；
 3. `HEVCPre`，手工启动 known HEVC fixture一次，不循环；
@@ -49,7 +61,9 @@ codec/native-window/gralloc/AHardwareBuffer/RenderEngine/EGL/GL contract字段�
 6. 对 AVC/HEVC `UBOX_R7_DIAG1`记录按 buffer ID、backing-store ID、timestamp和immutable buffer fields
    做paired diff；只有 first discriminating field/operation才能决定minimum repair boundary。
 
-PowerShell 7入口（port默认7896，输出位于用户Downloads下的timestamped目录）：
+下列原diag1 PowerShell helper保留为历史实现，其 candidate ID/hash指向已关闭diag1；**不要在diag1a
+boot PASS前运行，也不要把其输出误标为diag1a evidence**。Boot PASS后应先使用明确标识diag1a的
+等价capture入口（port默认7896，输出位于用户Downloads下的timestamped目录）：
 
 ```powershell
 $Endpoint = '<device-LAN-address-or-hostname>'

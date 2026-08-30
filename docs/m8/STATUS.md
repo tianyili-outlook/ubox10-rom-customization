@@ -1,6 +1,6 @@
 # M8 status
 
-Updated: 2026-08-29
+Updated: 2026-08-30
 
 ## Android 16 architecture ceiling
 
@@ -27,13 +27,19 @@ so the audit decision is `HOLD_FOR_MORE_EVIDENCE`. The architecture pass itself 
 | Android 12 daily-use rollback `m8b-remote-r1` | **FROZEN** |
 | Android 16 ARM32 architecture control `a16-prototype-a-r4` | **FROZEN** |
 | Android 16 ARM64 mixed-architecture control `a16-prototype-b-r7` | **PHYSICAL ARCHITECTURE PASS / FROZEN / GATE 3 HOLD — H.264 PASS / HEVC BLOCKER** |
-| Instrumentation derivative `a16-prototype-b-r7-diag1` | **OFFLINE CHECKED / READY FOR PAIRED AVC/HEVC PHYSICAL DIAGNOSTIC VALIDATION / NOT A REPAIR / NOT r8** |
+| Instrumentation derivative `a16-prototype-b-r7-diag1` | **OFFLINE PASS / PHYSICAL BOOT FAIL / ROOT CAUSE PROVEN / CLOSED** |
+| Boot-corrected instrumentation derivative `a16-prototype-b-r7-diag1a` | **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE / NOT AN HEVC REPAIR / NOT r8** |
 
-The only active P0 is **Gate 3 — Android 16 Mixed-Architecture Functional Preservation**. Exact-r7-derived
-`a16-prototype-b-r7-diag1` is now offline checked and ready for one paired AVC/HEVC physical capture of
-the full gralloc handle, AHardwareBuffer and EGL/GL import contract. It changes only four logging
-binaries through a separate diagnostic patch path; canonical r7 remains frozen. No r8 repair or new
-development branch is authorized. The separate
+The only active P0 is **Gate 3 — Android 16 Mixed-Architecture Functional Preservation**. Exact
+r7-diag1 physically failed its boot gate because its current-toolchain ARM32 gralloc introduced the
+strong import `std::__1::__libcpp_verbose_abort`, which the retained ARM32 VNDK31 libc++ does not
+export. Its repeated SurfaceFlinger `failed to create composer client` abort is downstream, and
+diag1 is closed. Exact-r7-diag1a reuses r7's documented `_LIBCPP_VERBOSE_ABORT(...) ->
+__builtin_abort()` back-deploy boundary for that same instrumented ARM32 gralloc only. Its signed
+filesystem delta from diag1 is exactly `/vendor/lib/hw/gralloc.apollo.so`; the other three logging
+runtimes are byte-identical. Diag1a is offline checked and ready only for a normal physical boot gate.
+Paired AVC/HEVC capture resumes only after that gate passes. Canonical r7 remains frozen. No r8 repair
+or new development branch is authorized. The separate
 post-restart quarter-screen is strongly supported to be a retained display recovery defect that
 selects proven 3840x2160p60 HDMI mode 34 while SurfaceFlinger remains 1920x1080. The known boot-time
 legacy audio-service crash occurs after the SurfaceFlinger restart and

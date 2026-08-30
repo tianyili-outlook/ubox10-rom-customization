@@ -1,6 +1,6 @@
 # Android 16 Prototype B r7-diag1
 
-Status: **OFFLINE CHECKED / READY FOR PAIRED PHYSICAL DIAGNOSTIC VALIDATION**.
+Status: **OFFLINE PASS / PHYSICAL BOOT FAIL / CLOSED DIAGNOSTIC CANDIDATE**.
 
 This is an instrumentation-only derivative of exact frozen r7. It is **not a repair, not r8,
 not a release**, and it does not change the Gate 3 decision. Its only purpose is to run the same
@@ -9,7 +9,25 @@ first buffer/import field or EGL/GL operation that differs.
 
 The architecture result remains **PASS / FROZEN**. Gate 3 remains **HOLD**; H.264 remains a physical
 pass and HEVC remains a blocker. HEVC is not fixed and its exact earlier contract delta is not yet
-proven.
+proven. The offline result below remains part of the candidate history, but diag1 must not be flashed
+again: its first physical gate failed before conditional YV12 instrumentation could execute.
+
+## Physical boot result (2026-08-30)
+
+User-supplied UART/runtime evidence from the exact image proves the first failure is eager dynamic
+linking of `/vendor/lib/hw/gralloc.apollo.so` (ELF32 ARM):
+
+```text
+dlopen failed: cannot locate symbol
+"_ZNSt3__122__libcpp_verbose_abortEPKcz"
+referenced by "/vendor/lib/hw/gralloc.apollo.so"
+```
+
+The current-toolchain diagnostic ARM32 gralloc has that strong undefined import, while the retained
+ARM32 VNDK31 `libc++.so` does not export it. `vendor.gralloc-2-0` therefore restarts and composer
+cannot obtain the gralloc module. Repeated SurfaceFlinger aborts with
+`failed to create composer client` are downstream. This is not the YV12/RenderEngine failure under study and does not downgrade
+canonical r7.
 
 ## Candidate identity
 
@@ -191,9 +209,11 @@ PowerShell itself is not installed on this Linux build VM, so a native PowerShel
 syntax invocation is accurately classified as not run; the helper is intended for Windows
 PowerShell 7.
 
-## Paired Windows capture
+## Historical paired Windows capture plan (closed for diag1)
 
-Use Windows PowerShell 7 and the helper
+The helper was prepared and statically checked for this candidate, but **do not use it to flash or
+test closed diag1**. After diag1a passes its separate normal-boot gate, paired capture may resume on
+that corrected candidate. The historical helper is
 `scripts/capture-a16-prototype-b-r7-diag1-media-paired.ps1`. Supply a hostname/IP without hard-coding
 it in the script; TCP port 7896 is the default:
 
@@ -219,8 +239,8 @@ changes HDMI/wm state, or starts/loops playback.
 
 ## Decision and next boundary
 
-Physical status is **OFFLINE CHECKED / READY FOR PAIRED PHYSICAL DIAGNOSTIC VALIDATION**, not PASS.
-Flash this diag1 image, capture one AVC control and one HEVC reproduction on the same boot lineage,
-then diff the first `UBOX_R7_DIAG1` field or EGL/GL operation that diverges. Only that evidence may
-select a minimum repair boundary. R8 remains not authorized and was not built; the intended
-`codex/m8-a16-development` branch was not created.
+Physical status is **PHYSICAL BOOT FAIL / CLOSED DIAGNOSTIC CANDIDATE**. Do not flash diag1 again.
+Its exact boot root cause is the unmatched ARM32 gralloc `__libcpp_verbose_abort` strong import;
+SurfaceFlinger's composer-client abort is downstream. The bounded successor is r7-diag1a, which must
+pass a normal physical boot gate before any AVC/HEVC paired capture. R8 remains not authorized and
+was not built; the intended `codex/m8-a16-development` branch was not created.

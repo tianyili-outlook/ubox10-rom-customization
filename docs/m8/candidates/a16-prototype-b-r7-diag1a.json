@@ -1,0 +1,208 @@
+{
+  "schema": 1,
+  "candidate": "a16-prototype-b-r7-diag1a",
+  "label": "INSTRUMENTATION ONLY / BOOT-COMPATIBILITY CORRECTION / NOT AN HEVC REPAIR / NOT r8 / NOT A RELEASE",
+  "physical_status": "OFFLINE_CHECKED_READY_FOR_PHYSICAL_BOOT_GATE",
+  "image": {
+    "path": "out/candidates/a16-prototype-b-r7-diag1a/x12-a16-prototype-b-r7-diag1a.img",
+    "size": 1641781248,
+    "sha256": "C08F61D326BB49E2F27EEE4A2E38DF0843DA27EB3119F1712C26E2ECC035C765"
+  },
+  "base": {
+    "candidate": "a16-prototype-b-r7-diag1",
+    "physical_status": "PHYSICAL_BOOT_FAIL_CLOSED_ROOT_CAUSE_PROVEN",
+    "image": "out/candidates/a16-prototype-b-r7-diag1/x12-a16-prototype-b-r7-diag1.img",
+    "size": 1641781248,
+    "sha256": "A68E7BD75D9819794BE22E9E05BE76969B2883DF8965DC277482E8C99231C6A4"
+  },
+  "diag1_physical_root_cause": {
+    "result": "PROVEN",
+    "runtime_path": "/vendor/lib/hw/gralloc.apollo.so",
+    "elf": "ELF32_ARM",
+    "missing_symbol": "_ZNSt3__122__libcpp_verbose_abortEPKcz",
+    "failure_boundary": "EAGER_DYNAMIC_LINKING_BEFORE_CONDITIONAL_YV12_LOGGING",
+    "surfaceflinger_abort": "failed to create composer client",
+    "surfaceflinger_classification": "DOWNSTREAM_OF_GRALLOC_DLOPEN_FAILURE"
+  },
+  "source": {
+    "tag": "android-security-16.0.0_r7",
+    "build_id": "BP2A.250805.034",
+    "api": 36,
+    "manifest": "ebea28d151539ecf0730b1a4ab92ac33edc17ac9",
+    "repositories": {
+      "frameworks/native": "d862b53356dc26794fb5451782806979c46e6769",
+      "external/skia": "4c18a9680d52c2cd5e35cfef2f548635a445fafe",
+      "frameworks/av": "d1137ad4b24b686d9b00fd1b7be1b520f7b6ee2b",
+      "hardware/interfaces": "b553275c84253b074a8532a6ff0f4406c43e606e",
+      "kernel": "027ef79e8facb73cb2419b4a08c0bd3f13a2206e"
+    },
+    "diag1_overlay": "configs/aosp/architecture-ceiling-a16/diagnostics/r7-hevc-diag1",
+    "diag1a_overlay": "configs/aosp/architecture-ceiling-a16/diagnostics/r7-hevc-diag1a",
+    "targeted_module": "device_gralloc.apollo_32_all_targets",
+    "android_system_rebuilt": false,
+    "kernel_rebuilt": false
+  },
+  "compatibility_correction": {
+    "mechanism": "REUSE_R7_LIBCPP_VERBOSE_ABORT_BACKDEPLOY_HOOK_FOR_ARM32_GRALLOC",
+    "preinclude": "hardware/aw/gpu/mali-bifrost/gralloc/src/vndk31_libcpp_backdeploy.h",
+    "build_flag": "LOCAL_CPPFLAGS_32 += -include $(LOCAL_PATH)/vndk31_libcpp_backdeploy.h",
+    "fatal_hook": "#define _LIBCPP_VERBOSE_ABORT(...) __builtin_abort()",
+    "fatal_semantics_preserved": true,
+    "instrumentation_source_changed": false,
+    "allocator_decisions_changed": false,
+    "hevc_behavior_changed": false
+  },
+  "arm32_gralloc_elf_comparison": {
+    "failed_diag1": {
+      "size": 57660,
+      "sha256": "2833B9B8115D2516891CCD295D97E5BDBDB014F7EC8E336868E575D3BDFF36B5",
+      "build_id": "230481b4434fbbb4c8bfa062d277f208",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "soname": "gralloc.apollo.so",
+      "strong_import_count": 47,
+      "unmatched_strong_imports": [
+        "_ZNSt3__122__libcpp_verbose_abortEPKcz"
+      ]
+    },
+    "corrected_diag1a": {
+      "size": 57388,
+      "sha256": "F0BE5076BF4607F15691CFBB60D12F988E798ED92E0C4E0C5FBBB6F19D148089",
+      "build_id": "6026336ccf642f3a10c356176da48c98",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "soname": "gralloc.apollo.so",
+      "strong_import_count": 47,
+      "unmatched_strong_imports": [],
+      "ordinary_abort_import_present": true
+    },
+    "dt_needed_equal": true,
+    "strong_exports_equal": true,
+    "hmi_present_both": true,
+    "runtime_libcpp": {
+      "path": "/apex/com.android.vndk.v31/lib/libc++.so",
+      "sha256": "024166A8D757124C2C6F32BA7B3F2425C29206971D0A243A2783B1607ED590CC",
+      "verbose_abort_export_count": 0
+    }
+  },
+  "strong_import_guard": {
+    "checker": "scripts/check-a16-prototype-b-r7-graphics.py",
+    "architectures": ["arm32", "arm64"],
+    "method": "undefined strong imports minus strong exports of exact DT_NEEDED providers exposed by generated SP-HAL linker namespace",
+    "prepackage_result": "PASS_ZERO_UNMATCHED_CORRECTED_AND_FAIL_ONE_UNMATCHED_DIAG1_CONTROL",
+    "mounted_signed_image_result": "PASS_ZERO_UNMATCHED_CORRECTED_AND_FAIL_ONE_UNMATCHED_DIAG1_CONTROL"
+  },
+  "runtime_delta_from_diag1": {
+    "changed": [
+      {
+        "partition_path": "/vendor/lib/hw/gralloc.apollo.so",
+        "elf_class": "ELF32",
+        "architecture": "ARM",
+        "old_sha256": "2833B9B8115D2516891CCD295D97E5BDBDB014F7EC8E336868E575D3BDFF36B5",
+        "new_sha256": "F0BE5076BF4607F15691CFBB60D12F988E798ED92E0C4E0C5FBBB6F19D148089",
+        "reason": "VNDK31 libc++ import compatibility with all diag1 gralloc instrumentation retained"
+      }
+    ],
+    "preserved": {
+      "/system/bin/surfaceflinger": "E2B780E955FC87356533FC9B50C0F9D78561070681C5D2D4DAD877AC777A2A73",
+      "/system/lib64/libstagefright.so": "B0D1E7D72DFCEA20B72088AC9F3BC3E57AE983FD2DC5470494C6AB7404A5B16F",
+      "/vendor/lib64/hw/gralloc.apollo.so": "F12C8F1B3CA3F967367E32A44EF043BF0EE660B1D36B175D3736B059A31947F8"
+    },
+    "filesystem": {
+      "system": {"added": [], "removed": [], "changed": []},
+      "vendor": {"added": [], "removed": [], "changed": ["lib/hw/gralloc.apollo.so"]},
+      "product_changed": [],
+      "vendor_dlkm_changed": []
+    },
+    "outer_packaging_consequences": [
+      "super.fex",
+      "Vsuper.fex",
+      "vbmeta_vendor.fex",
+      "Vvbmeta_vendor.fex"
+    ],
+    "outer_payloads_preserved": 46
+  },
+  "diagnostic": {
+    "prefix": "UBOX_R7_DIAG1",
+    "stages": [
+      "CODEC_SELECT",
+      "CODEC_OUTPUT",
+      "NATIVE_WINDOW",
+      "GRALLOC_ALLOC",
+      "GRALLOC_HANDLE",
+      "AHB_DESC",
+      "RENDERENGINE_MAP",
+      "NATIVE_CLIENT_BUFFER",
+      "EGL_CREATE_IMAGE",
+      "GL_GEN_TEXTURE",
+      "GL_BIND_TEXTURE",
+      "GL_EGL_IMAGE_TARGET",
+      "BACKEND_TEXTURE"
+    ],
+    "all_stages_retained": true,
+    "fatal_path_retained": true,
+    "egl_gl_error_semantics_changed": false
+  },
+  "offline_gates": {
+    "android_16_api36": "PASS",
+    "mixed_abi_lists": "PASS",
+    "zygote64_32": "PASS",
+    "app_process64": "PASS",
+    "app_process32": "PASS",
+    "vndk31_dual_arch": "PASS",
+    "boringssl32_64": "PASS",
+    "mapper_gralloc_mali_sphal": "PASS",
+    "avb": "PASS",
+    "lp_geometry": "PASS_EXACT_R7",
+    "boot_kernel_checkpoint": "PASS",
+    "kernel_release": "5.4.302+",
+    "vendor_dlkm_modules": 22,
+    "system_vintf": "PASS_EXIT_0",
+    "full_vintf": "EXIT_65_INHERITED_CONFIG_NFS_FS_EXCEPTION_NOT_PASS"
+  },
+  "unchanged_critical_assets": [
+    "canonical r7",
+    "kernel and boot",
+    "vendor_dlkm",
+    "product",
+    "ARM32 mapper",
+    "ARM64 mapper",
+    "ARM64 gralloc",
+    "proprietary ARM64 Mali",
+    "proprietary OMX/Cedar",
+    "BoringSSL32 and BoringSSL64",
+    "audio",
+    "Wi-Fi",
+    "HWC/display and quarter-screen configuration"
+  ],
+  "governance": {
+    "architecture_ceiling": "PASS_FROZEN_UNCHANGED",
+    "gate3": "HOLD",
+    "h264": "PHYSICAL_PASS_FROM_CANONICAL_R7",
+    "hevc": "FAIL_BLOCKER_NOT_FIXED",
+    "diag1": "PHYSICAL_BOOT_FAIL_CLOSED_ROOT_CAUSE_PROVEN",
+    "diag1a": "OFFLINE_CHECKED_PENDING_PHYSICAL_BOOT",
+    "r8_audit_decision": "HOLD_FOR_MORE_EVIDENCE",
+    "r8_authorized": false,
+    "r8_built": false,
+    "development_branch_created": false
+  },
+  "repository_validation": {
+    "python_compileall": "PASS",
+    "json_validation": "PASS",
+    "diag1_static_checker": "PASS_DIAGNOSTIC_ONLY_STATIC_ISOLATION",
+    "diag1a_static_checker": "PASS_DIAG1A_BOOT_COMPATIBILITY_SINGLE_DELTA",
+    "candidate_sha256sums": "PASS",
+    "focused_r7_diag1_diag1a_pytest": "28_PASSED",
+    "full_lightweight_pytest": "164_PASSED_52_SKIPPED_ABSENT_IGNORED_FIXTURES",
+    "git_diff_check": "PASS",
+    "powershell_native_parser": "NOT_RUN_POWERSHELL_UNAVAILABLE_ON_LINUX_VM"
+  },
+  "next_step": "FLASH_DIAG1A_VERIFY_NORMAL_BOOT_THEN_ONLY_AFTER_BOOT_PASS_RESUME_ONE_AVC_AND_ONE_HEVC_PAIRED_CAPTURE",
+  "limitations": [
+    "No physical UBOX action occurred in this correction task.",
+    "Diag1a must pass a normal physical boot gate before paired AVC/HEVC capture resumes.",
+    "HEVC is not fixed and the first discriminating AVC-versus-HEVC contract field remains unproven.",
+    "Full VINTF remains exit 65 for the inherited CONFIG_NFS_FS exception and is not a pass."
+  ]
+}

@@ -237,6 +237,7 @@
   },
   "capture_helper": {
     "path": "scripts/capture-a16-prototype-b-r7-diag1-media-paired.ps1",
+    "use_status": "HISTORICAL_DO_NOT_USE_CLOSED_DIAGNOSTIC_CANDIDATE",
     "powershell": 7,
     "default_port": 7896,
     "phases": ["Baseline", "AVCPre", "AVCPost", "HEVCPre", "HEVCPostRestart", "Final"],
@@ -255,9 +256,21 @@
     "powershell_static_structure_and_safety": "PASS",
     "powershell_parser_runtime": "NOT_RUN_PWSH_NOT_INSTALLED"
   },
-  "physical_status": "OFFLINE_CHECKED_READY_FOR_PAIRED_PHYSICAL_DIAGNOSTIC_VALIDATION",
+  "physical_status": "PHYSICAL_BOOT_FAIL_CLOSED_DIAGNOSTIC_CANDIDATE",
+  "historical_offline_status": "OFFLINE_CHECKED_READY_FOR_PAIRED_PHYSICAL_DIAGNOSTIC_VALIDATION",
+  "physical_result": {
+    "date": "2026-08-30",
+    "result": "BOOT_FAIL",
+    "root_cause": "PROVEN_ARM32_GRALLOC_UNMATCHED_VNDK31_LIBCPP_STRONG_IMPORT",
+    "runtime_path": "/vendor/lib/hw/gralloc.apollo.so",
+    "missing_symbol": "_ZNSt3__122__libcpp_verbose_abortEPKcz",
+    "conditional_yv12_instrumentation_reached": false,
+    "surfaceflinger_abort": "failed to create composer client",
+    "surfaceflinger_classification": "DOWNSTREAM_OF_GRALLOC_DLOPEN_FAILURE",
+    "canonical_r7_effect": "NONE_ARCHITECTURE_PASS_REMAINS_FROZEN"
+  },
   "limitations": [
-    "No physical UBOX action occurred in this task.",
+    "The physical boot evidence was user-supplied; no new physical UBOX action occurred in the diag1a correction task.",
     "HEVC first fatal is proven, but the first discriminating AVC-versus-HEVC contract field is not yet proven.",
     "aw_format is available at allocation but not transported in the private handle at remote import; plane pixel stride and second-FBM state are not represented by this donor handle.",
     "GraphicBuffer/AHardwareBuffer ID and gralloc backing_store_id remain separate correlation domains.",

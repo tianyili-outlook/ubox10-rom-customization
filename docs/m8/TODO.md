@@ -191,10 +191,14 @@
   未捕获，且 AOSP source证明 external texture mapping先于 HWC composition decision，故“AVC仅因 overlay
   避免 RenderEngine import”不是成立的因果解释。Exact usage/internal format/planes/AFBC/private metadata
   与首个 EGL/GL error缺失，`R8_AUDIT_DECISION = HOLD_FOR_MORE_EVIDENCE`。Exact-r7-derived
-  `a16-prototype-b-r7-diag1` instrumentation-only candidate现已构建并完成 offline preservation audit；
-  状态 **READY FOR PAIRED AVC/HEVC PHYSICAL DIAGNOSTIC VALIDATION / NOT A REPAIR / NOT r8**。下一步刷写
-  diag1，在同一 build各采集一次 known-good AVC和一次 failing HEVC，再 diff首个 buffer/private-handle/
-  EGL/GL contract差异；在 exact delta证明前不授权 repair、r8或新 branch。Gate 3 PASS 前不创建
+  `a16-prototype-b-r7-diag1` instrumentation-only candidate offline audit通过，但 exact image物理
+  **BOOT FAIL / ROOT CAUSE PROVEN / CLOSED**：ARM32 gralloc强导入 retained VNDK31 libc++未导出的
+  `__libcpp_verbose_abort`，SurfaceFlinger `failed to create composer client`为 downstream。Bounded
+  `a16-prototype-b-r7-diag1a`只在同一 instrumented ARM32 gralloc复用 r7 documented fatal-hook
+  back-deploy；diag1→diag1a signed runtime delta exact one file，现为 **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE /
+  NOT AN HEVC REPAIR / NOT r8**。下一步只刷写 exact diag1a并先验证 normal boot；
+  boot PASS之后才在该 build各采集一次 known-good AVC和一次 failing HEVC，再 diff首个
+  buffer/private-handle/EGL/GL contract差异。在 exact delta证明前不授权 repair、r8或新 branch。Gate 3 PASS 前不创建
   `codex/m8-a16-development`，该 branch 目前不存在。
 
 ## Post-Gate stabilization / release hardening

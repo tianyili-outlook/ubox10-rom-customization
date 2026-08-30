@@ -1,0 +1,25 @@
+Subject: [DIAGNOSTIC ONLY] back-deploy ARM32 gralloc to VNDK31 libc++
+
+BOOT-COMPATIBILITY CORRECTION ONLY.  NOT AN HEVC REPAIR.  Reuse the exact r7
+libc++ fatal-hook preinclude for the instrumented ARM32 gralloc build.
+
+--- a/hardware/aw/gpu/mali-bifrost/gralloc/src/Android.mk
++++ b/hardware/aw/gpu/mali-bifrost/gralloc/src/Android.mk
+@@ -154,6 +154,7 @@ LOCAL_C_INCLUDES += hardware/aw/gpu/include
+ # General compilation flags
+ LOCAL_CFLAGS := -Werror -DLOG_TAG="\"gralloc\"" -DPLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION)
+ LOCAL_CPPFLAGS_64 += -include $(LOCAL_PATH)/vndk31_libcpp_backdeploy.h
++LOCAL_CPPFLAGS_32 += -include $(LOCAL_PATH)/vndk31_libcpp_backdeploy.h
+ 
+ # Static hw flags
+ LOCAL_CFLAGS += -DMALI_GPU_SUPPORT_AFBC_BASIC=$(MALI_GPU_SUPPORT_AFBC_BASIC)
+--- a/hardware/aw/gpu/mali-bifrost/gralloc/src/vndk31_libcpp_backdeploy.h
++++ b/hardware/aw/gpu/mali-bifrost/gralloc/src/vndk31_libcpp_backdeploy.h
+@@ -6,6 +6,6 @@
+  */
+ #pragma once
+ 
+-#if defined(__aarch64__) && !defined(_LIBCPP_VERBOSE_ABORT)
++#if (defined(__aarch64__) || defined(__arm__)) && !defined(_LIBCPP_VERBOSE_ABORT)
+ #define _LIBCPP_VERBOSE_ABORT(...) __builtin_abort()
+ #endif
