@@ -1,0 +1,17 @@
+Subject: [DIAGNOSTIC ONLY] make FNV-1a modulo wrap explicit
+
+NO FUNCTIONAL REPAIR. Preserve the exact FNV-1a value without disabling UBSan.
+
+--- a/media/libstagefright/UBOXR7Diag3PrivateHandle.h
++++ b/media/libstagefright/UBOXR7Diag3PrivateHandle.h
+@@ -34,7 +34,9 @@ static inline uint64_t ubox_r7_diag3_fnv1a64(const void *base, size_t size)
+ 	for (size_t i = 0; i < size; ++i)
+ 	{
+ 		hash ^= bytes[i];
+-		hash *= UINT64_C(1099511628211);
++		uint64_t wrapped_hash;
++		(void)__builtin_mul_overflow(hash, UINT64_C(1099511628211), &wrapped_hash);
++		hash = wrapped_hash;
+ 	}
+ 	return hash;
+ }

@@ -1,6 +1,16 @@
 # a16-prototype-b-r7-diag3-private-buffer-metadata
 
-Status: **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE / DIAGNOSTIC ONLY / NOT r8 / NOT A RELEASE**
+Status: **PHYSICAL BOOT PASS / AVC BLOCKED BY PROVEN DIAGNOSTIC UBSAN REGRESSION / CLOSED / NOT r8**
+
+Physical follow-up on exact diag3 proved a normal boot, but two independent AVC attempts aborted the
+ARM64 VLC CodecLooper in `ubox_r7_diag3_snapshot()` at `CODEC_PRE_USE`, before OMX `useBuffer` or
+decoder/FBM use. Both report `ubsan: mul-overflow`. The helper's direct FNV-1a unsigned multiplication
+intentionally wraps modulo 2^64, while `libstagefright` enables non-recovering unsigned-overflow UBSan.
+This is an instrumentation regression, not an AVC/HEVC result. HEVC was not tested. The read-only
+evidence is preserved under
+`/work/evidence/ubox10/r7-diag3a-instrumentation-regression/input/unpacked/`; repeated audio tombstone
+turnover is unrelated. Diag3 is closed and superseded only by the diagnostic-transparency candidate
+`a16-prototype-b-r7-diag3a-private-buffer-metadata`.
 
 This candidate is based on exact `a16-prototype-b-r7-diag2-hevc-crop`. It observes, but never
 changes, private gralloc-handle state transported between the ARM64 framework, retained ARM32

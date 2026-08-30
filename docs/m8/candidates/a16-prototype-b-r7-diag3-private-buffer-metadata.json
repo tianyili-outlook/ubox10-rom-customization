@@ -2,8 +2,8 @@
   "schema": 1,
   "id": "a16-prototype-b-r7-diag3-private-buffer-metadata",
   "classification": "DIAGNOSTIC_ONLY_NOT_R8_NOT_RELEASE",
-  "status": "OFFLINE_CHECKED_READY_FOR_PHYSICAL_BOOT_GATE",
-  "physical_status": "NOT_YET_VALIDATED",
+  "status": "PHYSICAL_BOOT_PASS_AVC_BLOCKED_BY_DIAGNOSTIC_UBSAN_REGRESSION_CLOSED",
+  "physical_status": "BOOT_PASS_AVC_CODECLOOPER_SIGABRT_BEFORE_OMX_USE",
   "base": {
     "id": "a16-prototype-b-r7-diag2-hevc-crop",
     "size": 1641785344,
@@ -18,6 +18,17 @@
     "path": "/work/evidence/ubox10/r7-diag3-private-buffer-metadata/input/unpacked",
     "manifest_sha256": "A362E9D63F8B669D3A2339AAE6D8D8F25DB9C40331401DC91213C5F53E60C25F",
     "treatment": "READ_ONLY_EXTERNAL_NOT_COMMITTED"
+  },
+  "physical_followup": {
+    "evidence_path": "/work/evidence/ubox10/r7-diag3a-instrumentation-regression/input/unpacked",
+    "manifest_sha256": "F7154E0B73095428E7DE79DCE451F1404BA157E43D32D389A8E0BCB7FC866029",
+    "boot_gate": "PASS",
+    "avc_attempts": 2,
+    "first_failure": "CODEC_PRE_USE_FNV1A_UNSIGNED_MULTIPLICATION_UBSAN_ABORT",
+    "abort": "ubsan: mul-overflow",
+    "decoder_reached": false,
+    "hevc_tested": false,
+    "classification": "DIAGNOSTIC_INSTRUMENTATION_REGRESSION_NOT_CODEC_RESULT"
   },
   "source": {
     "tag": "android-security-16.0.0_r7",

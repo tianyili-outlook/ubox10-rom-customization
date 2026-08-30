@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "id": "a16-prototype-b-r7-diag3a-private-buffer-metadata",
+  "label": "DIAGNOSTIC ONLY / INSTRUMENTATION TRANSPARENCY CORRECTION / NOT r8 / NOT RELEASE",
+  "status": "INSTRUMENTATION_ONLY_DIAGNOSTIC_AUTHORIZED",
+  "base_candidate": {
+    "path": "out/candidates/a16-prototype-b-r7-diag3-private-buffer-metadata/x12-a16-prototype-b-r7-diag3-private-buffer-metadata.img",
+    "size": 1641814016,
+    "sha256": "385BA2FEDAC0C8726885781693017C7DD4A62D35D50C6494B905D4A2812E958E"
+  },
+  "base_artifacts": {
+    "system_a": {
+      "path": "out/candidates/a16-prototype-b-r7-diag3-private-buffer-metadata/system_a.img",
+      "size": 1651167232,
+      "sha256": "CF096A5676D4597580B0F4C49F7C593514269D5E78F1B9C8499201DBF80D7F49"
+    },
+    "vendor_a": {
+      "path": "out/candidates/a16-prototype-b-r7-diag3-private-buffer-metadata/vendor_a.img",
+      "size": 150994944,
+      "sha256": "DEF708A526ACDF8E1F11B55AF095F7AA704236969814E5AE0191F5C98CF2D206"
+    },
+    "super_raw": {
+      "path": "out/candidates/a16-prototype-b-r7-diag3-private-buffer-metadata/super.raw.img",
+      "size": 3221225472,
+      "sha256": "5553E13BD6E3245409C3B0447B02BF2FE2922A11E945A54D2407D2657E912F06"
+    },
+    "product_a": {
+      "path": "out/candidates/a16-prototype-b-r7-diag3-private-buffer-metadata/candidate-logical/product_a.img",
+      "size": 272629760,
+      "sha256": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974"
+    },
+    "vendor_dlkm": {
+      "path": "out/candidates/a16-prototype-b-r7-diag3-private-buffer-metadata/candidate-logical/vendor_dlkm_a.img",
+      "size": 6680576,
+      "sha256": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07"
+    },
+    "boot": {
+      "path": "out/candidates/a16-prototype-b-r7-diag3-private-buffer-metadata/boot.fex",
+      "size": 67108864,
+      "sha256": "527CF878B015CFAE4E8600BD750C7C73F45F4290B5CFEFEDBD1AD9AC347B8063"
+    }
+  },
+  "source_contract": {
+    "tag": "android-security-16.0.0_r7",
+    "build_id": "BP2A.250805.034",
+    "api": 36,
+    "manifest_commit": "ebea28d151539ecf0730b1a4ab92ac33edc17ac9",
+    "frameworks_av_commit": "d1137ad4b24b686d9b00fd1b7be1b520f7b6ee2b",
+    "diag3_config_sha256": "04BA6D19C5E848FC0C725FD6BBC4F6F7A5485ED791BC2F120E3980FB061C5012",
+    "overlay": "configs/aosp/architecture-ceiling-a16/diagnostics/r7-hevc-diag3a-private-buffer-metadata",
+    "changed_file": {
+      "path": "frameworks/av/media/libstagefright/UBOXR7Diag3PrivateHandle.h",
+      "diag3_size": 12063,
+      "diag3_sha256": "DEF12B9173AABFFEDB5EFE8B18E30EA0CB63D0C036942CDD537D58F21BE10563",
+      "size": 12154,
+      "sha256": "B5FC7A29869836E35A8A4F9B31E0D9386609DA013336C04EBB93DF01DAE5EA47"
+    },
+    "correction": "FNV1A_UINT64_WRAP_VIA_BUILTIN_MUL_OVERFLOW_RESULT",
+    "sanitizer_scope_disabled": "NONE"
+  },
+  "runtime_change": {
+    "name": "libstagefright64",
+    "partition_path": "/system/lib64/libstagefright.so",
+    "source_path": "/work/src/ubox10-a16-ceiling/out-ceiling-b1/target/product/ubox10_ceiling_arm64/system/lib64/libstagefright.so",
+    "diag3_size": 2075888,
+    "diag3_sha256": "4C1382C512867E5CE3CC324D927D871B200E6A352179FCE34AF27B4699CBA2C7",
+    "size": 2079968,
+    "sha256": "3FDE0D408ED26CE76C7CAE2DB3DD41E38B1783B982CFAB251518D778C39F13CF",
+    "elf_class": "ELF64",
+    "architecture": "AArch64",
+    "build_id": "b7db9d6529b45ee9052c63eb05f530f6",
+    "soname": "libstagefright.so",
+    "reason": "make intentional diagnostic FNV-1a uint64 wrap UBSan-transparent without suppressing sanitizer coverage"
+  },
+  "preserved_runtime_files": ["surfaceflinger", "gralloc32", "gralloc64"],
+  "instrumentation": {
+    "prefixes": ["UBOX_R7_DIAG1", "UBOX_R7_DIAG3"],
+    "boundaries": ["ALLOC_INITIAL", "REMOTE_IMPORT", "CODEC_PRE_USE", "CODEC_POST_FBD", "EGL_PREIMPORT"],
+    "diag3_record_semantics": "UNCHANGED",
+    "sanitizer_configuration": {
+      "libstagefright": "signed-integer-overflow,unsigned-integer-overflow; minimal runtime; non-recovering",
+      "surfaceflinger_skia": "no integer-overflow sanitizer in actual AHardwareBufferGL compile command",
+      "gralloc32": "no sanitizer in actual legacy Make compile command",
+      "gralloc64": "no sanitizer in actual legacy Make compile command"
+    }
+  },
+  "outer_delta": {
+    "changed_payloads_from_base": ["Vsuper.fex", "Vvbmeta_system.fex", "super.fex", "vbmeta_system.fex"]
+  },
+  "physical_evidence": {
+    "path": "/work/evidence/ubox10/r7-diag3a-instrumentation-regression/input/unpacked",
+    "classification": "DIAG3_BOOT_PASS_AVC_BLOCKED_BY_DIAGNOSTIC_UBSAN_REGRESSION"
+  },
+  "governance": {
+    "architecture_ceiling": "PASS_FROZEN_UNCHANGED",
+    "gate3": "HOLD",
+    "h264": "KNOWN_BASELINE_PASS_DIAG3_RETEST_BLOCKED_BY_INSTRUMENTATION",
+    "hevc": "BLOCKED_NOT_TESTED_ON_DIAG3",
+    "r8_authorized": false,
+    "development_branch_created": false,
+    "physical_status": "NOT_YET_VALIDATED"
+  }
+}

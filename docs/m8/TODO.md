@@ -2,7 +2,7 @@
 
 ## Freeze decision
 
-`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为稳定日用回退。`a16-prototype-a-r4` 已冻结为 **PHYSICAL PASS / ACCEPTED Android 16 ARM32 ARCHITECTURE CONTROL**。Exact `a16-prototype-b-r7` 现已物理证明 Android 16/API36、canonical mixed ABI、dual zygote、ARM64-parented system_server、stable ARM64 SurfaceFlinger、mapper/gralloc 与 Mali-G31 UI，故冻结为 **PHYSICAL ARCHITECTURE PASS / ACCEPTED ANDROID 16 ARM64 MIXED-ARCHITECTURE ARCHITECTURE BASELINE**。Gate 3 当前为 **HOLD：H.264+AAC PHYSICAL PASS / HEVC ARM64 RenderEngine BLOCKER**；这不降级 r7 architecture pass。Diag1a paired evidence已把HEVC first fatal精确定位为1920x1088 YV12 external buffer的 `eglCreateImageKHR` / `EGL_BAD_ALLOC 0x3003`。Diag2实机证明1080 visible crop修正已生效但失败不变，故“ACodec visible crop alone”已被否证；下一步是diag3对private handle与fd-backed sidecar做只读paired观测。用户明确把一次性、自动恢复的 boot-time `getAudioPort` SIGSEGV 从旧 Gate 2 startup-stability 条件改列为 **KNOWN / UNFIXED / POST-GATE P1 STABILIZATION DEBT**；本次时间线也证明 audio crash不是 HEVC first fatal。Gate 2 仍为 **CLOSED / PASS**。当前唯一 P0 是 exact-r7 Gate 3 functional preservation；不实施 r8、architecture/provider 变更或 P1 polish。
+`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为稳定日用回退。`a16-prototype-a-r4` 已冻结为 **PHYSICAL PASS / ACCEPTED Android 16 ARM32 ARCHITECTURE CONTROL**。Exact `a16-prototype-b-r7` 现已物理证明 Android 16/API36、canonical mixed ABI、dual zygote、ARM64-parented system_server、stable ARM64 SurfaceFlinger、mapper/gralloc 与 Mali-G31 UI，故冻结为 **PHYSICAL ARCHITECTURE PASS / ACCEPTED ANDROID 16 ARM64 MIXED-ARCHITECTURE ARCHITECTURE BASELINE**。Gate 3 当前为 **HOLD：H.264+AAC PHYSICAL PASS / HEVC ARM64 RenderEngine BLOCKER**；这不降级 r7 architecture pass。Diag1a paired evidence已把HEVC first fatal精确定位为1920x1088 YV12 external buffer的 `eglCreateImageKHR` / `EGL_BAD_ALLOC 0x3003`。Diag2实机证明1080 visible crop修正已生效但失败不变，故“ACodec visible crop alone”已被否证。Diag3 boot gate PASS，但两次AVC均在 `CODEC_PRE_USE` 被diagnostic FNV unsigned-wrap的non-recovering UBSan终止，尚未测试decoder hypothesis或HEVC。Diag3a仅以 `__builtin_mul_overflow` 保留同一FNV modulo-2^64结果，现为 **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE**；下一步先做BootGate与AVC-only preservation retest，通过前不得运行HEVC。用户明确把一次性、自动恢复的 boot-time `getAudioPort` SIGSEGV 从旧 Gate 2 startup-stability 条件改列为 **KNOWN / UNFIXED / POST-GATE P1 STABILIZATION DEBT**；本次时间线也证明 audio crash不是 HEVC first fatal。Gate 2 仍为 **CLOSED / PASS**。当前唯一 P0 是 exact-r7 Gate 3 functional preservation；不实施 r8、architecture/provider 变更或 P1 polish。
 
 ## Android 16 Gate 1 / Gate 2 — Prototype A ARM32
 
@@ -203,9 +203,10 @@
   1920x1080→1920x1088条件下恢复visible crop，coded/allocation仍为1920x1088；diag1a→diag2 runtime delta
   exact `/system/lib64/libstagefright.so`一项。实机已证明该crop修正激活但同一EGL失败仍在，故diag2
   hypothesis **DISPROVEN / CLOSED / HEVC仍BLOCKED / NOT r8**。只读
-  `a16-prototype-b-r7-diag3-private-buffer-metadata`现已 **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE**，
-  将在allocation、OMX pre-use、first post-FBD、remote import和pre-EGL边界paired比较完整53-slot handle与
-  bounded fd-sidecar；下一步先刷写确认normal boot，再按AVC-first/HEVC-second live capture执行一次。
+  `a16-prototype-b-r7-diag3-private-buffer-metadata`已 **PHYSICAL BOOT PASS / AVC被diagnostic UBSan regression阻断 / CLOSED**；
+  其FNV-1a直接unsigned乘法在ARM64 libstagefright non-recovering UBSan下于`CODEC_PRE_USE` abort，未到OMX/decoder，HEVC未测试。
+  `a16-prototype-b-r7-diag3a-private-buffer-metadata`只把该诊断hash改为builtin显式wrapped result，保留全部五个boundary，现已
+  **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE**；下一步严格执行BootGate→AVCPre→AVCLive→一次AVC→AVCPost并停止复核。
   在实机证明first private-state discriminator前不授权repair、r8或新branch。Gate 3 PASS 前不创建
   `codex/m8-a16-development`，该 branch 目前不存在。
 

@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "id": "a16-prototype-b-r7-diag3a-private-buffer-metadata",
+  "classification": "DIAGNOSTIC_ONLY_INSTRUMENTATION_TRANSPARENCY_NOT_R8_NOT_RELEASE",
+  "status": "OFFLINE_CHECKED_READY_FOR_PHYSICAL_BOOT_GATE",
+  "physical_status": "NOT_YET_VALIDATED",
+  "base": {
+    "id": "a16-prototype-b-r7-diag3-private-buffer-metadata",
+    "size": 1641814016,
+    "sha256": "385BA2FEDAC0C8726885781693017C7DD4A62D35D50C6494B905D4A2812E958E"
+  },
+  "firmware": {
+    "path": "out/candidates/a16-prototype-b-r7-diag3a-private-buffer-metadata/x12-a16-prototype-b-r7-diag3a-private-buffer-metadata.img",
+    "size": 1641818112,
+    "sha256": "666099016529032EEB80A49BBDACF1BF4FDC86859D9538B84C8F9660D1F232D9"
+  },
+  "physical_evidence": {
+    "path": "/work/evidence/ubox10/r7-diag3a-instrumentation-regression/input/unpacked",
+    "manifest_sha256": "F7154E0B73095428E7DE79DCE451F1404BA157E43D32D389A8E0BCB7FC866029",
+    "diag3_boot_gate": "PASS",
+    "diag3_avc": "BLOCKED_BEFORE_OMX_USE_BY_INSTRUMENTATION_UBSAN_ABORT",
+    "hevc_tested": false
+  },
+  "root_cause": {
+    "status": "PROVEN",
+    "operation": "FNV1A_UINT64_WRAPPING_MULTIPLICATION",
+    "failure": "__ubsan_handle_mul_overflow_minimal_abort",
+    "boundary": "CODEC_PRE_USE",
+    "sidecar_size": 24576
+  },
+  "correction": {
+    "source": "frameworks/av/media/libstagefright/UBOXR7Diag3PrivateHandle.h",
+    "mechanism": "__builtin_mul_overflow_WRAPPED_RESULT",
+    "fnv_output": "EXACTLY_PRESERVED",
+    "sanitizer_disabled": false,
+    "diagnostic_hypothesis_changed": false
+  },
+  "runtime_comparison": {
+    "/system/bin/surfaceflinger": {"diag3_sha256": "5BD92DAB98969B774469ED6581E9CD32D9C57E93D63A4CF0E126414B568CE838", "diag3a_sha256": "5BD92DAB98969B774469ED6581E9CD32D9C57E93D63A4CF0E126414B568CE838", "byte_identical": true},
+    "/system/lib64/libstagefright.so": {"diag3_sha256": "4C1382C512867E5CE3CC324D927D871B200E6A352179FCE34AF27B4699CBA2C7", "diag3a_sha256": "3FDE0D408ED26CE76C7CAE2DB3DD41E38B1783B982CFAB251518D778C39F13CF", "byte_identical": false},
+    "/vendor/lib/hw/gralloc.apollo.so": {"diag3_sha256": "7E654E0F9D968C5FA9C9F31893E0E60DCF6605E41A82783E6376A1D7D66194D5", "diag3a_sha256": "7E654E0F9D968C5FA9C9F31893E0E60DCF6605E41A82783E6376A1D7D66194D5", "byte_identical": true},
+    "/vendor/lib64/hw/gralloc.apollo.so": {"diag3_sha256": "1F91BF6FA547DA11E42068C1A0C612E41B5C800AEE9CDAB2D320DD469295CB19", "diag3a_sha256": "1F91BF6FA547DA11E42068C1A0C612E41B5C800AEE9CDAB2D320DD469295CB19", "byte_identical": true}
+  },
+  "offline": {
+    "runtime_delta": "PASS_EXACT_ONE_RUNTIME_FILE_DIAGNOSTIC_DELTA_FROM_DIAG3",
+    "fnv_equivalence": "PASS",
+    "equivalent_ubsan_build": "PASS_NO_ABORT",
+    "arm32_vndk31_unmatched_strong_imports": 0,
+    "arm64_vndk31_unmatched_strong_imports": 0,
+    "system_vintf_exit": 0,
+    "full_vintf_exit": 65,
+    "full_vintf_classification": "INHERITED_CONFIG_NFS_FS_EXCEPTION_NOT_PASS"
+  },
+  "physical_plan": ["BootGate", "AVCPre", "AVCLive", "ONE_MANUAL_AVC_PLAYBACK", "AVCPost", "STOP_FOR_REVIEW"],
+  "governance": {
+    "canonical_r7": "PASS_FROZEN_UNCHANGED",
+    "gate3": "HOLD",
+    "hevc": "BLOCKED_NOT_FIXED",
+    "r8_authorized": false,
+    "development_branch_created": false
+  }
+}
