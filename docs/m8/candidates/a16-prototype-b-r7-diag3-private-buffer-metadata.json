@@ -1,0 +1,78 @@
+{
+  "schema": 1,
+  "id": "a16-prototype-b-r7-diag3-private-buffer-metadata",
+  "classification": "DIAGNOSTIC_ONLY_NOT_R8_NOT_RELEASE",
+  "status": "OFFLINE_CHECKED_READY_FOR_PHYSICAL_BOOT_GATE",
+  "physical_status": "NOT_YET_VALIDATED",
+  "base": {
+    "id": "a16-prototype-b-r7-diag2-hevc-crop",
+    "size": 1641785344,
+    "sha256": "6F67CAE0B8A445D4597DECE9D684A7099ADF3E4E046D54E635D269C9E9E483EE"
+  },
+  "firmware": {
+    "path": "out/candidates/a16-prototype-b-r7-diag3-private-buffer-metadata/x12-a16-prototype-b-r7-diag3-private-buffer-metadata.img",
+    "size": 1641814016,
+    "sha256": "385BA2FEDAC0C8726885781693017C7DD4A62D35D50C6494B905D4A2812E958E"
+  },
+  "evidence": {
+    "path": "/work/evidence/ubox10/r7-diag3-private-buffer-metadata/input/unpacked",
+    "manifest_sha256": "A362E9D63F8B669D3A2339AAE6D8D8F25DB9C40331401DC91213C5F53E60C25F",
+    "treatment": "READ_ONLY_EXTERNAL_NOT_COMMITTED"
+  },
+  "source": {
+    "tag": "android-security-16.0.0_r7",
+    "build_id": "BP2A.250805.034",
+    "api": 36,
+    "manifest_commit": "ebea28d151539ecf0730b1a4ab92ac33edc17ac9",
+    "frameworks_native": "d862b53356dc26794fb5451782806979c46e6769",
+    "frameworks_av": "d1137ad4b24b686d9b00fd1b7be1b520f7b6ee2b",
+    "external_skia": "4c18a9680d52c2cd5e35cfef2f548635a445fafe"
+  },
+  "instrumentation": {
+    "prefix": "UBOX_R7_DIAG3",
+    "boundaries": [
+      "ALLOC_INITIAL",
+      "REMOTE_IMPORT",
+      "CODEC_PRE_USE",
+      "CODEC_POST_FBD",
+      "EGL_PREIMPORT"
+    ],
+    "sidecar_mapping": "PROT_READ_MAP_SHARED_NO_WRITES",
+    "existing_ubox_r7_diag1_unchanged": true,
+    "renderengine_fatal_retained": true
+  },
+  "runtime_delta_from_diag2": {
+    "/system/bin/surfaceflinger": {
+      "old_sha256": "E2B780E955FC87356533FC9B50C0F9D78561070681C5D2D4DAD877AC777A2A73",
+      "new_sha256": "5BD92DAB98969B774469ED6581E9CD32D9C57E93D63A4CF0E126414B568CE838"
+    },
+    "/system/lib64/libstagefright.so": {
+      "old_sha256": "BD48A7691A42C86916120940A95F2FF4B082836258D60B463D7AD87D90A5D113",
+      "new_sha256": "4C1382C512867E5CE3CC324D927D871B200E6A352179FCE34AF27B4699CBA2C7"
+    },
+    "/vendor/lib/hw/gralloc.apollo.so": {
+      "old_sha256": "F0BE5076BF4607F15691CFBB60D12F988E798ED92E0C4E0C5FBBB6F19D148089",
+      "new_sha256": "7E654E0F9D968C5FA9C9F31893E0E60DCF6605E41A82783E6376A1D7D66194D5"
+    },
+    "/vendor/lib64/hw/gralloc.apollo.so": {
+      "old_sha256": "F12C8F1B3CA3F967367E32A44EF043BF0EE660B1D36B175D3736B059A31947F8",
+      "new_sha256": "1F91BF6FA547DA11E42068C1A0C612E41B5C800AEE9CDAB2D320DD469295CB19"
+    }
+  },
+  "offline": {
+    "runtime_delta": "PASS_EXACT_FOUR_RUNTIME_FILE_OBSERVATION_ONLY_DELTA_FROM_DIAG2",
+    "arm32_vndk31_unmatched_strong_imports": 0,
+    "arm64_vndk31_unmatched_strong_imports": 0,
+    "system_vintf_exit": 0,
+    "full_vintf_exit": 65,
+    "full_vintf_classification": "INHERITED_CONFIG_NFS_FS_EXCEPTION_NOT_PASS"
+  },
+  "governance": {
+    "canonical_r7": "PASS_FROZEN_UNCHANGED",
+    "gate3": "HOLD",
+    "h264": "PHYSICAL_PASS_CONTROL",
+    "hevc": "BLOCKED_NOT_FIXED",
+    "r8_authorized": false,
+    "development_branch_created": false
+  }
+}

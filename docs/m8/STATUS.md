@@ -19,9 +19,10 @@ blockers. Gate 3 now physically proves H.264 hardware video plus audible AAC/HDM
 HEVC remains a blocker. Diag1a paired evidence proves its first failed operation is
 `eglCreateImageKHR` with `EGL_BAD_ALLOC` (`0x3003`), followed by invalid backend texture and the
 unchanged SurfaceFlinger fatal/userspace restart. AVC and HEVC allocation/import contracts are
-otherwise materially identical; the first proven semantic discriminator is post-port-change visible
-crop: AVC retains 1920x1080 while HEVC promotes it to coded 1920x1088. The architecture pass itself
-is not downgraded.
+otherwise materially identical. Diag2 physically retained the AVC-style 1920x1080 visible crop on
+the HEVC 1920x1088 allocation, yet the same warning, `EGL_BAD_ALLOC`, fatal and userspace restart
+remained. ACodec visible crop alone is therefore disproven, while unobserved private handle/sidecar,
+content and synchronization state remain open. The architecture pass itself is not downgraded.
 
 | Control | State |
 |---|---|
@@ -30,7 +31,8 @@ is not downgraded.
 | Android 16 ARM64 mixed-architecture control `a16-prototype-b-r7` | **PHYSICAL ARCHITECTURE PASS / FROZEN / GATE 3 HOLD — H.264 PASS / HEVC BLOCKER** |
 | Instrumentation derivative `a16-prototype-b-r7-diag1` | **OFFLINE PASS / PHYSICAL BOOT FAIL / ROOT CAUSE PROVEN / CLOSED** |
 | Boot-corrected instrumentation derivative `a16-prototype-b-r7-diag1a` | **PHYSICAL BOOT PASS / PAIRED EVIDENCE CAPTURED** (prior state: **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE**) |
-| Single-variable crop diagnostic `a16-prototype-b-r7-diag2-hevc-crop` | **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION / HEVC BLOCKED / NOT r8** |
+| Single-variable crop diagnostic `a16-prototype-b-r7-diag2-hevc-crop` | **PHYSICAL TESTED / CROP DELTA ACTIVATED / HYPOTHESIS DISPROVEN / HEVC STILL FAILS / CLOSED / NOT r8** |
+| Private-buffer metadata diagnostic `a16-prototype-b-r7-diag3-private-buffer-metadata` | **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE / HEVC BLOCKED / NOT r8** |
 
 The only active P0 is **Gate 3 — Android 16 Mixed-Architecture Functional Preservation**. Exact
 r7-diag1 physically failed its boot gate because its current-toolchain ARM32 gralloc introduced the
@@ -41,8 +43,13 @@ __builtin_abort()` back-deploy boundary for that same instrumented ARM32 gralloc
 filesystem delta from diag1 is exactly `/vendor/lib/hw/gralloc.apollo.so`; the other three logging
 runtimes are byte-identical. Diag1a subsequently produced the paired live evidence above. The
 bounded diag2 candidate changes only the exact HEVC 1920x1080 visible crop across 1920x1088 coded
-alignment; its sole runtime file delta from diag1a is `/system/lib64/libstagefright.so`. Physical
-validation remains pending, so HEVC and Gate 3 remain blocked. Canonical r7 remains frozen. No r8
+alignment; its sole runtime file delta from diag1a is `/system/lib64/libstagefright.so`. Its physical
+run proves that crop correction activated but did not prevent the EGL failure. Diag3 now adds only
+read-only raw private-handle and bounded fd-sidecar snapshots at allocation, OMX pre-use, first
+post-FBD, remote import and pre-EGL boundaries; its exact diag2-to-diag3 runtime delta is the two
+existing system diagnostic binaries plus both existing gralloc diagnostic binaries. It is offline
+checked and pending the physical boot gate, so HEVC and Gate 3 remain blocked. Canonical r7 remains
+frozen. No r8
 repair or new development branch is authorized. The separate
 post-restart quarter-screen is strongly supported to be a retained display recovery defect that
 selects proven 3840x2160p60 HDMI mode 34 while SurfaceFlinger remains 1920x1080. The known boot-time

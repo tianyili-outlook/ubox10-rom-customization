@@ -126,6 +126,7 @@ class Auditor(R3.Auditor):
             "a16-prototype-b-r7-diag1",
             "a16-prototype-b-r7-diag1a",
             "a16-prototype-b-r7-diag2-hevc-crop",
+            "a16-prototype-b-r7-diag3-private-buffer-metadata",
         }:
             raise RuntimeError("Prototype B auditor received the wrong contract")
         if self.build_result["id"] != self.cfg["id"]:

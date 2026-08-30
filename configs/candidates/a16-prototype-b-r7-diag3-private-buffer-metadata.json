@@ -1,0 +1,122 @@
+{
+  "schema": 1,
+  "id": "a16-prototype-b-r7-diag3-private-buffer-metadata",
+  "label": "INSTRUMENTATION ONLY / PRIVATE BUFFER METADATA OBSERVATION / NOT r8 / NOT RELEASE",
+  "status": "INSTRUMENTATION_ONLY_DIAGNOSTIC_AUTHORIZED",
+  "base_candidate": {
+    "path": "out/candidates/a16-prototype-b-r7-diag2-hevc-crop/x12-a16-prototype-b-r7-diag2-hevc-crop.img",
+    "size": 1641785344,
+    "sha256": "6F67CAE0B8A445D4597DECE9D684A7099ADF3E4E046D54E635D269C9E9E483EE"
+  },
+  "base_artifacts": {
+    "system_a": {
+      "path": "out/candidates/a16-prototype-b-r7-diag2-hevc-crop/system_a.img",
+      "size": 1651167232,
+      "sha256": "163E0E6974BEE58247987515C5D0DBB128B3BD38458F3091E856F4ADF3DD143C"
+    },
+    "vendor_a": {
+      "path": "out/candidates/a16-prototype-b-r7-diag2-hevc-crop/vendor_a.img",
+      "size": 150994944,
+      "sha256": "DFE834ED7AC1286D5A4A6027ECE52F649E080052AA24D6AA89826921503D580E"
+    },
+    "super_raw": {
+      "path": "out/candidates/a16-prototype-b-r7-diag2-hevc-crop/super.raw.img",
+      "size": 3221225472,
+      "sha256": "8BA5A93C5C9AAD3D0BAFB8CA212B0350883A6549A40F52E60B252A7514FFAED5"
+    },
+    "product_a": {
+      "path": "out/candidates/a16-prototype-b-r7-diag2-hevc-crop/candidate-logical/product_a.img",
+      "size": 272629760,
+      "sha256": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974"
+    },
+    "vendor_dlkm": {
+      "path": "out/candidates/a16-prototype-b-r7-diag2-hevc-crop/candidate-logical/vendor_dlkm_a.img",
+      "size": 6680576,
+      "sha256": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07"
+    },
+    "boot": {
+      "path": "out/candidates/a16-prototype-b-r7-diag2-hevc-crop/boot.fex",
+      "size": 67108864,
+      "sha256": "527CF878B015CFAE4E8600BD750C7C73F45F4290B5CFEFEDBD1AD9AC347B8063"
+    }
+  },
+  "source_contract": {
+    "tag": "android-security-16.0.0_r7",
+    "build_id": "BP2A.250805.034",
+    "api": 36,
+    "manifest_commit": "ebea28d151539ecf0730b1a4ab92ac33edc17ac9",
+    "overlay": "configs/aosp/architecture-ceiling-a16/diagnostics/r7-hevc-diag3-private-buffer-metadata",
+    "repositories": {
+      "frameworks/native": "d862b53356dc26794fb5451782806979c46e6769",
+      "external/skia": "4c18a9680d52c2cd5e35cfef2f548635a445fafe",
+      "frameworks/av": "d1137ad4b24b686d9b00fd1b7be1b520f7b6ee2b"
+    },
+    "files": {
+      "hardware/aw/gpu/mali-bifrost/gralloc/src/mali_gralloc_bufferallocation.cpp": {"size": 43802, "patched_sha256": "D63B8596DCB0BCB109643F72A068BF23451DD8359FF2769A95B3BBAA6E40BB50"},
+      "hardware/aw/gpu/mali-bifrost/gralloc/src/mali_gralloc_reference.cpp": {"size": 7345, "patched_sha256": "8E12F67B00C275E3D2B386D247DDD08701F319F3B95F711807504531512A2712"},
+      "hardware/aw/gpu/mali-bifrost/gralloc/src/ubox_r7_diag3_private_handle.h": {"size": 12063, "patched_sha256": "DEF12B9173AABFFEDB5EFE8B18E30EA0CB63D0C036942CDD537D58F21BE10563"},
+      "frameworks/av/media/libstagefright/ACodec.cpp": {"size": 342252, "patched_sha256": "FB661BE5229C5846EACF0BB7A1A226708E7F57A9A367DAB02E9A18860D41D80C"},
+      "frameworks/av/media/libstagefright/UBOXR7Diag3PrivateHandle.h": {"size": 12063, "patched_sha256": "DEF12B9173AABFFEDB5EFE8B18E30EA0CB63D0C036942CDD537D58F21BE10563"},
+      "frameworks/av/media/libstagefright/include/media/stagefright/ACodec.h": {"size": 25035, "patched_sha256": "A7348CF143E70DDB8C5E92E52E970C93C12D2F7A39B091F6BFA11B3C1D09B153"},
+      "external/skia/src/gpu/ganesh/gl/AHardwareBufferGL.cpp": {"size": 10835, "patched_sha256": "8BEE83B3C6B97A4A86A75DCE5CDDFB1CB9E0F6A08F97579BD0C5DD32A8395192"},
+      "external/skia/src/gpu/ganesh/gl/UBOXR7Diag3PrivateHandle.h": {"size": 12063, "patched_sha256": "DEF12B9173AABFFEDB5EFE8B18E30EA0CB63D0C036942CDD537D58F21BE10563"}
+    }
+  },
+  "runtime_files": {
+    "surfaceflinger": {
+      "partition_path": "/system/bin/surfaceflinger", "source_path": "/work/src/ubox10-a16-ceiling/out-ceiling-b1/target/product/ubox10_ceiling_arm64/system/bin/surfaceflinger",
+      "old_size": 8565352, "old_sha256": "E2B780E955FC87356533FC9B50C0F9D78561070681C5D2D4DAD877AC777A2A73",
+      "size": 8573352, "sha256": "5BD92DAB98969B774469ED6581E9CD32D9C57E93D63A4CF0E126414B568CE838",
+      "elf_class": "ELF64", "architecture": "AArch64", "build_id": "7133c393b201178b14351980763fdfa9", "soname": null,
+      "mode": "0755", "uid": 0, "gid": 2000, "selinux": "u:object_r:surfaceflinger_exec:s0",
+      "ctime": "0x6a8ff745", "atime": "0x6a8ff745", "mtime": "0x6a8ff745", "crtime": "0x6a8ffae5",
+      "reason": "read-only private handle and sidecar snapshot immediately before EGL import"
+    },
+    "libstagefright64": {
+      "partition_path": "/system/lib64/libstagefright.so", "source_path": "/work/src/ubox10-a16-ceiling/out-ceiling-b1/target/product/ubox10_ceiling_arm64/system/lib64/libstagefright.so",
+      "old_size": 2071728, "old_sha256": "BD48A7691A42C86916120940A95F2FF4B082836258D60B463D7AD87D90A5D113",
+      "size": 2075888, "sha256": "4C1382C512867E5CE3CC324D927D871B200E6A352179FCE34AF27B4699CBA2C7",
+      "elf_class": "ELF64", "architecture": "AArch64", "build_id": "bdc88f0366f5e8798a76af6dcd184358", "soname": "libstagefright.so",
+      "mode": "0644", "uid": 0, "gid": 0, "selinux": "u:object_r:system_lib_file:s0",
+      "ctime": "0x6a8fd377", "atime": "0x6a8fd377", "mtime": "0x6a8fd377", "crtime": "0x6a8ffae8",
+      "reason": "read-only private handle snapshots before OMX use and after first decoder FBD"
+    },
+    "gralloc32": {
+      "partition_path": "/vendor/lib/hw/gralloc.apollo.so", "source_path": "/work/src/ubox10-a16-ceiling/out-ceiling-b1/target/product/ubox10_ceiling_arm64/system/vendor/lib/hw/gralloc.apollo.so",
+      "old_size": 57388, "old_sha256": "F0BE5076BF4607F15691CFBB60D12F988E798ED92E0C4E0C5FBBB6F19D148089",
+      "size": 64852, "sha256": "7E654E0F9D968C5FA9C9F31893E0E60DCF6605E41A82783E6376A1D7D66194D5",
+      "elf_class": "ELF32", "architecture": "ARM", "build_id": "9a303a4b9a9f286c812ae88205d2126c", "soname": "gralloc.apollo.so",
+      "mode": "0644", "uid": 0, "gid": 0, "selinux": "u:object_r:same_process_hal_file:s0",
+      "ctime": "0x652f7ab5", "atime": "0x652f7ab5", "mtime": "0x652f7ab5", "crtime": "0x65379527",
+      "reason": "read-only initial allocation and ARM32 remote-import private metadata snapshots"
+    },
+    "gralloc64": {
+      "partition_path": "/vendor/lib64/hw/gralloc.apollo.so", "source_path": "/work/src/ubox10-a16-ceiling/out-ceiling-b1/target/product/ubox10_ceiling_arm64/system/vendor/lib64/hw/gralloc.apollo.so",
+      "old_size": 81344, "old_sha256": "F12C8F1B3CA3F967367E32A44EF043BF0EE660B1D36B175D3736B059A31947F8",
+      "size": 93664, "sha256": "1F91BF6FA547DA11E42068C1A0C612E41B5C800AEE9CDAB2D320DD469295CB19",
+      "elf_class": "ELF64", "architecture": "AArch64", "build_id": "0b57e81ee0fc4baa6d81d57e7a19307e", "soname": "gralloc.apollo.so",
+      "mode": "0644", "uid": 0, "gid": 0, "selinux": "u:object_r:same_process_hal_file:s0",
+      "ctime": "0x6a8fff2c", "atime": "0x6a8fff2c", "mtime": "0x6a8fff2c", "crtime": "0x6a8fff2c",
+      "reason": "read-only initial allocation and ARM64 remote-import private metadata snapshots"
+    }
+  },
+  "instrumentation": {
+    "prefix": "UBOX_R7_DIAG3",
+    "boundaries": ["ALLOC_INITIAL", "REMOTE_IMPORT", "CODEC_PRE_USE", "CODEC_POST_FBD", "EGL_PREIMPORT"],
+    "stages": ["HANDLE_ABI", "HANDLE_ABI_REJECT", "HANDLE_NAMED", "HANDLE_PLANES", "HANDLE_LOCAL", "HANDLE_RAW", "FD_ID", "SIDECAR", "SIDECAR_ATTR", "SIDECAR_GAP", "SIDECAR_DIFF", "SIDECAR_DIFF_END"],
+    "sidecar_mapping": "PROT_READ_MAP_SHARED_NO_WRITES",
+    "existing_ubox_r7_diag1_unchanged": true
+  },
+  "outer_delta": {
+    "changed_payloads_from_base": ["Vsuper.fex", "Vvbmeta_system.fex", "Vvbmeta_vendor.fex", "super.fex", "vbmeta_system.fex", "vbmeta_vendor.fex"]
+  },
+  "governance": {
+    "architecture_ceiling": "PASS_FROZEN_UNCHANGED",
+    "gate3": "HOLD",
+    "h264": "PHYSICAL_PASS_CONTROL",
+    "hevc": "BLOCKED",
+    "r8_authorized": false,
+    "development_branch_created": false,
+    "physical_status": "NOT_YET_VALIDATED"
+  }
+}
