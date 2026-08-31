@@ -1,0 +1,144 @@
+{
+  "schema": 1,
+  "id": "a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow",
+  "label": "EXPERIMENTAL REPAIR / SDR YV12 MALI METADATA SHADOW / NOT r8 / NOT RELEASE",
+  "status": "EXPERIMENTAL_REPAIR_AUTHORIZED",
+  "base_candidate": {
+    "path": "out/candidates/a16-prototype-b-r7-diag3a-private-buffer-metadata/x12-a16-prototype-b-r7-diag3a-private-buffer-metadata.img",
+    "size": 1641818112,
+    "sha256": "666099016529032EEB80A49BBDACF1BF4FDC86859D9538B84C8F9660D1F232D9"
+  },
+  "base_artifacts": {
+    "system_a": {
+      "path": "out/candidates/a16-prototype-b-r7-diag3a-private-buffer-metadata/system_a.img",
+      "size": 1651167232,
+      "sha256": "B5F80BA597AC45B3CEC0E1DD82BBF298166158F6D3C6595C7AB1CC9A2935CC9F"
+    },
+    "vendor_a": {
+      "path": "out/candidates/a16-prototype-b-r7-diag3a-private-buffer-metadata/vendor_a.img",
+      "size": 150994944,
+      "sha256": "DEF708A526ACDF8E1F11B55AF095F7AA704236969814E5AE0191F5C98CF2D206"
+    },
+    "super_raw": {
+      "path": "out/candidates/a16-prototype-b-r7-diag3a-private-buffer-metadata/super.raw.img",
+      "size": 3221225472,
+      "sha256": "0CB0DC200CC829D3574754E17D21D315AE9F2B9E177B3FF73BAA212729049C8A"
+    },
+    "product_a": {
+      "path": "out/candidates/a16-prototype-b-r7-diag3a-private-buffer-metadata/candidate-logical/product_a.img",
+      "size": 272629760,
+      "sha256": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974"
+    },
+    "vendor_dlkm": {
+      "path": "out/candidates/a16-prototype-b-r7-diag3a-private-buffer-metadata/candidate-logical/vendor_dlkm_a.img",
+      "size": 6680576,
+      "sha256": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07"
+    },
+    "boot": {
+      "path": "out/candidates/a16-prototype-b-r7-diag3a-private-buffer-metadata/boot.fex",
+      "size": 67108864,
+      "sha256": "527CF878B015CFAE4E8600BD750C7C73F45F4290B5CFEFEDBD1AD9AC347B8063"
+    }
+  },
+  "source_contract": {
+    "tag": "android-security-16.0.0_r7",
+    "build_id": "BP2A.250805.034",
+    "api": 36,
+    "manifest_commit": "ebea28d151539ecf0730b1a4ab92ac33edc17ac9",
+    "external_skia_commit": "4c18a9680d52c2cd5e35cfef2f548635a445fafe",
+    "diag3a_config_sha256": "0A70F78125987EB0ABEF8929C76CD496F08752BBD4BCD492B9440BD90F62D5C6",
+    "overlay": "configs/aosp/architecture-ceiling-a16/diagnostics/r7-hevc-abi-compat1-sdr-shadow",
+    "files": {
+      "external/skia/src/gpu/ganesh/gl/AHardwareBufferGL.cpp": {
+        "diag3a_sha256": "8BEE83B3C6B97A4A86A75DCE5CDDFB1CB9E0F6A08F97579BD0C5DD32A8395192",
+        "size": 22230,
+        "sha256": "6D44E630C8553EB08F0566BCFD1404232641FDBA9049AF93C38C29EEF4A55C3F"
+      },
+      "external/skia/src/gpu/ganesh/gl/UBOXR7Compat1Metadata.h": {
+        "diag3a_state": "ABSENT",
+        "size": 1872,
+        "sha256": "DC745282D45871A0F05473C7C684BAE4FCFA707C11ED66A97D3E764A1401F61F"
+      }
+    }
+  },
+  "runtime_change": {
+    "name": "surfaceflinger",
+    "partition_path": "/system/bin/surfaceflinger",
+    "source_path": "/work/src/ubox10-a16-ceiling/out-ceiling-b1/target/product/ubox10_ceiling_arm64/system/bin/surfaceflinger",
+    "diag3a_size": 8573352,
+    "diag3a_sha256": "5BD92DAB98969B774469ED6581E9CD32D9C57E93D63A4CF0E126414B568CE838",
+    "size": 8577632,
+    "sha256": "97A476E550015C50CA92302418B6625171995192161A37EBB3EBD7AF7102745C",
+    "elf_class": "ELF64",
+    "architecture": "AArch64",
+    "build_id": "99566584c3eea27ce42448441877a6f8",
+    "soname": null,
+    "mode": "0755",
+    "uid": 0,
+    "gid": 2000,
+    "selinux": "u:object_r:surfaceflinger_exec:s0",
+    "ctime": "0x6a8ff745",
+    "atime": "0x6a8ff745",
+    "mtime": "0x6a8ff745",
+    "crtime": "0x6a8ffae5",
+    "added_strong_imports": [
+      "AHardwareBuffer_createFromHandle",
+      "AHardwareBuffer_release",
+      "native_handle_clone"
+    ],
+    "reason": "present an independent legacy 56-byte attr shadow only to Mali EGL for the exact proven SDR YV12 ABI collision"
+  },
+  "preserved_runtime_files": {
+    "libstagefright64": {
+      "path": "/system/lib64/libstagefright.so",
+      "candidate_file": "diag3a-libstagefright64",
+      "size": 2079968,
+      "sha256": "3FDE0D408ED26CE76C7CAE2DB3DD41E38B1783B982CFAB251518D778C39F13CF"
+    },
+    "gralloc32": {
+      "path": "/vendor/lib/hw/gralloc.apollo.so",
+      "candidate_file": "diag3a-gralloc32",
+      "size": 64852,
+      "sha256": "7E654E0F9D968C5FA9C9F31893E0E60DCF6605E41A82783E6376A1D7D66194D5"
+    },
+    "gralloc64": {
+      "path": "/vendor/lib64/hw/gralloc.apollo.so",
+      "candidate_file": "diag3a-gralloc64",
+      "size": 93664,
+      "sha256": "1F91BF6FA547DA11E42068C1A0C612E41B5C800AEE9CDAB2D320DD469295CB19"
+    }
+  },
+  "compatibility": {
+    "scope": "EXACT_1920X1088_SDR_YV12_NON_AFBC_NON_PROTECTED",
+    "metadata_size": 24576,
+    "active_attr_offset": 23544,
+    "legacy_attr_offset": 128,
+    "attr_bytes": 56,
+    "fd_allocator": "ashmem_create_region backed by libcutils memfd/ashmem",
+    "handle_method": "AHARDWAREBUFFER_CREATE_FROM_HANDLE_METHOD_CLONE",
+    "original_sidecar_write": false,
+    "prefix": "UBOX_R7_COMPAT1",
+    "unsupported": ["Main10", "HDR", "AFBC", "protected", "4K"]
+  },
+  "instrumentation": {
+    "prefixes": ["UBOX_R7_DIAG1", "UBOX_R7_DIAG3", "UBOX_R7_COMPAT1"],
+    "diag3_boundaries": ["ALLOC_INITIAL", "REMOTE_IMPORT", "CODEC_PRE_USE", "CODEC_POST_FBD", "EGL_PREIMPORT"],
+    "compat1_records": ["eligible", "shadow_created", "translated", "view_created", "egl_import_result"],
+    "fatal_retained": true
+  },
+  "physical_evidence": {
+    "path": "/work/evidence/ubox10/r7-diag3a-avc-hevc/unpacked",
+    "classification": "AVC_PASS_HEVC_FAIL_MALI_LEGACY_METADATA_ABI_COLLISION_PROVEN"
+  },
+  "outer_delta": {
+    "changed_payloads_from_base": ["Vsuper.fex", "Vvbmeta_system.fex", "super.fex", "vbmeta_system.fex"]
+  },
+  "governance": {
+    "architecture_ceiling": "PASS_FROZEN_UNCHANGED",
+    "gate3": "HOLD",
+    "candidate_classification": "EXPERIMENTAL_REPAIR_NOT_R8_NOT_RELEASE",
+    "r8_authorized": false,
+    "development_branch_created": false,
+    "physical_status": "NOT_YET_VALIDATED"
+  }
+}

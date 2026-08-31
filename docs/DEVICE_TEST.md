@@ -3,7 +3,7 @@
 ## 当前状态
 
 - 最后报告的 Android 16 物理架构验收镜像：`out/candidates/a16-prototype-b-r7/x12-a16-prototype-b-r7.img`，1,641,773,056 bytes / SHA-256 `A1F58668AEFFC9DC83CFFD8A49A309839332B6616C02153DCC00A71136A7AA27`
-- 当前项目状态：**ANDROID 16 ARM64 MIXED ARCHITECTURE — R7 PHYSICAL ARCHITECTURE PASS / FROZEN / GATE 3 HOLD — H.264 PASS / HEVC BLOCKER**。Diag1a paired evidence已把HEVC首失败定位到 `eglCreateImageKHR` / `EGL_BAD_ALLOC 0x3003`，首个明确语义差异为visible crop 1080对1088。`a16-prototype-b-r7-diag2-hevc-crop`（1,641,785,344 bytes / `6F67CAE0B8A445D4597DECE9D684A7099ADF3E4E046D54E635D269C9E9E483EE`）现为 **OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION / HEVC STILL BLOCKED / NOT r8**。
+- 当前项目状态：**ANDROID 16 ARM64 MIXED ARCHITECTURE — R7 PHYSICAL ARCHITECTURE PASS / FROZEN / GATE 3 HOLD — H.264 PASS / HEVC BLOCKER**。Diag3a已物理保持AVC并证明HEVC的Allwinner extended metadata与Mali r20p0 legacy metadata ABI冲突。`a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow`（1,641,822,208 bytes / `D4FAFE24FE2A743764DA50769FDBD8D6B6C7152646017C3C4F0B09C8FBBEFAAB`）现为 **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE / EXPERIMENTAL REPAIR / NOT r8 / NOT RELEASE**。
 - Android 16 ARM32 control：`a16-prototype-a-r4` **FROZEN / PHYSICAL PASS**。Boot-time legacy audio crash 保持 **KNOWN / UNFIXED / POST-ARCHITECTURE P1**；full VINTF 保持 inherited NFS exit 65 / **NOT PASS**。
 - 保留的设备验收基线：`out/candidates/m8b-remote-r1/x12-m8b-remote-r1.img`，状态 **DEVICE ACCEPTED / REMOTE PASS**（继承 **AUDIO PASS / IME PASS**）。
 - 大小 / SHA-256：1031723008 bytes / `F3B09E5565AC4ED4E5EE326D392622E7B036A8519B8444B966E77CC4751B814A`
@@ -29,56 +29,41 @@ accepted baseline 已确认 Treble/VNDK、primary HAL/output、HEVC+AAC HDMI 音
 
 ## Gate 3 — Android 16 Mixed-Architecture Functional Preservation
 
-状态：**HOLD — R7-DIAG2 HEVC CROP SINGLE-VARIABLE DIAGNOSTIC READY FOR PHYSICAL VALIDATION**。Gate 3
-architecture/functional baseline仍是上述 exact r7。Diag1因 ARM32 gralloc unresolved
-`__libcpp_verbose_abort`在 conditional YV12 logging前 eager-link失败，现已关闭；SurfaceFlinger
-`failed to create composer client`为 downstream。Diag1a paired/live evidence已完成首失败定位。Diag2只修改
-exact HEVC 1920x1080→coded 1920x1088场景的visible crop，保留全部instrumentation与fatal，不创建r8。目标是证明 mature ARM32 hardware-facing
-vendor stack 在已接受 ARM64 framework/system architecture 下仍提供核心 TV 功能。结果严格使用
-`PASS`、`FAIL` 或 `NOT TESTED — FIXTURE UNAVAILABLE`。
+状态：**HOLD — COMPAT1 SDR YV12 MALI METADATA SHADOW READY FOR PHYSICAL BOOT GATE**。Gate 3
+architecture/functional baseline仍是 exact frozen r7。Diag3a实机AVC PASS并证明HEVC decoder对extended
+`sunxi_metadata`的合法初始化被Mali r20p0按legacy attr/crop ABI误读。Compat1不改producer sidecar、
+decoder、gralloc、Mali blob或fatal；它只在Skia/Mali消费边界为exact 1920x1088 SDR YV12、non-AFBC、
+non-protected buffer提供独立shadow view。结果严格使用`PASS`、`FAIL`或`NOT TESTED`。
 
-### R7-diag2 HEVC crop physical gate
+### Compat1 physical gate
 
-1. flash exact hash-pinned diag2：`6F67CAE0B8A445D4597DECE9D684A7099ADF3E4E046D54E635D269C9E9E483EE`；
-2. 保留UART，从上电到launcher出现，确认normal boot与diag1a boot-compatible gralloc closure；
-3. 确认 `sys.boot_completed=1`、`vendor.gralloc-2-0`、`vendor.hwcomposer-2-2`、SurfaceFlinger、zygote与
-   system_server稳定，不把瞬时状态写成PASS；
-4. 检查crash buffer与tombstone，确认没有 `failed to create composer client` restart loop；
-5. normal boot通过后，各执行一次AVC control与一次HEVC reproduction；预期coded/AHB仍为
-   1920x1088，而HEVC `NATIVE_WINDOW event=CROP`为1920x1080。只有实机可判定EGL import是否通过。
+1. flash exact hash-pinned compat1：`D4FAFE24FE2A743764DA50769FDBD8D6B6C7152646017C3C4F0B09C8FBBEFAAB`；
+2. 保留UART，从上电到launcher出现，执行`BootGate`，确认`sys.boot_completed=1`以及SurfaceFlinger、
+   zygotes、system_server、gralloc/HWC稳定；
+3. 先执行`AVCPre`→`AVCLive`→手工播放一次known-good AVC→`AVCPost`，确认picture/audio与diag3a
+   control一致，然后**停止复核AVC**；
+4. AVC通过后才执行`HEVCPre`→`HEVCLive`→手工播放一次authorized SDR YV12 HEVC→`HEVCPost`；
+5. HEVC必须看到`UBOX_R7_COMPAT1 eligible=1`、shadow/translation/view成功、
+   `egl_import_result=1`、BackendTexture valid，且无SurfaceFlinger abort/framework restart；
+6. 若稳定，手工pause/resume/seek/back后执行`InteractionPost`；再跑一次AVC regression并执行`Final`；
+7. 到此停止。Main10、HDR、AFBC、protected playback和4K均不在本候选授权范围。
 
-### R7-diag2 paired crop validation (blocked until boot PASS)
-
-Diag2不自动提升 Gate 3 verdict。它只检验保持1080 visible crop能否使同一1920x1088 HEVC
-buffer通过EGL import。顺序必须为：
-
-1. 先完成上一节diag2 normal-boot PASS并确认 architecture baseline；
-2. `Baseline`、`AVCPre`，手工播放 known-good H.264 fixture一次并确认 visible video + audible HDMI，
-   再执行 `AVCPost`；
-3. `HEVCPre`，手工启动 known HEVC fixture一次，不循环；
-4. 若 SurfaceFlinger/framework userspace restart令ADB暂时消失，等待`:7896`恢复，不自动reboot；
-5. 执行 `HEVCPostRestart`与`Final`，保存 crash/tombstone/restart evidence；
-6. 对 AVC/HEVC `UBOX_R7_DIAG1`记录做paired diff，确认crop以外的coded size、usage、planes、AFBC、
-   AHB保持不变，并观察HEVC `eglCreateImageKHR`结果；实机结果前HEVC仍为BLOCKED。
-
-下列原diag1 PowerShell helper保留为历史实现，其 candidate ID/hash指向已关闭diag1；用于diag2时必须
-在证据目录名中明确记录diag2 exact hash，不能把输出误标为diag1/diag1a evidence。它的phase入口保持
-可用（port默认7896，输出位于用户Downloads下的timestamped目录）：
+使用独立helper（ADB固定使用显式path，port默认7896，输出位于Downloads timestamped目录）：
 
 ```powershell
-$Endpoint = '<device-LAN-address-or-hostname>'
-.\scripts\capture-a16-prototype-b-r7-diag1-media-paired.ps1 -DeviceEndpoint $Endpoint -Phase Baseline
-.\scripts\capture-a16-prototype-b-r7-diag1-media-paired.ps1 -DeviceEndpoint $Endpoint -Phase AVCPre -ClearLogcat
-# 手工播放 AVC 一次，然后：
-.\scripts\capture-a16-prototype-b-r7-diag1-media-paired.ps1 -DeviceEndpoint $Endpoint -Phase AVCPost
-.\scripts\capture-a16-prototype-b-r7-diag1-media-paired.ps1 -DeviceEndpoint $Endpoint -Phase HEVCPre -ClearLogcat
-# 手工启动 HEVC 一次；userspace recovery后：
-.\scripts\capture-a16-prototype-b-r7-diag1-media-paired.ps1 -DeviceEndpoint $Endpoint -Phase HEVCPostRestart
-.\scripts\capture-a16-prototype-b-r7-diag1-media-paired.ps1 -DeviceEndpoint $Endpoint -Phase Final
+$Helper = '.\scripts\capture-a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow.ps1'
+& $Helper -Phase BootGate
+& $Helper -Phase AVCPre -ClearLogcat
+& $Helper -Phase AVCLive       # 运行期间手工播放AVC一次，完成后Ctrl+C
+& $Helper -Phase AVCPost       # STOP并复核
+& $Helper -Phase HEVCPre -ClearLogcat
+& $Helper -Phase HEVCLive      # 仅手工播放一次SDR YV12 HEVC
+& $Helper -Phase HEVCPost
 ```
 
 `-ClearLogcat`只允许在Pre phase先保存baseline后，经用户输入确认再执行；failure之后绝不clear logcat，
-也不clear pstore/tombstones。脚本不自动reboot、不改HDMI/`wm size`、不fix quarter-screen、不循环HEVC。
+也不clear pstore/tombstones。脚本不自动reboot、不自动控制播放器、不改HDMI/`wm size`、不fix
+quarter-screen、不循环HEVC。物理结果前Gate 3保持HOLD。
 
 ### 3A — architecture regression confirmation
 

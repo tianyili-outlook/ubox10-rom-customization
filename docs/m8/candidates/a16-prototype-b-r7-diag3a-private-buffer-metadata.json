@@ -2,8 +2,8 @@
   "schema": 1,
   "id": "a16-prototype-b-r7-diag3a-private-buffer-metadata",
   "classification": "DIAGNOSTIC_ONLY_INSTRUMENTATION_TRANSPARENCY_NOT_R8_NOT_RELEASE",
-  "status": "OFFLINE_CHECKED_READY_FOR_PHYSICAL_BOOT_GATE",
-  "physical_status": "NOT_YET_VALIDATED",
+  "status": "PHYSICAL_PAIRED_COMPLETE_METADATA_ABI_ROOT_CAUSE_PROVEN_DIAGNOSTIC_CLOSED",
+  "physical_status": "AVC_PASS_HEVC_REPRODUCED_EGL_BAD_ALLOC",
   "base": {
     "id": "a16-prototype-b-r7-diag3-private-buffer-metadata",
     "size": 1641814016,
@@ -19,7 +19,16 @@
     "manifest_sha256": "F7154E0B73095428E7DE79DCE451F1404BA157E43D32D389A8E0BCB7FC866029",
     "diag3_boot_gate": "PASS",
     "diag3_avc": "BLOCKED_BEFORE_OMX_USE_BY_INSTRUMENTATION_UBSAN_ABORT",
-    "hevc_tested": false
+    "hevc_tested": false,
+    "historical_diag3_regression_only": true
+  },
+  "paired_physical_evidence": {
+    "path": "/work/evidence/ubox10/r7-diag3a-avc-hevc/unpacked",
+    "sha256s_file_sha256": "D08322A1F8A3945B9008D3F24D4E35C382708903C7C38D20805AE113E934FA89",
+    "avc": "PASS_NO_UBSAN_NO_EGL_BAD_ALLOC",
+    "hevc": "REPRODUCED_ONCE_EGL_BAD_ALLOC_0x3003",
+    "sidecar_transition": "AFTER_ARM32_REMOTE_IMPORT_BEFORE_CODEC_POST_FBD",
+    "root_cause": "ALLWINNER_EXTENDED_HDR10PLUS_LUT_AT_0x80_MISREAD_BY_MALI_R20P0_AS_LEGACY_CROP"
   },
   "root_cause": {
     "status": "PROVEN",
@@ -51,7 +60,7 @@
     "full_vintf_exit": 65,
     "full_vintf_classification": "INHERITED_CONFIG_NFS_FS_EXCEPTION_NOT_PASS"
   },
-  "physical_plan": ["BootGate", "AVCPre", "AVCLive", "ONE_MANUAL_AVC_PLAYBACK", "AVCPost", "STOP_FOR_REVIEW"],
+  "physical_plan": ["COMPLETED_BOOT_AND_AVC_PASS", "COMPLETED_ONE_HEVC_REPRODUCTION", "DIAGNOSTIC_CLOSED"],
   "governance": {
     "canonical_r7": "PASS_FROZEN_UNCHANGED",
     "gate3": "HOLD",

@@ -1,6 +1,6 @@
 # a16-prototype-b-r7-diag3a-private-buffer-metadata
 
-Status: **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE / DIAGNOSTIC ONLY / NOT r8 / NOT A RELEASE**
+Status: **PHYSICAL AVC PASS / HEVC REPRODUCED / METADATA ABI ROOT CAUSE PROVEN / DIAGNOSTIC CLOSED / NOT r8 / NOT A RELEASE**
 
 Diag3a is based on exact diag3 and corrects only diag3's own ARM64 libstagefright hashing regression.
 It does not change the private-buffer hypothesis, codec, crop, dimensions, usage, allocator, sidecar,
@@ -88,13 +88,27 @@ SP-HAL, boot/kernel 5.4.302+, and the 22-module vendor_dlkm inventory pass. ARM3
 closures have zero unmatched strong imports. System-only VINTF passes. Full VINTF remains exit 65
 for inherited `CONFIG_NFS_FS=y` versus FCM-6 `n`; it is **NOT PASS** and was not changed.
 
-## Physical AVC-only gate
+## Subsequent physical result
+
+The read-only paired evidence at `/work/evidence/ubox10/r7-diag3a-avc-hevc/unpacked/` verifies
+against SHA256SUMS file SHA-256
+`D08322A1F8A3945B9008D3F24D4E35C382708903C7C38D20805AE113E934FA89`.
+AVC picture/audio and every diagnostic boundary passed without the former UBSan abort or
+`EGL_BAD_ALLOC`. One HEVC run localized a deliberate 23,480-byte Allwinner metadata initialization
+between ARM32 codec import and `CODEC_POST_FBD`. Static proprietary-ELF analysis then proved the
+consumer ABI collision: Mali r20p0 treats active extended-metadata HDR10+ LUT words at fd2 offsets
+`0x80..0x8c` as a legacy signed crop. AVC leaves them negative; HEVC initializes them to
+non-negative LUT values, causing Mali crop rejection and `EGL_BAD_ALLOC`.
+
+This is intentional producer metadata, not random corruption. Diag3a completed its diagnostic
+purpose; HEVC remains blocked because no repair candidate has yet passed physical validation.
+
+## Historical AVC-only gate plan
 
 Use `scripts/capture-a16-prototype-b-r7-diag3a-private-buffer-metadata.ps1` with PowerShell 7 and
 `C:\platform-tools\adb.exe`. Run phases separately: `BootGate`, `AVCPre` (optionally
 `-ClearLogcat` after its saved baseline), `AVCLive`, manually play the known-good AVC fixture once,
 then `AVCPost`. Stop there; do not test HEVC until AVC preservation is reviewed.
 
-AVC succeeds only if there is no `ubsan: mul-overflow` or CodecLooper SIGABRT, known picture/audio
-returns, both `CODEC_PRE_USE` and `CODEC_POST_FBD` complete, and the required sidecar/hash records are
-present. Diag3a remains **NOT YET PHYSICALLY VALIDATED**; HEVC is not fixed and Gate 3 is not PASS.
+AVC succeeded under these criteria. The later HEVC reproduction did not fix HEVC and did not change
+Gate 3 from HOLD.

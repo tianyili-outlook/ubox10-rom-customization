@@ -1,0 +1,286 @@
+Subject: [EXPERIMENTAL REPAIR] present an SDR YV12 legacy metadata shadow to Mali
+
+NOT r8. NOT A RELEASE. The producer-owned sidecar remains read-only.
+
+diff --git a/src/gpu/ganesh/gl/AHardwareBufferGL.cpp b/src/gpu/ganesh/gl/AHardwareBufferGL.cpp
+index 92862c8..982b79a 100644
+--- a/src/gpu/ganesh/gl/AHardwareBufferGL.cpp
++++ b/src/gpu/ganesh/gl/AHardwareBufferGL.cpp
+@@ -21,0 +22 @@
++#include "src/gpu/ganesh/gl/UBOXR7Compat1Metadata.h"
+@@ -23,0 +25 @@
++#include <cutils/ashmem.h>
+@@ -37,0 +40,191 @@ namespace GrAHardwareBufferUtils {
++static AHardwareBuffer* ubox_r7_compat1_create_sdr_yv12_view(
++        AHardwareBuffer* hardwareBuffer, const AHardwareBuffer_Desc& desc, bool isProtectedContent,
++        uint64_t bufferId) {
++    const native_handle_t* handle = AHardwareBuffer_getNativeHandle(hardwareBuffer);
++    if (handle == nullptr || handle->version != static_cast<int>(sizeof(native_handle_t)) ||
++        handle->numFds != 2 || handle->numInts != 53) {
++        ALOGI("UBOX_R7_COMPAT1 eligible=0 buffer_id=%" PRIu64
++              " reason=handle_contract version=%d num_fds=%d num_ints=%d",
++              bufferId, handle == nullptr ? -1 : handle->version,
++              handle == nullptr ? -1 : handle->numFds, handle == nullptr ? -1 : handle->numInts);
++        return nullptr;
++    }
++
++    const int* slots = handle->data + handle->numFds;
++    const uint64_t producerUsage = ubox_r7_diag3_u64_slots(slots, 5);
++    const uint64_t consumerUsage = ubox_r7_diag3_u64_slots(slots, 7);
++    const uint64_t allocFormat = ubox_r7_diag3_u64_slots(slots, 15);
++    const uint64_t backingStoreId = ubox_r7_diag3_u64_slots(slots, 33);
++    constexpr uint32_t kYv12 = 0x32315659u;
++    constexpr uint64_t kAhbUsage = UINT64_C(0x402d00);
++    constexpr uint64_t kHandleUsage = UINT64_C(0x400900);
++    constexpr uint32_t kPrivateHandleMagic = 0x03141592u;
++    constexpr int kUsesIonFlag = 0x00000004;
++
++    const bool exactPublicContract =
++            desc.width == 1920 && desc.height == 1088 && desc.layers == 1 &&
++            desc.format == kYv12 && desc.usage == kAhbUsage && desc.stride == 1920 &&
++            !isProtectedContent &&
++            !(desc.usage & AHARDWAREBUFFER_USAGE_PROTECTED_CONTENT);
++    const bool exactHandleContract =
++            static_cast<uint32_t>(slots[0]) == kPrivateHandleMagic && slots[1] == kUsesIonFlag &&
++            slots[2] == 1920 && slots[3] == 1088 && static_cast<uint32_t>(slots[4]) == kYv12 &&
++            producerUsage == kHandleUsage && consumerUsage == kHandleUsage &&
++            ubox_r7_diag3_u64_slots(slots, 9) == 0 && allocFormat == kYv12 &&
++            slots[11] == 1920 && slots[17] == 0 && slots[18] == 1920 && slots[19] == 1920 &&
++            slots[20] == 1088 && slots[21] == 2088960 && slots[22] == 960 && slots[23] == 960 &&
++            slots[24] == 544 && slots[25] == 2611200 && slots[26] == 960 && slots[27] == 960 &&
++            slots[28] == 544 && slots[29] == 3133504 && slots[30] == 1 &&
++            slots[43] == static_cast<int>(ubox_r7_compat1::kMetadataSize) && slots[44] == 0 &&
++            slots[45] == 3;
++    if (!exactPublicContract || !exactHandleContract || handle->data[1] < 0) {
++        ALOGI("UBOX_R7_COMPAT1 eligible=0 buffer_id=%" PRIu64
++              " backing_store_id=%" PRIu64
++              " reason=sdr_yv12_contract public=%d private=%d metadata_fd=%d",
++              bufferId, backingStoreId, exactPublicContract, exactHandleContract, handle->data[1]);
++        return nullptr;
++    }
++
++    const size_t metadataSize = ubox_r7_compat1::kMetadataSize;
++    struct stat metadataStat = {};
++    const int metadataStatResult = fstat(handle->data[1], &metadataStat);
++    if (metadataStatResult != 0 || metadataStat.st_size != static_cast<off_t>(metadataSize)) {
++        ALOGI("UBOX_R7_COMPAT1 eligible=0 buffer_id=%" PRIu64
++              " backing_store_id=%" PRIu64
++              " reason=metadata_fd_size fstat_result=%d actual_size=%" PRId64 " expected_size=%zu",
++              bufferId, backingStoreId, metadataStatResult,
++              static_cast<int64_t>(metadataStat.st_size), metadataSize);
++        return nullptr;
++    }
++    const void* original = mmap(nullptr, metadataSize, PROT_READ, MAP_SHARED, handle->data[1], 0);
++    if (original == MAP_FAILED) {
++        ALOGI("UBOX_R7_COMPAT1 eligible=0 buffer_id=%" PRIu64
++              " backing_store_id=%" PRIu64 " reason=original_mmap errno=%d",
++              bufferId, backingStoreId, errno);
++        return nullptr;
++    }
++
++    const auto* originalBytes = static_cast<const uint8_t*>(original);
++    const auto* activeAttr = reinterpret_cast<const ubox_r7_compat1::LegacyAttrRegion*>(
++            originalBytes + ubox_r7_compat1::kActiveAttrOffset);
++    int32_t legacyCrop[4];
++    memcpy(legacyCrop, originalBytes + ubox_r7_compat1::kLegacyAttrOffset, sizeof(legacyCrop));
++    const uint32_t sunxiFlag = ubox_r7_diag3_u32(original, ubox_r7_compat1::kSunxiFlagOffset);
++    const bool exactSdrAttr =
++            sunxiFlag == 0 && activeAttr->cropTop == -1 && activeAttr->cropLeft == -1 &&
++            activeAttr->cropHeight == -1 && activeAttr->cropWidth == -1 &&
++            activeAttr->useYuvTransform == -1 && activeAttr->useSparseAlloc == -1 &&
++            static_cast<uint32_t>(activeAttr->dataspace) == 0x10010000u;
++    const bool legacyCropCollision =
++            legacyCrop[0] >= 0 && legacyCrop[1] >= 0 && legacyCrop[2] >= 0 &&
++            legacyCrop[3] >= 0 &&
++            (legacyCrop[0] != 0 || legacyCrop[1] != 0 || legacyCrop[2] != 1088 ||
++             legacyCrop[3] != 1920);
++    if (!exactSdrAttr || !legacyCropCollision) {
++        ALOGI("UBOX_R7_COMPAT1 eligible=0 buffer_id=%" PRIu64
++              " backing_store_id=%" PRIu64
++              " reason=metadata_gate sdr_attr=%d legacy_collision=%d sunxi_flag=0x%08x"
++              " legacy_top=%d legacy_left=%d legacy_height=%d legacy_width=%d",
++              bufferId, backingStoreId, exactSdrAttr, legacyCropCollision, sunxiFlag,
++              legacyCrop[0], legacyCrop[1], legacyCrop[2], legacyCrop[3]);
++        munmap(const_cast<void*>(original), metadataSize);
++        return nullptr;
++    }
++    ALOGI("UBOX_R7_COMPAT1 eligible=1 buffer_id=%" PRIu64
++          " backing_store_id=%" PRIu64 " format=YV12 w=1920 h=1088 usage=0x%016" PRIx64
++          " protected=0 afbc=0 metadata_size=%zu",
++          bufferId, backingStoreId, desc.usage, metadataSize);
++
++    int shadowFd = ashmem_create_region("ubox_r7_compat1_mali_metadata", metadataSize);
++    if (shadowFd < 0) {
++        ALOGI("UBOX_R7_COMPAT1 shadow_created=0 buffer_id=%" PRIu64
++              " backing_store_id=%" PRIu64 " reason=ashmem_create errno=%d",
++              bufferId, backingStoreId, errno);
++        munmap(const_cast<void*>(original), metadataSize);
++        return nullptr;
++    }
++    struct stat shadowStat = {};
++    const int shadowStatResult = fstat(shadowFd, &shadowStat);
++    if (shadowStatResult != 0 || shadowStat.st_size != static_cast<off_t>(metadataSize)) {
++        ALOGI("UBOX_R7_COMPAT1 shadow_created=0 buffer_id=%" PRIu64
++              " backing_store_id=%" PRIu64
++              " reason=shadow_fd_size fstat_result=%d actual_size=%" PRId64 " expected_size=%zu",
++              bufferId, backingStoreId, shadowStatResult,
++              static_cast<int64_t>(shadowStat.st_size), metadataSize);
++        close(shadowFd);
++        munmap(const_cast<void*>(original), metadataSize);
++        return nullptr;
++    }
++    void* shadow = mmap(nullptr, metadataSize, PROT_READ | PROT_WRITE, MAP_SHARED, shadowFd, 0);
++    if (shadow == MAP_FAILED) {
++        ALOGI("UBOX_R7_COMPAT1 shadow_created=0 buffer_id=%" PRIu64
++              " backing_store_id=%" PRIu64 " reason=shadow_mmap errno=%d",
++              bufferId, backingStoreId, errno);
++        close(shadowFd);
++        munmap(const_cast<void*>(original), metadataSize);
++        return nullptr;
++    }
++    uint8_t originalLegacyAttr[ubox_r7_compat1::kAttrSize];
++    memcpy(originalLegacyAttr, originalBytes + ubox_r7_compat1::kLegacyAttrOffset,
++           sizeof(originalLegacyAttr));
++    const bool translated =
++            ubox_r7_compat1::translateMetadata(original, metadataSize, shadow, metadataSize);
++    const bool originalUnchanged =
++            memcmp(originalBytes + ubox_r7_compat1::kLegacyAttrOffset, originalLegacyAttr,
++                   sizeof(originalLegacyAttr)) == 0;
++    const bool exactAttrCopy =
++            memcmp(static_cast<const uint8_t*>(shadow) + ubox_r7_compat1::kLegacyAttrOffset,
++                   originalBytes + ubox_r7_compat1::kActiveAttrOffset,
++                   ubox_r7_compat1::kAttrSize) == 0;
++    if (!translated || !originalUnchanged || !exactAttrCopy) {
++        ALOGI("UBOX_R7_COMPAT1 translated=0 buffer_id=%" PRIu64
++              " backing_store_id=%" PRIu64
++              " reason=copy_verification translated=%d original_unchanged=%d attr_copy=%d",
++              bufferId, backingStoreId, translated, originalUnchanged, exactAttrCopy);
++        munmap(shadow, metadataSize);
++        close(shadowFd);
++        munmap(const_cast<void*>(original), metadataSize);
++        return nullptr;
++    }
++    ALOGI("UBOX_R7_COMPAT1 shadow_created=1 buffer_id=%" PRIu64
++          " backing_store_id=%" PRIu64 " fd_type=ashmem_or_memfd size=%zu",
++          bufferId, backingStoreId, metadataSize);
++    ALOGI("UBOX_R7_COMPAT1 translated=1 buffer_id=%" PRIu64
++          " backing_store_id=%" PRIu64
++          " src_offset=%zu dst_offset=%zu bytes=%zu original_prot=read"
++          " original_unchanged=%d attr_copy=%d",
++          bufferId, backingStoreId, ubox_r7_compat1::kActiveAttrOffset,
++          ubox_r7_compat1::kLegacyAttrOffset, ubox_r7_compat1::kAttrSize,
++          originalUnchanged, exactAttrCopy);
++    munmap(shadow, metadataSize);
++    munmap(const_cast<void*>(original), metadataSize);
++
++    native_handle_t* translatedHandle = native_handle_clone(handle);
++    if (translatedHandle == nullptr) {
++        ALOGI("UBOX_R7_COMPAT1 view_created=0 buffer_id=%" PRIu64
++              " backing_store_id=%" PRIu64 " reason=handle_clone errno=%d",
++              bufferId, backingStoreId, errno);
++        close(shadowFd);
++        return nullptr;
++    }
++    close(translatedHandle->data[1]);
++    translatedHandle->data[1] = shadowFd;
++
++    AHardwareBuffer* translatedBuffer = nullptr;
++    const int createResult = AHardwareBuffer_createFromHandle(
++            &desc, translatedHandle, AHARDWAREBUFFER_CREATE_FROM_HANDLE_METHOD_CLONE,
++            &translatedBuffer);
++    native_handle_close(translatedHandle);
++    native_handle_delete(translatedHandle);
++    if (createResult != 0 || translatedBuffer == nullptr) {
++        ALOGI("UBOX_R7_COMPAT1 view_created=0 buffer_id=%" PRIu64
++              " backing_store_id=%" PRIu64 " reason=ahb_clone result=%d",
++              bufferId, backingStoreId, createResult);
++        return nullptr;
++    }
++    ALOGI("UBOX_R7_COMPAT1 view_created=1 buffer_id=%" PRIu64
++          " backing_store_id=%" PRIu64 " method=CLONE original_fd2_unchanged=1",
++          bufferId, backingStoreId);
++    return translatedBuffer;
++}
++
+@@ -142 +335,8 @@ static GrBackendTexture make_gl_backend_texture(
+-    EGLClientBuffer clientBuffer = eglGetNativeClientBufferANDROID(hardwareBuffer);
++    AHardwareBuffer* compatHardwareBuffer = nullptr;
++    if (isR7DiagBuffer) {
++        compatHardwareBuffer = ubox_r7_compat1_create_sdr_yv12_view(
++                hardwareBuffer, desc, isProtectedContent, bufferId);
++    }
++    AHardwareBuffer* eglHardwareBuffer =
++            compatHardwareBuffer != nullptr ? compatHardwareBuffer : hardwareBuffer;
++    EGLClientBuffer clientBuffer = eglGetNativeClientBufferANDROID(eglHardwareBuffer);
+@@ -155,0 +356,11 @@ static GrBackendTexture make_gl_backend_texture(
++    if (isR7DiagBuffer) {
++        ALOGI("UBOX_R7_COMPAT1 egl_import_result=%d buffer_id=%" PRIu64
++              " view=%s client_buffer_null=%d",
++              image != EGL_NO_IMAGE_KHR, bufferId,
++              compatHardwareBuffer != nullptr ? "sdr_shadow" : "original",
++              clientBuffer == nullptr);
++    }
++    if (compatHardwareBuffer != nullptr) {
++        // eglCreateImageKHR holds its own reference on success. On failure no consumer remains.
++        AHardwareBuffer_release(compatHardwareBuffer);
++    }
+diff --git a/src/gpu/ganesh/gl/UBOXR7Compat1Metadata.h b/src/gpu/ganesh/gl/UBOXR7Compat1Metadata.h
+new file mode 100644
+index 0000000..6d054bf
+--- /dev/null
++++ b/src/gpu/ganesh/gl/UBOXR7Compat1Metadata.h
+@@ -0,0 +1,54 @@
++/* EXPERIMENTAL SDR YV12 MALI METADATA ABI COMPATIBILITY / NOT r8. */
++#ifndef UBOX_R7_COMPAT1_METADATA_H_
++#define UBOX_R7_COMPAT1_METADATA_H_
++
++#include <stddef.h>
++#include <stdint.h>
++#include <string.h>
++
++namespace ubox_r7_compat1 {
++
++constexpr size_t kMetadataSize = 0x6000;
++constexpr size_t kLegacyAttrOffset = 0x80;
++constexpr size_t kActiveAttrOffset = 23544;
++constexpr size_t kAttrSize = 56;
++constexpr size_t kSunxiFlagOffset = 23476;
++
++struct LegacyAttrRegion {
++    int32_t cropTop;
++    int32_t cropLeft;
++    int32_t cropHeight;
++    int32_t cropWidth;
++    int32_t useYuvTransform;
++    int32_t useSparseAlloc;
++    uint8_t hdrInfo[28];
++    int32_t dataspace;
++};
++
++static_assert(sizeof(LegacyAttrRegion) == kAttrSize);
++static_assert(offsetof(LegacyAttrRegion, cropTop) == 0);
++static_assert(offsetof(LegacyAttrRegion, cropLeft) == 4);
++static_assert(offsetof(LegacyAttrRegion, cropHeight) == 8);
++static_assert(offsetof(LegacyAttrRegion, cropWidth) == 12);
++static_assert(offsetof(LegacyAttrRegion, useYuvTransform) == 16);
++static_assert(offsetof(LegacyAttrRegion, useSparseAlloc) == 20);
++static_assert(offsetof(LegacyAttrRegion, hdrInfo) == 24);
++static_assert(offsetof(LegacyAttrRegion, dataspace) == 52);
++static_assert(kLegacyAttrOffset + kAttrSize == 0xb8);
++static_assert(kActiveAttrOffset + kAttrSize == 23600);
++
++inline bool translateMetadata(const void* original, size_t originalSize, void* shadow,
++                              size_t shadowSize) {
++    if (original == nullptr || shadow == nullptr || originalSize != kMetadataSize ||
++        shadowSize != kMetadataSize || original == shadow) {
++        return false;
++    }
++    memcpy(shadow, original, kMetadataSize);
++    memcpy(static_cast<uint8_t*>(shadow) + kLegacyAttrOffset,
++           static_cast<const uint8_t*>(original) + kActiveAttrOffset, kAttrSize);
++    return true;
++}
++
++}  // namespace ubox_r7_compat1
++
++#endif

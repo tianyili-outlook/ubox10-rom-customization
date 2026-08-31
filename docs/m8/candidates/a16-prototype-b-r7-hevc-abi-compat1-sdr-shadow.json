@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "id": "a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow",
+  "classification": "EXPERIMENTAL_REPAIR_NOT_R8_NOT_RELEASE",
+  "status": "OFFLINE_CHECKED_READY_FOR_PHYSICAL_BOOT_GATE",
+  "physical_status": "NOT_YET_VALIDATED",
+  "base": {
+    "id": "a16-prototype-b-r7-diag3a-private-buffer-metadata",
+    "size": 1641818112,
+    "sha256": "666099016529032EEB80A49BBDACF1BF4FDC86859D9538B84C8F9660D1F232D9"
+  },
+  "firmware": {
+    "path": "out/candidates/a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow/x12-a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow.img",
+    "size": 1641822208,
+    "sha256": "D4FAFE24FE2A743764DA50769FDBD8D6B6C7152646017C3C4F0B09C8FBBEFAAB"
+  },
+  "implementation": {
+    "component": "external/skia/src/gpu/ganesh/gl/AHardwareBufferGL.cpp",
+    "boundary": "IMMEDIATELY_BEFORE_MALI_EGL_IMPORT",
+    "metadata_size": 24576,
+    "active_attr_offset": 23544,
+    "legacy_attr_offset": 128,
+    "attr_bytes": 56,
+    "original_sidecar": "READ_ONLY_BYTE_IDENTICAL",
+    "shadow_fd": "ashmem_create_region_memfd_or_ashmem",
+    "handle_method": "AHARDWAREBUFFER_CREATE_FROM_HANDLE_METHOD_CLONE",
+    "failure_behavior": "UNCHANGED_ORIGINAL_EGL_AND_RENDERENGINE_FATAL_PATH"
+  },
+  "eligibility": {
+    "resolution": "1920x1088",
+    "format": "YV12_0x32315659",
+    "ahb_usage": "0x402d00",
+    "producer_usage": "0x400900",
+    "consumer_usage": "0x400900",
+    "afbc": false,
+    "protected": false,
+    "metadata_size": 24576,
+    "unsupported": ["Main10", "HDR", "AFBC", "protected", "4K"]
+  },
+  "runtime_comparison": {
+    "/system/bin/surfaceflinger": {
+      "diag3a_sha256": "5BD92DAB98969B774469ED6581E9CD32D9C57E93D63A4CF0E126414B568CE838",
+      "compat1_sha256": "97A476E550015C50CA92302418B6625171995192161A37EBB3EBD7AF7102745C",
+      "byte_identical": false
+    },
+    "/system/lib64/libstagefright.so": {
+      "diag3a_sha256": "3FDE0D408ED26CE76C7CAE2DB3DD41E38B1783B982CFAB251518D778C39F13CF",
+      "compat1_sha256": "3FDE0D408ED26CE76C7CAE2DB3DD41E38B1783B982CFAB251518D778C39F13CF",
+      "byte_identical": true
+    },
+    "/vendor/lib/hw/gralloc.apollo.so": {
+      "diag3a_sha256": "7E654E0F9D968C5FA9C9F31893E0E60DCF6605E41A82783E6376A1D7D66194D5",
+      "compat1_sha256": "7E654E0F9D968C5FA9C9F31893E0E60DCF6605E41A82783E6376A1D7D66194D5",
+      "byte_identical": true
+    },
+    "/vendor/lib64/hw/gralloc.apollo.so": {
+      "diag3a_sha256": "1F91BF6FA547DA11E42068C1A0C612E41B5C800AEE9CDAB2D320DD469295CB19",
+      "compat1_sha256": "1F91BF6FA547DA11E42068C1A0C612E41B5C800AEE9CDAB2D320DD469295CB19",
+      "byte_identical": true
+    }
+  },
+  "offline": {
+    "runtime_delta": "PASS_EXACT_ONE_RUNTIME_FILE_EXPERIMENTAL_REPAIR_DELTA_FROM_DIAG3A",
+    "host_attr_translation_asan_ubsan": "PASS",
+    "original_sidecar_unchanged": "PASS",
+    "arm32_vndk31_unmatched_strong_imports": 0,
+    "arm64_vndk31_unmatched_strong_imports": 0,
+    "avb": "PASS",
+    "lp_geometry": "EXACT_DIAG3A",
+    "sparse_raw_integrity": "PASS",
+    "system_vintf_exit": 0,
+    "full_vintf_exit": 65,
+    "full_vintf_classification": "INHERITED_CONFIG_NFS_FS_EXCEPTION_NOT_PASS"
+  },
+  "physical_plan": [
+    "BootGate",
+    "AVC_CONTROL_AND_REVIEW",
+    "ONE_MANUAL_SDR_YV12_HEVC_PLAYBACK",
+    "PAUSE_RESUME_SEEK_BACK_IF_STABLE",
+    "AVC_REGRESSION",
+    "STOP_BEFORE_MAIN10_HDR_AFBC_PROTECTED_4K"
+  ],
+  "governance": {
+    "canonical_r7": "PASS_FROZEN_UNCHANGED",
+    "gate3": "HOLD",
+    "hevc": "BLOCKED_AWAITING_PHYSICAL_COMPAT1_RESULT",
+    "r8_authorized": false,
+    "development_branch_created": false
+  }
+}

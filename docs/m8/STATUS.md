@@ -1,6 +1,6 @@
 # M8 status
 
-Updated: 2026-08-30
+Updated: 2026-08-31
 
 ## Android 16 architecture ceiling
 
@@ -21,8 +21,10 @@ HEVC remains a blocker. Diag1a paired evidence proves its first failed operation
 unchanged SurfaceFlinger fatal/userspace restart. AVC and HEVC allocation/import contracts are
 otherwise materially identical. Diag2 physically retained the AVC-style 1920x1080 visible crop on
 the HEVC 1920x1088 allocation, yet the same warning, `EGL_BAD_ALLOC`, fatal and userspace restart
-remained. ACodec visible crop alone is therefore disproven, while unobserved private handle/sidecar,
-content and synchronization state remain open. The architecture pass itself is not downgraded.
+remained. ACodec visible crop alone is therefore disproven. Diag3a subsequently proved the first
+private discriminator and the Mali/Allwinner metadata ABI collision described below. The first
+bounded compatibility experiment is offline checked but not physically validated. The architecture
+pass itself is not downgraded.
 
 | Control | State |
 |---|---|
@@ -33,7 +35,8 @@ content and synchronization state remain open. The architecture pass itself is n
 | Boot-corrected instrumentation derivative `a16-prototype-b-r7-diag1a` | **PHYSICAL BOOT PASS / PAIRED EVIDENCE CAPTURED** (prior state: **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE**) |
 | Single-variable crop diagnostic `a16-prototype-b-r7-diag2-hevc-crop` | **PHYSICAL TESTED / CROP DELTA ACTIVATED / HYPOTHESIS DISPROVEN / HEVC STILL FAILS / CLOSED / NOT r8** |
 | Private-buffer metadata diagnostic `a16-prototype-b-r7-diag3-private-buffer-metadata` | **PHYSICAL BOOT PASS / AVC BLOCKED BY PROVEN DIAGNOSTIC UBSAN REGRESSION / CLOSED / NOT r8** |
-| Transparency-corrected diagnostic `a16-prototype-b-r7-diag3a-private-buffer-metadata` | **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE / AVC RETEST FIRST / HEVC BLOCKED / NOT r8** |
+| Transparency-corrected diagnostic `a16-prototype-b-r7-diag3a-private-buffer-metadata` | **PHYSICAL AVC PASS / HEVC REPRODUCED / MALI METADATA ABI ROOT CAUSE PROVEN / DIAGNOSTIC CLOSED / NOT r8** |
+| SDR shadow compatibility experiment `a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow` | **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE / EXPERIMENTAL REPAIR / NOT r8 / NOT RELEASE** |
 
 The only active P0 is **Gate 3 — Android 16 Mixed-Architecture Functional Preservation**. Exact
 r7-diag1 physically failed its boot gate because its current-toolchain ARM32 gralloc introduced the
@@ -51,9 +54,20 @@ post-FBD, remote import and pre-EGL boundaries. Diag3 physically passed boot, bu
 unsigned multiplication triggered libstagefright's non-recovering UBSan at `CODEC_PRE_USE` in two
 AVC attempts, before OMX/decoder use; HEVC was not tested. Diag3a changes only ARM64
 `/system/lib64/libstagefright.so` to obtain the identical modulo-2^64 FNV result through
-`__builtin_mul_overflow`, with no sanitizer disabled. It is offline checked and pending BootGate then
-AVC-only preservation retest, so HEVC and Gate 3 remain blocked. Canonical r7 remains frozen. No r8
-repair or new development branch is authorized. The separate
+`__builtin_mul_overflow`, with no sanitizer disabled. Diag3a then physically preserved AVC and
+localized HEVC's intentional extended `sunxi_metadata` initialization to the ARM32 decoder-to-FBD
+window. Mali r20p0 consumes fd2 through an incompatible legacy ABI: it reads HDR10+ `divLut` words
+at `0x80..0x8c` as signed crop. AVC leaves these words negative; HEVC initializes them
+non-negative, so Mali rejects the crop and returns `EGL_BAD_ALLOC`. This is an ABI collision, not
+random corruption.
+
+Compat1 changes only `/system/bin/surfaceflinger`. At the Skia/Mali consumer boundary, an exact
+1920x1088 SDR YV12, non-AFBC, non-protected buffer receives an independent 0x6000-byte shadow whose
+complete active 56-byte attr block is copied from offset 23544 to legacy offset `0x80`; the original
+decoder-owned handle and sidecar remain read-only and unchanged. All other runtime files are
+byte-identical to diag3a. Compat1 is offline checked and awaits BootGate, AVC control/review, one SDR
+YV12 HEVC run, interaction checks, then AVC regression. Gate 3 remains HOLD. Canonical r7 remains
+frozen. This is not r8; no new development branch is authorized. The separate
 post-restart quarter-screen is strongly supported to be a retained display recovery defect that
 selects proven 3840x2160p60 HDMI mode 34 while SurfaceFlinger remains 1920x1080. The known boot-time
 legacy audio-service crash occurs after the SurfaceFlinger restart and
