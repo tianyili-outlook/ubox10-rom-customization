@@ -124,7 +124,7 @@ def test_status_todo_and_device_test_gate_media_on_normal_boot() -> None:
     assert "boot PASS之后" in todo
     assert "PHYSICAL BOOT PASS / PAIRED EVIDENCE CAPTURED" in status
     assert "OFFLINE CHECKED / READY FOR PHYSICAL VALIDATION" in todo
-    assert "COMPAT1A SIZED SDR YV12 MALI METADATA SHADOW READY FOR PHYSICAL BOOT GATE" in device
+    assert "COMPAT1A AUTHORIZED SDR 1080P YV12 PHYSICAL PASS" in device
     assert "AVC通过后才执行" in device
     for text in (status, todo, device):
         assert "Gate 3" in text

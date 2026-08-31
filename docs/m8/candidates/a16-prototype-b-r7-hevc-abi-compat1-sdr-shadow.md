@@ -38,6 +38,8 @@ The physical run disproved the assumption that `ashmem_create_region` always sup
 `fstat`-sized object on this runtime. Libcutils selected legacy `/dev/ashmem`; its
 `ASHMEM_SET_SIZE` state is ioctl-private while the character-device inode reports `st_size=0`.
 Compat1 therefore failed closed before translation. This is corrected only in compat1a.
+Compat1a subsequently physically passed the authorized SDR 1080p YV12 AVC/HEVC scope; that result
+does not reclassify this original compat1 candidate or validate Main10/HDR/AFBC/protected/4K.
 AHardwareBuffer `CLONE`
 duplicates/imports the handle and its fds; the mapper carries and owns its imported fd2, while Mali
 maps that fd. The outer cloned handle is closed/deleted after `createFromHandle`; successful

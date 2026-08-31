@@ -9,6 +9,13 @@ The correction changes no eligibility, metadata contents, 56-byte translation, h
 AHardwareBuffer ownership, EGL behavior, or failure behavior. It is an experimental SDR YV12
 compatibility candidate, not r8 and not a release.
 
+Physical status (2026-08-31): **PASS for the authorized SDR 1080p YV12 scope only**. Both the
+primary HEVC run and the interaction run repeatedly reached sized memfd creation, exact 56-byte
+translation, CLONE view creation, successful EGL import and valid backend texture without changing
+the original sidecar. Formal AVC control and regression stayed on the original view and passed.
+Main10, HDR, AFBC, protected content and 4K remain unvalidated. Overall Gate 3 remains HOLD/OPEN;
+canonical r7 remains frozen and r8 remains unauthorized.
+
 Apply with:
 
 ```sh
@@ -23,3 +30,6 @@ fixtures, first-launch VLC and finish onboarding/permissions/media scan. Formal 
 AVCPost begins only after that setup. Review AVC before one manual HEVC run; review HEVC before
 interaction and AVC regression. The tracked PowerShell helper enforces these state gates. It never
 automates playback, reboot, player input, or HEVC repetition.
+
+The formal helper writes an explicit `crash-buffer.txt` even when the crash buffer is empty. Fixture
+transfer verification is host/device file-size equality, not SHA-256 or byte-for-byte verification.

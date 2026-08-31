@@ -6,7 +6,7 @@ Updated: 2026-08-31
 
 Exact `a16-prototype-b-r7` is **PHYSICAL ARCHITECTURE PASS / ACCEPTED ANDROID 16 ARM64
 MIXED-ARCHITECTURE ARCHITECTURE BASELINE / FROZEN AGAINST ARCHITECTURE CHANGES / GATE 3
-FUNCTIONAL PRESERVATION HOLD — H.264 PASS / HEVC BLOCKER**. The tested image is 1,641,773,056
+FUNCTIONAL PRESERVATION HOLD — AUTHORIZED SDR AVC+HEVC MEDIA SUBGATE PASS**. The tested image is 1,641,773,056
 bytes / SHA-256
 `A1F58668AEFFC9DC83CFFD8A49A309839332B6616C02153DCC00A71136A7AA27`.
 
@@ -15,8 +15,9 @@ both zygotes, `sys.boot_completed=1`, ARM64-parented `system_server`, stable ARM
 no recurrence of `gralloc-mapper is missing`, real 1920x1080 gralloc allocations and Mali-G31
 OpenGL ES 3.2 UI composition. Basic Wi-Fi association/DHCP/L3/DNS/network ADB and bounded physical
 remote input also pass. These results close the mixed-ABI, BoringSSL64 and mapper architecture
-blockers. Gate 3 now physically proves H.264 hardware video plus audible AAC/HDMI preservation.
-HEVC remains a blocker. Diag1a paired evidence proves its first failed operation is
+blockers. Gate 3 now physically proves the authorized SDR H.264 and HEVC hardware-video controls
+plus audible AAC/HDMI preservation through compat1a; broader Gate 3 remains open. The historical
+HEVC blocker was first localized by diag1a to
 `eglCreateImageKHR` with `EGL_BAD_ALLOC` (`0x3003`), followed by invalid backend texture and the
 unchanged SurfaceFlinger fatal/userspace restart. AVC and HEVC allocation/import contracts are
 otherwise materially identical. Diag2 physically retained the AVC-style 1920x1080 visible crop on
@@ -24,21 +25,22 @@ the HEVC 1920x1088 allocation, yet the same warning, `EGL_BAD_ALLOC`, fatal and 
 remained. ACodec visible crop alone is therefore disproven. Diag3a subsequently proved the first
 private discriminator and the Mali/Allwinner metadata ABI collision described below. Compat1
 physically passed boot and AVC, but its legacy ashmem shadow reported `st_size=0`, so translation
-was never reached. Compat1a corrects only that fd boundary and is offline checked pending its
-physical BootGate. The architecture pass itself is not downgraded.
+was never reached. Compat1a corrects only that fd boundary and has now physically passed BootGate,
+formal AVC control, primary SDR HEVC, HEVC interaction, formal AVC regression and final crash census.
+The architecture pass itself is not downgraded.
 
 | Control | State |
 |---|---|
 | Android 12 daily-use rollback `m8b-remote-r1` | **FROZEN** |
 | Android 16 ARM32 architecture control `a16-prototype-a-r4` | **FROZEN** |
-| Android 16 ARM64 mixed-architecture control `a16-prototype-b-r7` | **PHYSICAL ARCHITECTURE PASS / FROZEN / GATE 3 HOLD — H.264 PASS / HEVC BLOCKER** |
+| Android 16 ARM64 mixed-architecture control `a16-prototype-b-r7` | **PHYSICAL ARCHITECTURE PASS / FROZEN / GATE 3 HOLD — AUTHORIZED SDR AVC+HEVC MEDIA SUBGATE PASS** |
 | Instrumentation derivative `a16-prototype-b-r7-diag1` | **OFFLINE PASS / PHYSICAL BOOT FAIL / ROOT CAUSE PROVEN / CLOSED** |
 | Boot-corrected instrumentation derivative `a16-prototype-b-r7-diag1a` | **PHYSICAL BOOT PASS / PAIRED EVIDENCE CAPTURED** (prior state: **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE**) |
 | Single-variable crop diagnostic `a16-prototype-b-r7-diag2-hevc-crop` | **PHYSICAL TESTED / CROP DELTA ACTIVATED / HYPOTHESIS DISPROVEN / HEVC STILL FAILS / CLOSED / NOT r8** |
 | Private-buffer metadata diagnostic `a16-prototype-b-r7-diag3-private-buffer-metadata` | **PHYSICAL BOOT PASS / AVC BLOCKED BY PROVEN DIAGNOSTIC UBSAN REGRESSION / CLOSED / NOT r8** |
 | Transparency-corrected diagnostic `a16-prototype-b-r7-diag3a-private-buffer-metadata` | **PHYSICAL AVC PASS / HEVC REPRODUCED / MALI METADATA ABI ROOT CAUSE PROVEN / DIAGNOSTIC CLOSED / NOT r8** |
 | SDR shadow compatibility experiment `a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow` | **PHYSICAL BOOT PASS / AVC PASS / HEVC FAIL — SHADOW FD IMPLEMENTATION BLOCKER / TRANSLATION NOT TESTED / SUPERSEDED** |
-| Sized-shadow-fd experiment `a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd` | **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE / EXPERIMENTAL REPAIR / NOT r8 / NOT RELEASE** |
+| Sized-shadow-fd experiment `a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd` | **PHYSICAL PASS — AUTHORIZED SDR 1080P YV12 ONLY / EXPERIMENTAL REPAIR / NOT r8 / NOT RELEASE** |
 
 The only active P0 is **Gate 3 — Android 16 Mixed-Architecture Functional Preservation**. Exact
 r7-diag1 physically failed its boot gate because its current-toolchain ARM32 gralloc introduced the
@@ -68,9 +70,14 @@ Compat1a changes only `/system/bin/surfaceflinger` relative to compat1. At the S
 complete active 56-byte attr block is copied from offset 23544 to legacy offset `0x80`; the original
 decoder-owned handle and sidecar remain read-only and unchanged. All other runtime files are
 byte-identical. Compat1a replaces only the physically blocked legacy ashmem shadow with an exact
-0x6000-byte sealed memfd. It awaits BootGate; only after BootGate review PASS may VLC installation,
-media transfer and first-launch setup occur, followed by AVC control/review, one SDR YV12 HEVC run,
-interaction checks, then AVC regression. Gate 3 remains HOLD. Canonical r7 remains
+0x6000-byte sealed memfd. Physical evidence verifies 107/107 original manifest entries and shows 14
+primary plus 14 interaction HEVC buffers completing shadow creation, exact 23544→128 56-byte copy,
+CLONE view, EGL import and valid backend texture. Initial and regression AVC each retain nine
+`metadata_gate`/original-view imports. Picture and HDMI audio, HEVC pause/resume/seek/back, continuous
+boot ID and stable SurfaceFlinger/zygote/system_server PIDs pass. The intervening unplanned AVC is
+supplemental only, not the formal regression. This is a physical PASS only for authorized SDR 1080p
+YV12; Main10/HDR/AFBC/protected/4K are not validated. Gate 3 remains HOLD/OPEN for its other defined
+functional-preservation items. Canonical r7 remains
 frozen. This is not r8; no new development branch is authorized. The separate
 post-restart quarter-screen is strongly supported to be a retained display recovery defect that
 selects proven 3840x2160p60 HDMI mode 34 while SurfaceFlinger remains 1920x1080. The known boot-time
@@ -1054,10 +1061,11 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 保持 frozen Android 12 `m8b-remote-r1`、frozen Android 16 ARM32 `a16-prototype-a-r4`、frozen
 Android 16 ARM64 architecture control `a16-prototype-b-r7`、Test8r2/stock rollback、A16/kernel
 artifacts与 exact B r1-r6 immutable physical chain。Gate 3 当前为 **HOLD：H.264+AAC PHYSICAL
-PASS / HEVC RENDERENGINE BLOCKER**。下一步不是构建 r8，而是在 exact r7 上对 AVC control 与 HEVC
-reproduction 成对采集 exact codec/profile/bit depth、producer/consumer usage、requested/internal/
-alloc format、plane layout、AFBC/modifier/private metadata、完整 AHardwareBuffer 描述及首个
-EGL/GL error；HWC CLIENT/DEVICE 仅作佐证。精确差异证明后才允许选择一个 subsystem 的最小修复。
-Gate 3其余 VP9、full remote、Wi-Fi lifecycle与 platform matrix仍未因此自动 PASS。Vulkan、GMS、
+PASS / AUTHORIZED SDR HEVC PHYSICAL PASS / MEDIA SUBGATE PASS**。Compat1a 已在 ARM64 Mali消费边界
+物理证明isolated sealed-memfd shadow、完整56-byte attr translation、CLONE和EGL/backend import；
+decoder-owned metadata保持不变。初始与regression AVC均保留original view，HEVC interaction和final
+crash census通过。该结论只覆盖authorized SDR 1080p YV12，不授权新的修复或镜像。
+下一步不是构建 r8，而是完成 Gate 3其余 VP9、full remote、Wi-Fi lifecycle、storage/package/
+settings/USB/Ethernet sanity及其余platform/crash matrix；这些项目未因此自动 PASS。Vulkan、GMS、
 full VINTF NFS、SELinux enforcing、audio P1、CEC/HDMI hotplug、suspend与产品 polish继续保持 gate
 外。Gate 3 PASS前不得创建 `codex/m8-a16-development`；当前未授权 r8、镜像重建或新开发分支。

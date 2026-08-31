@@ -3,7 +3,7 @@
 ## 当前状态
 
 - 最后报告的 Android 16 物理架构验收镜像：`out/candidates/a16-prototype-b-r7/x12-a16-prototype-b-r7.img`，1,641,773,056 bytes / SHA-256 `A1F58668AEFFC9DC83CFFD8A49A309839332B6616C02153DCC00A71136A7AA27`
-- 当前项目状态：**ANDROID 16 ARM64 MIXED ARCHITECTURE — R7 PHYSICAL ARCHITECTURE PASS / FROZEN / GATE 3 HOLD — H.264 PASS / HEVC BLOCKER**。Compat1实机Boot/AVC PASS，但shadow fd的`fstat.st_size=0`使translation未到达。`a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd`（1,641,822,208 bytes / `9E9592BF420F40A386BC347B027A85B2F9ED0A44DDB132BDBAB9882905F75722`）现为 **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE / EXPERIMENTAL REPAIR / NOT r8 / NOT RELEASE**。
+- 当前项目状态：**ANDROID 16 ARM64 MIXED ARCHITECTURE — R7 PHYSICAL ARCHITECTURE PASS / FROZEN / GATE 3 HOLD/OPEN — AUTHORIZED SDR AVC+HEVC MEDIA SUBGATE PASS**。`a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd`（1,641,822,208 bytes / `9E9592BF420F40A386BC347B027A85B2F9ED0A44DDB132BDBAB9882905F75722`）已完成 **PHYSICAL PASS — AUTHORIZED SDR 1080P YV12 ONLY / EXPERIMENTAL REPAIR / NOT r8 / NOT RELEASE**。Main10/HDR/AFBC/protected/4K未验证。
 - Android 16 ARM32 control：`a16-prototype-a-r4` **FROZEN / PHYSICAL PASS**。Boot-time legacy audio crash 保持 **KNOWN / UNFIXED / POST-ARCHITECTURE P1**；full VINTF 保持 inherited NFS exit 65 / **NOT PASS**。
 - 保留的设备验收基线：`out/candidates/m8b-remote-r1/x12-m8b-remote-r1.img`，状态 **DEVICE ACCEPTED / REMOTE PASS**（继承 **AUDIO PASS / IME PASS**）。
 - 大小 / SHA-256：1031723008 bytes / `F3B09E5565AC4ED4E5EE326D392622E7B036A8519B8444B966E77CC4751B814A`
@@ -29,11 +29,20 @@ accepted baseline 已确认 Treble/VNDK、primary HAL/output、HEVC+AAC HDMI 音
 
 ## Gate 3 — Android 16 Mixed-Architecture Functional Preservation
 
-状态：**HOLD — COMPAT1A SIZED SDR YV12 MALI METADATA SHADOW READY FOR PHYSICAL BOOT GATE**。Gate 3
+状态：**HOLD / OPEN — COMPAT1A AUTHORIZED SDR 1080P YV12 PHYSICAL PASS；其余Gate 3项目未关闭**。Gate 3
 architecture/functional baseline仍是 exact frozen r7。Diag3a实机AVC PASS并证明HEVC decoder对extended
 `sunxi_metadata`的合法初始化被Mali r20p0按legacy attr/crop ABI误读。Compat1不改producer sidecar、
 decoder、gralloc、Mali blob或fatal；它只在Skia/Mali消费边界为exact 1920x1088 SDR YV12、non-AFBC、
 non-protected buffer提供独立shadow view。结果严格使用`PASS`、`FAIL`或`NOT TESTED`。
+
+2026-08-31 exact compat1a physical result：BootGate、正式初始AVC、primary单次SDR HEVC、第二次
+HEVC interaction、正式AVC regression与Final crash census全部PASS。两次HEVC各14个buffer完整达到
+sealed memfd shadow→23544→128/56-byte translation→CLONE→EGL import→valid BackendTexture；正式AVC
+首测与regression各9个buffer保持`metadata_gate`/original view并成功import。Picture和HDMI audio正常，
+pause/resume/seek/back正常，boot ID及SurfaceFlinger/zygote/system_server PID连续。第一次HEVC后的
+非计划AVC只能分类为 **SUPPLEMENTAL / UNPLANNED AVC AFTER HEVC**，不是正式regression。
+
+以下顺序保留为该物理结果的可复现实验合同；它不表示需要自动重跑。
 
 ### Compat1a physical gate — mandatory BootGate-first order
 
@@ -58,7 +67,7 @@ $Helper = '.\scripts\capture-a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd.
 # 记录脚本打印的SessionRoot，先人工复核；失败则STOP。
 & $Helper -Phase ReviewBootGate -DeviceIp $Ip -SessionRoot $SessionRoot -ConfirmBootGatePass
 
-# Phase 2: 只有BootGate PASS后才安装VLC、建目录、push两文件、验证并首次启动VLC。
+# Phase 2: 只有BootGate PASS后才安装VLC、建目录、push两文件、按host/device尺寸验证并首次启动VLC。
 & $Helper -Phase PrepareMedia -DeviceIp $Ip -SessionRoot $SessionRoot `
   -VlcApk 'C:\fixtures\vlc-arm64.apk' `
   -AvcFixture 'C:\fixtures\diag1a-avc-aac-1080p30.mp4' `
@@ -103,7 +112,10 @@ activity启动；最后手段是人工执行`monkey -p org.videolan.vlc -c andro
 
 `-ClearLogcat`只允许在Pre phase先保存baseline后，经用户输入确认再执行；failure之后绝不clear logcat，
 也不clear pstore/tombstones。脚本不自动reboot、不自动控制播放器、不改HDMI/`wm size`、不fix
-quarter-screen、不循环HEVC。物理结果前Gate 3保持HOLD。
+quarter-screen、不循环HEVC。
+Formal helper通过`Write-Utf8NoBom`保证空crash stream也生成明确的0-byte `crash-buffer.txt`；本次
+AVCPost、HEVCPost、InteractionPost、AVCRegressionPost和Final证据已实际证明该行为。Fixture校验仅为
+host/device **size equality**，不是SHA-256或byte-for-byte内容证明。Compat1a物理PASS后Gate 3总体仍HOLD。
 
 ### 3A — architecture regression confirmation
 

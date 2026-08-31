@@ -41,6 +41,20 @@
     "full_vintf_exit": 65,
     "full_vintf": "INHERITED_CONFIG_NFS_FS_MISMATCH_NOT_PASS"
   },
+  "physical": {
+    "status": "PHYSICAL_PASS_AUTHORIZED_SDR_1080P_YV12_ONLY",
+    "result": "docs/m8/candidates/a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd-physical-result.json",
+    "evidence": "/work/evidence/ubox10/r7-compat1a-physical-pass/unpacked",
+    "manifest": "SHA256SUMS",
+    "manifest_entries_ok": 107,
+    "bootgate": "PASS",
+    "initial_avc_control": "PASS",
+    "primary_sdr_hevc_repair": "PASS",
+    "hevc_interaction": "PASS",
+    "formal_avc_regression": "PASS",
+    "final_crash_census": "PASS",
+    "supplemental_avc": "SUPPLEMENTAL_UNPLANNED_AVC_AFTER_HEVC_NOT_FORMAL_REGRESSION"
+  },
   "workflow": [
     "FLASH", "INITIAL_BOOT", "BOOTGATE", "REVIEW_BOOTGATE",
     "INSTALL_VERIFY_VLC", "CREATE_MEDIA_DIRECTORY", "PUSH_BOTH_FIXTURES",
@@ -50,9 +64,9 @@
   ],
   "governance": {
     "canonical_r7": "PASS_FROZEN_UNCHANGED",
-    "gate3": "HOLD",
+    "gate3": "HOLD_OPEN_MEDIA_SUBGATE_PASS",
     "r8": "NOT_AUTHORIZED_NOT_BUILT",
     "development_branch_created": false,
-    "physical_status": "PENDING_BOOT_GATE"
+    "physical_status": "PHYSICAL_PASS_AUTHORIZED_SDR_1080P_YV12_ONLY"
   }
 }

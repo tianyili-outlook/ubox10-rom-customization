@@ -138,6 +138,13 @@
     "entries": 49,
     "classification": "BOOT_PASS_AVC_PASS_HEVC_SHADOW_FD_SIZE_BLOCKER_TRANSLATION_NOT_REACHED"
   },
+  "subsequent_physical_result": {
+    "status": "PHYSICAL_PASS_AUTHORIZED_SDR_1080P_YV12_ONLY",
+    "record": "docs/m8/candidates/a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd-physical-result.json",
+    "evidence": "/work/evidence/ubox10/r7-compat1a-physical-pass/unpacked",
+    "manifest_entries_ok": 107,
+    "runtime_image_rebuilt": false
+  },
   "outer_delta": {
     "changed_payloads_from_base": ["Vsuper.fex", "Vvbmeta_system.fex", "super.fex", "vbmeta_system.fex"]
   },
@@ -148,6 +155,9 @@
     "r8_authorized": false,
     "development_branch_created": false,
     "compat1_physical_status": "BOOT_PASS_AVC_PASS_HEVC_FAIL_SHADOW_FD_IMPLEMENTATION_BLOCKER",
-    "physical_status": "NOT_YET_VALIDATED"
+    "record_scope": "BUILD_INPUT_BEFORE_COMPAT1A_PHYSICAL_VALIDATION",
+    "physical_status": "NOT_YET_VALIDATED_AT_BUILD_TIME",
+    "current_physical_status": "PHYSICAL_PASS_AUTHORIZED_SDR_1080P_YV12_ONLY",
+    "current_physical_result": "docs/m8/candidates/a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd-physical-result.json"
   }
 }

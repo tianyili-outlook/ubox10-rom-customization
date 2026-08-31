@@ -2,7 +2,7 @@
 
 ## Freeze decision
 
-`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为稳定日用回退。`a16-prototype-a-r4` 已冻结为 **PHYSICAL PASS / ACCEPTED Android 16 ARM32 ARCHITECTURE CONTROL**。Exact `a16-prototype-b-r7` 现已物理证明 Android 16/API36、canonical mixed ABI、dual zygote、ARM64-parented system_server、stable ARM64 SurfaceFlinger、mapper/gralloc 与 Mali-G31 UI，故冻结为 **PHYSICAL ARCHITECTURE PASS / ACCEPTED ANDROID 16 ARM64 MIXED-ARCHITECTURE ARCHITECTURE BASELINE**。Gate 3 当前为 **HOLD：H.264+AAC PHYSICAL PASS / HEVC ARM64 RenderEngine BLOCKER**；这不降级 r7 architecture pass。Diag1a paired evidence已把HEVC first fatal精确定位为1920x1088 YV12 external buffer的 `eglCreateImageKHR` / `EGL_BAD_ALLOC 0x3003`。Diag2实机证明1080 visible crop修正已生效但失败不变，故“ACodec visible crop alone”已被否证。Diag3 boot gate PASS，但两次AVC均在 `CODEC_PRE_USE` 被diagnostic FNV unsigned-wrap的non-recovering UBSan终止，尚未测试decoder hypothesis或HEVC。Diag3a仅以 `__builtin_mul_overflow` 保留同一FNV modulo-2^64结果，现为 **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE**；下一步先做BootGate与AVC-only preservation retest，通过前不得运行HEVC。用户明确把一次性、自动恢复的 boot-time `getAudioPort` SIGSEGV 从旧 Gate 2 startup-stability 条件改列为 **KNOWN / UNFIXED / POST-GATE P1 STABILIZATION DEBT**；本次时间线也证明 audio crash不是 HEVC first fatal。Gate 2 仍为 **CLOSED / PASS**。当前唯一 P0 是 exact-r7 Gate 3 functional preservation；不实施 r8、architecture/provider 变更或 P1 polish。
+`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为稳定日用回退。`a16-prototype-a-r4` 已冻结为 **PHYSICAL PASS / ACCEPTED Android 16 ARM32 ARCHITECTURE CONTROL**。Exact `a16-prototype-b-r7` 现已物理证明 Android 16/API36、canonical mixed ABI、dual zygote、ARM64-parented system_server、stable ARM64 SurfaceFlinger、mapper/gralloc 与 Mali-G31 UI，故冻结为 **PHYSICAL ARCHITECTURE PASS / ACCEPTED ANDROID 16 ARM64 MIXED-ARCHITECTURE ARCHITECTURE BASELINE**。Gate 3 当前仍为 **HOLD / OPEN**，但 compat1a 已把授权的 SDR 1080p YV12 AVC+HEVC media/codec preservation subgate 物理关闭为 **PASS**：正式初始 AVC、单次主 HEVC、第二次 HEVC interaction、正式 AVC regression 与 Final census 均 PASS；HEVC shadow translation/EGL/backend path 被重复实机证明。Main10/HDR/AFBC/protected/4K及其余 Gate 3 项目仍未证明。用户明确把一次性、自动恢复的 boot-time `getAudioPort` SIGSEGV 从旧 Gate 2 startup-stability 条件改列为 **KNOWN / UNFIXED / POST-GATE P1 STABILIZATION DEBT**；它不是 HEVC first fatal。Gate 2 仍为 **CLOSED / PASS**。当前唯一 P0 是 exact-r7 Gate 3 functional preservation；不实施 r8、architecture/provider 变更或 P1 polish。
 
 ## Android 16 Gate 1 / Gate 2 — Prototype A ARM32
 
@@ -185,8 +185,8 @@
   完成 UP/DOWN/LEFT/RIGHT/OK/BACK/HOME/MENU/VOL±/POWER physical→Linux→Android key matrix；完成
   Wi-Fi connected→OFF→ON→reassociation→DHCP/L3/DNS/network-ADB recovery；验证 `/data`、package/
   settings与可用的 USB/Ethernet fixture；并做 action 前后 crash/restart census，严格分离 known audio debt。
-  当前分项：H.264+AAC **PHYSICAL PASS**；HEVC **FAIL / BLOCKER**，first fatal为 ARM64
-  SurfaceFlinger对 1920x1088 YV12 readable buffer建立 Ganesh backend texture失败。无 kernel reboot；
+  历史分项：H.264+AAC **PHYSICAL PASS**；HEVC曾为 **FAIL / BLOCKER**，first fatal为 ARM64
+  SurfaceFlinger对 1920x1088 YV12 readable buffer建立 Ganesh backend texture失败。该历史失败无 kernel reboot；
   audio startup crash在 framework restart之后，**NOT CAUSAL**。AVC/HEVC eventual CLIENT/DEVICE type均
   未捕获，且 AOSP source证明 external texture mapping先于 HWC composition decision，故“AVC仅因 overlay
   避免 RenderEngine import”不是成立的因果解释。前次audit决定保持
@@ -212,9 +212,16 @@
   shadow的`fstat.st_size=0`，故translation/view未到达并fail-closed；ABI hypothesis未被否定。后继
   `a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd`只把shadow backing改为精确0x6000 sealed memfd，
   仍仅为exact SDR/YV12/non-AFBC/non-protected 1920x1088复制完整56-byte active attr且不写decoder sidecar；
-  compat1→compat1a signed runtime delta exact `/system/bin/surfaceflinger`一项，现为 **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE**。
-  下一步强制顺序：flash→BootGate并先复核→只有PASS后才安装VLC/传输媒体/首次启动完成onboarding与scan→AVC control并复核→单次SDR YV12 HEVC→若稳定则pause/resume/seek/back→再次AVC regression，然后停止；
-  不测试Main10/HDR/AFBC/protected/4K。Gate 3仍HOLD，r8仍未授权。Gate 3 PASS 前不创建
+  compat1→compat1a signed runtime delta exact `/system/bin/surfaceflinger`一项。Exact compat1a实机按
+  BootGate→VLC/media setup→formal AVC→primary HEVC→supplemental unplanned AVC→second HEVC interaction→
+  formal AVC regression→Final顺序完成；补充AVC明确不是formal regression。两次HEVC各有14个buffer完整达到
+  `eligible=1`→sized memfd→23544→128/56-byte translation→CLONE→`egl_import_result=1`→
+  `EGL_CREATE_IMAGE result=1`→`BACKEND_TEXTURE valid=1`；正式AVC首测与regression各9个buffer均为
+  `eligible=0 reason=metadata_gate`/original view且成功import。Picture/HDMI audio及pause/resume/seek/back
+  PASS，boot ID和SF/zygote/system_server PID连续，Final无新增crash/tombstone。因此授权的
+  **SDR 1080p YV12 AVC+HEVC media subgate = PHYSICAL PASS**。
+  Main10/HDR/AFBC/protected/4K未测试；Gate-3 VP9、full remote matrix、Wi-Fi OFF→ON recovery、storage/
+  package/settings/USB/Ethernet sanity及其余crash census仍开放。Gate 3总体仍HOLD，r8仍未授权。Gate 3 PASS 前不创建
   `codex/m8-a16-development`，该 branch 目前不存在。
 
 ## Post-Gate stabilization / release hardening
