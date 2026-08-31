@@ -22,9 +22,10 @@ unchanged SurfaceFlinger fatal/userspace restart. AVC and HEVC allocation/import
 otherwise materially identical. Diag2 physically retained the AVC-style 1920x1080 visible crop on
 the HEVC 1920x1088 allocation, yet the same warning, `EGL_BAD_ALLOC`, fatal and userspace restart
 remained. ACodec visible crop alone is therefore disproven. Diag3a subsequently proved the first
-private discriminator and the Mali/Allwinner metadata ABI collision described below. The first
-bounded compatibility experiment is offline checked but not physically validated. The architecture
-pass itself is not downgraded.
+private discriminator and the Mali/Allwinner metadata ABI collision described below. Compat1
+physically passed boot and AVC, but its legacy ashmem shadow reported `st_size=0`, so translation
+was never reached. Compat1a corrects only that fd boundary and is offline checked pending its
+physical BootGate. The architecture pass itself is not downgraded.
 
 | Control | State |
 |---|---|
@@ -36,7 +37,8 @@ pass itself is not downgraded.
 | Single-variable crop diagnostic `a16-prototype-b-r7-diag2-hevc-crop` | **PHYSICAL TESTED / CROP DELTA ACTIVATED / HYPOTHESIS DISPROVEN / HEVC STILL FAILS / CLOSED / NOT r8** |
 | Private-buffer metadata diagnostic `a16-prototype-b-r7-diag3-private-buffer-metadata` | **PHYSICAL BOOT PASS / AVC BLOCKED BY PROVEN DIAGNOSTIC UBSAN REGRESSION / CLOSED / NOT r8** |
 | Transparency-corrected diagnostic `a16-prototype-b-r7-diag3a-private-buffer-metadata` | **PHYSICAL AVC PASS / HEVC REPRODUCED / MALI METADATA ABI ROOT CAUSE PROVEN / DIAGNOSTIC CLOSED / NOT r8** |
-| SDR shadow compatibility experiment `a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow` | **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE / EXPERIMENTAL REPAIR / NOT r8 / NOT RELEASE** |
+| SDR shadow compatibility experiment `a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow` | **PHYSICAL BOOT PASS / AVC PASS / HEVC FAIL — SHADOW FD IMPLEMENTATION BLOCKER / TRANSLATION NOT TESTED / SUPERSEDED** |
+| Sized-shadow-fd experiment `a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd` | **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE / EXPERIMENTAL REPAIR / NOT r8 / NOT RELEASE** |
 
 The only active P0 is **Gate 3 — Android 16 Mixed-Architecture Functional Preservation**. Exact
 r7-diag1 physically failed its boot gate because its current-toolchain ARM32 gralloc introduced the
@@ -61,12 +63,14 @@ at `0x80..0x8c` as signed crop. AVC leaves these words negative; HEVC initialize
 non-negative, so Mali rejects the crop and returns `EGL_BAD_ALLOC`. This is an ABI collision, not
 random corruption.
 
-Compat1 changes only `/system/bin/surfaceflinger`. At the Skia/Mali consumer boundary, an exact
+Compat1a changes only `/system/bin/surfaceflinger` relative to compat1. At the Skia/Mali consumer boundary, an exact
 1920x1088 SDR YV12, non-AFBC, non-protected buffer receives an independent 0x6000-byte shadow whose
 complete active 56-byte attr block is copied from offset 23544 to legacy offset `0x80`; the original
 decoder-owned handle and sidecar remain read-only and unchanged. All other runtime files are
-byte-identical to diag3a. Compat1 is offline checked and awaits BootGate, AVC control/review, one SDR
-YV12 HEVC run, interaction checks, then AVC regression. Gate 3 remains HOLD. Canonical r7 remains
+byte-identical. Compat1a replaces only the physically blocked legacy ashmem shadow with an exact
+0x6000-byte sealed memfd. It awaits BootGate; only after BootGate review PASS may VLC installation,
+media transfer and first-launch setup occur, followed by AVC control/review, one SDR YV12 HEVC run,
+interaction checks, then AVC regression. Gate 3 remains HOLD. Canonical r7 remains
 frozen. This is not r8; no new development branch is authorized. The separate
 post-restart quarter-screen is strongly supported to be a retained display recovery defect that
 selects proven 3840x2160p60 HDMI mode 34 while SurfaceFlinger remains 1920x1080. The known boot-time

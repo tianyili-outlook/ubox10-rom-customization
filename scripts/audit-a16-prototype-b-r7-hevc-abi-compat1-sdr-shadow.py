@@ -309,7 +309,7 @@ class Auditor(DIAG1.Auditor):
             },
         })
         audit["limitations"] = [
-            "Compat1 has not been flashed or physically tested.",
+            f"{self.compat1['id']} has not been flashed or physically tested.",
             "AVC must pass first before one SDR YV12 HEVC experiment.",
             "Main10, HDR, AFBC, protected playback and 4K are explicitly outside this candidate.",
             "Full VINTF remains exit 65 for inherited CONFIG_NFS_FS=y versus FCM-6 n and is NOT PASS.",

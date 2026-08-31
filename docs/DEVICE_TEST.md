@@ -3,7 +3,7 @@
 ## 当前状态
 
 - 最后报告的 Android 16 物理架构验收镜像：`out/candidates/a16-prototype-b-r7/x12-a16-prototype-b-r7.img`，1,641,773,056 bytes / SHA-256 `A1F58668AEFFC9DC83CFFD8A49A309839332B6616C02153DCC00A71136A7AA27`
-- 当前项目状态：**ANDROID 16 ARM64 MIXED ARCHITECTURE — R7 PHYSICAL ARCHITECTURE PASS / FROZEN / GATE 3 HOLD — H.264 PASS / HEVC BLOCKER**。Diag3a已物理保持AVC并证明HEVC的Allwinner extended metadata与Mali r20p0 legacy metadata ABI冲突。`a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow`（1,641,822,208 bytes / `D4FAFE24FE2A743764DA50769FDBD8D6B6C7152646017C3C4F0B09C8FBBEFAAB`）现为 **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE / EXPERIMENTAL REPAIR / NOT r8 / NOT RELEASE**。
+- 当前项目状态：**ANDROID 16 ARM64 MIXED ARCHITECTURE — R7 PHYSICAL ARCHITECTURE PASS / FROZEN / GATE 3 HOLD — H.264 PASS / HEVC BLOCKER**。Compat1实机Boot/AVC PASS，但shadow fd的`fstat.st_size=0`使translation未到达。`a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd`（1,641,822,208 bytes / `9E9592BF420F40A386BC347B027A85B2F9ED0A44DDB132BDBAB9882905F75722`）现为 **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE / EXPERIMENTAL REPAIR / NOT r8 / NOT RELEASE**。
 - Android 16 ARM32 control：`a16-prototype-a-r4` **FROZEN / PHYSICAL PASS**。Boot-time legacy audio crash 保持 **KNOWN / UNFIXED / POST-ARCHITECTURE P1**；full VINTF 保持 inherited NFS exit 65 / **NOT PASS**。
 - 保留的设备验收基线：`out/candidates/m8b-remote-r1/x12-m8b-remote-r1.img`，状态 **DEVICE ACCEPTED / REMOTE PASS**（继承 **AUDIO PASS / IME PASS**）。
 - 大小 / SHA-256：1031723008 bytes / `F3B09E5565AC4ED4E5EE326D392622E7B036A8519B8444B966E77CC4751B814A`
@@ -29,37 +29,77 @@ accepted baseline 已确认 Treble/VNDK、primary HAL/output、HEVC+AAC HDMI 音
 
 ## Gate 3 — Android 16 Mixed-Architecture Functional Preservation
 
-状态：**HOLD — COMPAT1 SDR YV12 MALI METADATA SHADOW READY FOR PHYSICAL BOOT GATE**。Gate 3
+状态：**HOLD — COMPAT1A SIZED SDR YV12 MALI METADATA SHADOW READY FOR PHYSICAL BOOT GATE**。Gate 3
 architecture/functional baseline仍是 exact frozen r7。Diag3a实机AVC PASS并证明HEVC decoder对extended
 `sunxi_metadata`的合法初始化被Mali r20p0按legacy attr/crop ABI误读。Compat1不改producer sidecar、
 decoder、gralloc、Mali blob或fatal；它只在Skia/Mali消费边界为exact 1920x1088 SDR YV12、non-AFBC、
 non-protected buffer提供独立shadow view。结果严格使用`PASS`、`FAIL`或`NOT TESTED`。
 
-### Compat1 physical gate
+### Compat1a physical gate — mandatory BootGate-first order
 
-1. flash exact hash-pinned compat1：`D4FAFE24FE2A743764DA50769FDBD8D6B6C7152646017C3C4F0B09C8FBBEFAAB`；
-2. 保留UART，从上电到launcher出现，执行`BootGate`，确认`sys.boot_completed=1`以及SurfaceFlinger、
-   zygotes、system_server、gralloc/HWC稳定；
-3. 先执行`AVCPre`→`AVCLive`→手工播放一次known-good AVC→`AVCPost`，确认picture/audio与diag3a
-   control一致，然后**停止复核AVC**；
-4. AVC通过后才执行`HEVCPre`→`HEVCLive`→手工播放一次authorized SDR YV12 HEVC→`HEVCPost`；
-5. HEVC必须看到`UBOX_R7_COMPAT1 eligible=1`、shadow/translation/view成功、
-   `egl_import_result=1`、BackendTexture valid，且无SurfaceFlinger abort/framework restart；
-6. 若稳定，手工pause/resume/seek/back后执行`InteractionPost`；再跑一次AVC regression并执行`Final`；
-7. 到此停止。Main10、HDR、AFBC、protected playback和4K均不在本候选授权范围。
+顺序不可折叠或调整：**flash → boot → BootGate → REVIEW BOOTGATE → VLC安装/验证 → 创建媒体目录 →
+传输并验证两份fixture → 首次启动VLC并完成onboarding/权限/scan → AVCPre/Live/Post → REVIEW AVC →
+HEVCPre/Live/Post → REVIEW HEVC → interaction → AVC regression → Final**。
 
-使用独立helper（ADB固定使用显式path，port默认7896，输出位于Downloads timestamped目录）：
+BootGate前禁止安装VLC、复制媒体、首次启动VLC或播放任何媒体。BootGate失败立即停止。VLC和媒体
+准备全部完成前禁止开始AVCPre；AVC未复核PASS前禁止HEVC；一次HEVC失败后禁止自动重复。
+换言之，**AVC通过后才执行**唯一一次授权的SDR YV12 HEVC测试。
+
+Windows PowerShell 7示例（必须显式传当前LAN IP；ADB不依赖PATH）：
 
 ```powershell
-$Helper = '.\scripts\capture-a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow.ps1'
-& $Helper -Phase BootGate
-& $Helper -Phase AVCPre -ClearLogcat
-& $Helper -Phase AVCLive       # 运行期间手工播放AVC一次，完成后Ctrl+C
-& $Helper -Phase AVCPost       # STOP并复核
-& $Helper -Phase HEVCPre -ClearLogcat
-& $Helper -Phase HEVCLive      # 仅手工播放一次SDR YV12 HEVC
-& $Helper -Phase HEVCPost
+$Adb = 'C:\platform-tools\adb.exe'
+$Ip = '<current-device-LAN-IP>'
+& $Adb connect "${Ip}:7896"
+$Helper = '.\scripts\capture-a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd.ps1'
+
+# Phase 0/1: flash、normal boot，然后第一件事就是BootGate。
+& $Helper -Phase BootGate -DeviceIp $Ip
+# 记录脚本打印的SessionRoot，先人工复核；失败则STOP。
+& $Helper -Phase ReviewBootGate -DeviceIp $Ip -SessionRoot $SessionRoot -ConfirmBootGatePass
+
+# Phase 2: 只有BootGate PASS后才安装VLC、建目录、push两文件、验证并首次启动VLC。
+& $Helper -Phase PrepareMedia -DeviceIp $Ip -SessionRoot $SessionRoot `
+  -VlcApk 'C:\fixtures\vlc-arm64.apk' `
+  -AvcFixture 'C:\fixtures\diag1a-avc-aac-1080p30.mp4' `
+  -HevcFixture 'C:\fixtures\diag1a-hevc-aac-1080p30.mp4'
+# 完成welcome/onboarding、媒体权限和scan；确认两文件可见，且不要播放。
+& $Helper -Phase ConfirmMediaReady -DeviceIp $Ip -SessionRoot $SessionRoot -ConfirmMediaReady
+
+# PrepareMedia内部使用的显式ADB操作如下（用于审计；使用helper时不要另跑一遍）：
+& $Adb connect "${Ip}:7896"
+& $Adb -s "${Ip}:7896" get-state
+& $Adb -s "${Ip}:7896" install -r 'C:\fixtures\vlc-arm64.apk'
+& $Adb -s "${Ip}:7896" shell pm path org.videolan.vlc
+& $Adb -s "${Ip}:7896" shell mkdir -p /sdcard/Movies/UBOX10-COMPAT1A/
+& $Adb -s "${Ip}:7896" push 'C:\fixtures\diag1a-avc-aac-1080p30.mp4' /sdcard/Movies/UBOX10-COMPAT1A/diag1a-avc-aac-1080p30.mp4
+& $Adb -s "${Ip}:7896" push 'C:\fixtures\diag1a-hevc-aac-1080p30.mp4' /sdcard/Movies/UBOX10-COMPAT1A/diag1a-hevc-aac-1080p30.mp4
+& $Adb -s "${Ip}:7896" shell stat /sdcard/Movies/UBOX10-COMPAT1A/diag1a-avc-aac-1080p30.mp4 /sdcard/Movies/UBOX10-COMPAT1A/diag1a-hevc-aac-1080p30.mp4
+& $Adb -s "${Ip}:7896" shell am start -n org.videolan.vlc/.StartActivity
+
+# Phase 3: AVC control，一次手工播放，然后STOP复核。
+& $Helper -Phase AVCPre -DeviceIp $Ip -SessionRoot $SessionRoot -ClearLogcat
+& $Helper -Phase AVCLive -DeviceIp $Ip -SessionRoot $SessionRoot
+& $Helper -Phase AVCPost -DeviceIp $Ip -SessionRoot $SessionRoot
+& $Helper -Phase ReviewAVC -DeviceIp $Ip -SessionRoot $SessionRoot -ConfirmAvcPass
+
+# Phase 4: 仅在AVC PASS后手工播放一次SDR YV12 HEVC，然后STOP复核。
+& $Helper -Phase HEVCPre -DeviceIp $Ip -SessionRoot $SessionRoot -ClearLogcat
+& $Helper -Phase HEVCLive -DeviceIp $Ip -SessionRoot $SessionRoot
+& $Helper -Phase HEVCPost -DeviceIp $Ip -SessionRoot $SessionRoot
+# STOP并复核；只有稳定PASS后才允许interaction和AVC regression。
+& $Helper -Phase ReviewHEVC -DeviceIp $Ip -SessionRoot $SessionRoot -ConfirmHevcPass
+& $Helper -Phase InteractionPost -DeviceIp $Ip -SessionRoot $SessionRoot
+& $Helper -Phase AVCRegressionPre -DeviceIp $Ip -SessionRoot $SessionRoot -ClearLogcat
+& $Helper -Phase AVCRegressionLive -DeviceIp $Ip -SessionRoot $SessionRoot
+& $Helper -Phase AVCRegressionPost -DeviceIp $Ip -SessionRoot $SessionRoot
+& $Helper -Phase Final -DeviceIp $Ip -SessionRoot $SessionRoot
 ```
+
+如`am start -n org.videolan.vlc/.StartActivity`失败，人工执行
+`& $Adb -s "${Ip}:7896" shell cmd package resolve-activity --brief org.videolan.vlc`，再用解析出的
+activity启动；最后手段是人工执行`monkey -p org.videolan.vlc -c android.intent.category.LAUNCHER 1`。
+任何fallback也必须在BootGate PASS之后、AVCPre之前。
 
 `-ClearLogcat`只允许在Pre phase先保存baseline后，经用户输入确认再执行；failure之后绝不clear logcat，
 也不clear pstore/tombstones。脚本不自动reboot、不自动控制播放器、不改HDMI/`wm size`、不fix

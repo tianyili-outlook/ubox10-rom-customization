@@ -1,0 +1,153 @@
+{
+  "schema": 1,
+  "id": "a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd",
+  "label": "EXPERIMENTAL REPAIR / COMPAT1 SHADOW-FD SIZE CORRECTION / NOT r8 / NOT RELEASE",
+  "status": "EXPERIMENTAL_REPAIR_AUTHORIZED",
+  "base_candidate": {
+    "path": "out/candidates/a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow/x12-a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow.img",
+    "size": 1641822208,
+    "sha256": "D4FAFE24FE2A743764DA50769FDBD8D6B6C7152646017C3C4F0B09C8FBBEFAAB"
+  },
+  "base_artifacts": {
+    "system_a": {
+      "path": "out/candidates/a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow/system_a.img",
+      "size": 1651167232,
+      "sha256": "2D3123E33ABAD2FA9BEE56410E45F0C7080B1B8F351C6DB898477A14467B6435"
+    },
+    "vendor_a": {
+      "path": "out/candidates/a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow/vendor_a.img",
+      "size": 150994944,
+      "sha256": "DEF708A526ACDF8E1F11B55AF095F7AA704236969814E5AE0191F5C98CF2D206"
+    },
+    "super_raw": {
+      "path": "out/candidates/a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow/super.raw.img",
+      "size": 3221225472,
+      "sha256": "291BB18F7F75E6206C89F12042C9CF0AD14A3CAF6D44B23E3C3511265ED08BC5"
+    },
+    "product_a": {
+      "path": "out/candidates/a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow/candidate-logical/product_a.img",
+      "size": 272629760,
+      "sha256": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974"
+    },
+    "vendor_dlkm": {
+      "path": "out/candidates/a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow/candidate-logical/vendor_dlkm_a.img",
+      "size": 6680576,
+      "sha256": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07"
+    },
+    "boot": {
+      "path": "out/candidates/a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow/boot.fex",
+      "size": 67108864,
+      "sha256": "527CF878B015CFAE4E8600BD750C7C73F45F4290B5CFEFEDBD1AD9AC347B8063"
+    }
+  },
+  "source_contract": {
+    "tag": "android-security-16.0.0_r7",
+    "build_id": "BP2A.250805.034",
+    "api": 36,
+    "manifest_commit": "ebea28d151539ecf0730b1a4ab92ac33edc17ac9",
+    "external_skia_commit": "4c18a9680d52c2cd5e35cfef2f548635a445fafe",
+    "diag3a_config_sha256": "0A70F78125987EB0ABEF8929C76CD496F08752BBD4BCD492B9440BD90F62D5C6",
+    "overlay": "configs/aosp/architecture-ceiling-a16/diagnostics/r7-hevc-abi-compat1a-sdr-shadow-fd",
+    "files": {
+      "external/skia/src/gpu/ganesh/gl/AHardwareBufferGL.cpp": {
+        "compat1_sha256": "6D44E630C8553EB08F0566BCFD1404232641FDBA9049AF93C38C29EEF4A55C3F",
+        "size": 22291,
+        "sha256": "328CC3F7E68616E1B19522D5B9047FB2FA6CABC71C1DC28DCF33C02A7691C1D3"
+      },
+      "external/skia/src/gpu/ganesh/gl/UBOXR7Compat1Metadata.h": {
+        "compat1_sha256": "DC745282D45871A0F05473C7C684BAE4FCFA707C11ED66A97D3E764A1401F61F",
+        "size": 2560,
+        "sha256": "98228A9599EEDFCD6C073124C31A48E105E3360E7C62ED05C4C77D2300951294"
+      }
+    }
+  },
+  "runtime_change": {
+    "name": "surfaceflinger",
+    "partition_path": "/system/bin/surfaceflinger",
+    "source_path": "/work/src/ubox10-a16-ceiling/out-ceiling-b1/target/product/ubox10_ceiling_arm64/system/bin/surfaceflinger",
+    "diag3a_size": 8573352,
+    "diag3a_sha256": "5BD92DAB98969B774469ED6581E9CD32D9C57E93D63A4CF0E126414B568CE838",
+    "compat1_size": 8577632,
+    "compat1_sha256": "97A476E550015C50CA92302418B6625171995192161A37EBB3EBD7AF7102745C",
+    "base_size": 8577632,
+    "base_sha256": "97A476E550015C50CA92302418B6625171995192161A37EBB3EBD7AF7102745C",
+    "size": 8577592,
+    "sha256": "06C960E672863AD557AF921565621997CB9B113BA2290049AF91028A405CD0A5",
+    "elf_class": "ELF64",
+    "architecture": "AArch64",
+    "build_id": "c026bfe7ef6467a13646d4cf6e481d23",
+    "soname": null,
+    "mode": "0755",
+    "uid": 0,
+    "gid": 2000,
+    "selinux": "u:object_r:surfaceflinger_exec:s0",
+    "ctime": "0x6a8ff745",
+    "atime": "0x6a8ff745",
+    "mtime": "0x6a8ff745",
+    "crtime": "0x6a8ffae5",
+    "added_strong_imports": [
+      "AHardwareBuffer_createFromHandle",
+      "AHardwareBuffer_release",
+      "native_handle_clone"
+    ],
+    "compat1_added_strong_imports": [],
+    "reason": "replace only the compat1 legacy ashmem shadow backing with an exact-sized sealed memfd"
+  },
+  "preserved_runtime_files": {
+    "libstagefright64": {
+      "path": "/system/lib64/libstagefright.so",
+      "candidate_file": "diag3a-libstagefright64",
+      "size": 2079968,
+      "sha256": "3FDE0D408ED26CE76C7CAE2DB3DD41E38B1783B982CFAB251518D778C39F13CF"
+    },
+    "gralloc32": {
+      "path": "/vendor/lib/hw/gralloc.apollo.so",
+      "candidate_file": "diag3a-gralloc32",
+      "size": 64852,
+      "sha256": "7E654E0F9D968C5FA9C9F31893E0E60DCF6605E41A82783E6376A1D7D66194D5"
+    },
+    "gralloc64": {
+      "path": "/vendor/lib64/hw/gralloc.apollo.so",
+      "candidate_file": "diag3a-gralloc64",
+      "size": 93664,
+      "sha256": "1F91BF6FA547DA11E42068C1A0C612E41B5C800AEE9CDAB2D320DD469295CB19"
+    }
+  },
+  "compatibility": {
+    "scope": "EXACT_1920X1088_SDR_YV12_NON_AFBC_NON_PROTECTED",
+    "metadata_size": 24576,
+    "active_attr_offset": 23544,
+    "legacy_attr_offset": 128,
+    "attr_bytes": 56,
+    "fd_allocator": "direct libcutils-equivalent memfd_create syscall plus ftruncate and grow/shrink seals",
+    "fd_type_marker": "memfd_ftruncate_sealed",
+    "handle_method": "AHARDWAREBUFFER_CREATE_FROM_HANDLE_METHOD_CLONE",
+    "original_sidecar_write": false,
+    "prefix": "UBOX_R7_COMPAT1",
+    "unsupported": ["Main10", "HDR", "AFBC", "protected", "4K"]
+  },
+  "instrumentation": {
+    "prefixes": ["UBOX_R7_DIAG1", "UBOX_R7_DIAG3", "UBOX_R7_COMPAT1"],
+    "diag3_boundaries": ["ALLOC_INITIAL", "REMOTE_IMPORT", "CODEC_PRE_USE", "CODEC_POST_FBD", "EGL_PREIMPORT"],
+    "compat1_records": ["eligible", "shadow_created", "translated", "view_created", "egl_import_result"],
+    "fatal_retained": true
+  },
+  "physical_evidence": {
+    "path": "/work/evidence/ubox10/r7-compat1-physical-fail/unpacked",
+    "manifest": "SHA256SUMS.linux",
+    "entries": 49,
+    "classification": "BOOT_PASS_AVC_PASS_HEVC_SHADOW_FD_SIZE_BLOCKER_TRANSLATION_NOT_REACHED"
+  },
+  "outer_delta": {
+    "changed_payloads_from_base": ["Vsuper.fex", "Vvbmeta_system.fex", "super.fex", "vbmeta_system.fex"]
+  },
+  "governance": {
+    "architecture_ceiling": "PASS_FROZEN_UNCHANGED",
+    "gate3": "HOLD",
+    "candidate_classification": "EXPERIMENTAL_REPAIR_NOT_R8_NOT_RELEASE",
+    "r8_authorized": false,
+    "development_branch_created": false,
+    "compat1_physical_status": "BOOT_PASS_AVC_PASS_HEVC_FAIL_SHADOW_FD_IMPLEMENTATION_BLOCKER",
+    "physical_status": "NOT_YET_VALIDATED"
+  }
+}

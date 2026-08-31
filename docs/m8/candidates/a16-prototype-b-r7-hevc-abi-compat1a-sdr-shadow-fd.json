@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "id": "a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd",
+  "classification": "EXPERIMENTAL_REPAIR_NOT_R8_NOT_RELEASE",
+  "base": {
+    "id": "a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow",
+    "size": 1641822208,
+    "sha256": "D4FAFE24FE2A743764DA50769FDBD8D6B6C7152646017C3C4F0B09C8FBBEFAAB",
+    "physical": "BOOT_PASS_AVC_PASS_HEVC_FAIL_SHADOW_FD_IMPLEMENTATION_BLOCKER"
+  },
+  "cause": {
+    "path": "libcutils ashmem_create_region legacy /dev/ashmem branch",
+    "set_size": "ASHMEM_SET_SIZE stores ashmem_area::size",
+    "fstat": "character-device inode st_size remains 0",
+    "translation_reached": false
+  },
+  "correction": {
+    "fd_type": "memfd_ftruncate_sealed",
+    "size": 24576,
+    "seals": ["F_SEAL_GROW", "F_SEAL_SHRINK"],
+    "eligibility_unchanged": true,
+    "translation_unchanged": true,
+    "original_sidecar_write": false
+  },
+  "runtime_delta_from_compat1": {
+    "/system/bin/surfaceflinger": {
+      "old_sha256": "97A476E550015C50CA92302418B6625171995192161A37EBB3EBD7AF7102745C",
+      "new_sha256": "06C960E672863AD557AF921565621997CB9B113BA2290049AF91028A405CD0A5",
+      "elf": "ELF64_AARCH64",
+      "strong_import_delta": []
+    }
+  },
+  "image": {
+    "path": "out/candidates/a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd/x12-a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd.img",
+    "size": 1641822208,
+    "sha256": "9E9592BF420F40A386BC347B027A85B2F9ED0A44DDB132BDBAB9882905F75722"
+  },
+  "offline": {
+    "status": "OFFLINE_CHECKED_READY_FOR_PHYSICAL_BOOT_GATE",
+    "system_vintf": "PASS",
+    "full_vintf_exit": 65,
+    "full_vintf": "INHERITED_CONFIG_NFS_FS_MISMATCH_NOT_PASS"
+  },
+  "workflow": [
+    "FLASH", "INITIAL_BOOT", "BOOTGATE", "REVIEW_BOOTGATE",
+    "INSTALL_VERIFY_VLC", "CREATE_MEDIA_DIRECTORY", "PUSH_BOTH_FIXTURES",
+    "VERIFY_FIXTURES", "FIRST_LAUNCH_VLC_AND_COMPLETE_SETUP", "AVC_PRE_LIVE_POST",
+    "REVIEW_AVC", "ONE_HEVC_PRE_LIVE_POST", "REVIEW_HEVC", "INTERACTION",
+    "AVC_REGRESSION", "FINAL"
+  ],
+  "governance": {
+    "canonical_r7": "PASS_FROZEN_UNCHANGED",
+    "gate3": "HOLD",
+    "r8": "NOT_AUTHORIZED_NOT_BUILT",
+    "development_branch_created": false,
+    "physical_status": "PENDING_BOOT_GATE"
+  }
+}

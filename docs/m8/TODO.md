@@ -208,10 +208,12 @@
   `a16-prototype-b-r7-diag3a-private-buffer-metadata`只把该诊断hash改为builtin显式wrapped result并保留全部五个boundary；
   实机AVC已恢复PASS，一次HEVC复现把extended `sunxi_metadata`初始化定位到ARM32 decoder import→FBD窗口。进一步ELF/ABI证明
   Mali r20p0把active HDR10+ `divLut`的`0x80..0x8c`误读为legacy crop，故非负LUT触发`EGL_BAD_ALLOC`；不是随机corruption。
-  首个授权实验 `a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow`在Skia/Mali消费边界仅为exact SDR/YV12/non-AFBC/
-  non-protected 1920x1088创建独立metadata shadow，将完整56-byte active attr复制到legacy `0x80`，不写decoder sidecar；
-  diag3a→compat1 signed runtime delta exact `/system/bin/surfaceflinger`一项，现为 **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE**。
-  下一步：BootGate→AVC control并复核→单次SDR YV12 HEVC→若稳定则pause/resume/seek/back→再次AVC regression，然后停止；
+  首个授权实验 `a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow`实机BootGate和AVC PASS，但legacy ashmem
+  shadow的`fstat.st_size=0`，故translation/view未到达并fail-closed；ABI hypothesis未被否定。后继
+  `a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd`只把shadow backing改为精确0x6000 sealed memfd，
+  仍仅为exact SDR/YV12/non-AFBC/non-protected 1920x1088复制完整56-byte active attr且不写decoder sidecar；
+  compat1→compat1a signed runtime delta exact `/system/bin/surfaceflinger`一项，现为 **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE**。
+  下一步强制顺序：flash→BootGate并先复核→只有PASS后才安装VLC/传输媒体/首次启动完成onboarding与scan→AVC control并复核→单次SDR YV12 HEVC→若稳定则pause/resume/seek/back→再次AVC regression，然后停止；
   不测试Main10/HDR/AFBC/protected/4K。Gate 3仍HOLD，r8仍未授权。Gate 3 PASS 前不创建
   `codex/m8-a16-development`，该 branch 目前不存在。
 

@@ -134,13 +134,13 @@ class Builder(DIAG3A.DIAG3.Builder):
             shutil.copyfile(output, self.stage / f"compat1-{name}")
 
         evidence = Path(self.raw_cfg["physical_evidence"]["path"])
-        sums = evidence / "SHA256SUMS"
+        sums = evidence / self.raw_cfg["physical_evidence"].get("manifest", "SHA256SUMS")
         if not sums.is_file():
             raise RuntimeError("diag3a AVC/HEVC physical evidence is unavailable")
         for line in sums.read_text(encoding="utf-8").splitlines():
             if line.strip():
                 expected, relative = line.split(maxsplit=1)
-                item = evidence / relative.lstrip("* ")
+                item = evidence / relative.lstrip("* ").replace("\\", "/")
                 if not item.is_file() or SHARED.digest(item) != expected.upper():
                     raise RuntimeError(f"physical evidence changed: {relative}")
 
@@ -159,8 +159,11 @@ class Builder(DIAG3A.DIAG3.Builder):
         self.debugfs(image, f"dump -p {internal} {installed_old}")
         self.require(
             installed_old,
-            {"size": change["diag3a_size"], "sha256": change["diag3a_sha256"]},
-            "installed exact diag3a surfaceflinger",
+            {
+                "size": change.get("base_size", change["diag3a_size"]),
+                "sha256": change.get("base_sha256", change["diag3a_sha256"]),
+            },
+            "installed exact configured-base surfaceflinger",
         )
         self.debugfs(image, f"rm {internal}")
         self.debugfs(image, f"write {change['source_path']} {internal}")

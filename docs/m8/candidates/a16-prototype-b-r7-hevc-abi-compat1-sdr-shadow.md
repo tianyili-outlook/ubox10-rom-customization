@@ -1,6 +1,6 @@
 # a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow
 
-Status: **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE / EXPERIMENTAL REPAIR / NOT r8 / NOT A RELEASE**
+Status: **PHYSICAL BOOT PASS / AVC PASS / HEVC FAIL — SHADOW FD IMPLEMENTATION BLOCKER / ABI TRANSLATION NOT PHYSICALLY TESTED / SUPERSEDED BY COMPAT1A**
 
 This candidate is based on exact `a16-prototype-b-r7-diag3a-private-buffer-metadata`. It tests one
 production-boundary compatibility repair for the physically proven Allwinner-producer versus Mali
@@ -34,8 +34,11 @@ AHardwareBuffer import failure, the original AHardwareBuffer follows the unchang
 The shadow is created on the existing backend-texture import/cache-miss path, not once per rendered
 frame.
 
-`ashmem_create_region` is appropriate because the active Android libcutils implementation supplies
-a fixed-size shared memfd/ashmem object with ordinary mmap semantics. AHardwareBuffer `CLONE`
+The physical run disproved the assumption that `ashmem_create_region` always supplies an
+`fstat`-sized object on this runtime. Libcutils selected legacy `/dev/ashmem`; its
+`ASHMEM_SET_SIZE` state is ioctl-private while the character-device inode reports `st_size=0`.
+Compat1 therefore failed closed before translation. This is corrected only in compat1a.
+AHardwareBuffer `CLONE`
 duplicates/imports the handle and its fds; the mapper carries and owns its imported fd2, while Mali
 maps that fd. The outer cloned handle is closed/deleted after `createFromHandle`; successful
 `eglCreateImageKHR` retains the AHardwareBuffer view, and the local AHardwareBuffer reference is then
