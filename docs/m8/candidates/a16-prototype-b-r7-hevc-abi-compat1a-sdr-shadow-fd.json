@@ -64,7 +64,8 @@
   ],
   "governance": {
     "canonical_r7": "PASS_FROZEN_UNCHANGED",
-    "gate3": "HOLD_OPEN_MEDIA_SUBGATE_PASS",
+    "gate3": "PASS_WITH_EXPLICIT_USER_WAIVER",
+    "gate3_result": "docs/m8/candidates/a16-prototype-b-r7-gate3-physical-result.json",
     "r8": "NOT_AUTHORIZED_NOT_BUILT",
     "development_branch_created": false,
     "physical_status": "PHYSICAL_PASS_AUTHORIZED_SDR_1080P_YV12_ONLY"

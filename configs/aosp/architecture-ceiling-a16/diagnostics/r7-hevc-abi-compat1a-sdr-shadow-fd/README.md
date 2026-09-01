@@ -13,8 +13,10 @@ Physical status (2026-08-31): **PASS for the authorized SDR 1080p YV12 scope onl
 primary HEVC run and the interaction run repeatedly reached sized memfd creation, exact 56-byte
 translation, CLONE view creation, successful EGL import and valid backend texture without changing
 the original sidecar. Formal AVC control and regression stayed on the original view and passed.
-Main10, HDR, AFBC, protected content and 4K remain unvalidated. Overall Gate 3 remains HOLD/OPEN;
-canonical r7 remains frozen and r8 remains unauthorized.
+Main10, HDR, AFBC, protected content and 4K remain unvalidated. A later, separately recorded Gate 3
+session closed overall governance as `PASS_WITH_EXPLICIT_USER_WAIVER` (POWER current-session
+revalidation only); it does not broaden this repair's scope. Canonical r7 remains frozen and r8
+remains unauthorized.
 
 Apply with:
 

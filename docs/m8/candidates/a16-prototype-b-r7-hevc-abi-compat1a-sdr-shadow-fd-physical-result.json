@@ -147,14 +147,10 @@
   },
   "gate3": {
     "authorized_sdr_avc_hevc_media_subgate": "PASS",
-    "overall": "HOLD_OPEN",
-    "remaining_unproven": [
-      "VP9_GATE3_PLAYBACK",
-      "FULL_REMOTE_KEY_MATRIX",
-      "WIFI_OFF_ON_REASSOCIATION_DHCP_L3_DNS_ADB",
-      "STORAGE_PACKAGE_SETTINGS_USB_ETHERNET_SANITY",
-      "REMAINING_GATE3_SANITY_AND_CRASH_CENSUS"
-    ]
+    "overall": "PASS_WITH_EXPLICIT_USER_WAIVER",
+    "subsequent_result": "docs/m8/candidates/a16-prototype-b-r7-gate3-physical-result.json",
+    "waiver": "REMOTE_POWER_CURRENT_SESSION_REVALIDATION",
+    "remaining_blockers": []
   },
   "capture_helper_audit": {
     "empty_crash_output": "FORMAL_HELPER_ALREADY_CREATES_EXPLICIT_ZERO_BYTE_ARTIFACT",
@@ -163,7 +159,7 @@
   },
   "governance": {
     "canonical_r7": "PASS_FROZEN_UNCHANGED",
-    "gate3": "HOLD_OPEN",
+    "gate3": "PASS_WITH_EXPLICIT_USER_WAIVER",
     "r8": "NOT_AUTHORIZED_NOT_BUILT",
     "development_branch_created": false
   }

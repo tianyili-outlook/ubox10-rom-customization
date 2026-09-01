@@ -3,7 +3,7 @@
 ## 当前状态
 
 - 最后报告的 Android 16 物理架构验收镜像：`out/candidates/a16-prototype-b-r7/x12-a16-prototype-b-r7.img`，1,641,773,056 bytes / SHA-256 `A1F58668AEFFC9DC83CFFD8A49A309839332B6616C02153DCC00A71136A7AA27`
-- 当前项目状态：**ANDROID 16 ARM64 MIXED ARCHITECTURE — R7 PHYSICAL ARCHITECTURE PASS / FROZEN / GATE 3 HOLD/OPEN — AUTHORIZED SDR AVC+HEVC MEDIA SUBGATE PASS**。`a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd`（1,641,822,208 bytes / `9E9592BF420F40A386BC347B027A85B2F9ED0A44DDB132BDBAB9882905F75722`）已完成 **PHYSICAL PASS — AUTHORIZED SDR 1080P YV12 ONLY / EXPERIMENTAL REPAIR / NOT r8 / NOT RELEASE**。Main10/HDR/AFBC/protected/4K未验证。
+- 当前项目状态：**ANDROID 16 ARM64 MIXED ARCHITECTURE — R7 PHYSICAL ARCHITECTURE PASS / FROZEN / GATE 3 `PASS_WITH_EXPLICIT_USER_WAIVER`**。唯一豁免是本轮未复验的遥控 `POWER`；用户明确授权以 prior-normal observation 透明关闭本 Gate，因此不是 bare/evidence-complete `PASS`。`a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd`（1,641,822,208 bytes / `9E9592BF420F40A386BC347B027A85B2F9ED0A44DDB132BDBAB9882905F75722`）保持 **PHYSICAL PASS — AUTHORIZED SDR 1080P YV12 ONLY / EXPERIMENTAL REPAIR / NOT r8 / NOT RELEASE**。Main10/HDR/AFBC/protected/4K未验证。
 - Android 16 ARM32 control：`a16-prototype-a-r4` **FROZEN / PHYSICAL PASS**。Boot-time legacy audio crash 保持 **KNOWN / UNFIXED / POST-ARCHITECTURE P1**；full VINTF 保持 inherited NFS exit 65 / **NOT PASS**。
 - 保留的设备验收基线：`out/candidates/m8b-remote-r1/x12-m8b-remote-r1.img`，状态 **DEVICE ACCEPTED / REMOTE PASS**（继承 **AUDIO PASS / IME PASS**）。
 - 大小 / SHA-256：1031723008 bytes / `F3B09E5565AC4ED4E5EE326D392622E7B036A8519B8444B966E77CC4751B814A`
@@ -29,7 +29,7 @@ accepted baseline 已确认 Treble/VNDK、primary HAL/output、HEVC+AAC HDMI 音
 
 ## Gate 3 — Android 16 Mixed-Architecture Functional Preservation
 
-状态：**HOLD / OPEN — COMPAT1A AUTHORIZED SDR 1080P YV12 PHYSICAL PASS；其余Gate 3项目未关闭**。Gate 3
+状态：**`PASS_WITH_EXPLICIT_USER_WAIVER` — 2026-09-01 GOVERNANCE CLOSED；不是无条件PASS**。Gate 3
 architecture/functional baseline仍是 exact frozen r7。Diag3a实机AVC PASS并证明HEVC decoder对extended
 `sunxi_metadata`的合法初始化被Mali r20p0按legacy attr/crop ABI误读。Compat1不改producer sidecar、
 decoder、gralloc、Mali blob或fatal；它只在Skia/Mali消费边界为exact 1920x1088 SDR YV12、non-AFBC、
@@ -115,7 +115,35 @@ activity启动；最后手段是人工执行`monkey -p org.videolan.vlc -c andro
 quarter-screen、不循环HEVC。
 Formal helper通过`Write-Utf8NoBom`保证空crash stream也生成明确的0-byte `crash-buffer.txt`；本次
 AVCPost、HEVCPost、InteractionPost、AVCRegressionPost和Final证据已实际证明该行为。Fixture校验仅为
-host/device **size equality**，不是SHA-256或byte-for-byte内容证明。Compat1a物理PASS后Gate 3总体仍HOLD。
+host/device **size equality**，不是SHA-256或byte-for-byte内容证明。
+
+### 2026-09-01 Gate 3 physical closure
+
+外部只读证据位于`/work/evidence/ubox10/r7-gate3-20260901/unpacked`；原始
+`SHA256SUMS.txt` **37/37 PASS**，ZIP内部测试通过且ZIP内清单与解包清单逐字节相同。ZIP当前实测
+SHA-256为`82E63440C4AD0F98BECDA682E0FC73B17BA954CAD5E446D718CCF46D996E1D16`；任务文本和证据包均未
+携带独立的host-reported SHA值，故外部host值比对准确记为 **NOT PERFORMABLE**，没有用重新计算值冒充。
+Raw evidence与用户现场观察共同得出：
+
+| Contract item | Result | Evidence boundary |
+|---|---|---|
+| 3A architecture regression | **PASS** | API36/Android16、`zygote64_32`/mixed ABI、两个zygote、system_server/SF alive、Mali/apollo；无architecture-blocking mapper/gralloc复发 |
+| 3B media | **PASS** | compat1a formal AVC、SDR HEVC、interaction、formal AVC regression及HDMI audio PASS；formal VP9为`V_VP9+A_VORBIS`、`OMX.allwinner.video.decoder.vp9`→Cedar/VE、`bIsSoftDecoder=0`、640x480 FBM，正常结束 |
+| 3C remote | **`PASS_WITH_EXPLICIT_USER_WAIVER`** | UP/DOWN/LEFT/RIGHT/OK/BACK/HOME/VOL±可见行为PASS；MENU physical/Linux/Android mapping存在而当前UI可见行为`NONE`，不据此称input failure；POWER本轮未复验且无伪造scan code，用户明确waive |
+| 3D Wi-Fi lifecycle | **PASS** | 物理TV UI OFF→ON、断开/重连、saved `SINGTEL-UKC7`、BSSID `f4:ca:e7:70:66:f0`、supplicant COMPLETED、IPv4 `192.168.1.3`；用户报告external IPv4/DNS ping和ADB `:7896`恢复，post capture同boot/PID且无新crash/tombstone |
+| 3E platform sanity | **PASS** | `/data/local/tmp`写/读/删、package、framework/VLC package、settings/provider、storage及final continuity PASS；USB/Ethernet为optional、用户defer并准确记NOT TESTED |
+
+Formal VP9不能与更早的`c2.android.vp9` probe混淆；决定性播放路径是Allwinner OMX+Cedar hardware
+runtime。所有Gate3采证阶段共享boot ID `21f681ad-1c90-4760-8086-629e1d076c2a`和关键PID
+SurfaceFlinger 541、zygote32 488、system_server 775；post crash buffers为0 bytes，tombstone listing
+保持`AC4B7286...3499F8`。VP9Pre仅含已知boot-time ARM32 audio `getAudioPort` crash；它没有在action后
+新增或转化为loop/无声故障。
+
+原合同要求intended remote matrix包含POWER，所以不把用户豁免静默改写成裸`PASS`。最终判定为
+**Gate 3 `PASS_WITH_EXPLICIT_USER_WAIVER` / CLOSED**；唯一waiver是POWER current-session
+revalidation，**remaining Gate3 blockers = none**。USB/Ethernet optional deferred不是blocker。机器记录为
+`docs/m8/candidates/a16-prototype-b-r7-gate3-physical-result.json`。Canonical r7仍PASS/FROZEN/UNCHANGED；
+r8仍**NOT AUTHORIZED / NOT BUILT**，development branch未创建。
 
 ### 3A — architecture regression confirmation
 

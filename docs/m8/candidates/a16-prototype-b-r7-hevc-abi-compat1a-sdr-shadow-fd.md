@@ -3,7 +3,8 @@
 Status: **PHYSICAL PASS — AUTHORIZED SDR 1080P YV12 SCOPE ONLY / EXPERIMENTAL REPAIR / NOT r8 / NOT RELEASE**
 
 This candidate is based on exact compat1 (`D4FAFE24...EFAAB`). Canonical r7 remains frozen and
-Gate 3 remains HOLD/OPEN outside the bounded media subgate. It corrects only the shadow-fd
+The later Gate 3 governance result is `PASS_WITH_EXPLICIT_USER_WAIVER`; this candidate itself still
+proves only the bounded media subgate. It corrects only the shadow-fd
 implementation blocker observed physically in compat1; the completed physical result does not
 broaden the SDR YV12 ABI repair scope.
 
@@ -127,10 +128,12 @@ preservation is PASS. This proves that the decoder-owned extended metadata can r
 while an isolated, read-only-derived 56-byte legacy shadow at the ARM64 Mali boundary imports
 successfully. It does **not** validate Main10, HDR, AFBC, protected content or 4K.
 
-Overall Gate 3 remains **HOLD / OPEN** for the existing unproven items, including Gate-3 VP9,
-the full remote-key matrix, Wi-Fi OFF→ON reassociation/network recovery, remaining storage/package/
-settings/USB/Ethernet sanity and remaining broader crash census. Canonical r7 remains frozen, r8
-remains unauthorized/unbuilt, and `codex/m8-a16-development` remains uncreated.
+The subsequent 2026-09-01 Gate 3 session is recorded separately in
+`a16-prototype-b-r7-gate3-physical-result.json`: 3A/3B/3D/3E pass, and 3C closes with the explicit
+user waiver for POWER current-session revalidation. Overall Gate 3 is therefore
+**`PASS_WITH_EXPLICIT_USER_WAIVER` / CLOSED**, not bare PASS. This does not broaden compat1a beyond
+authorized SDR 1080p YV12. Canonical r7 remains frozen, r8 remains unauthorized/unbuilt, and
+`codex/m8-a16-development` remains uncreated.
 
 The formal helper already creates `crash-buffer.txt` even when `logcat -b crash` is empty, as proven
 by the zero-byte AVCPost/HEVCPost/InteractionPost/regression/Final artifacts; no helper code change is

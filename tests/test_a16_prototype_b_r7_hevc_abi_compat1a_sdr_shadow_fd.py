@@ -36,12 +36,17 @@ def test_compat1a_json_and_gate_status() -> None:
     assert record["offline"]["full_vintf_exit"] == 65
     assert record["physical"]["status"] == "PHYSICAL_PASS_AUTHORIZED_SDR_1080P_YV12_ONLY"
     assert record["physical"]["supplemental_avc"].startswith("SUPPLEMENTAL_UNPLANNED")
-    assert record["governance"]["gate3"] == "HOLD_OPEN_MEDIA_SUBGATE_PASS"
+    assert record["governance"]["gate3"] == "PASS_WITH_EXPLICIT_USER_WAIVER"
+    assert record["governance"]["gate3_result"].endswith("r7-gate3-physical-result.json")
     assert config["governance"]["record_scope"] == "BUILD_INPUT_BEFORE_COMPAT1A_PHYSICAL_VALIDATION"
     assert config["governance"]["physical_status"] == "NOT_YET_VALIDATED_AT_BUILD_TIME"
     assert config["governance"]["current_physical_status"] == \
         "PHYSICAL_PASS_AUTHORIZED_SDR_1080P_YV12_ONLY"
     assert config["subsequent_physical_result"]["runtime_image_rebuilt"] is False
+    assert config["governance"]["gate3"] == "HOLD_AT_BUILD_TIME"
+    assert config["governance"]["current_gate3_status"] == \
+        "PASS_WITH_EXPLICIT_USER_WAIVER"
+    assert config["subsequent_gate3_result"]["runtime_image_rebuilt"] is False
 
 
 def test_compat1a_physical_result_record_and_raw_evidence_when_available() -> None:
@@ -51,7 +56,9 @@ def test_compat1a_physical_result_record_and_raw_evidence_when_available() -> No
     assert result["physical_status"] == "PHYSICAL_PASS_AUTHORIZED_SDR_1080P_YV12_ONLY"
     assert result["results"]["supplemental_avc_after_hevc"]["formal_avc_regression"] is False
     assert result["gate3"]["authorized_sdr_avc_hevc_media_subgate"] == "PASS"
-    assert result["gate3"]["overall"] == "HOLD_OPEN"
+    assert result["gate3"]["overall"] == "PASS_WITH_EXPLICIT_USER_WAIVER"
+    assert result["gate3"]["waiver"] == "REMOTE_POWER_CURRENT_SESSION_REVALIDATION"
+    assert result["gate3"]["remaining_blockers"] == []
     assert result["not_validated"] == ["Main10", "HDR", "AFBC", "protected content", "4K"]
     if not EVIDENCE.is_dir():
         pytest.skip("external compat1a physical evidence is unavailable")

@@ -5,9 +5,9 @@ MIXED-ARCHITECTURE BOOT / DUAL ZYGOTE / SYSTEM_SERVER / SURFACEFLINGER /
 MAPPER-GRALLOC / MALI UI GATE CLOSED**。
 
 R7 现为 **ACCEPTED ANDROID 16 ARM64 MIXED-ARCHITECTURE ARCHITECTURE BASELINE /
-FROZEN AGAINST ARCHITECTURE CHANGES / PENDING GATE 3 FUNCTIONAL PRESERVATION**。这不是 daily-use
-release 或 final functional baseline；Gate 3 必须在 exact r7 上验证 retained ARM32 hardware-facing
-stack 的核心 TV 功能，且不授权 r8 或镜像重建。
+FROZEN AGAINST ARCHITECTURE CHANGES**。后续exact-r7 lineage Gate 3已关闭为
+**`PASS_WITH_EXPLICIT_USER_WAIVER`**（唯一waiver为POWER current-session revalidation），不是bare
+evidence-complete PASS。这不是daily-use release；Gate 3结果不授权r8或镜像重建。
 
 R6 已物理证明 canonical mixed ABI、BoringSSL64 gate、`app_process64`/`app_process32`、ART64/ART32
 和 primary zygote preload。Zygote 的 restart 不是独立 failure：ARM64 SurfaceFlinger 连续四次
@@ -35,7 +35,7 @@ VNDK31 `libc++.so` 上的一个已证明 back-deploy relocation contract。
 | SHA-256 | `A1F58668AEFFC9DC83CFFD8A49A309839332B6616C02153DCC00A71136A7AA27` |
 | Android | `android-security-16.0.0_r7`; manifest `ebea28d151539ecf0730b1a4ab92ac33edc17ac9` |
 | build | targeted `android.hardware.graphics.mapper@2.0-impl-2.1` and `gralloc.apollo`; no system/kernel rebuild |
-| physical | `PHYSICAL ARCHITECTURE PASS`; exact r7 tested 2026-08-29; pending Gate 3 functional preservation |
+| physical | `PHYSICAL ARCHITECTURE PASS`; exact r7 tested 2026-08-29; subsequent Gate 3 `PASS_WITH_EXPLICIT_USER_WAIVER` |
 
 ## Exact runtime lookup and root cause
 
@@ -164,13 +164,14 @@ Git and was not present on this VM, so no raw path or hash is invented. See
 
 ## Gate 3 and freeze
 
-Exact r7 is now the frozen Android 16 ARM64 mixed-architecture architecture control. The only active
-P0 is **Gate 3 — Android 16 Mixed-Architecture Functional Preservation**, executed read-only on this
-same image. It must cover architecture regression, real H.264/HEVC/VP9 playback with bounded audible
-HDMI checks, the physical TV-key matrix, Wi-Fi OFF→ON recovery, basic storage/platform sanity and a
-before/after crash census. Exact criteria are in `docs/DEVICE_TEST.md`.
+Exact r7 remains the frozen Android 16 ARM64 mixed-architecture architecture control. The subsequent
+Gate 3 session covers architecture regression, real H.264/HEVC/VP9 playback with audible HDMI checks,
+the physical TV-key matrix except explicitly waived current-session POWER, Wi-Fi OFF→ON recovery,
+basic storage/platform sanity and crash census. It is closed as
+`PASS_WITH_EXPLICIT_USER_WAIVER`, with no remaining Gate 3 blocker; USB/Ethernet are optional and
+were user-deferred. Exact evidence/result is in `a16-prototype-b-r7-gate3-physical-result.json` and
+the unchanged acceptance rule remains in `docs/DEVICE_TEST.md`.
 
 Rollback hierarchy remains frozen Android 12 `m8b-remote-r1`, frozen Android 16 ARM32
 `a16-prototype-a-r4`, then this frozen architecture baseline. The intended future
-`codex/m8-a16-development` line may be created only after Gate 3 PASS and a final functional freeze;
-it was not created here.
+`codex/m8-a16-development` line was not created or authorized by this governance closure.

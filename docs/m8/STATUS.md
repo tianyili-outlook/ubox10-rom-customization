@@ -1,12 +1,12 @@
 # M8 status
 
-Updated: 2026-08-31
+Updated: 2026-09-01
 
 ## Android 16 architecture ceiling
 
 Exact `a16-prototype-b-r7` is **PHYSICAL ARCHITECTURE PASS / ACCEPTED ANDROID 16 ARM64
 MIXED-ARCHITECTURE ARCHITECTURE BASELINE / FROZEN AGAINST ARCHITECTURE CHANGES / GATE 3
-FUNCTIONAL PRESERVATION HOLD — AUTHORIZED SDR AVC+HEVC MEDIA SUBGATE PASS**. The tested image is 1,641,773,056
+FUNCTIONAL PRESERVATION `PASS_WITH_EXPLICIT_USER_WAIVER`**. The tested image is 1,641,773,056
 bytes / SHA-256
 `A1F58668AEFFC9DC83CFFD8A49A309839332B6616C02153DCC00A71136A7AA27`.
 
@@ -15,8 +15,13 @@ both zygotes, `sys.boot_completed=1`, ARM64-parented `system_server`, stable ARM
 no recurrence of `gralloc-mapper is missing`, real 1920x1080 gralloc allocations and Mali-G31
 OpenGL ES 3.2 UI composition. Basic Wi-Fi association/DHCP/L3/DNS/network ADB and bounded physical
 remote input also pass. These results close the mixed-ABI, BoringSSL64 and mapper architecture
-blockers. Gate 3 now physically proves the authorized SDR H.264 and HEVC hardware-video controls
-plus audible AAC/HDMI preservation through compat1a; broader Gate 3 remains open. The historical
+blockers. Compat1a physically proves the authorized SDR H.264 and HEVC hardware-video controls
+plus audible AAC/HDMI preservation. The 2026-09-01 Gate 3 session additionally passes architecture
+regression, formal Allwinner OMX/Cedar VP9 playback with audible HDMI audio, Wi-Fi OFF→ON lifecycle,
+platform sanity and the tested remote matrix. Gate 3 is governance-closed as
+`PASS_WITH_EXPLICIT_USER_WAIVER`, not bare PASS: POWER was not revalidated in this session and the
+user explicitly waived it based on prior normal physical use. USB and Ethernet were optionally
+deferred. The historical
 HEVC blocker was first localized by diag1a to
 `eglCreateImageKHR` with `EGL_BAD_ALLOC` (`0x3003`), followed by invalid backend texture and the
 unchanged SurfaceFlinger fatal/userspace restart. AVC and HEVC allocation/import contracts are
@@ -33,7 +38,7 @@ The architecture pass itself is not downgraded.
 |---|---|
 | Android 12 daily-use rollback `m8b-remote-r1` | **FROZEN** |
 | Android 16 ARM32 architecture control `a16-prototype-a-r4` | **FROZEN** |
-| Android 16 ARM64 mixed-architecture control `a16-prototype-b-r7` | **PHYSICAL ARCHITECTURE PASS / FROZEN / GATE 3 HOLD — AUTHORIZED SDR AVC+HEVC MEDIA SUBGATE PASS** |
+| Android 16 ARM64 mixed-architecture control `a16-prototype-b-r7` | **PHYSICAL ARCHITECTURE PASS / FROZEN / GATE 3 `PASS_WITH_EXPLICIT_USER_WAIVER`** |
 | Instrumentation derivative `a16-prototype-b-r7-diag1` | **OFFLINE PASS / PHYSICAL BOOT FAIL / ROOT CAUSE PROVEN / CLOSED** |
 | Boot-corrected instrumentation derivative `a16-prototype-b-r7-diag1a` | **PHYSICAL BOOT PASS / PAIRED EVIDENCE CAPTURED** (prior state: **OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE**) |
 | Single-variable crop diagnostic `a16-prototype-b-r7-diag2-hevc-crop` | **PHYSICAL TESTED / CROP DELTA ACTIVATED / HYPOTHESIS DISPROVEN / HEVC STILL FAILS / CLOSED / NOT r8** |
@@ -42,7 +47,9 @@ The architecture pass itself is not downgraded.
 | SDR shadow compatibility experiment `a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow` | **PHYSICAL BOOT PASS / AVC PASS / HEVC FAIL — SHADOW FD IMPLEMENTATION BLOCKER / TRANSLATION NOT TESTED / SUPERSEDED** |
 | Sized-shadow-fd experiment `a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd` | **PHYSICAL PASS — AUTHORIZED SDR 1080P YV12 ONLY / EXPERIMENTAL REPAIR / NOT r8 / NOT RELEASE** |
 
-The only active P0 is **Gate 3 — Android 16 Mixed-Architecture Functional Preservation**. Exact
+Gate 3 is now **CLOSED / `PASS_WITH_EXPLICIT_USER_WAIVER`**. Its only waiver is POWER
+current-session revalidation; no required item is silently marked PASS and no other Gate 3 blocker
+remains. Exact
 r7-diag1 physically failed its boot gate because its current-toolchain ARM32 gralloc introduced the
 strong import `std::__1::__libcpp_verbose_abort`, which the retained ARM32 VNDK31 libc++ does not
 export. Its repeated SurfaceFlinger `failed to create composer client` abort is downstream, and
@@ -76,8 +83,8 @@ CLONE view, EGL import and valid backend texture. Initial and regression AVC eac
 `metadata_gate`/original-view imports. Picture and HDMI audio, HEVC pause/resume/seek/back, continuous
 boot ID and stable SurfaceFlinger/zygote/system_server PIDs pass. The intervening unplanned AVC is
 supplemental only, not the formal regression. This is a physical PASS only for authorized SDR 1080p
-YV12; Main10/HDR/AFBC/protected/4K are not validated. Gate 3 remains HOLD/OPEN for its other defined
-functional-preservation items. Canonical r7 remains
+YV12; Main10/HDR/AFBC/protected/4K are not validated. The subsequent Gate 3 closure does not expand
+that repair scope. Canonical r7 remains
 frozen. This is not r8; no new development branch is authorized. The separate
 post-restart quarter-screen is strongly supported to be a retained display recovery defect that
 selects proven 3840x2160p60 HDMI mode 34 while SurfaceFlinger remains 1920x1080. The known boot-time
@@ -448,7 +455,8 @@ IMAGEWTY、46/50 outer preservation、mixed ELF、35/35 APEX、both-ABI VNDK31�
 exit 65 / inherited `CONFIG_NFS_FS=y` 对 FCM-6 `n` / **NOT PASS**。以上是 build completion 时的
 historical offline closure。2026-08-29 的 exact-r7 physical result 已进一步证明 dual zygote、
 ARM64-parented system_server、stable SurfaceFlinger、mapper/gralloc allocation 与 Mali-G31 UI，故
-r7 现为 **PHYSICAL ARCHITECTURE PASS / FROZEN ARCHITECTURE BASELINE / PENDING GATE 3**。Focused
+r7 因而冻结为 **PHYSICAL ARCHITECTURE PASS / FROZEN ARCHITECTURE BASELINE**；当时pending的Gate 3
+已于2026-09-01随后以`PASS_WITH_EXPLICIT_USER_WAIVER`关闭。Focused
 r1-r7 candidate/prebuild 64/64 与当时 full lightweight 170/170 PASS（34 declared fixture skips）；
 79 JSON parses、Python compile 和 `git diff --check` PASS。
 
@@ -1050,7 +1058,7 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 - r10 已在实机完成 framework boot；r9 Lights/Watchdog/llkd 方向保持关闭，不再修改。
 - r13 是当前 GOLDEN BASELINE；Projectivy、provisioning、遥控和 Power sleep/wake/shutdown 均以实机 UART 为准。
 - M8B native rc-core 遥控迁移已在 r5 设备验收并关闭；Mouse mode intentionally dropped，legacy multi_ir 工件保留为 inert reference，其 Android 12 清理已随 freeze 延期。
-- 当前 board、DT 与 runtime 证据识别为 H616。历史 A16 ARM32 r2 稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛；历史 kernel r1-r4 AIC failure 已收敛到错误 `0x00110000` FMAC contract。r5 恢复 working BSP `0x00120000` 后物理 boot/HDMI/remote/Wi-Fi/ADB 与 Wi-Fi OFF→ON reinitialization PASS，preservation checkpoint **CLOSED / PASS**。Exact QPR0 r7 audit 与 Prototype A r4 physical pass 已关闭 Architecture Gate 2；A r4 frozen。Boot-time legacy audio HAL SIGSEGV 保持 post-Gate P1，不称 fixed。Prototype B0 complete；B r1 `/metadata` FAIL，r2 `/metadata` PASS 后 `/vendor` FAIL，r3 `/vendor` PASS 后到达 ARM64 second stage并停在 global ABI 与独立 mapper，r4 因 patch inactive product_a 重复 ABI failure。B r5 active embedded product/global mixed ABI PHYSICAL PASS 后暴露 BoringSSL64 missing；r6 物理跨过该 gate、启动两套 ART/Zygote并到达 primary preload。Exact mapper audit证明 r6 ARM64 mapper/gralloc 的 VNDK31 libc++ back-deploy relocation cause；strict r7只改变该 pair。Exact-r7 physical evidence现已证明 mixed ABI、dual zygote、system_server、stable ARM64 SurfaceFlinger、mapper/gralloc和 Mali-G31 UI，状态为 **PHYSICAL ARCHITECTURE PASS / FROZEN / PENDING GATE 3**。
+- 当前 board、DT 与 runtime 证据识别为 H616。历史 A16 ARM32 r2 稳定失败于 r4/25Q4 NetBpfLoad 的 5.10 门槛；历史 kernel r1-r4 AIC failure 已收敛到错误 `0x00110000` FMAC contract。r5 恢复 working BSP `0x00120000` 后物理 boot/HDMI/remote/Wi-Fi/ADB 与 Wi-Fi OFF→ON reinitialization PASS，preservation checkpoint **CLOSED / PASS**。Exact QPR0 r7 audit 与 Prototype A r4 physical pass 已关闭 Architecture Gate 2；A r4 frozen。Boot-time legacy audio HAL SIGSEGV 保持 post-Gate P1，不称 fixed。Prototype B0 complete；B r1 `/metadata` FAIL，r2 `/metadata` PASS 后 `/vendor` FAIL，r3 `/vendor` PASS 后到达 ARM64 second stage并停在 global ABI 与独立 mapper，r4 因 patch inactive product_a 重复 ABI failure。B r5 active embedded product/global mixed ABI PHYSICAL PASS 后暴露 BoringSSL64 missing；r6 物理跨过该 gate、启动两套 ART/Zygote并到达 primary preload。Exact mapper audit证明 r6 ARM64 mapper/gralloc 的 VNDK31 libc++ back-deploy relocation cause；strict r7只改变该 pair。Exact-r7 physical evidence现已证明 mixed ABI、dual zygote、system_server、stable ARM64 SurfaceFlinger、mapper/gralloc和 Mali-G31 UI，状态为 **PHYSICAL ARCHITECTURE PASS / FROZEN**；2026-09-01 Gate 3另以`PASS_WITH_EXPLICIT_USER_WAIVER`关闭。
 - `m8b-audio-r2` 只启用产品级 Treble/VNDK 合同；未修改 VNDK payload、mixer、audio platform XML、DTS、machine driver 或已验收功能，现已设备验收为 AUDIO PASS。
 - 2026-08-16 ADB-only 补验未刷机、未重启且未修改 ROM/device properties：VP9 为 Allwinner OMX/Cedar hardware-runtime PASS；Widevine 为可操作 L3，HDCP `NONE`，无 secure decoder 要求。物理画面/逐帧质量与商业服务认证或播放仍未证明。
 - 遥控器 Menu 与 Settings 当前均打开 Projectivy menu。两键语义分离为独立延期项，不回改已验收的 rc-core、keylayout 选择或其他按键行为。
@@ -1060,12 +1068,14 @@ Raw UART logs and candidate images are intentionally local under ignored `logs/`
 
 保持 frozen Android 12 `m8b-remote-r1`、frozen Android 16 ARM32 `a16-prototype-a-r4`、frozen
 Android 16 ARM64 architecture control `a16-prototype-b-r7`、Test8r2/stock rollback、A16/kernel
-artifacts与 exact B r1-r6 immutable physical chain。Gate 3 当前为 **HOLD：H.264+AAC PHYSICAL
-PASS / AUTHORIZED SDR HEVC PHYSICAL PASS / MEDIA SUBGATE PASS**。Compat1a 已在 ARM64 Mali消费边界
+artifacts与 exact B r1-r6 immutable physical chain。Gate 3 当前为
+**`PASS_WITH_EXPLICIT_USER_WAIVER` / CLOSED**：3A/3B/3D/3E PASS，3C除本轮POWER复验由用户明确
+waive外均完成；没有其他Gate3 blocker。Compat1a 已在 ARM64 Mali消费边界
 物理证明isolated sealed-memfd shadow、完整56-byte attr translation、CLONE和EGL/backend import；
 decoder-owned metadata保持不变。初始与regression AVC均保留original view，HEVC interaction和final
-crash census通过。该结论只覆盖authorized SDR 1080p YV12，不授权新的修复或镜像。
-下一步不是构建 r8，而是完成 Gate 3其余 VP9、full remote、Wi-Fi lifecycle、storage/package/
-settings/USB/Ethernet sanity及其余platform/crash matrix；这些项目未因此自动 PASS。Vulkan、GMS、
+crash census通过。Formal VP9 Allwinner OMX/Cedar播放、Wi-Fi OFF→ON与platform sanity也PASS；MENU的
+input/mapping存在而UI behavior为NONE，POWER不伪造本轮PASS或scan code。该结论只覆盖authorized SDR
+1080p YV12，不扩展Main10/HDR/AFBC/protected/4K，也不授权新的修复或镜像。USB/Ethernet optional
+fixture由用户defer并保持NOT TESTED。下一步不是构建 r8。Vulkan、GMS、
 full VINTF NFS、SELinux enforcing、audio P1、CEC/HDMI hotplug、suspend与产品 polish继续保持 gate
-外。Gate 3 PASS前不得创建 `codex/m8-a16-development`；当前未授权 r8、镜像重建或新开发分支。
+外。Gate 3治理关闭不自动创建或授权`codex/m8-a16-development`；当前未授权 r8、镜像重建或新开发分支。

@@ -68,8 +68,9 @@ def main() -> None:
     if cfg["id"] != "a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd":
         fail("wrong candidate ID")
     governance = cfg["governance"]
-    if governance["gate3"] != "HOLD" or governance["r8_authorized"] or \
-            governance["development_branch_created"]:
+    if governance["gate3"] != "HOLD_AT_BUILD_TIME" or \
+            governance["current_gate3_status"] != "PASS_WITH_EXPLICIT_USER_WAIVER" or \
+            governance["r8_authorized"] or governance["development_branch_created"]:
         fail("Gate3/r8/development governance changed")
     verify_evidence()
 

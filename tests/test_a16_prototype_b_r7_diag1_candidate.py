@@ -186,13 +186,13 @@ def test_candidate_docs_when_present_keep_gate3_hold() -> None:
     assert record["governance"]["r8_authorized"] is False
 
 
-def test_status_and_todo_keep_architecture_pass_and_gate3_hold() -> None:
+def test_status_and_todo_keep_architecture_pass_and_truthful_gate3_closure() -> None:
     status = (ROOT / "docs/m8/STATUS.md").read_text(encoding="utf-8")
     todo = (ROOT / "docs/m8/TODO.md").read_text(encoding="utf-8")
-    assert "PHYSICAL ARCHITECTURE PASS / FROZEN / GATE 3 HOLD" in status
+    assert "PHYSICAL ARCHITECTURE PASS / FROZEN / GATE 3 `PASS_WITH_EXPLICIT_USER_WAIVER`" in status
     assert "PHYSICAL BOOT FAIL / ROOT CAUSE PROVEN / CLOSED" in status
     assert "OFFLINE CHECKED / READY FOR PHYSICAL BOOT GATE" in status
-    assert "[ ] **33 — Gate 3" in todo
+    assert "[x] **33 — Gate 3" in todo
     assert "READY FOR PHYSICAL BOOT GATE" in todo
     assert "R8_AUDIT_DECISION = HOLD_FOR_MORE_EVIDENCE" in todo
-    assert "Gate 3 PASS 前不创建" in todo
+    assert "不自动创建或授权`codex/m8-a16-development`" in todo

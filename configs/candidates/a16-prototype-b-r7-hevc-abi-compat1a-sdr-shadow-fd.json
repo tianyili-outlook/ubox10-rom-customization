@@ -145,12 +145,18 @@
     "manifest_entries_ok": 107,
     "runtime_image_rebuilt": false
   },
+  "subsequent_gate3_result": {
+    "status": "PASS_WITH_EXPLICIT_USER_WAIVER",
+    "record": "docs/m8/candidates/a16-prototype-b-r7-gate3-physical-result.json",
+    "waiver": "REMOTE_POWER_CURRENT_SESSION_REVALIDATION",
+    "runtime_image_rebuilt": false
+  },
   "outer_delta": {
     "changed_payloads_from_base": ["Vsuper.fex", "Vvbmeta_system.fex", "super.fex", "vbmeta_system.fex"]
   },
   "governance": {
     "architecture_ceiling": "PASS_FROZEN_UNCHANGED",
-    "gate3": "HOLD",
+    "gate3": "HOLD_AT_BUILD_TIME",
     "candidate_classification": "EXPERIMENTAL_REPAIR_NOT_R8_NOT_RELEASE",
     "r8_authorized": false,
     "development_branch_created": false,
@@ -158,6 +164,8 @@
     "record_scope": "BUILD_INPUT_BEFORE_COMPAT1A_PHYSICAL_VALIDATION",
     "physical_status": "NOT_YET_VALIDATED_AT_BUILD_TIME",
     "current_physical_status": "PHYSICAL_PASS_AUTHORIZED_SDR_1080P_YV12_ONLY",
-    "current_physical_result": "docs/m8/candidates/a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd-physical-result.json"
+    "current_physical_result": "docs/m8/candidates/a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd-physical-result.json",
+    "current_gate3_status": "PASS_WITH_EXPLICIT_USER_WAIVER",
+    "current_gate3_result": "docs/m8/candidates/a16-prototype-b-r7-gate3-physical-result.json"
   }
 }

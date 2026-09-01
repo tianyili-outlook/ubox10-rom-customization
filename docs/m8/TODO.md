@@ -2,7 +2,7 @@
 
 ## Freeze decision
 
-`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为稳定日用回退。`a16-prototype-a-r4` 已冻结为 **PHYSICAL PASS / ACCEPTED Android 16 ARM32 ARCHITECTURE CONTROL**。Exact `a16-prototype-b-r7` 现已物理证明 Android 16/API36、canonical mixed ABI、dual zygote、ARM64-parented system_server、stable ARM64 SurfaceFlinger、mapper/gralloc 与 Mali-G31 UI，故冻结为 **PHYSICAL ARCHITECTURE PASS / ACCEPTED ANDROID 16 ARM64 MIXED-ARCHITECTURE ARCHITECTURE BASELINE**。Gate 3 当前仍为 **HOLD / OPEN**，但 compat1a 已把授权的 SDR 1080p YV12 AVC+HEVC media/codec preservation subgate 物理关闭为 **PASS**：正式初始 AVC、单次主 HEVC、第二次 HEVC interaction、正式 AVC regression 与 Final census 均 PASS；HEVC shadow translation/EGL/backend path 被重复实机证明。Main10/HDR/AFBC/protected/4K及其余 Gate 3 项目仍未证明。用户明确把一次性、自动恢复的 boot-time `getAudioPort` SIGSEGV 从旧 Gate 2 startup-stability 条件改列为 **KNOWN / UNFIXED / POST-GATE P1 STABILIZATION DEBT**；它不是 HEVC first fatal。Gate 2 仍为 **CLOSED / PASS**。当前唯一 P0 是 exact-r7 Gate 3 functional preservation；不实施 r8、architecture/provider 变更或 P1 polish。
+`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为稳定日用回退。`a16-prototype-a-r4` 已冻结为 **PHYSICAL PASS / ACCEPTED Android 16 ARM32 ARCHITECTURE CONTROL**。Exact `a16-prototype-b-r7` 现已物理证明 Android 16/API36、canonical mixed ABI、dual zygote、ARM64-parented system_server、stable ARM64 SurfaceFlinger、mapper/gralloc 与 Mali-G31 UI，故冻结为 **PHYSICAL ARCHITECTURE PASS / ACCEPTED ANDROID 16 ARM64 MIXED-ARCHITECTURE ARCHITECTURE BASELINE**。Gate 3 已按现有合同关闭为 **`PASS_WITH_EXPLICIT_USER_WAIVER`**，不是bare PASS：3A architecture、3B formal AVC/SDR HEVC/VP9+HDMI audio、3D Wi-Fi OFF→ON与3E platform sanity PASS；3C除POWER本轮复验由用户明确waive外完成。MENU input/Android mapping存在而当前UI visible behavior为NONE，不称input failure；USB/Ethernet optional且用户defer。Main10/HDR/AFBC/protected/4K仍未证明。用户明确把一次性、自动恢复的 boot-time `getAudioPort` SIGSEGV 从旧 Gate 2 startup-stability 条件改列为 **KNOWN / UNFIXED / POST-GATE P1 STABILIZATION DEBT**；它不是HEVC first fatal。Gate 2 仍为 **CLOSED / PASS**。不实施或授权r8、architecture/provider变更或P1 polish，也不自动创建development branch。
 
 ## Android 16 Gate 1 / Gate 2 — Prototype A ARM32
 
@@ -179,7 +179,7 @@
   与 ARM64 SurfaceFlinger均运行；crash-buffer未再出现 `gralloc-mapper is missing`，实际 1920x1080
   gralloc allocation和 Mali-G31 GLES/UI composition可见。R7 mapper/gralloc closure **PHYSICAL PASS**，
   r6 blocker **CLOSED**；Vulkan/HDR/4K60/所有 HWC与 protected playback不由此提升为 PASS。
-- [ ] **33 — Gate 3 — Android 16 Mixed-Architecture Functional Preservation（当前唯一 P0）：**只在
+- [x] **33 — Gate 3 — Android 16 Mixed-Architecture Functional Preservation（`PASS_WITH_EXPLICIT_USER_WAIVER` / CLOSED）：**只在
   exact frozen r7 architecture lineage上执行，不创建 r8。按 `docs/DEVICE_TEST.md` 依次复核
   architecture runtime；实测 H.264+AAC、HEVC/H.265+AAC、VP9（区分 playback 与 hardware-path proof）；
   完成 UP/DOWN/LEFT/RIGHT/OK/BACK/HOME/MENU/VOL±/POWER physical→Linux→Android key matrix；完成
@@ -220,9 +220,16 @@
   `eligible=0 reason=metadata_gate`/original view且成功import。Picture/HDMI audio及pause/resume/seek/back
   PASS，boot ID和SF/zygote/system_server PID连续，Final无新增crash/tombstone。因此授权的
   **SDR 1080p YV12 AVC+HEVC media subgate = PHYSICAL PASS**。
-  Main10/HDR/AFBC/protected/4K未测试；Gate-3 VP9、full remote matrix、Wi-Fi OFF→ON recovery、storage/
-  package/settings/USB/Ethernet sanity及其余crash census仍开放。Gate 3总体仍HOLD，r8仍未授权。Gate 3 PASS 前不创建
-  `codex/m8-a16-development`，该 branch 目前不存在。
+  Main10/HDR/AFBC/protected/4K未测试且不由Gate3扩展。2026-09-01外部证据清单37/37 PASS；3A
+  architecture regression、3B formal Allwinner OMX/Cedar VP9可见播放+Vorbis/HDMI音频（连同既有formal
+  AVC、SDR HEVC、interaction、AVC regression）、3D物理UI Wi-Fi OFF→ON/reassociation/DHCP/L3/DNS/
+  network-ADB recovery、3E data/package/settings/storage与crash census均PASS。3C的UP/DOWN/LEFT/RIGHT/
+  OK/BACK/HOME/VOL± visible behavior PASS；MENU physical/Linux/Android mapping存在而visible behavior
+  `NONE`，不据此称input failure。POWER本轮未复验、prior user observation为normal，用户明确waive；不
+  伪造current PASS或scan code。因原合同把POWER列入intended matrix，最终不是bare PASS而是
+  **`PASS_WITH_EXPLICIT_USER_WAIVER`**，唯一waiver为POWER current-session revalidation，remaining
+  Gate3 blockers为none。USB/Ethernet optional且用户defer，保持NOT TESTED。r8仍**NOT AUTHORIZED / NOT
+  BUILT**；Gate3治理关闭不自动创建或授权`codex/m8-a16-development`，该branch目前不存在。
 
 ## Post-Gate stabilization / release hardening
 

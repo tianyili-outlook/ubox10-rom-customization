@@ -1,0 +1,167 @@
+{
+  "schema": 1,
+  "date": "2026-09-01",
+  "baseline": "a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd",
+  "canonical_architecture_baseline": "a16-prototype-b-r7",
+  "gate": "GATE_3_ANDROID_16_MIXED_ARCHITECTURE_FUNCTIONAL_PRESERVATION",
+  "verdict": "PASS_WITH_EXPLICIT_USER_WAIVER",
+  "unqualified_pass": false,
+  "closure": "CLOSED_WITH_EXPLICIT_USER_WAIVER_FOR_CURRENT_SESSION_POWER_REVALIDATION",
+  "evidence_provenance": {
+    "source": "USER_SUPPLIED_PHYSICAL_CAPTURE_AND_OPERATOR_OBSERVATIONS",
+    "archive": "/work/evidence/ubox10/r7-gate3-20260901/UBOX10-GATE3-PHYSICAL-20260901.zip",
+    "archive_size": 698326,
+    "archive_sha256_actual": "82E63440C4AD0F98BECDA682E0FC73B17BA954CAD5E446D718CCF46D996E1D16",
+    "user_reported_archive_sha256": null,
+    "archive_sha256_external_comparison": "NOT_PERFORMABLE_USER_REPORTED_VALUE_NOT_PRESENT_IN_TASK_OR_EVIDENCE_BUNDLE",
+    "zip_integrity": "PASS_NO_COMPRESSED_DATA_ERRORS",
+    "zip_manifest_matches_extracted_manifest": true,
+    "extracted": "/work/evidence/ubox10/r7-gate3-20260901/unpacked",
+    "manifest": "SHA256SUMS.txt",
+    "manifest_size": 3486,
+    "manifest_sha256": "94043573FF171E55B1AC4BF1C909A3FA1A9AAED7A5E299D069C4E029F3742DC3",
+    "manifest_entries": 37,
+    "manifest_integrity": "PASS_37_OF_37",
+    "operator_observations": "USER-OBSERVATIONS-AND-WAIVERS.txt",
+    "operator_observations_sha256": "541682B1FF7646CC63302346916ACB17558E9B06AAE27A210B213940E668ABC7",
+    "raw_evidence_tracked": false
+  },
+  "results": {
+    "3A_architecture_regression": {
+      "status": "PASS",
+      "android_release": "16",
+      "sdk": 36,
+      "ro_zygote": "zygote64_32",
+      "abilist": "arm64-v8a,armeabi-v7a,armeabi",
+      "abilist64": "arm64-v8a",
+      "abilist32": "armeabi-v7a,armeabi",
+      "sys_boot_completed": 1,
+      "zygote64_pid": 487,
+      "zygote32_pid": 488,
+      "system_server_pid": 775,
+      "surfaceflinger_pid": 541,
+      "ro_hardware_egl": "mali",
+      "ro_board_platform": "apollo",
+      "gles": "ARM_MALI_G31_OPENGL_ES_3_2_R20P0",
+      "architecture_blocking_gralloc_mapper_failure_reappeared": false,
+      "frozen_architecture_conclusion": "PASS_PRESERVED"
+    },
+    "3B_media": {
+      "status": "PASS",
+      "formal_h264_aac": "PASS_VISIBLE_VIDEO_AUDIBLE_HDMI_AUDIO",
+      "sdr_hevc_aac": "PASS_VISIBLE_VIDEO_AUDIBLE_HDMI_AUDIO",
+      "hevc_interaction": "PASS_PAUSE_RESUME_SEEK_BACK",
+      "formal_avc_regression": "PASS_VISIBLE_VIDEO_AUDIBLE_HDMI_AUDIO",
+      "compat1a_result": "docs/m8/candidates/a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd-physical-result.json",
+      "vp9": {
+        "status": "PASS_VISIBLE_VIDEO_AUDIBLE_HDMI_AUDIO",
+        "fixture_video": "V_VP9",
+        "fixture_audio": "A_VORBIS",
+        "component": "OMX.allwinner.video.decoder.vp9",
+        "omxstore_instantiated": true,
+        "cedar_ve_initialized": true,
+        "is_software_decoder": false,
+        "fbm_width": 640,
+        "fbm_height": 480,
+        "playback_completed_normally": true,
+        "formal_path": "ALLWINNER_OMX_CEDAR_HARDWARE_RUNTIME",
+        "earlier_c2_probe_is_formal_result": false
+      },
+      "new_surfaceflinger_or_media_crash": false
+    },
+    "3C_remote": {
+      "status": "PASS_WITH_EXPLICIT_USER_WAIVER",
+      "device": "/dev/input/event0",
+      "device_name": "sunxi-ir",
+      "keys": {
+        "UP": {"scan": "00ff400b", "linux": "KEY_UP", "visible_behavior": "PASS"},
+        "DOWN": {"scan": "00ff400e", "linux": "KEY_DOWN", "visible_behavior": "PASS"},
+        "LEFT": {"scan": "00ff4010", "linux": "KEY_LEFT", "visible_behavior": "PASS"},
+        "RIGHT": {"scan": "00ff4011", "linux": "KEY_RIGHT", "visible_behavior": "PASS"},
+        "OK": {"scan": "00ff400d", "linux": "KEY_OK", "android": "DPAD_CENTER", "visible_behavior": "PASS"},
+        "BACK": {"scan": "00ff4042", "linux": "KEY_BACK", "visible_behavior": "PASS"},
+        "HOME": {"scan": "00ff401a", "linux": "KEY_HOMEPAGE", "android": "HOME", "visible_behavior": "PASS"},
+        "MENU": {"scan": "00ff4045", "linux": "KEY_MENU", "android": "MENU", "visible_behavior": "NONE", "input_failure": false},
+        "VOL_PLUS": {"scan": "00ff4015", "linux": "KEY_VOLUMEUP", "android": "VOLUME_UP", "visible_behavior": "PASS"},
+        "VOL_MINUS": {"scan": "00ff401c", "linux": "KEY_VOLUMEDOWN", "android": "VOLUME_DOWN", "visible_behavior": "PASS"},
+        "POWER": {"scan": null, "current_session": "NOT_REVALIDATED", "prior_user_observation": "NORMAL", "waiver": "EXPLICITLY_WAIVED_BY_USER"}
+      },
+      "continuity": "PASS_SAME_BOOT_ID_AND_CRITICAL_PIDS",
+      "new_tombstone": false
+    },
+    "3D_wifi_lifecycle": {
+      "status": "PASS",
+      "physical_ui_off_on": "PASS",
+      "disconnect_reconnect_observed": true,
+      "saved_ssid": "SINGTEL-UKC7",
+      "bssid": "f4:ca:e7:70:66:f0",
+      "supplicant_state": "COMPLETED",
+      "ipv4": "192.168.1.3",
+      "association_dhcp_raw_evidence": "PASS",
+      "external_ipv4_ping": "PASS_USER_REPORTED_HOST_RESULT",
+      "dns_example_com": "PASS_USER_REPORTED_HOST_RESULT",
+      "adb_tcp_7896_recovery": "PASS_USER_REPORTED_AND_POST_CAPTURE_PRESENT",
+      "boot_and_critical_pid_continuity": "PASS",
+      "new_tombstone": false,
+      "post_crash_buffer_bytes": 0
+    },
+    "3E_platform_sanity": {
+      "status": "PASS",
+      "data_write_read_delete": "PASS",
+      "package_manager": "PASS",
+      "framework_package": "PASS",
+      "vlc_package": "PASS",
+      "settings_reads": "PASS",
+      "settings_provider": "PASS",
+      "storage": "PASS",
+      "usb": "NOT_TESTED_USER_DEFERRED_OPTIONAL",
+      "ethernet": "NOT_TESTED_USER_DEFERRED_OPTIONAL",
+      "final_crash_buffer_bytes": 0,
+      "final_tombstones_unchanged": true,
+      "boot_and_critical_pid_continuity": "PASS"
+    },
+    "crash_restart_census": {
+      "status": "PASS_NO_MATERIAL_NEW_CRASH_OR_RESTART",
+      "boot_id": "21f681ad-1c90-4760-8086-629e1d076c2a",
+      "surfaceflinger_pid": 541,
+      "zygote32_pid": 488,
+      "system_server_pid": 775,
+      "tombstone_listing_sha256": "AC4B728688935DA2A9464FF90BA57E55FC85AA39F46F6E466CFBED26B7A0D985",
+      "known_boot_audio_crash_is_new_regression": false
+    }
+  },
+  "waivers": [
+    {
+      "item": "REMOTE_POWER_CURRENT_SESSION_REVALIDATION",
+      "contract_classification": "REQUIRED_INTENDED_REMOTE_MATRIX_ITEM",
+      "current_session": "NOT_TESTED",
+      "prior_user_observation": "NORMAL",
+      "authorization": "EXPLICIT_USER_WAIVER_TO_PROCEED",
+      "effect": "PREVENTS_UNQUALIFIED_EVIDENCE_COMPLETE_PASS_BUT_DOES_NOT_LEAVE_GATE3_HOLD"
+    }
+  ],
+  "optional_not_tested": [
+    "USB_USER_DEFERRED",
+    "ETHERNET_USER_DEFERRED"
+  ],
+  "remaining_gate3_blockers": [],
+  "not_proven_by_gate3": [
+    "Main10",
+    "HDR",
+    "AFBC",
+    "protected content",
+    "4K"
+  ],
+  "known_separate_debt": {
+    "audio_startup_crash": "KNOWN_UNFIXED_POST_ARCHITECTURE_P1",
+    "full_vintf": "EXIT_65_INHERITED_CONFIG_NFS_FS_MISMATCH_NOT_PASS"
+  },
+  "governance": {
+    "canonical_r7": "PASS_FROZEN_UNCHANGED",
+    "compat1a": "EXPERIMENTAL_REPAIR_NOT_R8_NOT_RELEASE",
+    "gate3": "PASS_WITH_EXPLICIT_USER_WAIVER",
+    "r8": "NOT_AUTHORIZED_NOT_BUILT",
+    "development_branch_created": false,
+    "runtime_or_image_changed_by_closure": false
+  }
+}
