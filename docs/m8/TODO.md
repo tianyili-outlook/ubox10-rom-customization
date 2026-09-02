@@ -2,7 +2,7 @@
 
 ## Freeze decision
 
-`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为稳定日用回退。`a16-prototype-a-r4` 已冻结为 **PHYSICAL PASS / ACCEPTED Android 16 ARM32 ARCHITECTURE CONTROL**。Exact `a16-prototype-b-r7` 现已物理证明 Android 16/API36、canonical mixed ABI、dual zygote、ARM64-parented system_server、stable ARM64 SurfaceFlinger、mapper/gralloc 与 Mali-G31 UI，故冻结为 **PHYSICAL ARCHITECTURE PASS / ACCEPTED ANDROID 16 ARM64 MIXED-ARCHITECTURE ARCHITECTURE BASELINE**。Gate 3 已按现有合同关闭为 **`PASS_WITH_EXPLICIT_USER_WAIVER`**，不是bare PASS：3A architecture、3B formal AVC/SDR HEVC/VP9+HDMI audio、3D Wi-Fi OFF→ON与3E platform sanity PASS；3C除POWER本轮复验由用户明确waive外完成。MENU input/Android mapping存在而当前UI visible behavior为NONE，不称input failure；USB/Ethernet optional且用户defer。Main10/HDR/AFBC/protected/4K仍未证明。用户明确把一次性、自动恢复的 boot-time `getAudioPort` SIGSEGV 从旧 Gate 2 startup-stability 条件改列为 **KNOWN / UNFIXED / POST-GATE P1 STABILIZATION DEBT**；它不是HEVC first fatal。Gate 2 仍为 **CLOSED / PASS**。`codex/m8-a16-development`现已从冻结Gate3 closure开始第一个有界audio候选；r8与architecture/provider变更仍未授权。
+`m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为稳定日用回退。`a16-prototype-a-r4` 已冻结为 **PHYSICAL PASS / ACCEPTED Android 16 ARM32 ARCHITECTURE CONTROL**。Exact `a16-prototype-b-r7` 现已物理证明 Android 16/API36、canonical mixed ABI、dual zygote、ARM64-parented system_server、stable ARM64 SurfaceFlinger、mapper/gralloc 与 Mali-G31 UI，故冻结为 **PHYSICAL ARCHITECTURE PASS / ACCEPTED ANDROID 16 ARM64 MIXED-ARCHITECTURE ARCHITECTURE BASELINE**。Gate 3 已按现有合同关闭为 **`PASS_WITH_EXPLICIT_USER_WAIVER`**，不是bare PASS：3A architecture、3B formal AVC/SDR HEVC/VP9+HDMI audio、3D Wi-Fi OFF→ON与3E platform sanity PASS；3C除POWER本轮复验由用户明确waive外完成。MENU input/Android mapping存在而当前UI visible behavior为NONE，不称input failure；USB/Ethernet optional且用户defer。Main10/HDR/AFBC/protected/4K仍未证明。Boot-time `getAudioPort` PC-zero SIGSEGV 曾列为 post-Gate P1；`a16-dev-audio-r1` 现已通过 BootGate、HDMI disconnect/connect、AVC/HEVC/VP9 HDMI-audio 与 final census，故该特定 **P1 CLOSED**。它不是HEVC first fatal。Gate 2 仍为 **CLOSED / PASS**。r8与architecture/provider变更仍未授权。
 
 ## Android 16 Gate 1 / Gate 2 — Prototype A ARM32
 
@@ -233,7 +233,7 @@
 
 ## Post-Gate stabilization / release hardening
 
-- [ ] **P1 ACTIVE / PHYSICAL VALIDATION PENDING — legacy HIDL audio boot crash：**root cause已证明为Apollo HAL报告API `0x0700`但`get_audio_port_v7`为NULL，ARM32 HIDL wrapper跳转地址0。`a16-dev-audio-r1`只把此malformed >=3.2合同转换为`NOT_SUPPORTED`，离线审计PASS；尚未flash，不能称fixed。下一步为一次有界BootGate、audio service continuity、一个安全HDMI availability transition及accepted AVC/HEVC/VP9 HDMI-audio smoke。
+- [x] **P1 CLOSED — legacy HIDL audio boot crash：**root cause为Apollo HAL报告API `0x0700`但`get_audio_port_v7`为NULL，ARM32 HIDL wrapper跳转地址0。`a16-dev-audio-r1`仅把此malformed >=3.2合同转换为`NOT_SUPPORTED`。2026-09-02单一连续boot实机通过BootGate、audio service PID连续、HDMI disconnect/connect及accepted AVC/HEVC/VP9 HDMI-audio smoke；历史PC-zero signature缺失、crash buffer为空、无tombstone delta。Cedar/MediaCodec/BufferQueue teardown noise保持NON-BLOCKING / DEFERRED。
 - [ ] **RELEASE HARDENING — SELinux enforcing：**运行时 enforcing compatibility 未证明；不是 Architecture Gate 2 条件。
 - [ ] **INHERITED EXCEPTION — full VINTF：**`CONFIG_NFS_FS=y` 对 FCM-6 `n` 仍为唯一 exit-65 exception；不得称 PASS，也不为 B1 改 kernel。
 

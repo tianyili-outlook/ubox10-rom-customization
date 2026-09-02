@@ -91,7 +91,36 @@
     "removed_exports_required_by_vendor_consumers": 0,
     "temporary_control_committed_or_packaged": false
   },
-  "physical_status": "NOT_YET_VALIDATED",
+  "physical_status": "PASS",
+  "physical_validation": {
+    "p1_arm32_audio_startup_crash": "CLOSED",
+    "evidence_archive": "/work/physical-evidence/ubox10/a16-dev-audio-r1/20260902-214327/UBOX10-A16-DEV-AUDIO-R1-20260902-214327.zip",
+    "evidence_archive_sha256": "BDB3D13ECF54DF3CD1C7B3F6DC5D160DDF9D43CD51E6F1D66B8DC28910F09064",
+    "internal_manifest": "PASS_48_OF_48",
+    "boot_id": "90882ee3-4884-445c-ae9c-cada3a1a6449",
+    "continuous_pids": {
+      "audioserver": 534,
+      "audio_hidl": 504,
+      "surfaceflinger": 547,
+      "system_server": 787,
+      "zygote64": 492,
+      "zygote32": 493
+    },
+    "boot_gate": "PASS",
+    "hdmi_transition": "PASS",
+    "avc_aac": "PASS",
+    "hevc_aac": "PASS",
+    "vp9_vorbis": "PASS",
+    "final_census": "PASS",
+    "vp9_fixture_sha256": "FDED11EFF810E815C45F6E571952FF50644D0A4E1DB72B89C4D47370D62BD1ED",
+    "historical_pc_zero_signature": "ABSENT",
+    "new_crash_or_tombstone": false,
+    "non_blocking_observations": [
+      "Cedar CdcIonUnmap/CdcIonMunmap EINVAL during player teardown",
+      "VP9/VLC MediaCodec BAD_VALUE and releaseOutputBuffer after Released state",
+      "abandoned BufferQueue and EGL-window teardown messages"
+    ]
+  },
   "governance": {
     "canonical_r7": "PASS_FROZEN_UNCHANGED",
     "gate3": "PASS_WITH_EXPLICIT_USER_WAIVER_CLOSED",

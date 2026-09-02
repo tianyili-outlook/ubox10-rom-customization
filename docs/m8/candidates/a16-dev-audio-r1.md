@@ -1,6 +1,6 @@
 # a16-dev-audio-r1
 
-Status: **OFFLINE RECONSTRUCTION ABI PASS / READY FOR PHYSICAL VALIDATION / DEVELOPMENT AUDIO
+Status: **PHYSICAL VALIDATION PASS / P1 ARM32 AUDIO STARTUP CRASH CLOSED / DEVELOPMENT AUDIO
 COMPATIBILITY CANDIDATE / NOT r8 / NOT RELEASE**
 
 This is the first post-Gate3 development candidate. It is composed from exact physically proven
@@ -87,14 +87,36 @@ the one vendor file was replaced and re-signed.
 - image: `out/candidates/a16-dev-audio-r1/x12-a16-dev-audio-r1.img`
 - size: **1,641,830,400 bytes**
 - SHA-256: **`270B5D822AB3BB13D8EDCD9BE374DA1D6ED512D6D60063E123046C23B8AF9D62`**
-- physical status: **NOT YET VALIDATED**
+- physical status: **PASS**
 
 Read-only `e2fsck` passes for system/vendor/product/vendor_dlkm. System/vendor/vbmeta AVB, exact
 compat1a LP metadata/extents, sparse→raw byte identity and IMAGEWTY outer verification pass.
 System-side VINTF passes. Full VINTF remains **exit 65 / inherited `CONFIG_NFS_FS=y` versus FCM-6
-`n` / NOT PASS**. No image was flashed and no physical device command was issued.
+`n` / NOT PASS**. Candidate construction and offline review issued no device command; the later
+separately authorized physical session is recorded below and did not alter the image.
 
-The bounded physical plan is
-`docs/m8/device-tests/a16-dev-audio-r1-physical-plan.md`. It uses one boot session, verifies service
-continuity and one safely reproducible HDMI availability transition, then reuses the accepted
-manual AVC/HEVC/VP9 methods. No repeated reboot campaign is required.
+## Physical validation closure
+
+The 2026-09-02 user-supplied evidence archive is retained outside Git at
+`/work/physical-evidence/ubox10/a16-dev-audio-r1/20260902-214327/UBOX10-A16-DEV-AUDIO-R1-20260902-214327.zip`.
+Its SHA-256 is `BDB3D13ECF54DF3CD1C7B3F6DC5D160DDF9D43CD51E6F1D66B8DC28910F09064`;
+the outer checksum and all 48 internal manifest entries verify.
+
+One continuous boot (`90882ee3-4884-445c-ae9c-cada3a1a6449`) passed BootGate, an explicit HDMI
+disconnect/connect transition, AVC+AAC, compat1a HEVC+AAC, VP9+Vorbis, and the final census.
+`audioserver` 534, ARM32 audio HIDL 504, SurfaceFlinger 547, system_server 787, zygote64 492 and
+zygote32 493 remained continuous. The historical PC-zero `getAudioPortImpl` SIGSEGV is absent;
+the HDMI transition reopened `AUDIO_DEVICE_OUT_HDMI` without an audio-service death or restart.
+Final AudioFlinger reports hardware status 0 and output device `0x400` HDMI. Operator observations
+record normal picture and HDMI audio for all three media smokes; raw logs independently confirm
+Allwinner/Cedar AVC, HEVC and VP9 paths, successful compat1a HEVC imports, empty crash buffers and
+no tombstone delta. The recorded VP9 fixture SHA-256 is
+`FDED11EFF810E815C45F6E571952FF50644D0A4E1DB72B89C4D47370D62BD1ED`.
+
+The Cedar `CdcIonUnmap`/`CdcIonMunmap` EINVAL messages, VP9/VLC `BAD_VALUE` and output-buffer calls
+after Released state, and abandoned BufferQueue/EGL-window messages occur in player/activity
+teardown after visible playback. With continuous critical PIDs, empty crash buffers and no new
+tombstone, they remain **NON-BLOCKING / DEFERRED OBSERVATIONS**. This closure does not make the
+candidate a release or r8 and does not expand Main10/HDR/AFBC/protected/4K scope. The executed plan
+and evidence interpretation are recorded in
+`docs/m8/device-tests/a16-dev-audio-r1-physical-plan.md`.

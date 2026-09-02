@@ -1,6 +1,6 @@
 # M8 status
 
-Updated: 2026-09-01
+Updated: 2026-09-02
 
 ## Android 16 architecture ceiling
 
@@ -46,7 +46,7 @@ The architecture pass itself is not downgraded.
 | Transparency-corrected diagnostic `a16-prototype-b-r7-diag3a-private-buffer-metadata` | **PHYSICAL AVC PASS / HEVC REPRODUCED / MALI METADATA ABI ROOT CAUSE PROVEN / DIAGNOSTIC CLOSED / NOT r8** |
 | SDR shadow compatibility experiment `a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow` | **PHYSICAL BOOT PASS / AVC PASS / HEVC FAIL — SHADOW FD IMPLEMENTATION BLOCKER / TRANSLATION NOT TESTED / SUPERSEDED** |
 | Sized-shadow-fd experiment `a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd` | **PHYSICAL PASS — AUTHORIZED SDR 1080P YV12 ONLY / EXPERIMENTAL REPAIR / NOT r8 / NOT RELEASE** |
-| Post-Gate3 audio compatibility candidate `a16-dev-audio-r1` | **OFFLINE_RECONSTRUCTION_ABI_PASS / READY_FOR_PHYSICAL_VALIDATION / DEVELOPMENT AUDIO COMPATIBILITY CANDIDATE / NOT r8 / NOT RELEASE** |
+| Post-Gate3 audio compatibility candidate `a16-dev-audio-r1` | **PHYSICAL VALIDATION PASS / P1 ARM32 AUDIO STARTUP CRASH CLOSED / DEVELOPMENT AUDIO COMPATIBILITY CANDIDATE / NOT r8 / NOT RELEASE** |
 
 Gate 3 is now **CLOSED / `PASS_WITH_EXPLICIT_USER_WAIVER`**. Its only waiver is POWER
 current-session revalidation; no required item is silently marked PASS and no other Gate 3 blocker
@@ -91,15 +91,17 @@ candidate history. The separate
 post-restart quarter-screen is strongly supported to be a retained display recovery defect that
 selects proven 3840x2160p60 HDMI mode 34 while SurfaceFlinger remains 1920x1080. The known boot-time
 legacy audio-service crash occurs after the SurfaceFlinger restart and
-remains **KNOWN / UNFIXED / POST-ARCHITECTURE P1**, and full VINTF remains **exit 65 / inherited
+is now **PHYSICALLY CLOSED by a16-dev-audio-r1**, and full VINTF remains **exit 65 / inherited
 `CONFIG_NFS_FS=y` versus FCM-6 `n` / NOT PASS**. Post-Gate3 development now proceeds on
 `codex/m8-a16-development`, based exactly on the frozen
 Gate3 closure. Its first bounded candidate, `a16-dev-audio-r1`, guards the proven malformed Apollo
-HAL null `get_audio_port_v7` contract in the open-source ARM32 HIDL wrapper. It has not been flashed
-or physically validated. Its accepted reconstruction control proves that the incidental dynamic
+HAL null `get_audio_port_v7` contract in the open-source ARM32 HIDL wrapper. Its accepted reconstruction control proves that the incidental dynamic
 symbol drift is a current-toolchain reconstruction effect, while the guard itself adds no dynamic
 ABI surface and changes executable code only in `Device::getAudioPort`; reverse-consumer closure
-passes. r8 remains unauthorized and unbuilt.
+passes. One continuous physical session then passed BootGate, HDMI disconnect/connect, AVC+AAC,
+compat1a HEVC+AAC, VP9+Vorbis and final census with stable audio/framework PIDs, empty crash buffers
+and no tombstone delta. The historical PC-zero crash is absent, so this exact P1 is closed. Player
+teardown noise remains non-blocking/deferred. r8 remains unauthorized and unbuilt.
 
 ## Golden baseline
 
@@ -1085,6 +1087,6 @@ crash census通过。Formal VP9 Allwinner OMX/Cedar播放、Wi-Fi OFF→ON与pla
 input/mapping存在而UI behavior为NONE，POWER不伪造本轮PASS或scan code。该结论只覆盖authorized SDR
 1080p YV12，不扩展Main10/HDR/AFBC/protected/4K，也不授权新的修复或镜像。USB/Ethernet optional
 fixture由用户defer并保持NOT TESTED。下一步不是构建 r8。Vulkan、GMS、
-full VINTF NFS、SELinux enforcing、audio P1、CEC/HDMI hotplug、suspend与产品 polish继续保持 gate
+full VINTF NFS、SELinux enforcing、CEC/HDMI hotplug、suspend与产品 polish继续保持 gate
 外。Gate 3治理关闭不授权r8；`codex/m8-a16-development`现从冻结closure开始首个audio P1开发候选，
-但其离线结果不等于物理PASS。当前r8仍未授权、未构建。
+该候选现已物理PASS并关闭特定audio P1，但仍非release或r8。当前r8仍未授权、未构建。

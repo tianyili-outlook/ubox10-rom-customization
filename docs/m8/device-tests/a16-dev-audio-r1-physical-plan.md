@@ -1,6 +1,6 @@
 # a16-dev-audio-r1 bounded physical validation plan
 
-Status: **PREPARED ONLY / NO FLASH PERFORMED / PHYSICAL AUTHORIZATION REQUIRED**
+Status: **EXECUTED / PHYSICAL VALIDATION PASS / P1 ARM32 AUDIO STARTUP CRASH CLOSED**
 
 Use the exact image `out/candidates/a16-dev-audio-r1/x12-a16-dev-audio-r1.img`, size
 1,641,830,400 bytes, SHA-256
@@ -31,3 +31,23 @@ media smokes, unchanged compat1a SDR HEVC behavior, and no new SurfaceFlinger/fr
 
 Stop immediately on a new crash, service restart loop, lost HDMI audio, architecture regression or
 compat1a media regression. Do not repeat boots to manufacture a pass; no 10x reboot gate applies.
+
+## Result
+
+The authorized session completed on 2026-09-02 in one continuous boot with boot ID
+`90882ee3-4884-445c-ae9c-cada3a1a6449`. BootGate passed on Android 16/API36 with `zygote64_32` and
+both ABI families. The historical address-zero audio HIDL crash signature was absent and the crash
+buffer was empty. An explicit HDMI `disconnect=1024` then `connect=1024` caused AudioFlinger to
+reopen `AUDIO_DEVICE_OUT_HDMI`; audioserver PID 534 and ARM32 audio HIDL PID 504 remained unchanged.
+
+Manual AVC+AAC, HEVC+AAC and VP9+Vorbis smokes all had normal picture and HDMI audio. Raw logs
+confirm the Allwinner/Cedar hardware paths; HEVC retained the compat1a shadow import path without
+EGL/SurfaceFlinger regression. SurfaceFlinger 547 and system_server 787 remained unchanged. The
+final census retained the boot ID and all critical PIDs, had an empty crash buffer, no tombstone
+delta, AudioFlinger hardware status 0 and output device `0x400` HDMI.
+
+The evidence archive SHA-256 is
+`BDB3D13ECF54DF3CD1C7B3F6DC5D160DDF9D43CD51E6F1D66B8DC28910F09064`; all 48 internal manifest
+entries passed. Cedar unmap EINVAL, VP9/VLC released-state `BAD_VALUE`, and abandoned
+BufferQueue/EGL-window messages occur during teardown and are retained as non-blocking deferred
+observations. No runtime, candidate image or helper changed during this governance closure.
