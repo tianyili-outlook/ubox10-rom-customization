@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "projects": {
+    "hardware/interfaces": {
+      "current_revision": "b553275c84253b074a8532a6ff0f4406c43e606e",
+      "retained_revision": "4a8246e3757732cb787327c3f8ad5cbacf910d1e",
+      "projected_files": [
+        "audio/core/all-versions/default/Device.cpp",
+        "audio/core/all-versions/default/DevicesFactory.cpp",
+        "audio/core/all-versions/default/ParametersUtil.cpp",
+        "audio/core/all-versions/default/PrimaryDevice.cpp",
+        "audio/core/all-versions/default/Stream.cpp",
+        "audio/core/all-versions/default/StreamIn.cpp",
+        "audio/core/all-versions/default/StreamOut.cpp",
+        "audio/core/all-versions/default/include/core/default/Device.h",
+        "audio/core/all-versions/default/include/core/default/DevicesFactory.h",
+        "audio/core/all-versions/default/include/core/default/ParametersUtil.h",
+        "audio/core/all-versions/default/include/core/default/PrimaryDevice.h",
+        "audio/core/all-versions/default/include/core/default/Stream.h",
+        "audio/core/all-versions/default/include/core/default/StreamIn.h",
+        "audio/core/all-versions/default/include/core/default/StreamOut.h",
+        "audio/core/all-versions/default/include/core/default/Util.h"
+      ]
+    },
+    "system/libfmq": {
+      "current_revision": "674a2103f2bd9bd5505c58e83af3042be2a24adf",
+      "retained_revision": "8dd3bc99a159970f44298bb8e3d83366aac63273",
+      "projected_files": ["base/fmq/MQDescriptorBase.h"]
+    }
+  },
+  "clean_sha256": {
+    "hardware/interfaces/audio/core/all-versions/default/Android.bp": "e1a40d60c31e6d80c944f060cb4ab95b2cd3c4adc2240ad4390e9167613eb8f8",
+    "hardware/interfaces/audio/core/all-versions/default/Device.cpp": "b5cc6e454fad055414d2a1ef8dc87dc125cc1bd282a6eafdbdee37d36cf23349",
+    "hardware/interfaces/audio/core/all-versions/default/DevicesFactory.cpp": "9cbf223d490235707d41b63425241409b9d8c56c26094397057f141c7f62394e",
+    "hardware/interfaces/audio/core/all-versions/default/ParametersUtil.cpp": "54f0c10dafeca06499711eeb78e5e85616f21780e89c692cf4a092f5b1136d7c",
+    "hardware/interfaces/audio/core/all-versions/default/PrimaryDevice.cpp": "48891a4ec9e13d8abb714ced1a91b3c987a0cc59315b9695c20ee648a033cf0a",
+    "hardware/interfaces/audio/core/all-versions/default/Stream.cpp": "f5bc17f6637374c9d6e2fee9bb02a74913ad6387e1d855b42c5a0f37c5bcb3a7",
+    "hardware/interfaces/audio/core/all-versions/default/StreamIn.cpp": "4ae75790145536b57a91e9d7e00ede32c3d39b114ef221bed9578f69c27ee844",
+    "hardware/interfaces/audio/core/all-versions/default/StreamOut.cpp": "d03e8467d603decb841088aa9e2c7c02f91c42382d4d19faf98af35abf784789",
+    "hardware/interfaces/audio/core/all-versions/default/include/core/default/Device.h": "75b7a7de8e990cd3b1277ff2d982f494c3186ea081d5ff38554fec90af31b65d",
+    "hardware/interfaces/audio/core/all-versions/default/include/core/default/DevicesFactory.h": "337250c733a177617e49d34cfff4d20a4a2f81e8b3defc74a1be652a0ebdc8a4",
+    "hardware/interfaces/audio/core/all-versions/default/include/core/default/ParametersUtil.h": "9126c32150569ae8e7ad9526e2d67691743d44a305eaa4f4c732fb4be75aeb4a",
+    "hardware/interfaces/audio/core/all-versions/default/include/core/default/PrimaryDevice.h": "b45d728d8f81d4256cc45fb2a030678fbd4580a7f86003911815122a1dc9b481",
+    "hardware/interfaces/audio/core/all-versions/default/include/core/default/Stream.h": "e830ad659bf6b7bba1fd540ae9e2537393f921497625b3f93710eb17914d423e",
+    "hardware/interfaces/audio/core/all-versions/default/include/core/default/StreamIn.h": "f0785bf6c12f7bbba03ac436f7b6036229986e789d13853292f40e0d53dcc50a",
+    "hardware/interfaces/audio/core/all-versions/default/include/core/default/StreamOut.h": "937ff719a7b2d9788c60ee5b37517e0a77c28dc1c9ccaa728711c52295b4a55c",
+    "hardware/interfaces/audio/core/all-versions/default/include/core/default/Util.h": "971c95a06034d0df68038ad117e51829a35fed4393b596e55a8aaca0bf27b5f0",
+    "system/libfmq/base/fmq/MQDescriptorBase.h": "69d61adc1c0123ce90f9abc6956a7305126b3ee7e970c08d8569b718f7ffaa0b"
+  },
+  "patched_sha256": {
+    "hardware/interfaces/audio/core/all-versions/default/Android.bp": "8ad4673a9504857b90123fa9920f9b7ce405aee40629c36c85a6e54e0e969d73",
+    "hardware/interfaces/audio/core/all-versions/default/Device.cpp": "3ec13324bf1c99b7bc2a6cb2fc0a6d4a4ad4310bfab2136c4ee078eb005b9d72",
+    "hardware/interfaces/audio/core/all-versions/default/DevicesFactory.cpp": "2b1f01531ee17e838f34b4ff77f81c172ede294b9debda954e3cfa6ee5419a14",
+    "hardware/interfaces/audio/core/all-versions/default/ParametersUtil.cpp": "3b99c928ae3ee8bc503548c8141d16b5d71b25d647eb6f1bc86ea53f732cffa6",
+    "hardware/interfaces/audio/core/all-versions/default/PrimaryDevice.cpp": "26f73ddb1b3db6d32005045f00f5fa80f63f68f90875ea29189a38b9f3830618",
+    "hardware/interfaces/audio/core/all-versions/default/Stream.cpp": "57afcb7844ced4ae7248fe64efdff146e12abbfba469b6d52fd93028292c1121",
+    "hardware/interfaces/audio/core/all-versions/default/StreamIn.cpp": "ce0f0b4ac3f2b8b5d8bbd2a7d26c129663a1d9600d8775e0dc05f0e6c7e89bd6",
+    "hardware/interfaces/audio/core/all-versions/default/StreamOut.cpp": "c353fbaf0fc6bdb822a0217cba56a033417c2987cf62b1ae95bfb97c77515651",
+    "hardware/interfaces/audio/core/all-versions/default/include/core/default/Device.h": "ce32d56c27dcd4630980ae1fc64baae669c67c7e3de316b709eb4cf27a26c028",
+    "hardware/interfaces/audio/core/all-versions/default/include/core/default/DevicesFactory.h": "1dbab0059bf382b67ddcd283a995b69ceec49802addebf6178500ab5f9aa8ee5",
+    "hardware/interfaces/audio/core/all-versions/default/include/core/default/ParametersUtil.h": "566e7dde2223e05e6c5fbb130be92a116306b1174a234955dd25514b9b57aa5b",
+    "hardware/interfaces/audio/core/all-versions/default/include/core/default/PrimaryDevice.h": "0050581f8b83e66d0a54f1ed0c6b23c3982f3c1183b8451c4a4373bebdb54276",
+    "hardware/interfaces/audio/core/all-versions/default/include/core/default/Stream.h": "4e1c805c5e9c80e0d750309dfce7510b6b6c55dd3d51b2ee9da864b033d4899a",
+    "hardware/interfaces/audio/core/all-versions/default/include/core/default/StreamIn.h": "bafc07e39590447cbe82716e86b08b57b05ca65bcfc5bc91f0c767c559558b9e",
+    "hardware/interfaces/audio/core/all-versions/default/include/core/default/StreamOut.h": "caa8b50a0f0cbb6763dc1dba13c6531d7ff701d5e88ab7adfa6ddf8a38f74202",
+    "hardware/interfaces/audio/core/all-versions/default/include/core/default/Util.h": "dd812f67e1432d3f657c918bdb63c6e764d07b03f0d53d9e2be24f67e3be4738",
+    "hardware/interfaces/audio/core/all-versions/default/vndk31_libcpp_backdeploy.h": "823fb894a8a50b18f2e6db7dbffc893a1836d95de058e25165441767e0607f90",
+    "system/libfmq/base/fmq/MQDescriptorBase.h": "e7b4d049e9dd4267440ecf5ba82b4a03d0ed0a44b9f84b8ee71e7b627b6be418"
+  }
+}

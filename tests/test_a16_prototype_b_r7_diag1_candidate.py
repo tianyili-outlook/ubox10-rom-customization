@@ -195,4 +195,5 @@ def test_status_and_todo_keep_architecture_pass_and_truthful_gate3_closure() -> 
     assert "[x] **33 — Gate 3" in todo
     assert "READY FOR PHYSICAL BOOT GATE" in todo
     assert "R8_AUDIT_DECISION = HOLD_FOR_MORE_EVIDENCE" in todo
-    assert "不自动创建或授权`codex/m8-a16-development`" in todo
+    assert "`codex/m8-a16-development`现已从冻结Gate3 closure开始" in todo
+    assert "不会据此自动授权r8" in todo

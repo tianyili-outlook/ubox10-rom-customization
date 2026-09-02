@@ -46,6 +46,7 @@ The architecture pass itself is not downgraded.
 | Transparency-corrected diagnostic `a16-prototype-b-r7-diag3a-private-buffer-metadata` | **PHYSICAL AVC PASS / HEVC REPRODUCED / MALI METADATA ABI ROOT CAUSE PROVEN / DIAGNOSTIC CLOSED / NOT r8** |
 | SDR shadow compatibility experiment `a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow` | **PHYSICAL BOOT PASS / AVC PASS / HEVC FAIL — SHADOW FD IMPLEMENTATION BLOCKER / TRANSLATION NOT TESTED / SUPERSEDED** |
 | Sized-shadow-fd experiment `a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd` | **PHYSICAL PASS — AUTHORIZED SDR 1080P YV12 ONLY / EXPERIMENTAL REPAIR / NOT r8 / NOT RELEASE** |
+| Post-Gate3 audio compatibility candidate `a16-dev-audio-r1` | **OFFLINE_RECONSTRUCTION_ABI_PASS / READY_FOR_PHYSICAL_VALIDATION / DEVELOPMENT AUDIO COMPATIBILITY CANDIDATE / NOT r8 / NOT RELEASE** |
 
 Gate 3 is now **CLOSED / `PASS_WITH_EXPLICIT_USER_WAIVER`**. Its only waiver is POWER
 current-session revalidation; no required item is silently marked PASS and no other Gate 3 blocker
@@ -85,13 +86,20 @@ boot ID and stable SurfaceFlinger/zygote/system_server PIDs pass. The intervenin
 supplemental only, not the formal regression. This is a physical PASS only for authorized SDR 1080p
 YV12; Main10/HDR/AFBC/protected/4K are not validated. The subsequent Gate 3 closure does not expand
 that repair scope. Canonical r7 remains
-frozen. This is not r8; no new development branch is authorized. The separate
+frozen. Compat1a is not r8; the later development branch does not alter or supersede this frozen
+candidate history. The separate
 post-restart quarter-screen is strongly supported to be a retained display recovery defect that
 selects proven 3840x2160p60 HDMI mode 34 while SurfaceFlinger remains 1920x1080. The known boot-time
 legacy audio-service crash occurs after the SurfaceFlinger restart and
 remains **KNOWN / UNFIXED / POST-ARCHITECTURE P1**, and full VINTF remains **exit 65 / inherited
-`CONFIG_NFS_FS=y` versus FCM-6 `n` / NOT PASS**. The intended future
-`codex/m8-a16-development` branch may be created only after Gate 3 PASS and does not yet exist.
+`CONFIG_NFS_FS=y` versus FCM-6 `n` / NOT PASS**. Post-Gate3 development now proceeds on
+`codex/m8-a16-development`, based exactly on the frozen
+Gate3 closure. Its first bounded candidate, `a16-dev-audio-r1`, guards the proven malformed Apollo
+HAL null `get_audio_port_v7` contract in the open-source ARM32 HIDL wrapper. It has not been flashed
+or physically validated. Its accepted reconstruction control proves that the incidental dynamic
+symbol drift is a current-toolchain reconstruction effect, while the guard itself adds no dynamic
+ABI surface and changes executable code only in `Device::getAudioPort`; reverse-consumer closure
+passes. r8 remains unauthorized and unbuilt.
 
 ## Golden baseline
 
@@ -1078,4 +1086,5 @@ input/mapping存在而UI behavior为NONE，POWER不伪造本轮PASS或scan code�
 1080p YV12，不扩展Main10/HDR/AFBC/protected/4K，也不授权新的修复或镜像。USB/Ethernet optional
 fixture由用户defer并保持NOT TESTED。下一步不是构建 r8。Vulkan、GMS、
 full VINTF NFS、SELinux enforcing、audio P1、CEC/HDMI hotplug、suspend与产品 polish继续保持 gate
-外。Gate 3治理关闭不自动创建或授权`codex/m8-a16-development`；当前未授权 r8、镜像重建或新开发分支。
+外。Gate 3治理关闭不授权r8；`codex/m8-a16-development`现从冻结closure开始首个audio P1开发候选，
+但其离线结果不等于物理PASS。当前r8仍未授权、未构建。

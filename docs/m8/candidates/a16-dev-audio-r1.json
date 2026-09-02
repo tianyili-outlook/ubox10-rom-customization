@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "id": "a16-dev-audio-r1",
+  "classification": "DEVELOPMENT_AUDIO_COMPATIBILITY_CANDIDATE_NOT_R8_NOT_RELEASE",
+  "repository_starting_head": "6dd8ba7eed8d71f6e7266357eb0846fbb67587c8",
+  "base": {
+    "id": "a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd",
+    "size": 1641822208,
+    "sha256": "9E9592BF420F40A386BC347B027A85B2F9ED0A44DDB132BDBAB9882905F75722"
+  },
+  "candidate": {
+    "path": "out/candidates/a16-dev-audio-r1/x12-a16-dev-audio-r1.img",
+    "size": 1641830400,
+    "sha256": "270B5D822AB3BB13D8EDCD9BE374DA1D6ED512D6D60063E123046C23B8AF9D62"
+  },
+  "source": {
+    "manifest_commit": "ebea28d151539ecf0730b1a4ab92ac33edc17ac9",
+    "pinned_manifest_sha256": "F52BA4A04957CEC7EEE7C9DCDD1525533156A0B5A1F0ADFC31A8155F48FB087E",
+    "hardware_interfaces_commit": "b553275c84253b074a8532a6ff0f4406c43e606e",
+    "system_libfmq_commit": "674a2103f2bd9bd5505c58e83af3042be2a24adf",
+    "retained_wrapper_revision": "4a8246e3757732cb787327c3f8ad5cbacf910d1e",
+    "retained_fmq_header_revision": "8dd3bc99a159970f44298bb8e3d83366aac63273",
+    "device_cpp_before_sha256": "B5CC6E454FAD055414D2A1EF8DC87DC125CC1BD282A6EAFDBDEE37D36CF23349",
+    "device_cpp_after_sha256": "3EC13324BF1C99B7BC2A6CB2FC0A6D4A4AD4310BFAB2136C4EE078EB005B9D72",
+    "module": "android.hardware.audio@7.0-impl_32"
+  },
+  "runtime_delta": {
+    "count": 1,
+    "path": "/vendor/lib/hw/android.hardware.audio@7.0-impl.so",
+    "compat1a": {
+      "size": 161516,
+      "sha256": "87D7690E43B9AA8E3C17997C832A20FD190708B5624CC9A6AD272421E6DA919A",
+      "build_id": "24bb9072069ca0c589325285f4aa7ca6"
+    },
+    "audio_r1": {
+      "size": 170476,
+      "sha256": "E2F3D49D757AA4132180C3D247857FC9725D7113E92A079E10181AADBCC062ED",
+      "build_id": "19c6cc53af86cf7482c266ffa0350777"
+    },
+    "elf": "ELF32_ARM",
+    "soname": "android.hardware.audio@7.0-impl.so",
+    "dt_needed_preserved": true,
+    "required_hidl_exports_preserved": true,
+    "strong_imports": 261,
+    "unmatched_strong_imports": 0,
+    "libcpp_verbose_abort_import": false
+  },
+  "repair": {
+    "condition": "legacy HAL version >= AUDIO_DEVICE_API_VERSION_3_2 and get_audio_port_v7 == nullptr",
+    "result": "HIDL Result::NOT_SUPPORTED with original input AudioPort",
+    "valid_v7_path_preserved": true,
+    "legacy_fallback_for_malformed_v7": false,
+    "proprietary_hal_modified": false
+  },
+  "offline": {
+    "status": "OFFLINE_RECONSTRUCTION_ABI_PASS_READY_FOR_PHYSICAL_VALIDATION",
+    "system_vintf": "PASS",
+    "full_vintf": "NOT_PASS_INHERITED_CONFIG_NFS_FS_MISMATCH_ONLY",
+    "full_vintf_exit": 65,
+    "ext4_avb_lp_sparse_outer": "PASS",
+    "semantic_runtime_delta": "EXACTLY_ONE_VENDOR_FILE",
+    "compat1a_surfaceflinger_byte_identical": true
+  },
+  "reconstruction_abi_review": {
+    "verdict": "OFFLINE_RECONSTRUCTION_ABI_PASS",
+    "readiness": "READY_FOR_PHYSICAL_VALIDATION",
+    "compat1a": {
+      "size": 161516,
+      "sha256": "87D7690E43B9AA8E3C17997C832A20FD190708B5624CC9A6AD272421E6DA919A",
+      "build_id": "24bb9072069ca0c589325285f4aa7ca6",
+      "strong_imports": 269,
+      "dynamic_exports": 350
+    },
+    "reconstruction_control": {
+      "size": 170448,
+      "sha256": "F7CC10B667C7F4FF4AE0FE38FBA18655A880A7D9AFFAEF8B299A186C9BC922A6",
+      "build_id": "75c52bc5102f9b09f8be859ec6a29d58",
+      "strong_imports": 261,
+      "dynamic_exports": 340
+    },
+    "guarded": {
+      "size": 170476,
+      "sha256": "E2F3D49D757AA4132180C3D247857FC9725D7113E92A079E10181AADBCC062ED",
+      "build_id": "19c6cc53af86cf7482c266ffa0350777",
+      "strong_imports": 261,
+      "dynamic_exports": 340
+    },
+    "control_guard_dynamic_abi_sets_identical": true,
+    "only_material_executable_function_delta": "Device::getAudioPort",
+    "reverse_consumer_elfs_scanned": 2474,
+    "removed_exports_required_by_vendor_consumers": 0,
+    "temporary_control_committed_or_packaged": false
+  },
+  "physical_status": "NOT_YET_VALIDATED",
+  "governance": {
+    "canonical_r7": "PASS_FROZEN_UNCHANGED",
+    "gate3": "PASS_WITH_EXPLICIT_USER_WAIVER_CLOSED",
+    "compat1a": "PHYSICAL_PASS_AUTHORIZED_SDR_1080P_YV12_EXPERIMENTAL_NOT_R8_NOT_RELEASE",
+    "main10_hdr_afbc_protected_4k": "NOT_PROVEN",
+    "full_vintf": "EXIT_65_INHERITED_CONFIG_NFS_FS_NOT_PASS",
+    "r8": "NOT_AUTHORIZED_NOT_BUILT"
+  }
+}

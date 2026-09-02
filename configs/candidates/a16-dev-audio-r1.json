@@ -1,0 +1,95 @@
+{
+  "schema": 1,
+  "id": "a16-dev-audio-r1",
+  "label": "DEVELOPMENT AUDIO COMPATIBILITY CANDIDATE / NOT r8 / NOT RELEASE",
+  "status": "OFFLINE_RECONSTRUCTION_ABI_PASS_READY_FOR_PHYSICAL_VALIDATION",
+  "base_candidate": {
+    "path": "out/candidates/a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd/x12-a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd.img",
+    "size": 1641822208,
+    "sha256": "9E9592BF420F40A386BC347B027A85B2F9ED0A44DDB132BDBAB9882905F75722"
+  },
+  "base_artifacts": {
+    "system_a": {"path": "out/candidates/a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd/system_a.img", "size": 1651167232, "sha256": "0E7B2747C135F59307728ABA9F6F57C2741002BECFE5F23CB600AFDB1640F5D5"},
+    "vendor_a": {"path": "out/candidates/a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd/vendor_a.img", "size": 150994944, "sha256": "DEF708A526ACDF8E1F11B55AF095F7AA704236969814E5AE0191F5C98CF2D206"},
+    "super_raw": {"path": "out/candidates/a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd/super.raw.img", "size": 3221225472, "sha256": "644F43A57C15B83621B273EEBA1CA5077A11197DC6A8C2F49F8AACF881195A5A"},
+    "product_a": {"path": "out/candidates/a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd/candidate-logical/product_a.img", "size": 272629760, "sha256": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974"},
+    "vendor_dlkm": {"path": "out/candidates/a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd/vendor_dlkm_a.img", "size": 6680576, "sha256": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07"},
+    "boot": {"path": "out/candidates/a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd/boot.fex", "size": 67108864, "sha256": "527CF878B015CFAE4E8600BD750C7C73F45F4290B5CFEFEDBD1AD9AC347B8063"}
+  },
+  "source_contract": {
+    "manifest_commit": "ebea28d151539ecf0730b1a4ab92ac33edc17ac9",
+    "pinned_manifest_sha256": "F52BA4A04957CEC7EEE7C9DCDD1525533156A0B5A1F0ADFC31A8155F48FB087E",
+    "hardware_interfaces_commit": "b553275c84253b074a8532a6ff0f4406c43e606e",
+    "system_libfmq_commit": "674a2103f2bd9bd5505c58e83af3042be2a24adf",
+    "retained_wrapper_source_revision": "4a8246e3757732cb787327c3f8ad5cbacf910d1e",
+    "retained_fmq_header_revision": "8dd3bc99a159970f44298bb8e3d83366aac63273",
+    "overlay": "configs/aosp/architecture-ceiling-a16/development/audio-r1",
+    "device_cpp_pre_sha256": "B5CC6E454FAD055414D2A1EF8DC87DC125CC1BD282A6EAFDBDEE37D36CF23349",
+    "device_cpp_post_sha256": "3EC13324BF1C99B7BC2A6CB2FC0A6D4A4AD4310BFAB2136C4EE078EB005B9D72",
+    "target": "android.hardware.audio@7.0-impl_32"
+  },
+  "runtime_change": {
+    "partition_path": "/vendor/lib/hw/android.hardware.audio@7.0-impl.so",
+    "internal_path": "/lib/hw/android.hardware.audio@7.0-impl.so",
+    "source_path": "/work/src/ubox10-a16-ceiling/out-ceiling-b1/target/product/ubox10_ceiling_arm64/system/vendor/lib/hw/android.hardware.audio@7.0-impl.so",
+    "reason": "Return HIDL Result::NOT_SUPPORTED for malformed API >=3.2 Apollo HALs whose mandatory get_audio_port_v7 callback is null",
+    "baseline": {"size": 161516, "sha256": "87D7690E43B9AA8E3C17997C832A20FD190708B5624CC9A6AD272421E6DA919A", "build_id": "24bb9072069ca0c589325285f4aa7ca6"},
+    "candidate": {"size": 170476, "sha256": "E2F3D49D757AA4132180C3D247857FC9725D7113E92A079E10181AADBCC062ED", "build_id": "19c6cc53af86cf7482c266ffa0350777"},
+    "elf_class": "ELF32",
+    "machine": "ARM",
+    "soname": "android.hardware.audio@7.0-impl.so",
+    "mode": "0644",
+    "uid": 0,
+    "gid": 0,
+    "ctime": "0x652f7ab5",
+    "atime": "0x652f7ab5",
+    "mtime": "0x652f7ab5",
+    "crtime": "0x65379527",
+    "selinux": "u:object_r:vendor_file:s0"
+  },
+  "reconstruction_abi_review": {
+    "verdict": "OFFLINE_RECONSTRUCTION_ABI_PASS",
+    "readiness": "READY_FOR_PHYSICAL_VALIDATION",
+    "control": {
+      "size": 170448,
+      "sha256": "F7CC10B667C7F4FF4AE0FE38FBA18655A880A7D9AFFAEF8B299A186C9BC922A6",
+      "build_id": "75c52bc5102f9b09f8be859ec6a29d58",
+      "elf_class": "ELF32",
+      "machine": "ARM",
+      "strong_imports": 261,
+      "dynamic_exports": 340
+    },
+    "compat1a_to_control": {
+      "strong_imports": "269_TO_261_RECONSTRUCTION_EFFECT",
+      "dynamic_exports": "350_TO_340_RECONSTRUCTION_EFFECT"
+    },
+    "control_to_guarded": {
+      "strong_import_sets_identical": true,
+      "dynamic_export_sets_identical": true,
+      "only_material_executable_function_delta": "Device::getAudioPort"
+    },
+    "reverse_consumer": {
+      "runtime_elfs_scanned": 2474,
+      "removed_exports_required_by_vendor_consumers": 0,
+      "result": "PASS_NO_REMOVED_EXPORT_REQUIRED_BY_EXTERNAL_RUNTIME_CONSUMER"
+    },
+    "temporary_control_committed_or_packaged": false
+  },
+  "preserved_runtime": {
+    "surfaceflinger": {"path": "/system/bin/surfaceflinger", "candidate_file": "installed-compat1-surfaceflinger", "size": 8577592, "sha256": "06C960E672863AD557AF921565621997CB9B113BA2290049AF91028A405CD0A5"},
+    "libstagefright64": {"path": "/system/lib64/libstagefright.so", "candidate_file": "compat1-libstagefright64", "size": 2079968, "sha256": "3FDE0D408ED26CE76C7CAE2DB3DD41E38B1783B982CFAB251518D778C39F13CF"},
+    "gralloc32": {"path": "/vendor/lib/hw/gralloc.apollo.so", "candidate_file": "compat1-gralloc32", "size": 64852, "sha256": "7E654E0F9D968C5FA9C9F31893E0E60DCF6605E41A82783E6376A1D7D66194D5"},
+    "gralloc64": {"path": "/vendor/lib64/hw/gralloc.apollo.so", "candidate_file": "compat1-gralloc64", "size": 93664, "sha256": "1F91BF6FA547DA11E42068C1A0C612E41B5C800AEE9CDAB2D320DD469295CB19"}
+  },
+  "outer_delta": {"changed_payloads_from_base": ["Vsuper.fex", "Vvbmeta_vendor.fex", "super.fex", "vbmeta_vendor.fex"]},
+  "governance": {
+    "canonical_r7": "PASS_FROZEN_UNCHANGED",
+    "gate3": "PASS_WITH_EXPLICIT_USER_WAIVER_CLOSED",
+    "compat1a": "PHYSICAL_PASS_AUTHORIZED_SDR_1080P_YV12_EXPERIMENTAL_NOT_R8_NOT_RELEASE",
+    "main10_hdr_afbc_protected_4k": "NOT_PROVEN",
+    "full_vintf": "EXIT_65_INHERITED_CONFIG_NFS_FS_NOT_PASS",
+    "r8_authorized": false,
+    "r8_built": false,
+    "physical_validation_required": true
+  }
+}
