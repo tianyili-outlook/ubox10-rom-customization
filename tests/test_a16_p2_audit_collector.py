@@ -24,6 +24,18 @@ def _spec_lines(name: str) -> list[str]:
     return [line for line in _device_spec_block().splitlines() if f"name='{name}'" in line]
 
 
+def _powershell_pattern(variable: str) -> str:
+    match = re.search(rf"^\${variable} = '([^']+)'$", _source(), flags=re.MULTILINE)
+    assert match is not None
+    return match.group(1)
+
+
+def _comparable(lines: list[str]) -> list[str]:
+    boot_id = re.compile(_powershell_pattern("BootIdPattern"))
+    process = re.compile(_powershell_pattern("CriticalProcessPattern"))
+    return sorted(line for line in lines if boot_id.fullmatch(line) or process.fullmatch(line))
+
+
 def test_collector_interface_and_host_evidence_contract() -> None:
     source = _source()
     assert "[string]$Endpoint" in source
@@ -64,10 +76,29 @@ def test_critical_identity_excludes_elapsed_but_full_census_retains_it() -> None
     for line in critical:
         assert "ps -A -o PID,PPID,NAME" in line
         assert "ELAPSED" not in line
+        assert 'printf "BOOT_ID="; cat /proc/sys/kernel/random/boot_id' in line
     census = _spec_lines("process-census")
     assert len(census) == 2
     assert all("ELAPSED" in line for line in census)
     assert "T0/T1 boot-id and critical-process textual diff" in _source()
+
+
+def test_critical_comparison_canonical_boot_id_and_property_exclusion() -> None:
+    actual = "BOOT_ID=90882ee3-4884-445c-ae9c-cada3a1a6449"
+    assert _comparable([actual]) == [actual]
+    assert _comparable(["zygote64_32"]) == []
+    assert "ro.zygote" in _spec_lines("critical-state")[0]
+    assert "ro.zygote" not in _spec_lines("critical-state")[1]
+
+
+def test_critical_comparison_detects_boot_or_pid_change() -> None:
+    boot_a = "BOOT_ID=90882ee3-4884-445c-ae9c-cada3a1a6449"
+    boot_b = "BOOT_ID=11111111-2222-3333-4444-555555555555"
+    stable = [" 492 1 zygote64", " 534 1 audioserver", " 787 492 system_server"]
+    assert _comparable([boot_a, *stable]) == _comparable([boot_a, *stable])
+    assert _comparable([boot_a, *stable]) != _comparable([boot_b, *stable])
+    changed_pid = [" 492 1 zygote64", " 999 1 audioserver", " 787 492 system_server"]
+    assert _comparable([boot_a, *stable]) != _comparable([boot_a, *changed_pid])
 
 
 def test_expected_zero_match_is_narrow_and_real_failures_remain_failures() -> None:

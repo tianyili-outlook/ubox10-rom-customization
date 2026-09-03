@@ -222,7 +222,7 @@ function Assert-DeviceCommandSafety {
 }
 
 $T0Specs = @(
-    [ordered]@{ name='critical-state'; category='10-BootSnapshot-T0'; timeout=15; args=@('shell', 'date; uptime; cat /proc/sys/kernel/random/boot_id; getprop sys.boot_completed; getprop ro.build.version.release; getprop ro.build.version.sdk; getprop ro.zygote; getprop ro.product.cpu.abilist; getenforce; ps -A -o PID,PPID,NAME | grep -E "zygote|system_server|surfaceflinger|audioserver|android.hardware.audio.service"') },
+    [ordered]@{ name='critical-state'; category='10-BootSnapshot-T0'; timeout=15; args=@('shell', 'date; uptime; printf "BOOT_ID="; cat /proc/sys/kernel/random/boot_id; getprop sys.boot_completed; getprop ro.build.version.release; getprop ro.build.version.sdk; getprop ro.zygote; getprop ro.product.cpu.abilist; getenforce; ps -A -o PID,PPID,NAME | grep -E "zygote|system_server|surfaceflinger|audioserver|android.hardware.audio.service"') },
     [ordered]@{ name='logcat-all-early'; category='10-BootSnapshot-T0'; timeout=90; args=@('logcat', '-b', 'all', '-d', '-v', 'threadtime') },
     [ordered]@{ name='logcat-crash-early'; category='10-BootSnapshot-T0'; timeout=30; args=@('logcat', '-b', 'crash', '-d', '-v', 'threadtime') },
     [ordered]@{ name='properties'; category='20-System'; timeout=20; args=@('shell', 'getprop') },
@@ -260,7 +260,7 @@ $T0Specs = @(
 )
 
 $T1Specs = @(
-    [ordered]@{ name='critical-state'; category='A0-SteadyState-T1'; timeout=15; args=@('shell', 'date; uptime; cat /proc/sys/kernel/random/boot_id; getprop sys.boot_completed; getenforce; ps -A -o PID,PPID,NAME | grep -E "zygote|system_server|surfaceflinger|audioserver|android.hardware.audio.service"') },
+    [ordered]@{ name='critical-state'; category='A0-SteadyState-T1'; timeout=15; args=@('shell', 'date; uptime; printf "BOOT_ID="; cat /proc/sys/kernel/random/boot_id; getprop sys.boot_completed; getenforce; ps -A -o PID,PPID,NAME | grep -E "zygote|system_server|surfaceflinger|audioserver|android.hardware.audio.service"') },
     [ordered]@{ name='process-census'; category='A0-SteadyState-T1'; timeout=20; args=@('shell', 'ps -A -o USER,PID,PPID,ELAPSED,NAME') },
     [ordered]@{ name='init-services'; category='A0-SteadyState-T1'; timeout=15; args=@('shell', 'getprop | grep "\[init.svc"') },
     [ordered]@{ name='lshal'; category='A0-SteadyState-T1'; timeout=60; args=@('shell', 'lshal') },
@@ -377,9 +377,14 @@ foreach ($Spec in $T1Specs) { Invoke-DeviceSpec $Spec }
 
 $T0Critical = Get-Content -LiteralPath (Join-Path $EvidenceRoot '10-BootSnapshot-T0\critical-state.stdout.txt')
 $T1Critical = Get-Content -LiteralPath (Join-Path $EvidenceRoot 'A0-SteadyState-T1\critical-state.stdout.txt')
-$IdentityPattern = '^[0-9a-f]{8}-[0-9a-f-]{27}$|zygote|system_server|surfaceflinger|audioserver|android.hardware.audio.service'
-$T0Comparable = @($T0Critical | Where-Object { $_ -match $IdentityPattern })
-$T1Comparable = @($T1Critical | Where-Object { $_ -match $IdentityPattern })
+$BootIdPattern = '(?i)^BOOT_ID=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+$CriticalProcessPattern = '^\s*[0-9]+\s+[0-9]+\s+(?:zygote64|zygote|system_server|surfaceflinger|audioserver|android\.hardware\.audio\.service)\s*$'
+$T0Comparable = @($T0Critical | Where-Object {
+    $_ -match $BootIdPattern -or $_ -match $CriticalProcessPattern
+})
+$T1Comparable = @($T1Critical | Where-Object {
+    $_ -match $BootIdPattern -or $_ -match $CriticalProcessPattern
+})
 $Difference = Compare-Object -ReferenceObject $T0Comparable -DifferenceObject $T1Comparable |
     Out-String -Width 240
 $Comparison = "T0/T1 boot-id and critical-process textual diff (empty means identical):`n$Difference"
