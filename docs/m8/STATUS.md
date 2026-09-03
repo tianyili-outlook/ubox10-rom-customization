@@ -48,6 +48,7 @@ The architecture pass itself is not downgraded.
 | Sized-shadow-fd experiment `a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd` | **PHYSICAL PASS — AUTHORIZED SDR 1080P YV12 ONLY / EXPERIMENTAL REPAIR / NOT r8 / NOT RELEASE** |
 | Post-Gate3 audio compatibility candidate `a16-dev-audio-r1` | **PHYSICAL VALIDATION PASS / P1 ARM32 AUDIO STARTUP CRASH CLOSED / DEVELOPMENT AUDIO COMPATIBILITY CANDIDATE / NOT r8 / NOT RELEASE** |
 | Post-Gate3 P2 one-shot boot/runtime audit | **PHYSICAL CAPTURE ANALYZED / NO NEW P1 BLOCKER / NO CRITICAL RESTART / ACTIVE DEBT RECORDED** |
+| P3-0 thermal observability + HEVC 4K30 preparation | **RESEARCH / TOOLING PREPARED; P3-A PHYSICAL CAPTURE PENDING; P3-B MAIN10 NOT AUTHORIZED** |
 
 Gate 3 is now **CLOSED / `PASS_WITH_EXPLICIT_USER_WAIVER`**. Its only waiver is POWER
 current-session revalidation; no required item is silently marked PASS and no other Gate 3 blocker
@@ -113,6 +114,15 @@ debts—missing Thermal HAL, KeyMint `earlyBootEnded`, cgroup memory-controller 
 pre-network time—without inflating boot/vendor/collector noise. Thermal observability is the first
 priority before prolonged high-load media qualification. P2 does not start P3 or expand compat1a's
 SDR 1080p YV12 proof. r8 remains unauthorized and unbuilt.
+
+P3-0 now establishes a source-backed thermal/media test contract without changing or building Android.
+The retained H616 DT/kernel provide four THS zones plus CPU/GPU cooling, but exact calibration validity
+and normal-shell sysfs readability remain unproven; the current verdict is **PARTIAL OBSERVABILITY —
+SHORT SMOKE ONLY**. A read-only host observer and a conditional, single-playback P3-A plan are ready.
+Vendor HEVC dimension/level and measured-performance evidence make 8-bit SDR 4K30 worth testing, while
+its declared blocks-per-second limit is contradictory; compat1a excludes 4K and therefore does not
+protect that path. P3-A remains unexecuted. OMX does not advertise Main10, so P3-B remains research-only
+and unauthorized. See `docs/m8/device-tests/20260903-a16-p3-thermal-4k30-plan/README.md`.
 
 ## Golden baseline
 

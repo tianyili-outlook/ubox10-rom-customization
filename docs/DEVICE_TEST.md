@@ -120,6 +120,19 @@ Windows host evidence files，不调用 ADB。
 P2 不强制 AVC/HEVC/VP9、HDMI disconnect/reconnect、Wi-Fi OFF→ON、remote matrix 或 Gate3 rerun；只有
 未来证据指向具体 regression 时才另行授权 targeted retest。
 
+## P3-0 — thermal observability / HEVC 4K30 preparation
+
+状态：**RESEARCH / TOOLING PREPARED；P3-A PHYSICAL CAPTURE PENDING；P3-B MAIN10 NOT AUTHORIZED**。
+完整source audit、dynamic read-only thermal observer、fixture contract、分层验收/失败分类和人工abort
+边界见 `docs/m8/device-tests/20260903-a16-p3-thermal-4k30-plan/README.md`。
+
+Retained H616 DT/kernel证明4路THS和CPU/GPU cooling，但normal-shell可读性及exact设备校准有效性仍需未来
+只读Discovery验证，因此当前是 **PARTIAL OBSERVABILITY — SHORT SMOKE ONLY**，不是Thermal HAL PASS。
+P3-A只能在CPU temperature+CPUfreq前置可观测性门槛通过后，手工播放一次短HEVC Main 8-bit SDR
+3840x2160p30 fixture，同时运行≤60秒host sampling；禁止loop/autoplay/stress/reboot。Compat1a只匹配exact
+1920x1088 YV12，4K会回到original Mali import path，故不得预设HEVC metadata collision已被修复。
+Main10/HDR/AFBC/protected仍未授权或证明；本P3-0没有运行ADB、播放媒体、构建镜像或改变任何runtime。
+
 ### 后续分析合同
 
 后续任务结合 passive UART 与 T0/T1 ADB evidence，生成字段为 ID、subsystem、severity、exact
