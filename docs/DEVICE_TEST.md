@@ -29,10 +29,19 @@ accepted baseline 已确认 Treble/VNDK、primary HAL/output、HEVC+AAC HDMI 音
 
 ## P2 — one-shot boot/runtime system audit
 
-状态：**TOOLING PREPARED / PHYSICAL CAPTURE PENDING / NOT EXECUTED**。本 P2 不创建镜像或候选，
-不重跑 Gate 3/audio-r1 media validation，也不是重复稳定性或压力测试。目标是在 exact 已安装的
-`a16-dev-audio-r1` 上采集一次 deliberate cold boot，从而在后续独立分析任务中区分 boot-only noise、
-persistent retry、真实功能失败、继承债务和新 regression。Collector 本身不做 PASS/FAIL 分类。
+状态：**PHYSICAL CAPTURE ANALYZED / NO NEW P1 BLOCKER / ACTIVE DEBT RECORDED**。2026-09-03 exact
+`a16-dev-audio-r1` one-shot cold-boot evidence已完成UART+read-only ADB T0→180秒idle→T1分析；没有重跑
+Gate 3/audio-r1 media validation，也不是重复稳定性或压力测试。Collector本身没有做PASS/FAIL分类；
+证据后的人工结果与canonical issue matrix见
+`docs/m8/device-tests/20260903-a16-p2-boot-runtime-audit/README.md`。
+
+同一boot ID `1f47a2b3-2618-44ec-866a-566c14ded851`下，zygote64/zygote32/system_server/
+SurfaceFlinger/audioserver/ARM32 audio HIDL的PID/PPID/name在T0/T1一致，crash buffer为0，tombstone/ANR
+无增量；没有fatal signal、critical restart、kernel fatal或历史`getAudioPortImpl` PC-zero回归。故P2
+结论为 **ONE-SHOT AUDIT COMPLETE / NO NEW P1 / NO CRITICAL RESTART / NO PERSISTENT FATAL LOOP**，audio
+P1保持CLOSED。主动债务为Thermal HAL缺失、KeyMint `earlyBootEnded`、cgroup memory controller合同和RTC/
+联网前时钟；其中Thermal应在长时高负载4K/Main10 qualification前优先解决或建立明确监测边界。P2没有
+启动P3，也没有扩展已证明的SDR 1080p YV12 scope。
 
 ### UART 与 ADB 分工
 

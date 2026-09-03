@@ -177,14 +177,14 @@ def test_powershell_parser_and_embedded_safety_check_when_available() -> None:
     assert "P2 collector executable command safety: PASS" in checked.stdout
 
 
-def test_governance_keeps_audio_p1_closed_and_p2_pending() -> None:
+def test_governance_keeps_audio_p1_closed_and_records_p2_analysis() -> None:
     device = (ROOT / "docs/DEVICE_TEST.md").read_text(encoding="utf-8")
     status = (ROOT / "docs/m8/STATUS.md").read_text(encoding="utf-8")
     todo = (ROOT / "docs/m8/TODO.md").read_text(encoding="utf-8")
     for text in (device, status, todo):
         assert "P2" in text
-        assert "PHYSICAL CAPTURE PENDING" in text
+        assert "PHYSICAL CAPTURE ANALYZED" in text
     assert "P1 ARM32 AUDIO STARTUP CRASH CLOSED" in status
     assert "P1 CLOSED — legacy HIDL audio boot crash" in todo
     assert "r8 remains unauthorized and unbuilt" in status
-    assert "Physical P2 capture and the later P1/P2/P3 issue matrix remain pending" in status
+    assert "does not start P3" in status

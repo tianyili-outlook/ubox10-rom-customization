@@ -47,7 +47,7 @@ The architecture pass itself is not downgraded.
 | SDR shadow compatibility experiment `a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow` | **PHYSICAL BOOT PASS / AVC PASS / HEVC FAIL — SHADOW FD IMPLEMENTATION BLOCKER / TRANSLATION NOT TESTED / SUPERSEDED** |
 | Sized-shadow-fd experiment `a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd` | **PHYSICAL PASS — AUTHORIZED SDR 1080P YV12 ONLY / EXPERIMENTAL REPAIR / NOT r8 / NOT RELEASE** |
 | Post-Gate3 audio compatibility candidate `a16-dev-audio-r1` | **PHYSICAL VALIDATION PASS / P1 ARM32 AUDIO STARTUP CRASH CLOSED / DEVELOPMENT AUDIO COMPATIBILITY CANDIDATE / NOT r8 / NOT RELEASE** |
-| Post-Gate3 P2 one-shot boot/runtime audit | **TOOLING PREPARED / PHYSICAL CAPTURE PENDING / NOT EXECUTED** |
+| Post-Gate3 P2 one-shot boot/runtime audit | **PHYSICAL CAPTURE ANALYZED / NO NEW P1 BLOCKER / NO CRITICAL RESTART / ACTIVE DEBT RECORDED** |
 
 Gate 3 is now **CLOSED / `PASS_WITH_EXPLICIT_USER_WAIVER`**. Its only waiver is POWER
 current-session revalidation; no required item is silently marked PASS and no other Gate 3 blocker
@@ -104,9 +104,15 @@ compat1a HEVC+AAC, VP9+Vorbis and final census with stable audio/framework PIDs,
 and no tombstone delta. The historical PC-zero crash is absent, so this exact P1 is closed. Player
 teardown noise remains non-blocking/deferred. r8 remains unauthorized and unbuilt.
 
-P2 tooling now provides one read-only T0→180-second idle→T1 ADB collection plus separately captured
-passive UART provenance. It does not reboot, mutate device state, play media, rerun Gate 3 or classify
-unseen findings. Physical P2 capture and the later P1/P2/P3 issue matrix remain pending.
+P2 one-shot evidence has now been captured and analyzed: outer archive and all 105 internal manifest
+entries pass, passive UART is present, and one boot ID plus the six critical framework/audio process
+identities remain unchanged across T0→180-second idle→T1. Crash buffers are empty, tombstone/ANR
+state is unchanged, no critical fatal/restart loop is present, and the historical audio PC-zero
+signature does not recur; that P1 remains closed. The canonical issue matrix records four active P2
+debts—missing Thermal HAL, KeyMint `earlyBootEnded`, cgroup memory-controller compatibility and RTC/
+pre-network time—without inflating boot/vendor/collector noise. Thermal observability is the first
+priority before prolonged high-load media qualification. P2 does not start P3 or expand compat1a's
+SDR 1080p YV12 proof. r8 remains unauthorized and unbuilt.
 
 ## Golden baseline
 
