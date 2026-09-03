@@ -4,7 +4,7 @@
 
 - 最后报告的 Android 16 物理架构验收镜像：`out/candidates/a16-prototype-b-r7/x12-a16-prototype-b-r7.img`，1,641,773,056 bytes / SHA-256 `A1F58668AEFFC9DC83CFFD8A49A309839332B6616C02153DCC00A71136A7AA27`
 - 当前项目状态：**ANDROID 16 ARM64 MIXED ARCHITECTURE — R7 PHYSICAL ARCHITECTURE PASS / FROZEN / GATE 3 `PASS_WITH_EXPLICIT_USER_WAIVER`**。唯一豁免是本轮未复验的遥控 `POWER`；用户明确授权以 prior-normal observation 透明关闭本 Gate，因此不是 bare/evidence-complete `PASS`。`a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd`（1,641,822,208 bytes / `9E9592BF420F40A386BC347B027A85B2F9ED0A44DDB132BDBAB9882905F75722`）保持 **PHYSICAL PASS — AUTHORIZED SDR 1080P YV12 ONLY / EXPERIMENTAL REPAIR / NOT r8 / NOT RELEASE**。Main10/HDR/AFBC/protected/4K未验证。
-- Android 16 ARM32 control：`a16-prototype-a-r4` **FROZEN / PHYSICAL PASS**。Boot-time legacy audio crash 保持 **KNOWN / UNFIXED / POST-ARCHITECTURE P1**；full VINTF 保持 inherited NFS exit 65 / **NOT PASS**。
+- Android 16 ARM32 control：`a16-prototype-a-r4` **FROZEN / PHYSICAL PASS**。`a16-dev-audio-r1` 已物理关闭 boot-time legacy audio P1；full VINTF 保持 inherited NFS exit 65 / **NOT PASS**。
 - 保留的设备验收基线：`out/candidates/m8b-remote-r1/x12-m8b-remote-r1.img`，状态 **DEVICE ACCEPTED / REMOTE PASS**（继承 **AUDIO PASS / IME PASS**）。
 - 大小 / SHA-256：1031723008 bytes / `F3B09E5565AC4ED4E5EE326D392622E7B036A8519B8444B966E77CC4751B814A`
 - 用户当前在设备现场，可执行物理交互、重启、suspend/resume、HDMI 观察与恢复；任何新候选刷写仍需该候选的单独明确授权。
@@ -26,6 +26,99 @@ C:\platform-tools\adb.exe -s <device-LAN-address>:7896 logcat -d -b all
 ```
 
 accepted baseline 已确认 Treble/VNDK、primary HAL/output、HEVC+AAC HDMI 音频、VP9 Allwinner/Cedar hardware runtime、Widevine 16.1.0 L3、LeanbackIME，以及 official Google TV iPhone Remote discovery/pair/navigation/phone text。刷入任何新候选仍须先获得该候选的单独明确授权。
+
+## P2 — one-shot boot/runtime system audit
+
+状态：**TOOLING PREPARED / PHYSICAL CAPTURE PENDING / NOT EXECUTED**。本 P2 不创建镜像或候选，
+不重跑 Gate 3/audio-r1 media validation，也不是重复稳定性或压力测试。目标是在 exact 已安装的
+`a16-dev-audio-r1` 上采集一次 deliberate cold boot，从而在后续独立分析任务中区分 boot-only noise、
+persistent retry、真实功能失败、继承债务和新 regression。Collector 本身不做 PASS/FAIL 分类。
+
+### UART 与 ADB 分工
+
+- UART 只作被动证据通道。使用项目已经验证可用的 UART setup；仓库虽记录 runtime console 为
+  `ttyAS0,115200`，本计划不据此臆造接线、电平或 host serial 参数。
+- 在物理上电前开始 host UART logfile，完成一次 cold boot；从 bootloader、kernel、init 持续记录到
+  Android 稳定及 ADB collector 完成。整个过程不向 UART 输入命令。
+- ADB 是 adbd 可用后的主要 runtime 通道；端点必须显式传入，端口固定为 `7896`，IP 不硬编码。
+- PowerShell collector 不控制串口。ADB 完成后停止 UART capture，原始 logfile 保持 byte-for-byte，
+  再用 host-only `-FinalizeOnly` 把它复制到 evidence root 并重建 SHA-256 manifest。
+
+如果 cold boot 在 ADB 可用前失败，UART 即为决定性证据：停止，不自动重启或重试，先审阅首错。
+
+### 未来一次性物理流程
+
+1. 确认 exact `a16-dev-audio-r1` 仍已安装；无需重新 flash，也无需重复 audio-r1 验收。
+2. 连接已验证 UART setup，在 host 开始 passive logging，然后物理执行**一次** cold boot。
+3. 不输入 UART 命令；不自动 reboot，不建立 boot/playback/stress loop。
+4. Android 网络 ADB 在 `:7896` 可达后，显式传当前 DHCP endpoint，运行 collector 一次。
+5. T0 首先保存 boot ID、identity、关键 PID、all/crash logcat，然后完成 targeted read-only snapshot。
+6. 设备保持完全 idle；180 秒内不播放媒体、不按遥控器、不切 Wi-Fi/HDMI、不触发 suspend。
+7. T1 重采 boot ID、关键 PID、process/init/HAL、crash/tombstone/ANR、SELinux、audio/SF 与 logcat。
+8. collector 输出 host-side `critical-pid-diff.txt` 和 command status，但不自动给出审计 verdict。
+9. 停止 UART capture；用 finalize-only 加入 UART，复核 completeness 和 `SHA256SUMS.txt`。
+10. evidence directory 保持完整，之后在 Git 外上传到类似
+   `/work/physical-evidence/ubox10/a16-p2-audit/<timestamp>/`，再由独立任务分析。
+
+Windows PowerShell 调用示例：
+
+```powershell
+Set-Location C:\path\to\ubox10-rom-customization
+.\scripts\collect-a16-p2-audit.ps1 `
+  -AdbPath 'C:\platform-tools\adb.exe' `
+  -Endpoint '<current-device-LAN-IP>:7896'
+
+# ADB capture结束并停止UART host logging后，使用collector打印的exact evidence root：
+.\scripts\collect-a16-p2-audit.ps1 `
+  -FinalizeOnly `
+  -EvidenceRoot "$HOME\Downloads\UBOX10-A16-P2-AUDIT-YYYYMMDD-HHMMSS" `
+  -UartLogPath 'C:\captures\ubox10-p2-uart.log'
+```
+
+默认 `-AdbPath` 为 `C:\platform-tools\adb.exe`、host output base 为 `$HOME\Downloads`、steady-state
+wait 为 180 秒、单 command timeout 为 60 秒。输出 root 为
+`UBOX10-A16-P2-AUDIT-YYYYMMDD-HHMMSS`，包括：
+
+```text
+00-Host/             host/collector/UART provenance
+01-ADB-Entry/        adb version/devices/connect/get-state
+10-BootSnapshot-T0/  decisive identity/PID plus early all/crash logcat
+20-System/           getprop/process/init/service/kernel/dmesg/pstore
+30-HAL-VINTF/        Treble/VNDK/VINTF/HIDL-AIDL visibility
+30-Crash-Restart/    tombstone/ANR/Dropbox metadata
+40-SELinux/          mode/domains/available AVC evidence
+50-Display/          SurfaceFlinger/display/wm/Mali identity
+60-Audio-Media/      audio policy/flinger and codec/service state; no playback
+70-Network/          Wi-Fi/connectivity/IP/route/DNS state; no toggle
+80-Power-Thermal/    power/battery/thermal/wakeup state; no suspend
+90-Storage-Packages/ filesystems/storage/packages/features; no mutation
+A0-SteadyState-T1/   selected idle-time recapture
+B0-Final/            final all/crash logcat and host comparison
+META/                COMMAND-STATUS.json and SHA256SUMS.txt
+```
+
+每条命令独立保存 sanitized stdout、stderr、start/end、exit code、timeout 与结果分类：`SUCCESS`、
+`EMPTY_SUCCESS`、`NOT_AVAILABLE`、`PERMISSION_DENIED`、`COMMAND_FAILED` 或 `TIMEOUT`。Normal shell 无法
+读取 dmesg、pstore、tombstone/ANR、wakeup sources 或某个 dumpsys 是有效审计证据；collector 不 root、
+不提权，也不因非关键命令失败而丢弃其 stderr。输出在写盘前对 credential-like values、serial、
+SSID、MAC 和 email 做保守脱敏。
+
+硬安全合同：collector 不 reboot/root/remount，不改 property/settings/device_config/package/filesystem，
+不 clear logcat，不切 network/HDMI，不注入 input，不启停/杀死 service/process，不触发 power/suspend，
+不播放媒体，不运行 bugreport/stress workload，也不向 device push/pull/copy 文件。`-FinalizeOnly` 只操作
+Windows host evidence files，不调用 ADB。
+
+P2 不强制 AVC/HEVC/VP9、HDMI disconnect/reconnect、Wi-Fi OFF→ON、remote matrix 或 Gate3 rerun；只有
+未来证据指向具体 regression 时才另行授权 targeted retest。
+
+### 后续分析合同
+
+后续任务结合 passive UART 与 T0/T1 ADB evidence，生成字段为 ID、subsystem、severity、exact
+signature、evidence file、first/last timestamp、count/frequency、boot-only/persistent、PID/service、
+known/new、user impact、likely layer/root cause、priority、next action、confidence 的 issue matrix。
+分类仅可使用：`P1 / BLOCKER`、`P2 / ACTIVE DEBT`、`P3 / NON-BLOCKING NOISE`、
+`KNOWN INHERITED DEBT`、`EXPECTED / BY DESIGN`、`NEEDS MORE EVIDENCE`。当前 tooling 任务不预判
+任何未采集日志。
 
 ## Gate 3 — Android 16 Mixed-Architecture Functional Preservation
 

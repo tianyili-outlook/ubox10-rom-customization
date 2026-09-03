@@ -234,6 +234,7 @@
 ## Post-Gate stabilization / release hardening
 
 - [x] **P1 CLOSED — legacy HIDL audio boot crash：**root cause为Apollo HAL报告API `0x0700`但`get_audio_port_v7`为NULL，ARM32 HIDL wrapper跳转地址0。`a16-dev-audio-r1`仅把此malformed >=3.2合同转换为`NOT_SUPPORTED`。2026-09-02单一连续boot实机通过BootGate、audio service PID连续、HDMI disconnect/connect及accepted AVC/HEVC/VP9 HDMI-audio smoke；历史PC-zero signature缺失、crash buffer为空、无tombstone delta。Cedar/MediaCodec/BufferQueue teardown noise保持NON-BLOCKING / DEFERRED。
+- [ ] **P2 TOOLING READY / PHYSICAL CAPTURE PENDING — one-shot boot/runtime audit：**现有`a16-dev-audio-r1`无需新镜像；按`docs/DEVICE_TEST.md`用passive UART + read-only ADB collector完成一次cold boot、T0、180秒idle和T1。当前未执行取证、未分析新日志、未产生P2 verdict。
 - [ ] **RELEASE HARDENING — SELinux enforcing：**运行时 enforcing compatibility 未证明；不是 Architecture Gate 2 条件。
 - [ ] **INHERITED EXCEPTION — full VINTF：**`CONFIG_NFS_FS=y` 对 FCM-6 `n` 仍为唯一 exit-65 exception；不得称 PASS，也不为 B1 改 kernel。
 

@@ -1,6 +1,6 @@
 # M8 status
 
-Updated: 2026-09-02
+Updated: 2026-09-03
 
 ## Android 16 architecture ceiling
 
@@ -47,6 +47,7 @@ The architecture pass itself is not downgraded.
 | SDR shadow compatibility experiment `a16-prototype-b-r7-hevc-abi-compat1-sdr-shadow` | **PHYSICAL BOOT PASS / AVC PASS / HEVC FAIL — SHADOW FD IMPLEMENTATION BLOCKER / TRANSLATION NOT TESTED / SUPERSEDED** |
 | Sized-shadow-fd experiment `a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd` | **PHYSICAL PASS — AUTHORIZED SDR 1080P YV12 ONLY / EXPERIMENTAL REPAIR / NOT r8 / NOT RELEASE** |
 | Post-Gate3 audio compatibility candidate `a16-dev-audio-r1` | **PHYSICAL VALIDATION PASS / P1 ARM32 AUDIO STARTUP CRASH CLOSED / DEVELOPMENT AUDIO COMPATIBILITY CANDIDATE / NOT r8 / NOT RELEASE** |
+| Post-Gate3 P2 one-shot boot/runtime audit | **TOOLING PREPARED / PHYSICAL CAPTURE PENDING / NOT EXECUTED** |
 
 Gate 3 is now **CLOSED / `PASS_WITH_EXPLICIT_USER_WAIVER`**. Its only waiver is POWER
 current-session revalidation; no required item is silently marked PASS and no other Gate 3 blocker
@@ -102,6 +103,10 @@ passes. One continuous physical session then passed BootGate, HDMI disconnect/co
 compat1a HEVC+AAC, VP9+Vorbis and final census with stable audio/framework PIDs, empty crash buffers
 and no tombstone delta. The historical PC-zero crash is absent, so this exact P1 is closed. Player
 teardown noise remains non-blocking/deferred. r8 remains unauthorized and unbuilt.
+
+P2 tooling now provides one read-only T0→180-second idle→T1 ADB collection plus separately captured
+passive UART provenance. It does not reboot, mutate device state, play media, rerun Gate 3 or classify
+unseen findings. Physical P2 capture and the later P1/P2/P3 issue matrix remain pending.
 
 ## Golden baseline
 
