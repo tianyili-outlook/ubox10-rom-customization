@@ -99,13 +99,17 @@ function Protect-EvidenceText {
 }
 
 function Get-ResultClass {
-    param($Result)
+    param($Result, [int[]]$ExpectedEmptyExitCodes = @())
     if ($Result.TimedOut) { return 'TIMEOUT' }
     if ($Result.Stderr -match '(?i)permission denied|not permitted') {
         return 'PERMISSION_DENIED'
     }
     if ($Result.Stderr -match '(?i)not found|unknown command|no such file or directory') {
         return 'NOT_AVAILABLE'
+    }
+    if ($Result.ExitCode -in $ExpectedEmptyExitCodes -and
+        [string]::IsNullOrWhiteSpace($Result.Stderr)) {
+        return 'EMPTY_SUCCESS'
     }
     if ($Result.ExitCode -ne 0) { return 'COMMAND_FAILED' }
     if ([string]::IsNullOrWhiteSpace("$($Result.Stdout)$($Result.Stderr)")) {
@@ -119,7 +123,8 @@ function Invoke-CapturedCommand {
         [string]$Name,
         [string]$Category,
         [string[]]$Arguments,
-        [int]$TimeoutSeconds
+        [int]$TimeoutSeconds,
+        [int[]]$ExpectedEmptyExitCodes = @()
     )
     $Directory = Join-Path $EvidenceRoot $Category
     New-Item -ItemType Directory -Path $Directory -Force | Out-Null
@@ -131,7 +136,7 @@ function Invoke-CapturedCommand {
     $StderrPath = Join-Path $Directory "$Name.stderr.txt"
     Write-Utf8NoBom $StdoutPath (Protect-EvidenceText $Result.Stdout)
     Write-Utf8NoBom $StderrPath (Protect-EvidenceText $Result.Stderr)
-    $Class = Get-ResultClass $Result
+    $Class = Get-ResultClass $Result $ExpectedEmptyExitCodes
     $Results.Add([ordered]@{
         name = $Name
         category = $Category
@@ -141,6 +146,7 @@ function Invoke-CapturedCommand {
         duration_seconds = [Math]::Round(($Ended - $Started).TotalSeconds, 3)
         exit_code = $Result.ExitCode
         timed_out = $Result.TimedOut
+        expected_empty_exit_codes = @($ExpectedEmptyExitCodes)
         result = $Class
         stdout_file = (Join-Path $Category "$Name.stdout.txt").Replace('\', '/')
         stderr_file = (Join-Path $Category "$Name.stderr.txt").Replace('\', '/')
@@ -152,8 +158,13 @@ function Invoke-CapturedCommand {
 function Invoke-DeviceSpec {
     param($Spec)
     $Timeout = if ($Spec.timeout) { [int]$Spec.timeout } else { $CommandTimeoutSeconds }
+    $ExpectedEmpty = if ($Spec.expectedEmptyExitCodes) {
+        [int[]]@($Spec.expectedEmptyExitCodes)
+    }
+    else { @() }
     Invoke-CapturedCommand -Name $Spec.name -Category $Spec.category `
-        -Arguments (@('-s', $Endpoint) + @($Spec.args)) -TimeoutSeconds $Timeout | Out-Null
+        -Arguments (@('-s', $Endpoint) + @($Spec.args)) -TimeoutSeconds $Timeout `
+        -ExpectedEmptyExitCodes $ExpectedEmpty | Out-Null
 }
 
 function Write-CommandStatus {
@@ -211,7 +222,7 @@ function Assert-DeviceCommandSafety {
 }
 
 $T0Specs = @(
-    [ordered]@{ name='critical-state'; category='10-BootSnapshot-T0'; timeout=15; args=@('shell', 'date; uptime; cat /proc/sys/kernel/random/boot_id; getprop sys.boot_completed; getprop ro.build.version.release; getprop ro.build.version.sdk; getprop ro.zygote; getprop ro.product.cpu.abilist; getenforce; ps -A -o PID,PPID,ELAPSED,NAME | grep -E "zygote|system_server|surfaceflinger|audioserver|android.hardware.audio.service"') },
+    [ordered]@{ name='critical-state'; category='10-BootSnapshot-T0'; timeout=15; args=@('shell', 'date; uptime; cat /proc/sys/kernel/random/boot_id; getprop sys.boot_completed; getprop ro.build.version.release; getprop ro.build.version.sdk; getprop ro.zygote; getprop ro.product.cpu.abilist; getenforce; ps -A -o PID,PPID,NAME | grep -E "zygote|system_server|surfaceflinger|audioserver|android.hardware.audio.service"') },
     [ordered]@{ name='logcat-all-early'; category='10-BootSnapshot-T0'; timeout=90; args=@('logcat', '-b', 'all', '-d', '-v', 'threadtime') },
     [ordered]@{ name='logcat-crash-early'; category='10-BootSnapshot-T0'; timeout=30; args=@('logcat', '-b', 'crash', '-d', '-v', 'threadtime') },
     [ordered]@{ name='properties'; category='20-System'; timeout=20; args=@('shell', 'getprop') },
@@ -228,7 +239,7 @@ $T0Specs = @(
     [ordered]@{ name='tombstones-anr-list'; category='30-Crash-Restart'; timeout=20; args=@('shell', 'ls -la /data/tombstones; ls -la /data/anr') },
     [ordered]@{ name='dropbox-crash-metadata'; category='30-Crash-Restart'; timeout=60; args=@('shell', 'dumpsys dropbox --print SYSTEM_TOMBSTONE') },
     [ordered]@{ name='selinux-state'; category='40-SELinux'; timeout=15; args=@('shell', 'getenforce; getprop ro.boot.selinux; getprop ro.build.selinux; ps -AZ') },
-    [ordered]@{ name='selinux-logcat-avc'; category='40-SELinux'; timeout=45; args=@('shell', 'logcat -b all -d -v threadtime | grep -i "avc:.*denied"') },
+    [ordered]@{ name='selinux-logcat-avc'; category='40-SELinux'; timeout=45; expectedEmptyExitCodes=@(1); args=@('shell', 'logcat -b all -d -v threadtime | grep -i "avc:.*denied"') },
     [ordered]@{ name='surfaceflinger'; category='50-Display'; timeout=120; args=@('shell', 'dumpsys SurfaceFlinger') },
     [ordered]@{ name='display'; category='50-Display'; timeout=90; args=@('shell', 'dumpsys display') },
     [ordered]@{ name='wm-state'; category='50-Display'; timeout=15; args=@('shell', 'wm size; wm density; getprop ro.hardware.egl; getprop ro.board.platform') },
@@ -249,12 +260,12 @@ $T0Specs = @(
 )
 
 $T1Specs = @(
-    [ordered]@{ name='critical-state'; category='A0-SteadyState-T1'; timeout=15; args=@('shell', 'date; uptime; cat /proc/sys/kernel/random/boot_id; getprop sys.boot_completed; getenforce; ps -A -o PID,PPID,ELAPSED,NAME | grep -E "zygote|system_server|surfaceflinger|audioserver|android.hardware.audio.service"') },
+    [ordered]@{ name='critical-state'; category='A0-SteadyState-T1'; timeout=15; args=@('shell', 'date; uptime; cat /proc/sys/kernel/random/boot_id; getprop sys.boot_completed; getenforce; ps -A -o PID,PPID,NAME | grep -E "zygote|system_server|surfaceflinger|audioserver|android.hardware.audio.service"') },
     [ordered]@{ name='process-census'; category='A0-SteadyState-T1'; timeout=20; args=@('shell', 'ps -A -o USER,PID,PPID,ELAPSED,NAME') },
     [ordered]@{ name='init-services'; category='A0-SteadyState-T1'; timeout=15; args=@('shell', 'getprop | grep "\[init.svc"') },
     [ordered]@{ name='lshal'; category='A0-SteadyState-T1'; timeout=60; args=@('shell', 'lshal') },
     [ordered]@{ name='tombstones-anr-list'; category='A0-SteadyState-T1'; timeout=20; args=@('shell', 'ls -la /data/tombstones; ls -la /data/anr') },
-    [ordered]@{ name='selinux-logcat-avc'; category='A0-SteadyState-T1'; timeout=45; args=@('shell', 'logcat -b all -d -v threadtime | grep -i "avc:.*denied"') },
+    [ordered]@{ name='selinux-logcat-avc'; category='A0-SteadyState-T1'; timeout=45; expectedEmptyExitCodes=@(1); args=@('shell', 'logcat -b all -d -v threadtime | grep -i "avc:.*denied"') },
     [ordered]@{ name='audio-flinger'; category='A0-SteadyState-T1'; timeout=90; args=@('shell', 'dumpsys media.audio_flinger') },
     [ordered]@{ name='surfaceflinger'; category='A0-SteadyState-T1'; timeout=120; args=@('shell', 'dumpsys SurfaceFlinger') },
     [ordered]@{ name='logcat-all'; category='B0-Final'; timeout=120; args=@('logcat', '-b', 'all', '-d', '-v', 'threadtime') },
@@ -282,15 +293,25 @@ if ($FinalizeOnly) {
         $HostDirectory = Join-Path $EvidenceRoot '00-Host'
         New-Item -ItemType Directory -Path $HostDirectory -Force | Out-Null
         $Destination = Join-Path $HostDirectory 'UART-passive.log'
-        Copy-Item -LiteralPath $UartLogPath -Destination $Destination
-        $UartHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $Destination).Hash
+        $UartHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $UartLogPath).Hash
+        if (Test-Path -LiteralPath $Destination -PathType Leaf) {
+            $ExistingHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $Destination).Hash
+            if ($ExistingHash -ne $UartHash) {
+                throw 'Refusing to overwrite UART-passive.log with different content.'
+            }
+        }
+        else {
+            Copy-Item -LiteralPath $UartLogPath -Destination $Destination
+        }
         Write-Utf8NoBom (Join-Path $HostDirectory 'UART-METADATA.txt') `
             "capture=PASSIVE_EXTERNAL`nsha256=$UartHash`ncommands_entered=false`n"
         $SummaryPath = Join-Path $EvidenceRoot 'COLLECTION-SUMMARY.txt'
         if (Test-Path -LiteralPath $SummaryPath -PathType Leaf) {
             $ExistingSummary = Get-Content -LiteralPath $SummaryPath -Raw
-            Write-Utf8NoBom $SummaryPath `
-                ($ExistingSummary + "finalized_uart_included=true`n")
+            if ($ExistingSummary -notmatch '(?m)^finalized_uart_included=true$') {
+                Write-Utf8NoBom $SummaryPath `
+                    ($ExistingSummary + "finalized_uart_included=true`n")
+            }
         }
     }
     Write-Sha256Manifest

@@ -20,6 +20,10 @@ def _device_spec_block() -> str:
     return source[source.index("$T0Specs = @("):source.index("$AllDeviceSpecs =")]
 
 
+def _spec_lines(name: str) -> list[str]:
+    return [line for line in _device_spec_block().splitlines() if f"name='{name}'" in line]
+
+
 def test_collector_interface_and_host_evidence_contract() -> None:
     source = _source()
     assert "[string]$Endpoint" in source
@@ -52,6 +56,35 @@ def test_two_timepoints_and_no_automatic_judgment() -> None:
     assert "Compare-Object" in source
     assert "no_automated_pass_fail=true" in source
     assert "COLLECTION_COMPLETE_ANALYSIS_PENDING" in source
+
+
+def test_critical_identity_excludes_elapsed_but_full_census_retains_it() -> None:
+    critical = _spec_lines("critical-state")
+    assert len(critical) == 2
+    for line in critical:
+        assert "ps -A -o PID,PPID,NAME" in line
+        assert "ELAPSED" not in line
+    census = _spec_lines("process-census")
+    assert len(census) == 2
+    assert all("ELAPSED" in line for line in census)
+    assert "T0/T1 boot-id and critical-process textual diff" in _source()
+
+
+def test_expected_zero_match_is_narrow_and_real_failures_remain_failures() -> None:
+    source = _source()
+    selinux_filters = _spec_lines("selinux-logcat-avc")
+    assert len(selinux_filters) == 2
+    assert all("expectedEmptyExitCodes=@(1)" in line for line in selinux_filters)
+    assert source.count("expectedEmptyExitCodes=@(1)") == 2
+    classifier = source[source.index("function Get-ResultClass"):
+                        source.index("function Invoke-CapturedCommand")]
+    expected = classifier.index("$Result.ExitCode -in $ExpectedEmptyExitCodes")
+    generic_failure = classifier.index("$Result.ExitCode -ne 0")
+    assert expected < generic_failure
+    assert "[string]::IsNullOrWhiteSpace($Result.Stderr)" in classifier
+    assert "return 'EMPTY_SUCCESS'" in classifier
+    assert "return 'COMMAND_FAILED'" in classifier
+    assert "expected_empty_exit_codes = @($ExpectedEmptyExitCodes)" in source
 
 
 def test_executable_device_specs_are_observation_only() -> None:
@@ -90,6 +123,9 @@ def test_uart_is_passive_and_finalize_mode_has_no_device_access() -> None:
     assert "Invoke-CapturedCommand" not in finalize
     assert "Invoke-DeviceSpec" not in finalize
     assert "Copy-Item -LiteralPath $UartLogPath" in finalize
+    assert "Refusing to overwrite UART-passive.log with different content." in finalize
+    assert "$ExistingHash -ne $UartHash" in finalize
+    assert finalize.count("Copy-Item -LiteralPath $UartLogPath") == 1
 
 
 def test_powershell_parser_and_embedded_safety_check_when_available() -> None:
