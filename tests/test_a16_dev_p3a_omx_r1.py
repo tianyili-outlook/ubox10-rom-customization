@@ -105,11 +105,14 @@ def test_patcher_and_builder_scope_are_narrow() -> None:
     assert config["runtime_change"]["partition_path"] == "/vendor/lib/libOmxVdec.so"
     assert config["runtime_change"]["changed_byte_count"] == 3
     assert config["runtime_change"]["patched_instruction"] == "mov.w r0, r12"
-    assert config["status"] == "OFFLINE_CHECKED_READY_FOR_BOUNDED_PHYSICAL_VALIDATION"
-    assert config["governance"]["rc_a"] == (
-        "PATCH_IMPLEMENTED_OFFLINE_CANDIDATE_BUILT_PHYSICAL_VALIDATION_PENDING"
+    assert config["status"] == "PHYSICAL_TESTED_P3A_FAIL_RCA_EFFECTIVE_RCA2_AND_RCB_IDENTIFIED"
+    assert config["governance"]["rc_a"] == "ORIGINAL_DRAIN_NULL_PHYSICAL_REPAIR_EFFECTIVE"
+    assert config["governance"]["rc_a2"] == (
+        "PHYSICAL_FAIL_FORENSICS_COMPLETE_READY_FOR_NARROW_BINARY_PATCH"
     )
-    assert config["governance"]["rc_b"] == "DEFERRED_EXPECTED_NEXT_BOUNDARY"
+    assert config["governance"]["rc_b"] == (
+        "PHYSICAL_FAIL_EXACT_4K_CONTRACT_CAPTURED_COMPAT1B_IMPLEMENTATION_READY"
+    )
     assert config["governance"]["p3b_main10"] == "NOT_AUTHORIZED"
     assert config["governance"]["r8_authorized"] is False
     for forbidden in ("RequestPicture(decoder", "ReturnPicture(decoder", "compat1b"):

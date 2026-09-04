@@ -2,7 +2,7 @@
   "schema": 1,
   "id": "a16-dev-p3a-omx-r1",
   "label": "P3-A RC-A REPAIR CANDIDATE / DEVELOPMENT ONLY / NOT r8 / NOT RELEASE",
-  "status": "OFFLINE_CHECKED_READY_FOR_BOUNDED_PHYSICAL_VALIDATION",
+  "status": "PHYSICAL_TESTED_P3A_FAIL_RCA_EFFECTIVE_RCA2_AND_RCB_IDENTIFIED",
   "base_candidate": {
     "path": "out/candidates/a16-dev-audio-r1/x12-a16-dev-audio-r1.img",
     "size": 1641830400,
@@ -69,6 +69,16 @@
   "outer_delta": {
     "changed_payloads_from_base": ["Vsuper.fex", "Vvbmeta_vendor.fex", "super.fex", "vbmeta_vendor.fex"]
   },
+  "physical_evidence": {
+    "archive": "/work/physical-evidence/ubox10/a16-p3a-omx-r1/UBOX10-A16-P3A-OMX-R1-20260905-001143.zip",
+    "sha256": "62CE8F1623BBC4569A14F2C90BB5E9011657EE6765781E93E30B317D4E6F7921",
+    "internal_manifest": "7_OF_7_PASS",
+    "boot_id": "38bac882-1c49-478a-8fcd-5379879b092f",
+    "report": "docs/m8/device-tests/20260905-a16-p3a-rca2-compat1b-forensics/README.md",
+    "candidate_test_completed": true,
+    "p3a_pass": false,
+    "original_rc_a_repair_effective": true
+  },
   "governance": {
     "canonical_r7": "PASS_FROZEN_UNCHANGED",
     "gate3": "PASS_WITH_EXPLICIT_USER_WAIVER_CLOSED",
@@ -76,14 +86,15 @@
     "audio_p1": "CLOSED",
     "p2": "COMPLETE",
     "p3a": "PHYSICAL_FAIL_FORENSICS_COMPLETE",
-    "rc_a": "PATCH_IMPLEMENTED_OFFLINE_CANDIDATE_BUILT_PHYSICAL_VALIDATION_PENDING",
-    "rc_b": "DEFERRED_EXPECTED_NEXT_BOUNDARY",
+    "rc_a": "ORIGINAL_DRAIN_NULL_PHYSICAL_REPAIR_EFFECTIVE",
+    "rc_a2": "PHYSICAL_FAIL_FORENSICS_COMPLETE_READY_FOR_NARROW_BINARY_PATCH",
+    "rc_b": "PHYSICAL_FAIL_EXACT_4K_CONTRACT_CAPTURED_COMPAT1B_IMPLEMENTATION_READY",
     "p3b_main10": "NOT_AUTHORIZED",
     "hdr_afbc_protected": "NOT_AUTHORIZED",
     "full_vintf": "EXIT_65_INHERITED_CONFIG_NFS_FS_NOT_PASS",
     "r8_authorized": false,
     "r8_built": false,
     "release": false,
-    "physical_validation_required": true
+    "physical_validation_required": false
   }
 }

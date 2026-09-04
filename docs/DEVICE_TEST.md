@@ -126,24 +126,28 @@ P2 不强制 AVC/HEVC/VP9、HDMI disconnect/reconnect、Wi-Fi OFF→ON、remote 
 完整source audit、dynamic read-only thermal observer、fixture contract、分层验收/失败分类和人工abort
 边界见 `docs/m8/device-tests/20260903-a16-p3-thermal-4k30-plan/README.md`。
 
-RC-A development candidate `a16-dev-p3a-omx-r1` 已完成离线构建与审计，但**尚未授权或执行实机测试**。
-它仅修改 `/vendor/lib/libOmxVdec.so` 的一个4-byte Thumb-2 operand-producing instruction（实际3字节
-不同），使pre-acquisition color-aspect读取使用已验证的 `NextPictureInfo` peek；既有
-`RequestPicture`→FBD→`ReturnPicture` lifecycle不变。候选状态为 **OFFLINE CHECKED / PHYSICAL
-VALIDATION PENDING / DEVELOPMENT ONLY / NOT r8 / NOT RELEASE**。精确镜像、补丁与后续单次测试合同见
-`docs/m8/device-tests/20260904-a16-p3a-omx-r1-build/README.md`。在该测试完成前，P3-A继续为
-**PHYSICAL FAIL**；RC-B/compat1b继续deferred，Main10继续NOT AUTHORIZED。
+RC-A development candidate `a16-dev-p3a-omx-r1` 已执行一次有界实机复验。原`__anDrain` NULL未复发，
+正式播放已完成`CODEC_POST_FBD`，故原RC-A repair对该路径**PHYSICAL EFFECTIVE**；但P3-A仍FAIL。VLC
+medialibrary preparse在Executing→Idle销毁时另触发RC-A2：internal FBM为`VideoPicture::pMetaData`
+分配4 KiB，而HEVC写入23,480-byte extended metadata，导致首次free时Scudo abort。正式播放另捕获精确
+4K buffer `9891309682708` / backing store `2229088026704`：3840x2160 YV12、19,489,120-byte
+auto-AFBC-big private allocation，绕过compat1a后在Mali以同类crop metadata ABI mismatch失败。
+RC-A2为`READY_FOR_NARROW_BINARY_PATCH`，compat1b为`READY_FOR_EXACT_COMPAT1B_IMPLEMENTATION`；两者均
+尚未实施，下一候选只应修RC-A2。完整证据与设计见
+`docs/m8/device-tests/20260905-a16-p3a-rca2-compat1b-forensics/README.md`。Main10继续NOT AUTHORIZED。
 
 Retained H616 DT/kernel证明4路THS和CPU/GPU cooling；本次实机Discovery已证明normal-shell可读并取得
 plausible live values，但absolute calibration和持续负载行为仍未qualification。因此当前仍是
 **PARTIAL OBSERVABILITY — SHORT SMOKE ONLY**，不是Thermal HAL PASS。
-一次授权的短HEVC Main 8-bit SDR 3840x2160p30实机尝试已完成。Discovery证明四路温度、CPUfreq、
+一次授权的短HEVC Main 8-bit SDR 3840x2160p30实机尝试及RC-A单变量复验已完成。Discovery证明四路温度、CPUfreq、
 GPU devfreq可读且baseline plausible，但采样窗口大多早于播放故under-load thermal仍NOT ESTABLISHED。
 最早fatal为ARM32 `libOmxVdec.so::__anDrain+1212`对NULL current `VideoPicture*`的精确解引用；OMX重启后，
 正式播放的3840x2160 YV12又因compat1a exact 1080p predicate不匹配而走original view，最终invalid Ganesh
 texture触发SurfaceFlinger/zygote userspace restart。完整报告见
 `docs/m8/device-tests/20260903-a16-p3a-4k30-failure-forensics/README.md`。先修复并验证OMX lifecycle，再根据
-实测4K handle/sidecar/EGL contract决定是否设计compat1b；不得把同一metadata collision写成4K已证明。
+复验现已捕获精确4K handle/sidecar/EGL contract；同一metadata collision为very-high-confidence，但
+archive未保留legacy `0x80..0xb7`逐字值，且翻译后仍可能暴露独立4K import limit，不得写成完整4K
+playback已证明。parallel report见`docs/m8/device-tests/20260905-a16-p3a-rca2-compat1b-forensics/README.md`。
 Main10/HDR/AFBC/protected仍未授权或证明；该forensic closure没有运行ADB、构建镜像或改变任何runtime。
 
 ### 后续分析合同

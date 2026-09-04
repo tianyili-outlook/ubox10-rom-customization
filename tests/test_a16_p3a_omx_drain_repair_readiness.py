@@ -76,6 +76,8 @@ def test_readiness_history_and_current_candidate_transition_are_both_locked() ->
     for text in (status, todo):
         normalized = " ".join(text.split())
         assert "READY_FOR_NARROW_BINARY_PATCH" in normalized
-        assert "PATCH IMPLEMENTED OFFLINE" in normalized
-        assert "PHYSICAL VALIDATION PENDING" in normalized
+        normalized_upper = normalized.upper()
+        assert "ORIGINAL RC-A" in normalized_upper
+        assert "PHYSICAL" in normalized_upper and "EFFECTIVE" in normalized_upper
+        assert "RC-A2" in normalized
         assert "compat1b" in normalized

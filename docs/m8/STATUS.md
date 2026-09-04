@@ -1,6 +1,6 @@
 # M8 status
 
-Updated: 2026-09-04
+Updated: 2026-09-05
 
 ## Android 16 architecture ceiling
 
@@ -49,7 +49,7 @@ The architecture pass itself is not downgraded.
 | Post-Gate3 audio compatibility candidate `a16-dev-audio-r1` | **PHYSICAL VALIDATION PASS / P1 ARM32 AUDIO STARTUP CRASH CLOSED / DEVELOPMENT AUDIO COMPATIBILITY CANDIDATE / NOT r8 / NOT RELEASE** |
 | Post-Gate3 P2 one-shot boot/runtime audit | **PHYSICAL CAPTURE ANALYZED / NO NEW P1 BLOCKER / NO CRITICAL RESTART / ACTIVE DEBT RECORDED** |
 | P3-0 / P3-A thermal + HEVC 4K30 | **P3-0 PREPARED; P3-A PHYSICAL FAIL / FORENSICS COMPLETE; P3-B MAIN10 NOT AUTHORIZED** |
-| P3-A RC-A candidate `a16-dev-p3a-omx-r1` | **OFFLINE CHECKED / RC-A PATCH IMPLEMENTED / PHYSICAL VALIDATION PENDING / DEVELOPMENT ONLY / NOT r8 / NOT RELEASE** |
+| P3-A RC-A candidate `a16-dev-p3a-omx-r1` | **PHYSICAL TESTED / ORIGINAL RC-A EFFECTIVE / P3-A FAIL AT NEW RC-A2 + RC-B / DEVELOPMENT ONLY / NOT r8 / NOT RELEASE** |
 
 Gate 3 is now **CLOSED / `PASS_WITH_EXPLICIT_USER_WAIVER`**. Its only waiver is POWER
 current-session revalidation; no required item is silently marked PASS and no other Gate 3 blocker
@@ -133,14 +133,19 @@ machines and proved that the copy path must read color aspects from the non-owni
 `NextPictureInfo` peek, not the still-NULL current-display slot that is assigned only by the later
 `RequestPicture`. `a16-dev-p3a-omx-r1` now applies the resulting exact operand-only correction to
 `/vendor/lib/libOmxVdec.so`: `ldr.w r0, [r8]` becomes `mov.w r0, r12`, selecting the already checked
-peek while leaving the later `RequestPicture`/FBD/`ReturnPicture` lifecycle unchanged. Its semantic
-filesystem delta from `a16-dev-audio-r1` is exactly that one ELF (three changed bytes); offline ELF,
-namespace, ext4, AVB, LP, sparse/outer and inherited-VINTF checks pass. RC-A is **PATCH IMPLEMENTED
-OFFLINE / CANDIDATE BUILT / PHYSICAL VALIDATION PENDING**; P3-A itself remains **PHYSICAL FAIL** until
-one bounded retest. Its accepted readiness basis remains **READY_FOR_NARROW_BINARY_PATCH**. RC-B/compat1b
-stays deferred pending the exact 4K handle/sidecar/EGL contract, and P3-B
-Main10 remains unauthorized. Build record:
-`docs/m8/device-tests/20260904-a16-p3a-omx-r1-build/README.md`.
+peek while leaving the later `RequestPicture`/FBD/`ReturnPicture` lifecycle unchanged. Physical
+retest confirms that original drain NULL no longer recurs and formal output reaches FBD/SF. It also
+reveals two distinct next boundaries: preparse teardown's internal FBM allocates only 4 KiB for
+`VideoPicture::pMetaData` while HEVC initializes/copies 23,480 bytes, corrupting the heap before its
+first free (RC-A2); formal playback delivers exact buffer `9891309682708` / backing store
+`2229088026704`, whose 3840x2160 YV12 auto-AFBC-big private contract bypasses compat1a and reaches the
+same Mali crop-metadata ABI collision class (RC-B, very high confidence). RC-A2 is
+**READY_FOR_NARROW_BINARY_PATCH**; compat1b is **READY_FOR_EXACT_COMPAT1B_IMPLEMENTATION**, but neither
+is implemented here. P3-A remains **PHYSICAL FAIL** and the recommended next candidate is RC-A2-only
+for causal isolation. Reports:
+`docs/m8/device-tests/20260904-a16-p3a-omx-r1-build/README.md` and
+`docs/m8/device-tests/20260905-a16-p3a-rca2-compat1b-forensics/README.md`. P3-B Main10 remains
+unauthorized.
 
 ## Golden baseline
 

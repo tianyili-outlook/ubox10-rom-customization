@@ -55,7 +55,8 @@ def test_canonical_governance_summaries_reference_forensics() -> None:
     todo = (ROOT / "docs/m8/TODO.md").read_text(encoding="utf-8")
     device = (ROOT / "docs/DEVICE_TEST.md").read_text(encoding="utf-8")
     assert expected in status
-    assert "P3-A — PHYSICAL FAIL / FORENSICS COMPLETE" in todo
+    assert "P3-A — PHYSICAL FAIL" in todo
+    assert "RC-A2/RC-B FORENSICS COMPLETE" in todo
     assert expected in device
     for text in (status, todo, device):
         assert "P3-B" in text and "NOT AUTHORIZED" in text
