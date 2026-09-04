@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "id": "a16-dev-p3a-omx-r1",
+  "label": "P3-A RC-A REPAIR CANDIDATE / DEVELOPMENT ONLY / NOT r8 / NOT RELEASE",
+  "status": "OFFLINE_CHECKED_READY_FOR_BOUNDED_PHYSICAL_VALIDATION",
+  "base_candidate": {
+    "path": "out/candidates/a16-dev-audio-r1/x12-a16-dev-audio-r1.img",
+    "size": 1641830400,
+    "sha256": "270B5D822AB3BB13D8EDCD9BE374DA1D6ED512D6D60063E123046C23B8AF9D62"
+  },
+  "base_artifacts": {
+    "system_a": {"path": "out/candidates/a16-dev-audio-r1/system_a.img", "size": 1651167232, "sha256": "0E7B2747C135F59307728ABA9F6F57C2741002BECFE5F23CB600AFDB1640F5D5"},
+    "vendor_a": {"path": "out/candidates/a16-dev-audio-r1/vendor_a.img", "size": 150994944, "sha256": "415E3B46371209B699791536A32FA66962EBC577E1A2B11830F810A7047F3E79"},
+    "super_raw": {"path": "out/candidates/a16-dev-audio-r1/super.raw.img", "size": 3221225472, "sha256": "46B65D117F7A51396577CD4024D38AFDBC0FE91AD06D08FA769468934273ACDE"},
+    "product_a": {"path": "out/candidates/a16-dev-audio-r1/candidate-logical/product_a.img", "size": 272629760, "sha256": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974"},
+    "vendor_dlkm": {"path": "out/candidates/a16-dev-audio-r1/vendor_dlkm_a.img", "size": 6680576, "sha256": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07"},
+    "boot": {"path": "out/candidates/a16-dev-audio-r1/boot.fex", "size": 67108864, "sha256": "527CF878B015CFAE4E8600BD750C7C73F45F4290B5CFEFEDBD1AD9AC347B8063"}
+  },
+  "repair_readiness": {
+    "report": "docs/m8/device-tests/20260904-a16-p3a-omx-drain-repair-readiness/README.md",
+    "classification": "READY_FOR_NARROW_BINARY_PATCH",
+    "approved_semantics": "USE_NULL_CHECKED_NEXTPICTUREINFO_PEEK_FOR_PRE_ACQUISITION_COLOR_ASPECT_READS"
+  },
+  "patcher": {
+    "path": "scripts/patch-a16-p3a-omx-r1.py",
+    "sha256": "5E793C68DAB98E976B3CB80A9598147B9136D01BB8150C07ACB0B8FF3ED3EED0"
+  },
+  "runtime_change": {
+    "partition_path": "/vendor/lib/libOmxVdec.so",
+    "internal_path": "/lib/libOmxVdec.so",
+    "reason": "Use the already validated NextPictureInfo peek for pre-acquisition color-aspect reads instead of the not-yet-populated current display picture slot",
+    "baseline": {
+      "size": 83780,
+      "sha256": "29F500E3089651C41A4C2A88C1F82B99EE389AF7A83101CE929516018D5CEA87",
+      "build_id": "2042d7e0112320dc855cccee324af569"
+    },
+    "candidate": {
+      "size": 83780,
+      "sha256": "5FE74A28EB9E083959FDAC9CFDE870FAA2AF4447DADB7776C1E7F4CFC6D1EE8B",
+      "build_id_note_retained": "2042d7e0112320dc855cccee324af569"
+    },
+    "elf_class": "ELF32",
+    "machine": "ARM",
+    "file_offset": 53552,
+    "virtual_address": 57648,
+    "original_bytes": "d8 f8 00 00",
+    "patched_bytes": "4f ea 0c 00",
+    "original_instruction": "ldr.w r0, [r8]",
+    "patched_instruction": "mov.w r0, r12",
+    "changed_byte_offsets": [53552, 53553, 53554],
+    "changed_byte_count": 3,
+    "instruction_width": 4,
+    "mode": "0644",
+    "uid": 0,
+    "gid": 0,
+    "ctime": "0x652f7ab5",
+    "atime": "0x652f7ab5",
+    "mtime": "0x652f7ab5",
+    "crtime": "0x65379527",
+    "selinux": "u:object_r:vendor_file:s0"
+  },
+  "preserved_runtime": {
+    "surfaceflinger": {"path": "/system/bin/surfaceflinger", "candidate_file": "compat1a-surfaceflinger", "size": 8577592, "sha256": "06C960E672863AD557AF921565621997CB9B113BA2290049AF91028A405CD0A5"},
+    "audio_impl32": {"path": "/vendor/lib/hw/android.hardware.audio@7.0-impl.so", "candidate_file": "audio-r1-audio-impl.so", "size": 170476, "sha256": "E2F3D49D757AA4132180C3D247857FC9725D7113E92A079E10181AADBCC062ED"},
+    "libstagefright64": {"path": "/system/lib64/libstagefright.so", "candidate_file": "compat1a-libstagefright64", "size": 2079968, "sha256": "3FDE0D408ED26CE76C7CAE2DB3DD41E38B1783B982CFAB251518D778C39F13CF"},
+    "gralloc32": {"path": "/vendor/lib/hw/gralloc.apollo.so", "candidate_file": "compat1a-gralloc32", "size": 64852, "sha256": "7E654E0F9D968C5FA9C9F31893E0E60DCF6605E41A82783E6376A1D7D66194D5"},
+    "gralloc64": {"path": "/vendor/lib64/hw/gralloc.apollo.so", "candidate_file": "compat1a-gralloc64", "size": 93664, "sha256": "1F91BF6FA547DA11E42068C1A0C612E41B5C800AEE9CDAB2D320DD469295CB19"}
+  },
+  "outer_delta": {
+    "changed_payloads_from_base": ["Vsuper.fex", "Vvbmeta_vendor.fex", "super.fex", "vbmeta_vendor.fex"]
+  },
+  "governance": {
+    "canonical_r7": "PASS_FROZEN_UNCHANGED",
+    "gate3": "PASS_WITH_EXPLICIT_USER_WAIVER_CLOSED",
+    "compat1a": "PHYSICAL_PASS_AUTHORIZED_SDR_1080P_YV12_UNCHANGED",
+    "audio_p1": "CLOSED",
+    "p2": "COMPLETE",
+    "p3a": "PHYSICAL_FAIL_FORENSICS_COMPLETE",
+    "rc_a": "PATCH_IMPLEMENTED_OFFLINE_CANDIDATE_BUILT_PHYSICAL_VALIDATION_PENDING",
+    "rc_b": "DEFERRED_EXPECTED_NEXT_BOUNDARY",
+    "p3b_main10": "NOT_AUTHORIZED",
+    "hdr_afbc_protected": "NOT_AUTHORIZED",
+    "full_vintf": "EXIT_65_INHERITED_CONFIG_NFS_FS_NOT_PASS",
+    "r8_authorized": false,
+    "r8_built": false,
+    "release": false,
+    "physical_validation_required": true
+  }
+}

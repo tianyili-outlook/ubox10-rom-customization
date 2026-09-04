@@ -49,6 +49,7 @@ The architecture pass itself is not downgraded.
 | Post-Gate3 audio compatibility candidate `a16-dev-audio-r1` | **PHYSICAL VALIDATION PASS / P1 ARM32 AUDIO STARTUP CRASH CLOSED / DEVELOPMENT AUDIO COMPATIBILITY CANDIDATE / NOT r8 / NOT RELEASE** |
 | Post-Gate3 P2 one-shot boot/runtime audit | **PHYSICAL CAPTURE ANALYZED / NO NEW P1 BLOCKER / NO CRITICAL RESTART / ACTIVE DEBT RECORDED** |
 | P3-0 / P3-A thermal + HEVC 4K30 | **P3-0 PREPARED; P3-A PHYSICAL FAIL / FORENSICS COMPLETE; P3-B MAIN10 NOT AUTHORIZED** |
+| P3-A RC-A candidate `a16-dev-p3a-omx-r1` | **OFFLINE CHECKED / RC-A PATCH IMPLEMENTED / PHYSICAL VALIDATION PENDING / DEVELOPMENT ONLY / NOT r8 / NOT RELEASE** |
 
 Gate 3 is now **CLOSED / `PASS_WITH_EXPLICIT_USER_WAIVER`**. Its only waiver is POWER
 current-session revalidation; no required item is silently marked PASS and no other Gate 3 blocker
@@ -130,11 +131,16 @@ handle/sidecar/EGL records leave a separate 4K import limit possible. P3-A is **
 FORENSICS COMPLETE**. Follow-up source archaeology found near-exact Allwinner wrapper/FBM state
 machines and proved that the copy path must read color aspects from the non-owning
 `NextPictureInfo` peek, not the still-NULL current-display slot that is assigned only by the later
-`RequestPicture`. RC-A is therefore **READY_FOR_NARROW_BINARY_PATCH / DESIGN ONLY / NO FIX APPLIED**;
-the defect is generic copy-path ordering, not a justified 4K-specific predicate. Repair order remains
-OMX first, then one retest to capture the exact 4K contract before any compat1b implementation. OMX
-does not advertise Main10, so P3-B remains research-only and unauthorized. See
-`docs/m8/device-tests/20260904-a16-p3a-omx-drain-repair-readiness/README.md`.
+`RequestPicture`. `a16-dev-p3a-omx-r1` now applies the resulting exact operand-only correction to
+`/vendor/lib/libOmxVdec.so`: `ldr.w r0, [r8]` becomes `mov.w r0, r12`, selecting the already checked
+peek while leaving the later `RequestPicture`/FBD/`ReturnPicture` lifecycle unchanged. Its semantic
+filesystem delta from `a16-dev-audio-r1` is exactly that one ELF (three changed bytes); offline ELF,
+namespace, ext4, AVB, LP, sparse/outer and inherited-VINTF checks pass. RC-A is **PATCH IMPLEMENTED
+OFFLINE / CANDIDATE BUILT / PHYSICAL VALIDATION PENDING**; P3-A itself remains **PHYSICAL FAIL** until
+one bounded retest. Its accepted readiness basis remains **READY_FOR_NARROW_BINARY_PATCH**. RC-B/compat1b
+stays deferred pending the exact 4K handle/sidecar/EGL contract, and P3-B
+Main10 remains unauthorized. Build record:
+`docs/m8/device-tests/20260904-a16-p3a-omx-r1-build/README.md`.
 
 ## Golden baseline
 

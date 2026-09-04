@@ -126,6 +126,14 @@ P2 不强制 AVC/HEVC/VP9、HDMI disconnect/reconnect、Wi-Fi OFF→ON、remote 
 完整source audit、dynamic read-only thermal observer、fixture contract、分层验收/失败分类和人工abort
 边界见 `docs/m8/device-tests/20260903-a16-p3-thermal-4k30-plan/README.md`。
 
+RC-A development candidate `a16-dev-p3a-omx-r1` 已完成离线构建与审计，但**尚未授权或执行实机测试**。
+它仅修改 `/vendor/lib/libOmxVdec.so` 的一个4-byte Thumb-2 operand-producing instruction（实际3字节
+不同），使pre-acquisition color-aspect读取使用已验证的 `NextPictureInfo` peek；既有
+`RequestPicture`→FBD→`ReturnPicture` lifecycle不变。候选状态为 **OFFLINE CHECKED / PHYSICAL
+VALIDATION PENDING / DEVELOPMENT ONLY / NOT r8 / NOT RELEASE**。精确镜像、补丁与后续单次测试合同见
+`docs/m8/device-tests/20260904-a16-p3a-omx-r1-build/README.md`。在该测试完成前，P3-A继续为
+**PHYSICAL FAIL**；RC-B/compat1b继续deferred，Main10继续NOT AUTHORIZED。
+
 Retained H616 DT/kernel证明4路THS和CPU/GPU cooling；本次实机Discovery已证明normal-shell可读并取得
 plausible live values，但absolute calibration和持续负载行为仍未qualification。因此当前仍是
 **PARTIAL OBSERVABILITY — SHORT SMOKE ONLY**，不是Thermal HAL PASS。

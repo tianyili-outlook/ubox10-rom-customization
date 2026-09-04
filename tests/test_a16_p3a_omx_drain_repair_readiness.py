@@ -67,11 +67,15 @@ def test_readiness_and_deferred_scope_are_locked() -> None:
     assert "no Android image or candidate was built" in text
 
 
-def test_canonical_status_and_todo_reference_repair_readiness() -> None:
+def test_readiness_history_and_current_candidate_transition_are_both_locked() -> None:
+    readiness = _report()
+    assert "READY_FOR_NARROW_BINARY_PATCH" in readiness
+    assert "NO FIX APPLIED" in readiness
     status = (ROOT / "docs/m8/STATUS.md").read_text(encoding="utf-8")
     todo = (ROOT / "docs/m8/TODO.md").read_text(encoding="utf-8")
     for text in (status, todo):
-        assert "READY_FOR_NARROW_BINARY_PATCH" in text
-        assert "NO FIX APPLIED" in text or "未修改ELF" in text
-        assert "OMX first" in text
-        assert "compat1b" in text
+        normalized = " ".join(text.split())
+        assert "READY_FOR_NARROW_BINARY_PATCH" in normalized
+        assert "PATCH IMPLEMENTED OFFLINE" in normalized
+        assert "PHYSICAL VALIDATION PENDING" in normalized
+        assert "compat1b" in normalized
