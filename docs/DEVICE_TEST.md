@@ -122,16 +122,21 @@ P2 不强制 AVC/HEVC/VP9、HDMI disconnect/reconnect、Wi-Fi OFF→ON、remote 
 
 ## P3-0 — thermal observability / HEVC 4K30 preparation
 
-状态：**RESEARCH / TOOLING PREPARED；P3-A PHYSICAL CAPTURE PENDING；P3-B MAIN10 NOT AUTHORIZED**。
+状态：**P3-0 RESEARCH / TOOLING PREPARED；P3-A PHYSICAL FAIL / FORENSICS COMPLETE；P3-B MAIN10 NOT AUTHORIZED**。
 完整source audit、dynamic read-only thermal observer、fixture contract、分层验收/失败分类和人工abort
 边界见 `docs/m8/device-tests/20260903-a16-p3-thermal-4k30-plan/README.md`。
 
-Retained H616 DT/kernel证明4路THS和CPU/GPU cooling，但normal-shell可读性及exact设备校准有效性仍需未来
-只读Discovery验证，因此当前是 **PARTIAL OBSERVABILITY — SHORT SMOKE ONLY**，不是Thermal HAL PASS。
-P3-A只能在CPU temperature+CPUfreq前置可观测性门槛通过后，手工播放一次短HEVC Main 8-bit SDR
-3840x2160p30 fixture，同时运行≤60秒host sampling；禁止loop/autoplay/stress/reboot。Compat1a只匹配exact
-1920x1088 YV12，4K会回到original Mali import path，故不得预设HEVC metadata collision已被修复。
-Main10/HDR/AFBC/protected仍未授权或证明；本P3-0没有运行ADB、播放媒体、构建镜像或改变任何runtime。
+Retained H616 DT/kernel证明4路THS和CPU/GPU cooling；本次实机Discovery已证明normal-shell可读并取得
+plausible live values，但absolute calibration和持续负载行为仍未qualification。因此当前仍是
+**PARTIAL OBSERVABILITY — SHORT SMOKE ONLY**，不是Thermal HAL PASS。
+一次授权的短HEVC Main 8-bit SDR 3840x2160p30实机尝试已完成。Discovery证明四路温度、CPUfreq、
+GPU devfreq可读且baseline plausible，但采样窗口大多早于播放故under-load thermal仍NOT ESTABLISHED。
+最早fatal为ARM32 `libOmxVdec.so::__anDrain+1212`对NULL current `VideoPicture*`的精确解引用；OMX重启后，
+正式播放的3840x2160 YV12又因compat1a exact 1080p predicate不匹配而走original view，最终invalid Ganesh
+texture触发SurfaceFlinger/zygote userspace restart。完整报告见
+`docs/m8/device-tests/20260903-a16-p3a-4k30-failure-forensics/README.md`。先修复并验证OMX lifecycle，再根据
+实测4K handle/sidecar/EGL contract决定是否设计compat1b；不得把同一metadata collision写成4K已证明。
+Main10/HDR/AFBC/protected仍未授权或证明；该forensic closure没有运行ADB、构建镜像或改变任何runtime。
 
 ### 后续分析合同
 

@@ -1,6 +1,6 @@
 # M8 status
 
-Updated: 2026-09-03
+Updated: 2026-09-04
 
 ## Android 16 architecture ceiling
 
@@ -48,7 +48,7 @@ The architecture pass itself is not downgraded.
 | Sized-shadow-fd experiment `a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd` | **PHYSICAL PASS — AUTHORIZED SDR 1080P YV12 ONLY / EXPERIMENTAL REPAIR / NOT r8 / NOT RELEASE** |
 | Post-Gate3 audio compatibility candidate `a16-dev-audio-r1` | **PHYSICAL VALIDATION PASS / P1 ARM32 AUDIO STARTUP CRASH CLOSED / DEVELOPMENT AUDIO COMPATIBILITY CANDIDATE / NOT r8 / NOT RELEASE** |
 | Post-Gate3 P2 one-shot boot/runtime audit | **PHYSICAL CAPTURE ANALYZED / NO NEW P1 BLOCKER / NO CRITICAL RESTART / ACTIVE DEBT RECORDED** |
-| P3-0 thermal observability + HEVC 4K30 preparation | **RESEARCH / TOOLING PREPARED; P3-A PHYSICAL CAPTURE PENDING; P3-B MAIN10 NOT AUTHORIZED** |
+| P3-0 / P3-A thermal + HEVC 4K30 | **P3-0 PREPARED; P3-A PHYSICAL FAIL / FORENSICS COMPLETE; P3-B MAIN10 NOT AUTHORIZED** |
 
 Gate 3 is now **CLOSED / `PASS_WITH_EXPLICIT_USER_WAIVER`**. Its only waiver is POWER
 current-session revalidation; no required item is silently marked PASS and no other Gate 3 blocker
@@ -115,14 +115,21 @@ pre-network time—without inflating boot/vendor/collector noise. Thermal observ
 priority before prolonged high-load media qualification. P2 does not start P3 or expand compat1a's
 SDR 1080p YV12 proof. r8 remains unauthorized and unbuilt.
 
-P3-0 now establishes a source-backed thermal/media test contract without changing or building Android.
-The retained H616 DT/kernel provide four THS zones plus CPU/GPU cooling, but exact calibration validity
-and normal-shell sysfs readability remain unproven; the current verdict is **PARTIAL OBSERVABILITY —
-SHORT SMOKE ONLY**. A read-only host observer and a conditional, single-playback P3-A plan are ready.
+P3-0 established a source-backed thermal/media test contract without changing or building Android.
+The retained H616 DT/kernel provide four THS zones plus CPU/GPU cooling. P3-A discovery physically
+proved normal-shell readability and plausible live values, but absolute calibration and sustained-load
+behavior remain unqualified; the verdict stays **PARTIAL OBSERVABILITY — SHORT SMOKE ONLY**.
 Vendor HEVC dimension/level and measured-performance evidence make 8-bit SDR 4K30 worth testing, while
 its declared blocks-per-second limit is contradictory; compat1a excludes 4K and therefore does not
-protect that path. P3-A remains unexecuted. OMX does not advertise Main10, so P3-B remains research-only
-and unauthorized. See `docs/m8/device-tests/20260903-a16-p3-thermal-4k30-plan/README.md`.
+protect that path. One bounded P3-A physical attempt has now failed at two separately proven boundaries:
+the exact ARM32 `libOmxVdec.so` drain path dereferences a NULL current `VideoPicture*` before its later
+`RequestPicture` assignment, and a subsequent 3840x2160 YV12 buffer bypasses compat1a's exact 1080p
+predicate before SurfaceFlinger obtains an invalid Ganesh texture and restarts the framework. The fixed
+sidecar layout makes the known metadata collision the leading graphics hypothesis, but missing 4K
+handle/sidecar/EGL records leave a separate 4K import limit possible. P3-A is **PHYSICAL FAIL /
+FORENSICS COMPLETE**; repair order is OMX first, then one retest to capture the exact 4K contract before
+any compat1b implementation. OMX does not advertise Main10, so P3-B remains research-only and
+unauthorized. See `docs/m8/device-tests/20260903-a16-p3a-4k30-failure-forensics/README.md`.
 
 ## Golden baseline
 
