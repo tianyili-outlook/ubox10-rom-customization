@@ -127,9 +127,14 @@ the exact ARM32 `libOmxVdec.so` drain path dereferences a NULL current `VideoPic
 predicate before SurfaceFlinger obtains an invalid Ganesh texture and restarts the framework. The fixed
 sidecar layout makes the known metadata collision the leading graphics hypothesis, but missing 4K
 handle/sidecar/EGL records leave a separate 4K import limit possible. P3-A is **PHYSICAL FAIL /
-FORENSICS COMPLETE**; repair order is OMX first, then one retest to capture the exact 4K contract before
-any compat1b implementation. OMX does not advertise Main10, so P3-B remains research-only and
-unauthorized. See `docs/m8/device-tests/20260903-a16-p3a-4k30-failure-forensics/README.md`.
+FORENSICS COMPLETE**. Follow-up source archaeology found near-exact Allwinner wrapper/FBM state
+machines and proved that the copy path must read color aspects from the non-owning
+`NextPictureInfo` peek, not the still-NULL current-display slot that is assigned only by the later
+`RequestPicture`. RC-A is therefore **READY_FOR_NARROW_BINARY_PATCH / DESIGN ONLY / NO FIX APPLIED**;
+the defect is generic copy-path ordering, not a justified 4K-specific predicate. Repair order remains
+OMX first, then one retest to capture the exact 4K contract before any compat1b implementation. OMX
+does not advertise Main10, so P3-B remains research-only and unauthorized. See
+`docs/m8/device-tests/20260904-a16-p3a-omx-drain-repair-readiness/README.md`.
 
 ## Golden baseline
 
