@@ -1,0 +1,191 @@
+{
+  "schema": 1,
+  "id": "a16-dev-p3a-compat1b-r1",
+  "label": "P3-A RC-B COMPAT1B CANDIDATE / DEVELOPMENT ONLY / NOT r8 / NOT RELEASE",
+  "status": "OFFLINE_CHECKED_READY_FOR_BOUNDED_PHYSICAL_VALIDATION",
+  "base_candidate": {
+    "path": "out/candidates/a16-dev-p3a-fbm-r1/x12-a16-dev-p3a-fbm-r1.img",
+    "size": 1641830400,
+    "sha256": "092DD3960136A086C7F9E60065A6C88D3984B0ACCA9FB7E57247D48370904535"
+  },
+  "base_artifacts": {
+    "system_a": {
+      "path": "out/candidates/a16-dev-p3a-fbm-r1/system_a.img",
+      "size": 1651167232,
+      "sha256": "0E7B2747C135F59307728ABA9F6F57C2741002BECFE5F23CB600AFDB1640F5D5"
+    },
+    "vendor_a": {
+      "path": "out/candidates/a16-dev-p3a-fbm-r1/vendor_a.img",
+      "size": 150994944,
+      "sha256": "231F0D2108AA709B8BDDA2E88E4C776E2B4CFA56BAED6E35A7DB5C992D903181"
+    },
+    "super_raw": {
+      "path": "out/candidates/a16-dev-p3a-fbm-r1/super.raw.img",
+      "size": 3221225472,
+      "sha256": "58BB4B2A3FBBF1C15910575F494B0E68C541B0B4B88CA0FD79F99435D5F8FD2D"
+    },
+    "product_a": {
+      "path": "out/candidates/a16-dev-p3a-fbm-r1/candidate-logical/product_a.img",
+      "size": 272629760,
+      "sha256": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974"
+    },
+    "vendor_dlkm": {
+      "path": "out/candidates/a16-dev-p3a-fbm-r1/vendor_dlkm_a.img",
+      "size": 6680576,
+      "sha256": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07"
+    },
+    "boot": {
+      "path": "out/candidates/a16-dev-p3a-fbm-r1/boot.fex",
+      "size": 67108864,
+      "sha256": "527CF878B015CFAE4E8600BD750C7C73F45F4290B5CFEFEDBD1AD9AC347B8063"
+    }
+  },
+  "repair_readiness": {
+    "report": "docs/m8/device-tests/20260905-a16-p3a-rca2-compat1b-forensics/README.md",
+    "classification": "READY_FOR_EXACT_COMPAT1B_IMPLEMENTATION"
+  },
+  "source_contract": {
+    "overlay": "configs/aosp/architecture-ceiling-a16/development/p3a-compat1b-r1",
+    "repositories": {
+      ".repo/manifests": "ebea28d151539ecf0730b1a4ab92ac33edc17ac9",
+      "external/skia": "4c18a9680d52c2cd5e35cfef2f548635a445fafe"
+    },
+    "build_proof_directory": "/work/tmp/compat1b-isolated-build-proof",
+    "files": {
+      "external/skia/src/gpu/ganesh/gl/AHardwareBufferGL.cpp": {
+        "size": 23680,
+        "sha256": "923DC75891B570B8A1EDB360D222D44682175B5DA6E9E67F0EFB9C7E8DB3DBAF"
+      },
+      "external/skia/src/gpu/ganesh/gl/UBOXP3Compat1b.h": {
+        "size": 2206,
+        "sha256": "1665B512D6FF7E23AF7F1D759F5960889AD7AA2C0861EDE9BB0EC58ADBDE24BD"
+      },
+      "external/skia/src/gpu/ganesh/gl/UBOXR7Compat1Metadata.h": {
+        "size": 2560,
+        "sha256": "98228A9599EEDFCD6C073124C31A48E105E3360E7C62ED05C4C77D2300951294"
+      }
+    },
+    "build_id": "BP2A.250805.034",
+    "target": "surfaceflinger"
+  },
+  "runtime_change": {
+    "name": "surfaceflinger",
+    "partition_path": "/system/bin/surfaceflinger",
+    "source_path": "/work/src/ubox10-a16-ceiling/out-ceiling-b1/target/product/ubox10_ceiling_arm64/system/bin/surfaceflinger",
+    "diag3a_size": 8577592,
+    "diag3a_sha256": "06C960E672863AD557AF921565621997CB9B113BA2290049AF91028A405CD0A5",
+    "base_size": 8577592,
+    "base_sha256": "06C960E672863AD557AF921565621997CB9B113BA2290049AF91028A405CD0A5",
+    "size": 8581800,
+    "sha256": "CC64B466C15C4E78917E4BED2BB61E59C9A3C90E816E85BE306BF73B19EB2A45",
+    "elf_class": "ELF64",
+    "architecture": "AArch64",
+    "build_id": "7b634810ca8ff86b5d7d120a54199ae3",
+    "soname": null,
+    "mode": "0755",
+    "uid": 0,
+    "gid": 2000,
+    "selinux": "u:object_r:surfaceflinger_exec:s0",
+    "ctime": "0x6a8ff745",
+    "atime": "0x6a8ff745",
+    "mtime": "0x6a8ff745",
+    "crtime": "0x6a8ffae5",
+    "added_strong_imports": [],
+    "reason": "Exact 3840x2160 SDR YV12 replacement-buffer predicate; reuse unchanged compat1a metadata-only shadow translation"
+  },
+  "preserved_runtime": {
+    "audio_impl32": {
+      "path": "/vendor/lib/hw/android.hardware.audio@7.0-impl.so",
+      "candidate_file": "preserved-audio_impl32",
+      "size": 170476,
+      "sha256": "E2F3D49D757AA4132180C3D247857FC9725D7113E92A079E10181AADBCC062ED"
+    },
+    "libstagefright64": {
+      "path": "/system/lib64/libstagefright.so",
+      "candidate_file": "preserved-libstagefright64",
+      "size": 2079968,
+      "sha256": "3FDE0D408ED26CE76C7CAE2DB3DD41E38B1783B982CFAB251518D778C39F13CF"
+    },
+    "gralloc32": {
+      "path": "/vendor/lib/hw/gralloc.apollo.so",
+      "candidate_file": "preserved-gralloc32",
+      "size": 64852,
+      "sha256": "7E654E0F9D968C5FA9C9F31893E0E60DCF6605E41A82783E6376A1D7D66194D5"
+    },
+    "gralloc64": {
+      "path": "/vendor/lib64/hw/gralloc.apollo.so",
+      "candidate_file": "preserved-gralloc64",
+      "size": 93664,
+      "sha256": "1F91BF6FA547DA11E42068C1A0C612E41B5C800AEE9CDAB2D320DD469295CB19"
+    },
+    "omx_r1": {
+      "path": "/vendor/lib/libOmxVdec.so",
+      "candidate_file": "preserved-omx_r1",
+      "size": 83780,
+      "sha256": "5FE74A28EB9E083959FDAC9CFDE870FAA2AF4447DADB7776C1E7F4CFC6D1EE8B"
+    },
+    "fbm_r1": {
+      "path": "/vendor/lib/libfbm.so",
+      "candidate_file": "libfbm.p3a-fbm-r1.so",
+      "size": 20980,
+      "sha256": "786264793BB16083CD62BC3BC0B6A2AE4673DBC75504A79EAC189DB943840E9F"
+    }
+  },
+  "outer_delta": {
+    "changed_payloads_from_base": [
+      "Vsuper.fex",
+      "Vvbmeta_system.fex",
+      "super.fex",
+      "vbmeta_system.fex"
+    ]
+  },
+  "governance": {
+    "canonical_r7": "PASS_FROZEN_UNCHANGED",
+    "gate3": "PASS_WITH_EXPLICIT_USER_WAIVER_CLOSED",
+    "compat1a": "PHYSICAL_PASS_AUTHORIZED_SDR_1080P_YV12_BEHAVIOR_PRESERVED",
+    "audio_p1": "CLOSED",
+    "p2": "COMPLETE",
+    "p3a": "PHYSICAL_FAIL_FORENSICS_COMPLETE",
+    "rc_a": "ORIGINAL_DRAIN_NULL_PHYSICAL_REPAIR_EFFECTIVE",
+    "rc_a2": "PHYSICAL_PASS_CLOSED",
+    "rc_b": "COMPAT1B_IMPLEMENTED_OFFLINE_CANDIDATE_BUILT_PHYSICAL_VALIDATION_PENDING",
+    "p3b_main10": "NOT_AUTHORIZED",
+    "hdr_afbc_protected": "NOT_AUTHORIZED",
+    "full_vintf": "EXIT_65_INHERITED_CONFIG_NFS_FS_NOT_PASS",
+    "r8_authorized": false,
+    "r8_built": false,
+    "release": false,
+    "physical_validation_required": true
+  },
+  "physical_evidence": {
+    "archive": "/work/physical-evidence/ubox10/a16-p3a-fbm-r1/UBOX10-A16-P3A-FBM-R1-RCA2-PASS-RCB-FAIL.zip",
+    "sha256": "6f332f683bcdc59656d11a202db9e97dfe5187ae747b4145d0cea113c32577df",
+    "manifest_entries": 12,
+    "manifest_pass": 12,
+    "manifest_fail": 0,
+    "rc_a2": "PHYSICAL_PASS_CLOSED",
+    "rc_b": "PHYSICAL_FAIL",
+    "boot_id": "160a1748-736f-4dfa-bb89-9bf323834049",
+    "media_codec_pid": 592,
+    "fatal_buffer_id": 10226317131793,
+    "fatal_backing_store_id": 2207613190241,
+    "limitation": "Filtered captures with original filename/line references, not the complete source live logs; legacy crop words absent."
+  },
+  "frozen_artifacts": {
+    "canonical_r7": {
+      "path": "out/candidates/a16-prototype-b-r7/x12-a16-prototype-b-r7.img",
+      "size": 1641773056,
+      "sha256": "A1F58668AEFFC9DC83CFFD8A49A309839332B6616C02153DCC00A71136A7AA27"
+    },
+    "rollback": {
+      "path": "/work/ubox10-a16-prototype-a-inputs/incoming/x12-test8r2-restore-contacts-provider.img",
+      "size": 2005954560,
+      "sha256": "6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8"
+    }
+  },
+  "artifact": {
+    "path": "out/candidates/a16-dev-p3a-compat1b-r1/x12-a16-dev-p3a-compat1b-r1.img",
+    "sha256": "9A23D1457E8B25BBAEBFB70F2095C5300F90B3A517C0768A808AB1B2174FA6E4",
+    "size": 1641834496
+  }
+}

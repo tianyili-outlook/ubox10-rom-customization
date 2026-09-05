@@ -5,8 +5,10 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import sys
+import tempfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -63,6 +65,43 @@ def verify_evidence() -> None:
             fail(f"physical evidence mismatch: {relative}")
 
 
+def compat1a_source_view(cfg: dict) -> tuple[str, str]:
+    """Verify the frozen source, optionally underneath the exact successor overlay.
+
+    Never revert the live tree for a historical regression check. Reverse only
+    the verified compat1b patch in a temporary source copy, then require ALL the
+    original compat1a source sizes/hashes exactly as before.
+    """
+    prefix = "external/skia/src/gpu/ganesh/gl/"
+    specs = cfg["source_contract"]["files"]
+    cpp = AOSP / (prefix + "AHardwareBufferGL.cpp")
+    with tempfile.TemporaryDirectory(prefix="ubox-compat1a-source-view-") as directory:
+        view = Path(directory)
+        for relative in specs:
+            target = view / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(AOSP / relative, target)
+        if digest(cpp) != specs[prefix + "AHardwareBufferGL.cpp"]["sha256"]:
+            successor = ROOT / "configs/aosp/architecture-ceiling-a16/development/p3a-compat1b-r1"
+            state = subprocess.check_output(
+                [sys.executable, str(successor / "prepare.py"), "check", str(AOSP)], text=True)
+            if "UBOX_P3_COMPAT1B source state: PATCHED" not in state:
+                fail("unexpected successor source")
+            subprocess.run(["patch", "--batch", "--reverse", "-p1", "-d", str(view / "external/skia"),
+                            "-i", str(successor / "compat1b.patch")], check=True, capture_output=True)
+        else:
+            overlay = ROOT / cfg["source_contract"]["overlay"]
+            state = subprocess.check_output([str(overlay / "prepare.sh"), "check", str(AOSP)], text=True)
+            if "source state: PATCHED" not in state:
+                fail("compat1a overlay is not exact")
+        for relative, spec in specs.items():
+            item = view / relative
+            if item.stat().st_size != spec["size"] or digest(item) != spec["sha256"]:
+                fail(f"compat1a source identity changed: {relative}")
+        return ((view / (prefix + "AHardwareBufferGL.cpp")).read_text(),
+                (view / (prefix + "UBOXR7Compat1Metadata.h")).read_text())
+
+
 def main() -> None:
     cfg = json.loads(CONFIG.read_text(encoding="utf-8"))
     if cfg["id"] != "a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd":
@@ -74,16 +113,7 @@ def main() -> None:
         fail("Gate3/r8/development governance changed")
     verify_evidence()
 
-    overlay = ROOT / cfg["source_contract"]["overlay"]
-    state = subprocess.check_output([str(overlay / "prepare.sh"), "check", str(AOSP)], text=True)
-    if "source state: PATCHED" not in state:
-        fail("compat1a overlay is not exact")
-    for relative, record in cfg["source_contract"]["files"].items():
-        item = AOSP / relative
-        if item.stat().st_size != record["size"] or digest(item) != record["sha256"]:
-            fail(f"compat1a source identity changed: {relative}")
-    source = (AOSP / "external/skia/src/gpu/ganesh/gl/AHardwareBufferGL.cpp").read_text()
-    header = (AOSP / "external/skia/src/gpu/ganesh/gl/UBOXR7Compat1Metadata.h").read_text()
+    source, header = compat1a_source_view(cfg)
     for text in ("memfd_ftruncate_sealed", "createSizedShadowFd"):
         if text not in source:
             fail(f"missing exact fd correction marker: {text}")

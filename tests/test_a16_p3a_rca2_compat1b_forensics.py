@@ -100,7 +100,9 @@ def test_canonical_summaries_point_to_parallel_forensics() -> None:
 
 
 def test_no_runtime_fix_or_new_candidate_is_tracked() -> None:
-    assert not any(ROOT.glob("scripts/*compat1b*"))
-    assert not any(ROOT.glob("configs/candidates/*compat1b*"))
+    # The forensic snapshot did not implement a fix. The subsequent explicitly
+    # authorized compat1b-r1 build must not rewrite that historical conclusion.
+    assert "READY_FOR_EXACT_COMPAT1B_IMPLEMENTATION" in _report()
+    assert "No Android image was built" in _report()
     assert not (ROOT / "out/candidates/a16-dev-p3a-rca2-r1").exists()
     assert not (ROOT / "out/candidates/a16-dev-p3a-compat1b").exists()

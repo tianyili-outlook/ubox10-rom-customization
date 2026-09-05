@@ -133,11 +133,18 @@ medialibrary preparse在Executing→Idle销毁时另触发RC-A2：internal FBM�
 4K buffer `9891309682708` / backing store `2229088026704`：3840x2160 YV12、19,489,120-byte
 auto-AFBC-big private allocation，绕过compat1a后在Mali以同类crop metadata ABI mismatch失败。
 RC-A2的`READY_FOR_NARROW_BINARY_PATCH`证据现已落实为`a16-dev-p3a-fbm-r1`：仅将internal FBM
-metadata allocation `0x1000`改为`0x6000`，离线构建/审计通过，**PHYSICAL VALIDATION PENDING**。
-compat1b仍为`READY_FOR_EXACT_COMPAT1B_IMPLEMENTATION`且未实施。候选和后续有界测试合同见
-`docs/m8/device-tests/20260905-a16-p3a-fbm-r1-build/README.md`。未来必须先BootGate并review，再进行VLC/
+metadata allocation `0x1000`改为`0x6000`。新证据12/12哈希通过，4K preparse/Transform/teardown正常完成，
+同boot和media.codec PID592连续；**RC-A2 PHYSICAL PASS / CLOSED**。正式播放仍在RC-B失败，PID592存活。
+`a16-dev-p3a-compat1b-r1`现已仅实施精确4K replacement-buffer的metadata shadow分支，
+**OFFLINE CHECKED / PHYSICAL VALIDATION PENDING**，不是P3-A PASS。
+候选和后续有界测试合同见`docs/m8/device-tests/20260905-a16-p3a-compat1b-r1-build/README.md`；
+FBM原记录保留在`docs/m8/device-tests/20260905-a16-p3a-fbm-r1-build/README.md`。
+未来必须先BootGate并review，再进行VLC/
 media preparation；fixture进入VLC前启动live capture，单独保存preparse teardown，正式播放前完成
-onboarding/scan。RC-B仍可能使SF/framework重启，不得因此宣称4K成功。本任务没有执行设备测试。完整取证见
+onboarding/scan，再开始正式AVCPre与AVC control并review，之后仅一次Main8 SDR 4K30手动播放。
+捕获同buffer ID的`UBOX_P3_COMPAT1B eligible=1`、既有COMPAT1 shadow/translation/CLONE/import和
+DIAG1 EGL/BackendTexture状态；thermal sampling必须覆盖播放窗口。任何失败立即stop/review，禁止自动重试。
+RC-B翻译后仍可能出现另一4K限制，不得预先宣称成功。本任务没有执行设备测试。完整取证见
 `docs/m8/device-tests/20260905-a16-p3a-rca2-compat1b-forensics/README.md`。Main10继续NOT AUTHORIZED。
 
 Retained H616 DT/kernel证明4路THS和CPU/GPU cooling；本次实机Discovery已证明normal-shell可读并取得

@@ -102,7 +102,10 @@ def test_governance_and_prior_identities():
     assert cfg["runtime_change"]["changed_byte_offsets"] == [0x2936, 0x2937]
     assert cfg["patcher"]["sha256"] == hashlib.sha256(PATCHER.read_bytes()).hexdigest().upper()
     assert cfg["governance"]["rc_a"] == "ORIGINAL_DRAIN_NULL_PHYSICAL_REPAIR_EFFECTIVE"
-    assert cfg["governance"]["rc_a2"] == "PATCH_IMPLEMENTED_OFFLINE_CANDIDATE_BUILT_PHYSICAL_VALIDATION_PENDING"
+    assert cfg["governance"]["rc_a2"] == "PHYSICAL_PASS_CLOSED"
+    assert cfg["status"] == "PHYSICAL_TESTED_RCA2_PASS_RCB_FAIL"
+    assert cfg["physical_evidence"]["manifest_pass"] == 12
+    assert cfg["physical_evidence"]["p3a_pass"] is False
     assert cfg["governance"]["p3b_main10"] == "NOT_AUTHORIZED"
     assert cfg["governance"]["audio_p1"] == "CLOSED"
     assert cfg["governance"]["p2"] == "COMPLETE"

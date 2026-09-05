@@ -2,7 +2,7 @@
   "schema": 1,
   "id": "a16-dev-p3a-fbm-r1",
   "label": "P3-A RC-A2 REPAIR CANDIDATE / DEVELOPMENT ONLY / NOT r8 / NOT RELEASE",
-  "status": "OFFLINE_CHECKED_READY_FOR_BOUNDED_PHYSICAL_VALIDATION",
+  "status": "PHYSICAL_TESTED_RCA2_PASS_RCB_FAIL",
   "artifact": {
     "path": "out/candidates/a16-dev-p3a-fbm-r1/x12-a16-dev-p3a-fbm-r1.img",
     "size": 1641830400,
@@ -145,7 +145,7 @@
     "p2": "COMPLETE",
     "p3a": "PHYSICAL_FAIL_FORENSICS_COMPLETE",
     "rc_a": "ORIGINAL_DRAIN_NULL_PHYSICAL_REPAIR_EFFECTIVE",
-    "rc_a2": "PATCH_IMPLEMENTED_OFFLINE_CANDIDATE_BUILT_PHYSICAL_VALIDATION_PENDING",
+    "rc_a2": "PHYSICAL_PASS_CLOSED",
     "rc_b": "PHYSICAL_FAIL_EXACT_4K_CONTRACT_CAPTURED_COMPAT1B_IMPLEMENTATION_READY",
     "p3b_main10": "NOT_AUTHORIZED",
     "hdr_afbc_protected": "NOT_AUTHORIZED",
@@ -153,6 +153,23 @@
     "r8_authorized": false,
     "r8_built": false,
     "release": false,
-    "physical_validation_required": true
+    "physical_validation_required": false
+  },
+  "physical_evidence": {
+    "archive": "/work/physical-evidence/ubox10/a16-p3a-fbm-r1/UBOX10-A16-P3A-FBM-R1-RCA2-PASS-RCB-FAIL.zip",
+    "sha256": "6f332f683bcdc59656d11a202db9e97dfe5187ae747b4145d0cea113c32577df",
+    "manifest_entries": 12,
+    "manifest_pass": 12,
+    "manifest_fail": 0,
+    "rc_a2": "PHYSICAL_PASS_CLOSED",
+    "rc_b": "PHYSICAL_FAIL",
+    "boot_id": "160a1748-736f-4dfa-bb89-9bf323834049",
+    "media_codec_pid": 592,
+    "fatal_buffer_id": 10226317131793,
+    "fatal_backing_store_id": 2207613190241,
+    "limitation": "Filtered captures with original filename/line references, not the complete source live logs; legacy crop words absent.",
+    "candidate_test_completed": true,
+    "p3a_pass": false,
+    "reference": "docs/m8/device-tests/20260905-a16-p3a-compat1b-r1-build/README.md"
   }
 }

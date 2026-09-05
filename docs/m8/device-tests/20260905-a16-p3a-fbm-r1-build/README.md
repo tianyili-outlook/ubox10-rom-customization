@@ -2,7 +2,16 @@
 
 P3-A RC-A2 REPAIR CANDIDATE / DEVELOPMENT ONLY / NOT r8 / NOT RELEASE.
 
-Status: **OFFLINE CHECKED / PHYSICAL VALIDATION PENDING**.
+Status: **PHYSICAL TESTED / RC-A2 PHYSICAL PASS / CLOSED; RC-B STILL FAILS**.
+
+September 5 follow-up evidence independently verifies normal 4K preparse/TransformYV12ToYUV420
+and Executing→Idle→DestroyVideoDecoder→Idle→Loaded completion, same boot ID and media.codec PID592.
+Formal playback then fails separately at the original Mali import, while PID592 survives.
+Archive SHA256 `6f332f683bcdc59656d11a202db9e97dfe5187ae747b4145d0cea113c32577df`,
+12/12 internal entries PASS. Provenance and timeline are in the
+[current compat1b candidate record](../20260905-a16-p3a-compat1b-r1-build/README.md).
+The image and historical build/audit artifacts below are unchanged; the original offline
+handoff status was PHYSICAL VALIDATION PENDING, not a claim of physical success at build time.
 
 Image: `out/candidates/a16-dev-p3a-fbm-r1/x12-a16-dev-p3a-fbm-r1.img`
 
@@ -110,7 +119,7 @@ Preserved SHA256 identities:
 | compat1a `/system/bin/surfaceflinger` | `06C960E672863AD557AF921565621997CB9B113BA2290049AF91028A405CD0A5` |
 | audio-r1 `/vendor/lib/hw/android.hardware.audio@7.0-impl.so` | `E2F3D49D757AA4132180C3D247857FC9725D7113E92A079E10181AADBCC062ED` |
 
-## Future physical validation contract
+## Original physical validation contract (completed on FBM-r1)
 
 Preparation only; this build task performs no ADB, device access, flash or playback.
 After separate authorization: flash exact image -> normal boot -> **BootGate -> REVIEW
@@ -136,7 +145,7 @@ boundary and review. Full 4K playback and under-load thermal qualification remai
 ## Governance
 
 - Original RC-A: PHYSICAL REPAIR EFFECTIVE.
-- RC-A2: PATCH IMPLEMENTED OFFLINE / CANDIDATE BUILT / PHYSICAL VALIDATION PENDING.
+- RC-A2: PHYSICAL PASS / CLOSED on the subsequent verified physical evidence.
 - RC-B: COMPAT1B IMPLEMENTATION READY / UNCHANGED; no compat1b patch included.
 - P3-A: PHYSICAL FAIL. Main10/HDR/AFBC/protected: NOT AUTHORIZED.
 - Canonical r7: PASS / FROZEN / UNCHANGED; Gate3: PASS_WITH_EXPLICIT_USER_WAIVER / CLOSED.

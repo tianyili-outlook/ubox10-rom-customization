@@ -1,0 +1,40 @@
+--- a/src/gpu/ganesh/gl/AHardwareBufferGL.cpp
++++ b/src/gpu/ganesh/gl/AHardwareBufferGL.cpp
+@@ -22,0 +23 @@
++#include "src/gpu/ganesh/gl/UBOXP3Compat1b.h"
+@@ -79 +80,5 @@
+-    if (!exactPublicContract || !exactHandleContract || handle->data[1] < 0) {
++    // Keep the passing compat1a predicate unchanged; add only the captured replacement class.
++    const bool compat1bContract = handle->version == 12 &&
++            ubox_p3_compat1b::contract(desc, isProtectedContent, slots);
++    if ((!(exactPublicContract && exactHandleContract) && !compat1bContract) ||
++        handle->data[1] < 0) {
+@@ -87,0 +93,10 @@
++    if (compat1bContract) {
++        struct stat imageStat = {};
++        const int result = fstat(handle->data[0], &imageStat);
++        if (result != 0 || imageStat.st_size != ubox_p3_compat1b::kImageFdSize) {
++            ALOGI("UBOX_P3_COMPAT1B eligible=0 buffer_id=%" PRIu64
++                  " reason=image_fd_size result=%d size=%" PRId64,
++                  bufferId, result, static_cast<int64_t>(imageStat.st_size));
++            return nullptr;
++        }
++    }
+@@ -122 +137,3 @@
+-    if (!exactSdrAttr || !legacyCropCollision) {
++    const bool compat1bMetadata = compat1bContract &&
++            ubox_p3_compat1b::metadata(sunxiFlag, *activeAttr, legacyCrop);
++    if (compat1bContract ? !compat1bMetadata : (!exactSdrAttr || !legacyCropCollision)) {
+@@ -132 +149,9 @@
+-    ALOGI("UBOX_R7_COMPAT1 eligible=1 buffer_id=%" PRIu64
++    if (compat1bContract) {
++        ALOGI("UBOX_P3_COMPAT1B eligible=1 buffer_id=%" PRIu64
++              " backing_store_id=%" PRIu64
++              " contract=4k_sdr_yv12_replacement w=3840 h=2160 stride=3840"
++              " usage=0x40402d00 private_usage=0x40000000 metadata_flag=0x80000010"
++              " exported_modifier=0 protected=0 image_size=19492864 metadata_size=24576",
++              bufferId, backingStoreId);
++    } else {
++        ALOGI("UBOX_R7_COMPAT1 eligible=1 buffer_id=%" PRIu64
+@@ -135,0 +161 @@
++    }

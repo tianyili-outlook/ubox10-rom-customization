@@ -50,7 +50,8 @@ The architecture pass itself is not downgraded.
 | Post-Gate3 P2 one-shot boot/runtime audit | **PHYSICAL CAPTURE ANALYZED / NO NEW P1 BLOCKER / NO CRITICAL RESTART / ACTIVE DEBT RECORDED** |
 | P3-0 / P3-A thermal + HEVC 4K30 | **P3-0 PREPARED; P3-A PHYSICAL FAIL / FORENSICS COMPLETE; P3-B MAIN10 NOT AUTHORIZED** |
 | P3-A RC-A candidate `a16-dev-p3a-omx-r1` | **PHYSICAL TESTED / ORIGINAL RC-A EFFECTIVE / P3-A FAIL AT NEW RC-A2 + RC-B / DEVELOPMENT ONLY / NOT r8 / NOT RELEASE** |
-| P3-A RC-A2 candidate `a16-dev-p3a-fbm-r1` | **OFFLINE CHECKED / FBM METADATA CAPACITY PATCH BUILT / PHYSICAL VALIDATION PENDING / DEVELOPMENT ONLY / NOT r8 / NOT RELEASE** |
+| P3-A RC-A2 candidate `a16-dev-p3a-fbm-r1` | **PHYSICAL TESTED / RC-A2 PHYSICAL PASS / CLOSED / RC-B STILL FAILS / DEVELOPMENT ONLY / NOT r8 / NOT RELEASE** |
+| P3-A RC-B candidate `a16-dev-p3a-compat1b-r1` | **OFFLINE CHECKED / EXACT 4K METADATA SHADOW BUILT / PHYSICAL VALIDATION PENDING / DEVELOPMENT ONLY / NOT r8 / NOT RELEASE** |
 
 Gate 3 is now **CLOSED / `PASS_WITH_EXPLICIT_USER_WAIVER`**. Its only waiver is POWER
 current-session revalidation; no required item is silently marked PASS and no other Gate 3 blocker
@@ -143,12 +144,18 @@ first free (RC-A2); formal playback delivers exact buffer `9891309682708` / back
 same Mali crop-metadata ABI collision class (RC-B, very high confidence). RC-A2 is
 **READY_FOR_NARROW_BINARY_PATCH** on the accepted forensic evidence. `a16-dev-p3a-fbm-r1` now
 implements only the internal FBM capacity correction (`0x1000` -> `0x6000`), changing two bytes in
-`/vendor/lib/libfbm.so` relative to exact OMX-r1. RC-A2 is **PATCH IMPLEMENTED OFFLINE / CANDIDATE
-BUILT / PHYSICAL VALIDATION PENDING**. compat1b stays **READY_FOR_EXACT_COMPAT1B_IMPLEMENTATION**
-and unchanged. P3-A remains **PHYSICAL FAIL**. Image size is 1,641,830,400 bytes, SHA256
-`092DD3960136A086C7F9E60065A6C88D3984B0ACCA9FB7E57247D48370904535`; the exact artifact, completed
-offline audit and future bounded test contract are in
-`docs/m8/device-tests/20260905-a16-p3a-fbm-r1-build/README.md`. Earlier reports:
+`/vendor/lib/libfbm.so` relative to exact OMX-r1. The new verified archive (12/12 entries PASS)
+now proves normal 4K preparse/Transform/DestroyVideoDecoder/Idle→Loaded with the same boot and
+media.codec PID592: **RC-A2 PHYSICAL PASS / CLOSED**. Formal playback reproduces the separate RC-B
+on buffer `10226317131793` / backing store `2207613190241`; PID592 survives the graphics restart.
+`a16-dev-p3a-compat1b-r1` implements only the exact 3840x2160 SDR YV12 replacement-buffer predicate,
+reusing the existing 24 KiB shadow and 56-byte attr translation. Its only semantic delta from
+FBM-r1 is SurfaceFlinger; FBM/OMX/audio/vendor are preserved. **OFFLINE CHECKED / PHYSICAL
+VALIDATION PENDING**; P3-A stays **PHYSICAL FAIL**. Current image size1,641,834,496 bytes, SHA256
+`9A23D1457E8B25BBAEBFB70F2095C5300F90B3A517C0768A808AB1B2174FA6E4`.
+Evidence, exact guard, audit and bounded test contract:
+`docs/m8/device-tests/20260905-a16-p3a-compat1b-r1-build/README.md`.
+Prior FBM record: `docs/m8/device-tests/20260905-a16-p3a-fbm-r1-build/README.md`. Earlier reports:
 `docs/m8/device-tests/20260904-a16-p3a-omx-r1-build/README.md` and
 `docs/m8/device-tests/20260905-a16-p3a-rca2-compat1b-forensics/README.md`. P3-B Main10 remains
 unauthorized.
