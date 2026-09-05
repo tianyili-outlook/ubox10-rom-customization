@@ -132,8 +132,12 @@ medialibrary preparse在Executing→Idle销毁时另触发RC-A2：internal FBM�
 分配4 KiB，而HEVC写入23,480-byte extended metadata，导致首次free时Scudo abort。正式播放另捕获精确
 4K buffer `9891309682708` / backing store `2229088026704`：3840x2160 YV12、19,489,120-byte
 auto-AFBC-big private allocation，绕过compat1a后在Mali以同类crop metadata ABI mismatch失败。
-RC-A2为`READY_FOR_NARROW_BINARY_PATCH`，compat1b为`READY_FOR_EXACT_COMPAT1B_IMPLEMENTATION`；两者均
-尚未实施，下一候选只应修RC-A2。完整证据与设计见
+RC-A2的`READY_FOR_NARROW_BINARY_PATCH`证据现已落实为`a16-dev-p3a-fbm-r1`：仅将internal FBM
+metadata allocation `0x1000`改为`0x6000`，离线构建/审计通过，**PHYSICAL VALIDATION PENDING**。
+compat1b仍为`READY_FOR_EXACT_COMPAT1B_IMPLEMENTATION`且未实施。候选和后续有界测试合同见
+`docs/m8/device-tests/20260905-a16-p3a-fbm-r1-build/README.md`。未来必须先BootGate并review，再进行VLC/
+media preparation；fixture进入VLC前启动live capture，单独保存preparse teardown，正式播放前完成
+onboarding/scan。RC-B仍可能使SF/framework重启，不得因此宣称4K成功。本任务没有执行设备测试。完整取证见
 `docs/m8/device-tests/20260905-a16-p3a-rca2-compat1b-forensics/README.md`。Main10继续NOT AUTHORIZED。
 
 Retained H616 DT/kernel证明4路THS和CPU/GPU cooling；本次实机Discovery已证明normal-shell可读并取得

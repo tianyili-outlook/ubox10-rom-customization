@@ -50,6 +50,7 @@ The architecture pass itself is not downgraded.
 | Post-Gate3 P2 one-shot boot/runtime audit | **PHYSICAL CAPTURE ANALYZED / NO NEW P1 BLOCKER / NO CRITICAL RESTART / ACTIVE DEBT RECORDED** |
 | P3-0 / P3-A thermal + HEVC 4K30 | **P3-0 PREPARED; P3-A PHYSICAL FAIL / FORENSICS COMPLETE; P3-B MAIN10 NOT AUTHORIZED** |
 | P3-A RC-A candidate `a16-dev-p3a-omx-r1` | **PHYSICAL TESTED / ORIGINAL RC-A EFFECTIVE / P3-A FAIL AT NEW RC-A2 + RC-B / DEVELOPMENT ONLY / NOT r8 / NOT RELEASE** |
+| P3-A RC-A2 candidate `a16-dev-p3a-fbm-r1` | **OFFLINE CHECKED / FBM METADATA CAPACITY PATCH BUILT / PHYSICAL VALIDATION PENDING / DEVELOPMENT ONLY / NOT r8 / NOT RELEASE** |
 
 Gate 3 is now **CLOSED / `PASS_WITH_EXPLICIT_USER_WAIVER`**. Its only waiver is POWER
 current-session revalidation; no required item is silently marked PASS and no other Gate 3 blocker
@@ -140,9 +141,14 @@ reveals two distinct next boundaries: preparse teardown's internal FBM allocates
 first free (RC-A2); formal playback delivers exact buffer `9891309682708` / backing store
 `2229088026704`, whose 3840x2160 YV12 auto-AFBC-big private contract bypasses compat1a and reaches the
 same Mali crop-metadata ABI collision class (RC-B, very high confidence). RC-A2 is
-**READY_FOR_NARROW_BINARY_PATCH**; compat1b is **READY_FOR_EXACT_COMPAT1B_IMPLEMENTATION**, but neither
-is implemented here. P3-A remains **PHYSICAL FAIL** and the recommended next candidate is RC-A2-only
-for causal isolation. Reports:
+**READY_FOR_NARROW_BINARY_PATCH** on the accepted forensic evidence. `a16-dev-p3a-fbm-r1` now
+implements only the internal FBM capacity correction (`0x1000` -> `0x6000`), changing two bytes in
+`/vendor/lib/libfbm.so` relative to exact OMX-r1. RC-A2 is **PATCH IMPLEMENTED OFFLINE / CANDIDATE
+BUILT / PHYSICAL VALIDATION PENDING**. compat1b stays **READY_FOR_EXACT_COMPAT1B_IMPLEMENTATION**
+and unchanged. P3-A remains **PHYSICAL FAIL**. Image size is 1,641,830,400 bytes, SHA256
+`092DD3960136A086C7F9E60065A6C88D3984B0ACCA9FB7E57247D48370904535`; the exact artifact, completed
+offline audit and future bounded test contract are in
+`docs/m8/device-tests/20260905-a16-p3a-fbm-r1-build/README.md`. Earlier reports:
 `docs/m8/device-tests/20260904-a16-p3a-omx-r1-build/README.md` and
 `docs/m8/device-tests/20260905-a16-p3a-rca2-compat1b-forensics/README.md`. P3-B Main10 remains
 unauthorized.

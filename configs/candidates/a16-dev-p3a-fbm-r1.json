@@ -1,0 +1,158 @@
+{
+  "schema": 1,
+  "id": "a16-dev-p3a-fbm-r1",
+  "label": "P3-A RC-A2 REPAIR CANDIDATE / DEVELOPMENT ONLY / NOT r8 / NOT RELEASE",
+  "status": "OFFLINE_CHECKED_READY_FOR_BOUNDED_PHYSICAL_VALIDATION",
+  "artifact": {
+    "path": "out/candidates/a16-dev-p3a-fbm-r1/x12-a16-dev-p3a-fbm-r1.img",
+    "size": 1641830400,
+    "sha256": "092DD3960136A086C7F9E60065A6C88D3984B0ACCA9FB7E57247D48370904535"
+  },
+  "base_candidate": {
+    "path": "out/candidates/a16-dev-p3a-omx-r1/x12-a16-dev-p3a-omx-r1.img",
+    "sha256": "B970A69C7670C4AE6DFFA3E06EA2317FAA7585B29EE5FA9F7D4740377A17C4A6",
+    "size": 1641830400
+  },
+  "base_artifacts": {
+    "system_a": {
+      "path": "out/candidates/a16-dev-p3a-omx-r1/system_a.img",
+      "size": 1651167232,
+      "sha256": "0E7B2747C135F59307728ABA9F6F57C2741002BECFE5F23CB600AFDB1640F5D5"
+    },
+    "vendor_a": {
+      "path": "out/candidates/a16-dev-p3a-omx-r1/vendor_a.img",
+      "size": 150994944,
+      "sha256": "BF97FE60CEB3EE19C9E757281E127968F80080D1FAE483D8338421428BE58E0E"
+    },
+    "super_raw": {
+      "path": "out/candidates/a16-dev-p3a-omx-r1/super.raw.img",
+      "size": 3221225472,
+      "sha256": "138E8FF2F683E838138B1B1B0AE75D0067118D63B5F18A12D88CBBD2526AAC15"
+    },
+    "product_a": {
+      "path": "out/candidates/a16-dev-p3a-omx-r1/candidate-logical/product_a.img",
+      "size": 272629760,
+      "sha256": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974"
+    },
+    "vendor_dlkm": {
+      "path": "out/candidates/a16-dev-p3a-omx-r1/vendor_dlkm_a.img",
+      "size": 6680576,
+      "sha256": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07"
+    },
+    "boot": {
+      "path": "out/candidates/a16-dev-p3a-omx-r1/boot.fex",
+      "size": 67108864,
+      "sha256": "527CF878B015CFAE4E8600BD750C7C73F45F4290B5CFEFEDBD1AD9AC347B8063"
+    }
+  },
+  "repair_readiness": {
+    "report": "docs/m8/device-tests/20260905-a16-p3a-rca2-compat1b-forensics/README.md",
+    "classification": "READY_FOR_NARROW_BINARY_PATCH",
+    "approved_semantics": "INTERNAL_FBM_METADATA_CAPACITY_0X1000_TO_0X6000_OWNERSHIP_UNCHANGED"
+  },
+  "patcher": {
+    "path": "scripts/patch-a16-p3a-fbm-r1.py",
+    "sha256": "3B4546454F5B820D4FB974A29F192346EF2831B33C70ECB6E1D8EA6D3F49D287"
+  },
+  "runtime_change": {
+    "partition_path": "/vendor/lib/libfbm.so",
+    "internal_path": "/lib/libfbm.so",
+    "reason": "Increase internal FBM pMetaData capacity from 4096 to 24576 bytes for the 23480-byte producer ABI; preserve allocate/use/free ownership",
+    "baseline": {
+      "size": 20980,
+      "sha256": "E8977F921254556F6E97525487C34F0D196C0735CD00CD11FB6C1430FA8B81DA",
+      "build_id": "dcbeaa9e1d25cc5ff2a33c5d314894c2"
+    },
+    "candidate": {
+      "size": 20980,
+      "sha256": "786264793BB16083CD62BC3BC0B6A2AE4673DBC75504A79EAC189DB943840E9F",
+      "build_id_note_retained": "dcbeaa9e1d25cc5ff2a33c5d314894c2"
+    },
+    "elf_class": "ELF32",
+    "machine": "ARM",
+    "file_offset": 10548,
+    "virtual_address": 14644,
+    "original_bytes": "4f f4 80 50",
+    "patched_bytes": "4f f4 c0 40",
+    "original_instruction": "mov.w r0, #0x1000",
+    "patched_instruction": "mov.w r0, #0x6000",
+    "changed_byte_offsets": [
+      10550,
+      10551
+    ],
+    "changed_byte_count": 2,
+    "instruction_width": 4,
+    "mode": "0644",
+    "uid": 0,
+    "gid": 0,
+    "ctime": "0x652f7ab5",
+    "atime": "0x652f7ab5",
+    "mtime": "0x652f7ab5",
+    "crtime": "0x65379527",
+    "selinux": "u:object_r:vendor_file:s0"
+  },
+  "preserved_runtime": {
+    "surfaceflinger": {
+      "path": "/system/bin/surfaceflinger",
+      "candidate_file": "preserved-surfaceflinger",
+      "size": 8577592,
+      "sha256": "06C960E672863AD557AF921565621997CB9B113BA2290049AF91028A405CD0A5"
+    },
+    "audio_impl32": {
+      "path": "/vendor/lib/hw/android.hardware.audio@7.0-impl.so",
+      "candidate_file": "preserved-audio_impl32",
+      "size": 170476,
+      "sha256": "E2F3D49D757AA4132180C3D247857FC9725D7113E92A079E10181AADBCC062ED"
+    },
+    "libstagefright64": {
+      "path": "/system/lib64/libstagefright.so",
+      "candidate_file": "preserved-libstagefright64",
+      "size": 2079968,
+      "sha256": "3FDE0D408ED26CE76C7CAE2DB3DD41E38B1783B982CFAB251518D778C39F13CF"
+    },
+    "gralloc32": {
+      "path": "/vendor/lib/hw/gralloc.apollo.so",
+      "candidate_file": "preserved-gralloc32",
+      "size": 64852,
+      "sha256": "7E654E0F9D968C5FA9C9F31893E0E60DCF6605E41A82783E6376A1D7D66194D5"
+    },
+    "gralloc64": {
+      "path": "/vendor/lib64/hw/gralloc.apollo.so",
+      "candidate_file": "preserved-gralloc64",
+      "size": 93664,
+      "sha256": "1F91BF6FA547DA11E42068C1A0C612E41B5C800AEE9CDAB2D320DD469295CB19"
+    },
+    "omx_r1": {
+      "path": "/vendor/lib/libOmxVdec.so",
+      "candidate_file": "libOmxVdec.p3a-omx-r1.so",
+      "size": 83780,
+      "sha256": "5FE74A28EB9E083959FDAC9CFDE870FAA2AF4447DADB7776C1E7F4CFC6D1EE8B"
+    }
+  },
+  "outer_delta": {
+    "changed_payloads_from_base": [
+      "Vsuper.fex",
+      "Vvbmeta_vendor.fex",
+      "super.fex",
+      "vbmeta_vendor.fex"
+    ]
+  },
+  "governance": {
+    "canonical_r7": "PASS_FROZEN_UNCHANGED",
+    "gate3": "PASS_WITH_EXPLICIT_USER_WAIVER_CLOSED",
+    "compat1a": "PHYSICAL_PASS_AUTHORIZED_SDR_1080P_YV12_UNCHANGED",
+    "audio_p1": "CLOSED",
+    "p2": "COMPLETE",
+    "p3a": "PHYSICAL_FAIL_FORENSICS_COMPLETE",
+    "rc_a": "ORIGINAL_DRAIN_NULL_PHYSICAL_REPAIR_EFFECTIVE",
+    "rc_a2": "PATCH_IMPLEMENTED_OFFLINE_CANDIDATE_BUILT_PHYSICAL_VALIDATION_PENDING",
+    "rc_b": "PHYSICAL_FAIL_EXACT_4K_CONTRACT_CAPTURED_COMPAT1B_IMPLEMENTATION_READY",
+    "p3b_main10": "NOT_AUTHORIZED",
+    "hdr_afbc_protected": "NOT_AUTHORIZED",
+    "full_vintf": "EXIT_65_INHERITED_CONFIG_NFS_FS_NOT_PASS",
+    "r8_authorized": false,
+    "r8_built": false,
+    "release": false,
+    "physical_validation_required": true
+  }
+}
