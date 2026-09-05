@@ -1,6 +1,6 @@
 ---
 name: ubox-fast-track
-description: Fast-track UBOX10 M8 Android TV ROM work: diagnosis, build/repack, offline validation, flash preparation, authorized device testing, and failure analysis. Use when practical progress, recoverability, and TV usability matter more than exhaustive process or documentation.
+description: Fast-track UBOX10 M8 Android TV ROM work, diagnosis, build/repack, offline validation, flash preparation, authorized device testing, and failure analysis. Use when practical progress, recoverability, and TV usability matter more than exhaustive process or documentation.
 ---
 
 # UBOX10 fast track
