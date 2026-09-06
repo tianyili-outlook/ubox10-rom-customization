@@ -100,9 +100,9 @@ def test_governance_prior_fixes_and_one_runtime_scope():
     assert cfg["runtime_change"]["partition_path"] == "/system/bin/surfaceflinger"
     gov = cfg["governance"]
     assert gov["rc_a2"] == "PHYSICAL_PASS_CLOSED"
-    assert gov["rc_b"] == "COMPAT1B_IMPLEMENTED_OFFLINE_CANDIDATE_BUILT_PHYSICAL_VALIDATION_PENDING"
+    assert gov["rc_b"] == "COMPAT1B_PHYSICAL_PASS_BOUNDED_MAIN8_SDR_4K30_SURFACE"
     assert gov["audio_p1"] == "CLOSED" and gov["p2"] == "COMPLETE"
-    assert gov["p3a"] == "PHYSICAL_FAIL_FORENSICS_COMPLETE"
+    assert gov["p3a"] == "PHYSICAL_PASS_BOUNDED_MAIN8_SDR_4K30_SURFACE_ONLY"
     assert gov["p3b_main10"] == "NOT_AUTHORIZED"
     assert not gov["r8_authorized"] and not gov["r8_built"] and not gov["release"]
     for name, sha in {

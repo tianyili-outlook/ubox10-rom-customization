@@ -1,6 +1,6 @@
 # M8 status
 
-Updated: 2026-09-05
+Updated: 2026-09-06
 
 ## Android 16 architecture ceiling
 
@@ -48,10 +48,10 @@ The architecture pass itself is not downgraded.
 | Sized-shadow-fd experiment `a16-prototype-b-r7-hevc-abi-compat1a-sdr-shadow-fd` | **PHYSICAL PASS — AUTHORIZED SDR 1080P YV12 ONLY / EXPERIMENTAL REPAIR / NOT r8 / NOT RELEASE** |
 | Post-Gate3 audio compatibility candidate `a16-dev-audio-r1` | **PHYSICAL VALIDATION PASS / P1 ARM32 AUDIO STARTUP CRASH CLOSED / DEVELOPMENT AUDIO COMPATIBILITY CANDIDATE / NOT r8 / NOT RELEASE** |
 | Post-Gate3 P2 one-shot boot/runtime audit | **PHYSICAL CAPTURE ANALYZED / NO NEW P1 BLOCKER / NO CRITICAL RESTART / ACTIVE DEBT RECORDED** |
-| P3-0 / P3-A thermal + HEVC 4K30 | **P3-0 PREPARED; P3-A PHYSICAL FAIL / FORENSICS COMPLETE; P3-B MAIN10 NOT AUTHORIZED** |
+| P3-0 / P3-A thermal + HEVC 4K30 | **P3-A BOUNDED MAIN8 SDR 4K30 SURFACE PLAYBACK PASS; NON-SURFACE THUMBNAIL FAIL; P3-B MAIN10 NOT AUTHORIZED** |
 | P3-A RC-A candidate `a16-dev-p3a-omx-r1` | **PHYSICAL TESTED / ORIGINAL RC-A EFFECTIVE / P3-A FAIL AT NEW RC-A2 + RC-B / DEVELOPMENT ONLY / NOT r8 / NOT RELEASE** |
 | P3-A RC-A2 candidate `a16-dev-p3a-fbm-r1` | **PHYSICAL TESTED / RC-A2 PHYSICAL PASS / CLOSED / RC-B STILL FAILS / DEVELOPMENT ONLY / NOT r8 / NOT RELEASE** |
-| P3-A RC-B candidate `a16-dev-p3a-compat1b-r1` | **OFFLINE CHECKED / EXACT 4K METADATA SHADOW BUILT / PHYSICAL VALIDATION PENDING / DEVELOPMENT ONLY / NOT r8 / NOT RELEASE** |
+| P3-A RC-B candidate `a16-dev-p3a-compat1b-r1` | **RC-B PHYSICAL PASS / SEPARATE 4K THUMBNAIL DEFECT / DEVELOPMENT ONLY / NOT r8 / NOT RELEASE** |
 
 Gate 3 is now **CLOSED / `PASS_WITH_EXPLICIT_USER_WAIVER`**. Its only waiver is POWER
 current-session revalidation; no required item is silently marked PASS and no other Gate 3 blocker
@@ -150,8 +150,15 @@ media.codec PID592: **RC-A2 PHYSICAL PASS / CLOSED**. Formal playback reproduces
 on buffer `10226317131793` / backing store `2207613190241`; PID592 survives the graphics restart.
 `a16-dev-p3a-compat1b-r1` implements only the exact 3840x2160 SDR YV12 replacement-buffer predicate,
 reusing the existing 24 KiB shadow and 56-byte attr translation. Its only semantic delta from
-FBM-r1 is SurfaceFlinger; FBM/OMX/audio/vendor are preserved. **OFFLINE CHECKED / PHYSICAL
-VALIDATION PENDING**; P3-A stays **PHYSICAL FAIL**. Current image size1,641,834,496 bytes, SHA256
+FBM-r1 is SurfaceFlinger; FBM/OMX/audio/vendor are preserved. September6 evidence now establishes
+**RC-B PHYSICAL PASS / BOUNDED MAIN8 SDR 4K30 SURFACE PLAYBACK PASS**: full-frame smooth picture
+for >10 seconds/audio,14 successful shadow imports, boot/SF538/codec594 continuous. The separate
+fresh4K thumbnail remains corrupted through legacy OMX0x13/CPU copy;1080 CCodec control passes.
+Archive SHA `ffa5fa0a9a17c1ee265f95a203f1e29f6f77a04fb72dcafa8e8db6f7d0746154`,9/9 manifest PASS.
+Strongest cause: unconditional big-frame AFBC selection supplies compressed storage to linear-only
+YV12→I420 memcpy. Exact conditional preparation patch remains **NEEDS_MORE_EVIDENCE**; inspect
+omitted source AFBC/final OMX layout before implementation, not Skia/UV swapping. RC-A2/audio stay
+CLOSED; P2 COMPLETE; no sustained-load or broader-format PASS. Current image size1,641,834,496 bytes, SHA256
 `9A23D1457E8B25BBAEBFB70F2095C5300F90B3A517C0768A808AB1B2174FA6E4`.
 Evidence, exact guard, audit and bounded test contract:
 `docs/m8/device-tests/20260905-a16-p3a-compat1b-r1-build/README.md`.

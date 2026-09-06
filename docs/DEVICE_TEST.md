@@ -122,7 +122,11 @@ P2 不强制 AVC/HEVC/VP9、HDMI disconnect/reconnect、Wi-Fi OFF→ON、remote 
 
 ## P3-0 — thermal observability / HEVC 4K30 preparation
 
-状态：**P3-0 RESEARCH / TOOLING PREPARED；P3-A PHYSICAL FAIL / FORENSICS COMPLETE；P3-B MAIN10 NOT AUTHORIZED**。
+当前状态：**P3-A BOUNDED MAIN8 SDR 4K30 SURFACE PLAYBACK PASS；独立4K THUMBNAIL FAIL；P3-B MAIN10 NOT AUTHORIZED**。
+September6 core evidence9/9哈希通过，14个compat1b shadow/import/texture成功，SF538和codec594
+保持，用户确认完整流畅>10秒并有音频；不是持续负载qualification。详细thumbnail根因、未知点及
+下一步见当前候选记录的`Thumbnail forensics — 2026-09-06`。以下RC-A/RC-A2/RC-B失败和测试计划
+为历史推进记录，不撤销当前Surface播放PASS，也不授权新一轮设备操作。
 完整source audit、dynamic read-only thermal observer、fixture contract、分层验收/失败分类和人工abort
 边界见 `docs/m8/device-tests/20260903-a16-p3-thermal-4k30-plan/README.md`。
 
@@ -136,7 +140,7 @@ RC-A2的`READY_FOR_NARROW_BINARY_PATCH`证据现已落实为`a16-dev-p3a-fbm-r1`
 metadata allocation `0x1000`改为`0x6000`。新证据12/12哈希通过，4K preparse/Transform/teardown正常完成，
 同boot和media.codec PID592连续；**RC-A2 PHYSICAL PASS / CLOSED**。正式播放仍在RC-B失败，PID592存活。
 `a16-dev-p3a-compat1b-r1`现已仅实施精确4K replacement-buffer的metadata shadow分支，
-**OFFLINE CHECKED / PHYSICAL VALIDATION PENDING**，不是P3-A PASS。
+构建时为**OFFLINE CHECKED / PHYSICAL VALIDATION PENDING**；现已按上述有界Surface scope物理通过。
 候选和后续有界测试合同见`docs/m8/device-tests/20260905-a16-p3a-compat1b-r1-build/README.md`；
 FBM原记录保留在`docs/m8/device-tests/20260905-a16-p3a-fbm-r1-build/README.md`。
 未来必须先BootGate并review，再进行VLC/
@@ -144,7 +148,7 @@ media preparation；fixture进入VLC前启动live capture，单独保存preparse
 onboarding/scan，再开始正式AVCPre与AVC control并review，之后仅一次Main8 SDR 4K30手动播放。
 捕获同buffer ID的`UBOX_P3_COMPAT1B eligible=1`、既有COMPAT1 shadow/translation/CLONE/import和
 DIAG1 EGL/BackendTexture状态；thermal sampling必须覆盖播放窗口。任何失败立即stop/review，禁止自动重试。
-RC-B翻译后仍可能出现另一4K限制，不得预先宣称成功。本任务没有执行设备测试。完整取证见
+构建时没有预先宣称成功；当前物理结果见本节开头。后续thumbnail调查不重开RC-B。完整历史取证见
 `docs/m8/device-tests/20260905-a16-p3a-rca2-compat1b-forensics/README.md`。Main10继续NOT AUTHORIZED。
 
 Retained H616 DT/kernel证明4路THS和CPU/GPU cooling；本次实机Discovery已证明normal-shell可读并取得

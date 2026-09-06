@@ -2,7 +2,7 @@
   "schema": 1,
   "id": "a16-dev-p3a-compat1b-r1",
   "label": "P3-A RC-B COMPAT1B CANDIDATE / DEVELOPMENT ONLY / NOT r8 / NOT RELEASE",
-  "status": "OFFLINE_CHECKED_READY_FOR_BOUNDED_PHYSICAL_VALIDATION",
+  "status": "PHYSICAL_PASS_BOUNDED_MAIN8_SDR_4K30_SURFACE_THUMBNAIL_FAIL",
   "base_candidate": {
     "path": "out/candidates/a16-dev-p3a-fbm-r1/x12-a16-dev-p3a-fbm-r1.img",
     "size": 1641830400,
@@ -145,17 +145,36 @@
     "compat1a": "PHYSICAL_PASS_AUTHORIZED_SDR_1080P_YV12_BEHAVIOR_PRESERVED",
     "audio_p1": "CLOSED",
     "p2": "COMPLETE",
-    "p3a": "PHYSICAL_FAIL_FORENSICS_COMPLETE",
+    "p3a": "PHYSICAL_PASS_BOUNDED_MAIN8_SDR_4K30_SURFACE_ONLY",
     "rc_a": "ORIGINAL_DRAIN_NULL_PHYSICAL_REPAIR_EFFECTIVE",
     "rc_a2": "PHYSICAL_PASS_CLOSED",
-    "rc_b": "COMPAT1B_IMPLEMENTED_OFFLINE_CANDIDATE_BUILT_PHYSICAL_VALIDATION_PENDING",
+    "rc_b": "COMPAT1B_PHYSICAL_PASS_BOUNDED_MAIN8_SDR_4K30_SURFACE",
     "p3b_main10": "NOT_AUTHORIZED",
     "hdr_afbc_protected": "NOT_AUTHORIZED",
     "full_vintf": "EXIT_65_INHERITED_CONFIG_NFS_FS_NOT_PASS",
     "r8_authorized": false,
     "r8_built": false,
     "release": false,
-    "physical_validation_required": true
+    "physical_validation_required": false
+  },
+  "thumbnail_forensics": {
+    "status": "PHYSICAL_FAIL_HIGH_CONFIDENCE_STORAGE_CONTRACT_MISMATCH",
+    "runtime_fix_applied": false,
+    "evidence": {
+      "archive": "/work/physical-evidence/ubox10/a16-p3a-compat1b-r1/thumbnail-forensics/UBOX10-A16-P3A-COMPAT1B-R1-THUMBNAIL-FORENSIC-CORE.zip",
+      "sha256": "ffa5fa0a9a17c1ee265f95a203f1e29f6f77a04fb72dcafa8e8db6f7d0746154",
+      "manifest_entries": 9,
+      "manifest_pass": 9,
+      "manifest_fail": 0,
+      "boot_id": "d951d73a-57cf-43b0-a792-13ce37f8943b",
+      "surfaceflinger_pid": 538,
+      "media_codec_pid": 594,
+      "limitation": "Filtered logs plus screenshot/operator report; no raw pixel output, final 4K MediaImage2 or full crash-buffer artifact."
+    },
+    "surface_playback": "PHYSICAL_PASS_MAIN8_SDR_3840x2160p30_OVER_10_SECONDS_NOT_SUSTAINED_QUALIFICATION",
+    "thumbnail_1080p": "PHYSICAL_PASS_CCODEC_FRAMEDECODER_LINEAR_YV12",
+    "thumbnail_4k": "PHYSICAL_FAIL_LEGACY_OMX_NON_SURFACE_COPY",
+    "report": "docs/m8/device-tests/20260905-a16-p3a-compat1b-r1-build/README.md#thumbnail-forensics--2026-09-06"
   },
   "physical_evidence": {
     "archive": "/work/physical-evidence/ubox10/a16-p3a-fbm-r1/UBOX10-A16-P3A-FBM-R1-RCA2-PASS-RCB-FAIL.zip",

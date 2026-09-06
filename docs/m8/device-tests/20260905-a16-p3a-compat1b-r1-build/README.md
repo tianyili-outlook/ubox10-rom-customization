@@ -2,9 +2,9 @@
 
 P3-A RC-B COMPAT1B CANDIDATE / DEVELOPMENT ONLY / NOT r8 / NOT RELEASE.
 
-Status: **OFFLINE CHECKED / CANDIDATE BUILT / PHYSICAL VALIDATION PENDING**.
-Physical validation has **not** been executed for this candidate.
-P3-A remains **PHYSICAL FAIL**. RC-A remains **PHYSICAL REPAIR EFFECTIVE**;
+Physical validation status (September 6): **PHYSICAL PASS — BOUNDED MAIN8 SDR 4K30 SURFACE PLAYBACK**.
+RC-B / compat1b is **PHYSICAL PASS**; separate **4K non-surface thumbnail PHYSICAL FAIL**.
+This does not qualify sustained load, every 4K file, Main10 or HDR. RC-A remains **PHYSICAL REPAIR EFFECTIVE**;
 RC-A2 is now **PHYSICAL PASS / CLOSED** on the independently checked FBM-r1 evidence below.
 Audio P1 remains CLOSED; P2 COMPLETE; canonical r7 PASS / FROZEN / UNCHANGED;
 Gate 3 PASS_WITH_EXPLICIT_USER_WAIVER / CLOSED. r8 NOT AUTHORIZED / NOT BUILT.
@@ -190,7 +190,7 @@ checks pass). Candidate checker PASS; candidate SHA256SUMS **40/40 PASS**; compi
 all103 tracked/new JSON documents and `git diff --check` PASS. No device/ADB/flash/playback action
 was performed, and the VM remains running.
 
-## First physical test — prepare only, no device action in this task
+## Original build-time physical contract (historical; subsequent result below)
 
 After separate flash authorization: flash exact image → normal boot → **BootGate FIRST → REVIEW
 BOOTGATE**. Stop on failure. Only then install/verify VLC, create the media directory, transfer and
@@ -215,6 +215,207 @@ same boot and critical service PIDs, no new tombstone/crash, no EGL_BAD_ALLOC/SF
 review either result; if explicitly stable, return/back and one AVC regression. No Main10, HDR,
 HLG, other AFBC contracts, protected/DRM, 4K stress or other resolutions.
 
-Remaining uncertainty: the same metadata collision is very-high-confidence, not prior physical
+Build-time uncertainty: the same metadata collision was very-high-confidence, not prior physical
 proof of 4K translation. A further pixel-storage/Mali/HWC limitation may appear after removing
 the crop collision. Preserve the first failing boundary; do not widen this predicate automatically.
+
+## Thumbnail forensics — 2026-09-06
+
+Research baseline: `ca6fd9dc37630dec2d0a71162eface046053446d`, local/tracking/GitHub equal,
+clean `codex/m8-a16-development`. It includes compat1b commit `f508b5a` and the two subsequent
+skill edits. The updated fast-track guidance keeps this result in the current candidate record;
+no new report hierarchy, candidate, runtime patch or device action is created.
+
+### Evidence and distinct physical results
+
+Archive outside Git:
+`/work/physical-evidence/ubox10/a16-p3a-compat1b-r1/thumbnail-forensics/UBOX10-A16-P3A-COMPAT1B-R1-THUMBNAIL-FORENSIC-CORE.zip`.
+SHA256 **`ffa5fa0a9a17c1ee265f95a203f1e29f6f77a04fb72dcafa8e8db6f7d0746154`** matches the
+adjacent checksum. Extraction `/work/tmp/ubox-thumbnail-HK5Vk7`; original `SHA256SUMS.txt`
+**9/9 PASS, 0 FAIL**, including `vlc-swthumb2.png`. Originals remain untouched.
+The key files are filtered transcripts retaining original Windows filenames/line numbers, not
+complete live logs. Empty crash buffer is an operator-reported result; no independent full crash
+artifact is included. Do not turn absence in a filtered file into an exhaustive crash census.
+
+| Event / September 6 UTC | Decisive evidence |
+|---|---|
+| Installed identity | `bootgate-runtime-sha256.txt`: exact FBM/OMX/SF/audio SHA values above |
+| Formal playback baseline 02:32:40 | boot `d951d73a-57cf-43b0-a792-13ce37f8943b`; SF538, codec594, audio531/HIDL505, system_server782, zygotes493/494 |
+| First successful import 02:32:54.776–.778 | `4k-compat1b-key-signatures.txt`, original lines22901–22934: buffer10075993276433/backing2211908157522; eligible1, sealed24576 shadow, translated56(src23544,dst128), original read-only, CLONE, EGL success |
+| Repeated imports | 14 distinct buffer IDs10075993276433..446 each carry compat1b activation, translation/import success and valid backend texture |
+| Post 02:33:28 | exact boot and critical PID/PPID/name set unchanged; operator full-frame, smooth >10 seconds, audio, no recovery; crash buffer reported empty |
+| Fresh thumbnail 02:56:12.009–.249 | `vlc-swthumb2-key.txt`, original4161..4608: newly discovered swthumb2 identity; VLC preparse and metadata task finish |
+| Non-surface codec 02:56:12.644–.708 | original5227..5343: OMX HEVC in codec594; ACodec in PID589 selects0x13 for flexible420, requests one output buffer; 12441600 bytes; FBM3840x2160 |
+| Pixel copy 02:56:12.811 and .994 | original5366/5372: TransformYV12ToYUV420 source3840x2176, destination/copy3840x2160; component unload13.087 |
+| Corruption | screenshot independently shows stable green/red stripes and repeated blocks; operator confirms HW preference Disabled and new file introduced after force-stop |
+| 1080 control 03:06:36.962–37.221 | `vlc-1080-thumb-control-key.txt`, original5495..5696: CCodec/FrameDecoder, ordinary YV12 1920x1080, stride1920, size3110400, private_usage0; operator thumbnail normal |
+
+This closes RC-B for the authorized short Surface playback, not the unrelated thumbnail path.
+RC-A2 stays CLOSED. The normal 1080 control is **a different codec/storage path**, not a proof that
+the same Allwinner CPU copy works at1080. The retained control filter does not name its exact C2
+component; do not invent one. Old boot/UI lines also appear in filtered files: they are not new
+thumbnail decoder events.
+
+Fixture identities from the supplied transcript (media bytes/full new ffprobe are not in this core):
+
+| Filename suffix (prefix `ubox10-hevc-main8-sdr-`) | Bytes | SHA256 |
+|---|---:|---|
+| `3840x2160p30-aac.mp4` |108484632|`9ba96f96f1e1266501e0f5c42b109ce0e76b1728d04216ad5e8624a734b80dc7`|
+| `3840x2160p30-aac-swthumb2.mp4` |108484701|`3ae8705dc4953ed5ea83d0f24a537dbb1f6858a75a35c1383fe21ccb384fca38`|
+| `1920x1080p30-thumb-control.mp4` |5118268|`14d9d975ca2f1985c5766e9011c3def4d17227fba97bdc2bbcc2213eeae55d1a`|
+
+### Android consumer contract: 0x13 is I420, not native YV12
+
+Pinned A16 `frameworks/av` revision `d1137ad4b24b686d9b00fd1b7be1b520f7b6ee2b`, under
+`/work/src/ubox10-a16-ceiling`:
+
+- `frameworks/native/headers/media_plugin/media/openmax/OMX_IVCommon.h:90,125`: 0x13 is
+  `OMX_COLOR_FormatYUV420Planar`, Y then U then V. Native YV12 instead stores Y then V then U.
+- `media/libstagefright/ACodec.cpp:3469`: flexible-format substitution is negotiation, **not** a
+  pixel conversion. `:5311` forwards OMX stride/slice-height and creates image-data.
+- `media/libstagefright/omx/OMXUtils.cpp:211–325`: default0x13 describes Y at0, U atS*H,
+  V at5*S*H/4, row incrementsS/S/2/S/2, pixel increments1. Vendor describeColorFormat may override.
+- `MediaCodec.cpp:7357`, `FrameDecoder.cpp:632,980,1025–1041`: transfer image-data with the
+  buffer; use positive slice-height and image-data/ColorConverter for CPU extraction.
+- `FrameDecoder.cpp:783–812`: C2 instead maps the actual graphic view and derives plane layout
+  and stride. `:861–880` requests flexible420 and one OMX input/output buffer for thumbnail use.
+- `media/libmediaplayerservice/StagefrightMetadataRetriever.cpp:396–436` and
+  `MediaCodecList.cpp:427,462–545`: system retriever has its own codec selection and software
+  preference, filtered by supported format/size. A returned non-null but corrupted frame need not
+  trigger another codec. VLC's playback setting does not control this observed system path.
+  The core does not preserve the exact reason 4K chose OMX rather than C2; no codec whitelist or
+  property change is justified from that omission.
+
+### Exact vendor copy contract and 2176 padding
+
+Exact candidate `/vendor/lib/libOmxVdec.so`: ELF32 ARM,83780 bytes,
+SHA `5fe74a28eb9e083959fdac9cfde870faa2af4447dadb7776c1e7f4cfc6d1ee8b`, retained
+Build ID `2042d7e0112320dc855cccee324af569`. Reverified candidate `preserved-omx_r1` against the
+analyzed copy `/work/tmp/p3a-rca2-elf/libOmxVdec.so` and the device identity transcript.
+Addresses below are **ELF virtual addresses**, not assumed file offsets.
+
+| Exact code | Meaning |
+|---|---|
+| SetParameter0x82d2..82da | loads port width/height(+0x8c/+0x90), stores stride/slice(+0x94/+0x98) |
+| 0x82de..8318 | output size=width*height*3/2; matches physical12441600 |
+| drain0xe77a..e794 | loads output width/height and buffer pointer; source pixel enum4 + output0x13 selects planar transform |
+| 0xe7a6..e7ea | picture width/height(+0xc/+0x10), crop(+0x18..24); round source dimensions up16; pData0 from+0x50 |
+| 0xe822..e832 | memcpy copyWidth bytes per Y row; source increments aligned sourceWidth, destination outputWidth |
+| 0xe834..e860, e87e..e88e | source U=pData0+5*sourceWidth*sourceHeight/4; half strides; ceil(copyHeight/2) rows |
+| 0xe890..e8aa | source V=pData0+sourceWidth*sourceHeight; same chroma strides; appended after U |
+| 0xe976..e99a | timestamp, nOffset0, nFilledLen=outputWidth*outputHeight*3/2; existing lifecycle unchanged |
+
+All three copy calls resolve to `__aeabi_memcpy` at0x13538. There is **no decompression**,
+detiling, or AFBC flag check in the selected transform. It does not use pData1/pData2 to discover
+planes. Source-correlated function:
+`libcedarc-calvin/openmax/vdec/src/omx_vdec_aw_decoder_android.cpp:1284–1370,1536–1605`,
+repo `https://github.com/CalvinXu17/libcedarc`, commit `e68d4a727085d02d4622d85b5234304349d4e448`.
+This is **OLDER RELATED SOURCE / matching transform arithmetic**, not an exact complete wrapper.
+Its `omx_vdec.c:1498–1505` matches the exact output stride/size stores above.
+
+| Plane | Assumed linear source YV12 (3840x2176) | Written destination I420 (3840x2160) |
+|---|---|---|
+| Y |offset0, stride3840, copy2160 rows|offset0, stride3840,8294400 bytes|
+| U |offset10444800, stride1920, copy1080 rows|offset8294400, stride1920,2073600 bytes|
+| V |offset8355840, stride1920, copy1080 rows|offset10368000, stride1920,2073600 bytes|
+| Span |padded12533760 bytes|compact12441600 bytes|
+
+These calculations are internally correct **if the source actually is linear YV12**. Padded Y
+has16 unused rows; each chroma plane8. Tests use different Y/U/V/padding sentinels and reproduce
+the exact compact output without swapping chroma or copying padding. Even the intermediate5*Y
+is only41779200: no ARM32 overflow. This is **not a proven U/V swap** and2176 alone is not a bug.
+If Android instead received slice2176 for compact2160, chroma offsets would be displaced61440/
+76800 bytes; final physical 4K MediaImage2/stride/slice is absent, so this remains a lesser hypothesis.
+
+### Strongest failure boundary and hypotheses
+
+The leading defect is **compressed internal HEVC storage fed to a linear-only CPU output copy**,
+not the repaired SurfaceFlinger sidecar translation. Exact wrapper `__anPrepare`0xd05a adjusts
+r5=ctx+8;0xd05e loads1;0xd068 stores it atctx+0xc8 (`VConfig+0x84`, eCtlAfbcMode).
+The store is unconditional with respect to native/zero-copy selection. Related source `:2752–2754`
+names that mode `ENABLE_AFBC_JUST_BIG_SIZE`. In exact `libawh265.so::HevcSetNewRef`,
+0x193ea reads config+0x84; mode1 uses width>=3840 **OR** height>=2160 at0x19436/19440;
+0x19446/19448 sets the FBM AFBC flag. Mode0 has an explicit disable branch. Hardware-generation
+gating precedes this selection; earlier exact-device 4K preparse evidence already records AFBC
+selection/internal FBM allocations, so this is not inferred only from a sales SoC label.
+
+Related Tina FBM source `libcedarc/vdecoder/fbm/fbm.c:1589–1628` explicitly distinguishes storage:
+AFBC picture gets pData0 and nAfbcSize, not linear chroma-plane bases; linear8-bit gets
+separate pData0/1/2 plane bases.
+Repository `https://github.com/jeasonzs/tina_multimedia`, commit
+`63344eadfbab18195046678079d2f3d32d0c61cc`, **NEAR-EXACT OWNERSHIP/STORAGE MODEL**.
+The metadata allocation repair changes capacity only; it does not convert this image storage.
+Exact candidate `libfbm.so` (20980 bytes, SHA above, retained Build ID
+`dcbeaa9e1d25cc5ff2a33c5d314894c2`) confirms this split at0x378a (picture+0xbc AFBC),
+0x37aa (pData0 store),0x3806..3810 (8-bit AFBC stores nAfbcSize at+0xc4 and skips linear
+pData1/2 setup), versus0x3914..3928 (linear chroma pointers). Exact `libawh265.so` is ELF32 ARM,
+127272 bytes, SHA `cc6f2ee2d8a535548a033d1c87ecaaba3677367a4e295c96f06a42a7d8e40823`,
+Build ID `3701f119be0076252e2b5d82c48687d9`; no change to either ELF in this investigation.
+
+Reproduce disassembly offline using AOSP clang-r547379 `llvm-objdump -d
+--triple=thumbv7-linux-gnueabi --start-address=<VA> --stop-address=<VA> <exact-ELF>`.
+The OMX `.gnu_debugdata` symbol table (extract with llvm-objcopy and decompress with xz outside
+Git) identifies `__anPrepare`, `__anDrain`, and `__aeabi_memcpy`. Do not use the stripped
+objdump nearest-export label `OmxDestroyDecoder+...` as the real function identity. Executable
+PT_LOAD VA minus file offset is0x1000; all addresses in this section are VA. The tests validate
+the exact OMX SHA and three memcpy call sites as well as source-only planar-copy arithmetic.
+
+| Hypothesis | Supports | Contradicts / limitation | Confidence |
+|---|---|---|---|
+| Internal AFBC treated as linear pixels | unconditional large-frame mode; exact HEVC size selector; internal FBM storage model; memcpy-only consumer; stable block/stripe screenshot | new core omits source bEnableAfbcFlag/pData bytes; no bit-exact screenshot reconstruction | **HIGH**, strongest source/binary-backed mechanism |
+| Wrong U/V order | green/red colors are compatible with bad chroma | exact transform intentionally converts YV12 to I420 in correct order; swapping U/V does not explain repeated luma structure | LOW |
+| Padded-height/stride error |2176 differs from2160; final MediaImage2 absent|exact copy skips padded rows and writes compact planes; initial port advertises2160|LOW–MEDIUM residual |
+| Output allocation too small / arithmetic overflow |large frame|12441600 exactly fits compact I420; relevant32-bit arithmetic does not overflow|LOW |
+| Stale thumbnail cache / VLC setting |thumbnail machinery separate from playback|fresh filename/hash after force-stop still fails; hardware path recorded despite Disabled|not primary; setting independence established|
+| compat1b / original metadata / FBM heap regression |same video family|14 successful Surface imports, normal playback, prior repaired identities; CPU copy does not use Skia shadow|not supported|
+| Cache coherence / secondary output / other format |possible in proprietary stack|cache callback precedes copy0xe4ac..e4c8; no positive evidence of another conversion|NEEDS_MORE_EVIDENCE, not ruled out by log absence|
+
+Do not describe compressed bytes as decoded planar Y/U/V just because the public pixel enum is4
+(YV12) or OMX says0x13. The passed Surface path can import vendor-aware compressed storage with
+its sidecar; the CPU FrameDecoder requires actual linear pixels and never uses compat1b.
+
+### Narrow repair design and remaining evidence
+
+Design boundary: `libOmxVdec` decoder preparation, before `InitializeVideoDecoder`/FBM allocation,
+not Skia, ColorConverter, gralloc, libfbm, or a thumbnail-color shader. Preserve AFBC for every
+existing native/Surface path. Only the non-protected, non-native, non-zero-copy HEVC Main8 SDR
+path requesting0x13 should select disabled compression and retain YV12 internal output:
+
+```text
+mode = existing ENABLE_AFBC_JUST_BIG_SIZE
+if verified non_surface && !zero_copy && !secure && HEVC && Main8_SDR
+   && output_color == OMX_COLOR_FormatYUV420Planar:
+    mode = DISABLE_AFBC
+InitializeVideoDecoder(existing_config_with_that_mode)
+// same FBM ownership, RequestPicture, copy, FBD, ReturnPicture and teardown
+```
+
+No global mode1→0 replacement: that would alter physically passing Surface playback. No change
+to AFBC bits after a compressed picture exists, no UV swap, no size/crop lie, no suppression of
+metadata initialization/free. The existing0x6000 FBM metadata fix must remain.
+
+Readiness is **NEEDS_MORE_EVIDENCE for a final exact binary patch**, with a high-confidence narrow
+repair design. The provided filtered core does not directly capture the offending picture's AFBC
+flag/planes or final OMX image description. Also the safe location/representation of the Main8/SDR
+and non-surface checks in the exact prepare path must be verified before choosing machine bytes;
+an unconditional immediate patch is not approved by this report. This is not merely an unavoidable
+VLC limitation: the vendor contract has an actionable engineering boundary.
+
+Next smallest step: offline derive/prove that conditional preparation change and its exact branch
+scope; reuse any retained full `vlc-swthumb2-live.txt` around original5227–5406 to recover omitted
+AFBC/port/format lines before asking for a new run. If still ambiguous, one bounded observation of
+the same fresh Main8 file should record (without frame dumps) source pixel enum/bEnableAfbcFlag/
+nAfbcSize/nLineStride/pData-relative offsets, output0x13/stride/slice/nFilledLen/MediaImage2 and
+consumer identity. Do not build a candidate just to guess a UV/slice fix. Subsequent authorized
+repair validation must pair fresh4K thumbnail correctness with unchanged4K Surface playback and
+1080 thumbnail control; preserve file/hash/ffprobe and no-restart/teardown evidence. No Main10,
+HDR, generic AFBC, protected expansion, repeat/stress campaign or physical action in this task.
+
+Closure checks: **45 passed, 1 skipped** across thumbnail/compat1b/FBM/OMX/compat1a/audio/Gate3/P2
+regressions; skip is the existing unavailable PowerShell parser. New tests verify the9-file manifest,
+14 per-buffer successful imports, boot/PID comparison, exact ELF memcpy sites and padding/U/V model.
+Candidate checker, JSON parse, Python compileall and `git diff --check` pass. The initial regression
+found a removed documentation phrase (`physical validation`); wording was corrected and the full
+selected suite rerun successfully. No decoder execution, ADB, new image, runtime edit, evidence
+modification or VM shutdown occurred. Full VINTF inherited exit65/NOT PASS, audio P1 CLOSED,
+P2 COMPLETE, r7/Gate3 frozen and r8 NOT AUTHORIZED / NOT BUILT remain unchanged.

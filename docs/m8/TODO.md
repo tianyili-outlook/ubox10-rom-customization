@@ -4,6 +4,10 @@
 
 `m8b-remote-r1` 已冻结为 **FROZEN / DEVICE-ACCEPTED Android 12 working baseline**，作为稳定日用回退。`a16-prototype-a-r4` 已冻结为 **PHYSICAL PASS / ACCEPTED Android 16 ARM32 ARCHITECTURE CONTROL**。Exact `a16-prototype-b-r7` 现已物理证明 Android 16/API36、canonical mixed ABI、dual zygote、ARM64-parented system_server、stable ARM64 SurfaceFlinger、mapper/gralloc 与 Mali-G31 UI，故冻结为 **PHYSICAL ARCHITECTURE PASS / ACCEPTED ANDROID 16 ARM64 MIXED-ARCHITECTURE ARCHITECTURE BASELINE**。Gate 3 已按现有合同关闭为 **`PASS_WITH_EXPLICIT_USER_WAIVER`**，不是bare PASS：3A architecture、3B formal AVC/SDR HEVC/VP9+HDMI audio、3D Wi-Fi OFF→ON与3E platform sanity PASS；3C除POWER本轮复验由用户明确waive外完成。MENU input/Android mapping存在而当前UI visible behavior为NONE，不称input failure；USB/Ethernet optional且用户defer。Main10/HDR/AFBC/protected/4K仍未证明。Boot-time `getAudioPort` PC-zero SIGSEGV 曾列为 post-Gate P1；`a16-dev-audio-r1` 现已通过 BootGate、HDMI disconnect/connect、AVC/HEVC/VP9 HDMI-audio 与 final census，故该特定 **P1 CLOSED**。它不是HEVC first fatal。Gate 2 仍为 **CLOSED / PASS**。r8与architecture/provider变更仍未授权。
 
+Current development-scope update (2026-09-06): frozen baselines above are unchanged;
+compat1b now proves **bounded Main8 SDR 4K30 Surface playback**, not general4K/Main10/HDR.
+The separate4K thumbnail defect remains open; next action is below under P3-A.
+
 ## Android 16 Gate 1 / Gate 2 — Prototype A ARM32
 
 - [x] 保持 Prototype A、ARM32 产品定义、relative `OUT_DIR`、VNDK 31 与 `systemimage` 目标不变。
@@ -238,7 +242,8 @@
   `codex/m8-a16-development`现已从冻结Gate3 closure开始；P2收口不会据此自动授权r8。
 - [x] **P3-0 RESEARCH / TOOLING PREPARED：**retained H616 DT/kernel证明4路THS、CPU/GPU cooling与70/90/115°C CPU trips；实机read-only discovery进一步证明四路温度、CPUfreq、GPU devfreq与cooling state可读。结论仍是 **PARTIAL OBSERVABILITY — SHORT SMOKE ONLY**，不是under-load thermal qualification。
 - [x] **P3-A — PHYSICAL FAIL / RC-A2/RC-B FORENSICS COMPLETE：**Original RC-A从`READY_FOR_NARROW_BINARY_PATCH`进入单变量修复，现为PHYSICAL REPAIR EFFECTIVE。`a16-dev-p3a-fbm-r1`的新证据12/12哈希PASS，4K preparse/Transform/Executing→Idle/DestroyVideoDecoder/Idle→Loaded正常完成，同boot、media.codec PID592连续；**RC-A2 PHYSICAL PASS / CLOSED**。正式播放独立复现RC-B（精确4K replacement contract，Mali crop ABI rejection）。原始报告：`docs/m8/device-tests/20260905-a16-p3a-rca2-compat1b-forensics/README.md`；FBM记录：`docs/m8/device-tests/20260905-a16-p3a-fbm-r1-build/README.md`。
-- [ ] **RC-B physical validation pending：**`a16-dev-p3a-compat1b-r1`已OFFLINE CHECKED，仅SurfaceFlinger新增精确3840x2160 SDR YV12 replacement-buffer shadow分支；24 KiB复制与56-byte attr翻译复用compat1a，前三项修复不变。先BootGate/review，再VLC/media/first-launch preparation，正式AVC control/review后才进行一次有界Main8 4K30手动测试。不得将离线通过写成P3-A PASS；翻译后仍可能暴露独立4K import limit。完整合同见`docs/m8/device-tests/20260905-a16-p3a-compat1b-r1-build/README.md`。
+- [x] **RC-B physical PASS：**compat1b在14个4K buffer上完成shadow/56-byte translation/EGL/texture成功；Main8 SDR 4K30完整流畅画面>10秒并有音频，同boot/SF538/codec594，9/9新证据哈希通过。仅该有界Surface播放scope，不是持续负载或Main10/HDR资格。
+- [ ] **4K non-surface thumbnail：**新文件在VLC HW Disabled时仍走legacy OMX0x13并出现规则条带；1080 CCodec control正常。当前最强结论是内部AFBC存储被线性YV12→I420 memcpy误读，而不是compat1b或2176 padding本身。先离线证明仅non-surface copy path的compression-mode条件化，并取回已保留full log里的AFBC/最终OMX layout；精确binary patch仍NEEDS_MORE_EVIDENCE，不构建猜测候选。当前候选记录：`docs/m8/device-tests/20260905-a16-p3a-compat1b-r1-build/README.md#thumbnail-forensics--2026-09-06`。RC-A2/audio P1 CLOSED、P2 COMPLETE、r8未授权不变。
 - [ ] **P3-B — HEVC Main10 SDR 4K30：RESEARCH ONLY / NOT AUTHORIZED。**Closed decoder虽含10-bit/10→8路径且gralloc定义P010/AW 10-bit formats，但OMX profile table只广告Main Level5.2、未广告Main10；HDR/AFBC/protected/4K soak继续out of scope。
 - [ ] **RELEASE HARDENING — SELinux enforcing：**运行时 enforcing compatibility 未证明；不是 Architecture Gate 2 条件。
 - [ ] **INHERITED EXCEPTION — full VINTF：**`CONFIG_NFS_FS=y` 对 FCM-6 `n` 仍为唯一 exit-65 exception；不得称 PASS，也不为 B1 改 kernel。
