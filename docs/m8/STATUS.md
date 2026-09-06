@@ -155,11 +155,16 @@ FBM-r1 is SurfaceFlinger; FBM/OMX/audio/vendor are preserved. September6 evidenc
 for >10 seconds/audio,14 successful shadow imports, boot/SF538/codec594 continuous. The separate
 fresh4K thumbnail remains corrupted through legacy OMX0x13/CPU copy;1080 CCodec control passes.
 Archive SHA `ffa5fa0a9a17c1ee265f95a203f1e29f6f77a04fb72dcafa8e8db6f7d0746154`,9/9 manifest PASS.
-Strongest cause: unconditional big-frame AFBC selection supplies compressed storage to linear-only
-YV12→I420 memcpy. Exact conditional preparation patch remains **NEEDS_MORE_EVIDENCE**; inspect
-omitted source AFBC/final OMX layout before implementation, not Skia/UV swapping. RC-A2/audio stay
-CLOSED; P2 COMPLETE; no sustained-load or broader-format PASS. Current image size1,641,834,496 bytes, SHA256
-`9A23D1457E8B25BBAEBFB70F2095C5300F90B3A517C0768A808AB1B2174FA6E4`.
+Supplemental raw lines now prove AFBC mode1, ten compressed FBM pictures and subsequent linear-only
+YV12→I420 memcpy. **a16-dev-p3a-thumbnail-r1 BUILT / OFFLINE CHECKED / PHYSICAL VALIDATION PENDING**:
+only `/vendor/lib/libOmxVdec.so` changes, disabling internal compression before initialization only
+for HEVC3840x2160/0x13 CPU output with native/zero-copy/secure all false. SurfaceFlinger/FBM/audio
+and the prior drain repair remain intact. RC-A2/audio stay CLOSED; P2 COMPLETE; no broader-format PASS.
+Current offline image size1,641,838,592 bytes, SHA256
+`30BF0B0D4E8484C3C414CD6CDC17616C6F8896BE34579D2F5408476E072D2D4D`.
+Current candidate: `docs/m8/device-tests/20260906-a16-p3a-thumbnail-r1-build/README.md`.
+Next: separately authorized fresh thumbnail test plus1080 thumbnail and bounded4K Surface regression.
+No physical action has been performed for this candidate; Main10/HDR/protected and r8 remain unauthorized.
 Evidence, exact guard, audit and bounded test contract:
 `docs/m8/device-tests/20260905-a16-p3a-compat1b-r1-build/README.md`.
 Prior FBM record: `docs/m8/device-tests/20260905-a16-p3a-fbm-r1-build/README.md`. Earlier reports:

@@ -125,7 +125,12 @@ P2 不强制 AVC/HEVC/VP9、HDMI disconnect/reconnect、Wi-Fi OFF→ON、remote 
 当前状态：**P3-A BOUNDED MAIN8 SDR 4K30 SURFACE PLAYBACK PASS；独立4K THUMBNAIL FAIL；P3-B MAIN10 NOT AUTHORIZED**。
 September6 core evidence9/9哈希通过，14个compat1b shadow/import/texture成功，SF538和codec594
 保持，用户确认完整流畅>10秒并有音频；不是持续负载qualification。详细thumbnail根因、未知点及
-下一步见当前候选记录的`Thumbnail forensics — 2026-09-06`。以下RC-A/RC-A2/RC-B失败和测试计划
+补充日志现已证明AFBC源被线性CPU copy误读；`a16-dev-p3a-thumbnail-r1`仅修此初始化合同，
+已BUILT/OFFLINE CHECKED，尚未physical validation。下一步见
+`docs/m8/device-tests/20260906-a16-p3a-thumbnail-r1-build/README.md`：另行授权flash后
+BootGate FIRST→REVIEW→VLC/media准备→新文件thumbnail；随后复查1080 thumbnail和有界4K Surface。
+须在VLC发现新文件前开始保留preparse日志，避免缓存假PASS；不自动播放/重复/重启。
+以下RC-A/RC-A2/RC-B失败和测试计划
 为历史推进记录，不撤销当前Surface播放PASS，也不授权新一轮设备操作。
 完整source audit、dynamic read-only thermal observer、fixture contract、分层验收/失败分类和人工abort
 边界见 `docs/m8/device-tests/20260903-a16-p3-thermal-4k30-plan/README.md`。

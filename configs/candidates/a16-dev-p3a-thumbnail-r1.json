@@ -1,0 +1,159 @@
+{
+  "schema": 1,
+  "id": "a16-dev-p3a-thumbnail-r1",
+  "label": "NON-SURFACE CPU THUMBNAIL COMPATIBILITY CANDIDATE / DEVELOPMENT ONLY / NOT r8 / NOT RELEASE",
+  "status": "OFFLINE_CHECKED_READY_FOR_BOUNDED_PHYSICAL_VALIDATION",
+  "artifact": {
+    "path": "out/candidates/a16-dev-p3a-thumbnail-r1/x12-a16-dev-p3a-thumbnail-r1.img",
+    "size": 1641838592,
+    "sha256": "30BF0B0D4E8484C3C414CD6CDC17616C6F8896BE34579D2F5408476E072D2D4D"
+  },
+  "base_candidate": {
+    "path": "out/candidates/a16-dev-p3a-compat1b-r1/x12-a16-dev-p3a-compat1b-r1.img",
+    "sha256": "9A23D1457E8B25BBAEBFB70F2095C5300F90B3A517C0768A808AB1B2174FA6E4",
+    "size": 1641834496
+  },
+  "base_artifacts": {
+    "system_a": {
+      "path": "out/candidates/a16-dev-p3a-compat1b-r1/system_a.img",
+      "size": 1651167232,
+      "sha256": "7955187D2F319609A978A7DD599BB71EFC465B971BF194AAAAA6A690C5D5B907"
+    },
+    "vendor_a": {
+      "path": "out/candidates/a16-dev-p3a-compat1b-r1/vendor_a.img",
+      "size": 150994944,
+      "sha256": "231F0D2108AA709B8BDDA2E88E4C776E2B4CFA56BAED6E35A7DB5C992D903181"
+    },
+    "super_raw": {
+      "path": "out/candidates/a16-dev-p3a-compat1b-r1/super.raw.img",
+      "size": 3221225472,
+      "sha256": "C06CF33187C6BB8155C83CEDBDBECD2ECB53DDCD0B6CFAE5D3F5B70D32651024"
+    },
+    "product_a": {
+      "path": "out/candidates/a16-dev-p3a-compat1b-r1/candidate-logical/product_a.img",
+      "size": 272629760,
+      "sha256": "6E2D0AF3E80DCCC488D73E1A7F483C96075E9F60588DDB7DCBBC42C64FCD8974"
+    },
+    "vendor_dlkm": {
+      "path": "out/candidates/a16-dev-p3a-compat1b-r1/vendor_dlkm_a.img",
+      "size": 6680576,
+      "sha256": "488EE1E14E7ADEEB198C546325E3AB756025B94BE295EFCAD8089B881ABD4C07"
+    },
+    "boot": {
+      "path": "out/candidates/a16-dev-p3a-compat1b-r1/boot.fex",
+      "size": 67108864,
+      "sha256": "527CF878B015CFAE4E8600BD750C7C73F45F4290B5CFEFEDBD1AD9AC347B8063"
+    }
+  },
+  "repair_readiness": {
+    "report": "docs/m8/device-tests/20260906-a16-p3a-thumbnail-r1-build/README.md",
+    "classification": "READY_FOR_NARROW_BINARY_PATCH"
+  },
+  "patcher": {
+    "path": "scripts/patch-a16-p3a-thumbnail-r1.py",
+    "sha256": "28ACF494F57CD509748E0168415105FB3C0539E0EC33D408CE21F9F493AD6A2F"
+  },
+  "runtime_change": {
+    "partition_path": "/vendor/lib/libOmxVdec.so",
+    "internal_path": "/lib/libOmxVdec.so",
+    "reason": "Disable internal AFBC only for the proven non-Surface CPU-output contract before decoder initialization; keep Surface/native configuration unchanged",
+    "baseline": {
+      "size": 83780,
+      "sha256": "5FE74A28EB9E083959FDAC9CFDE870FAA2AF4447DADB7776C1E7F4CFC6D1EE8B",
+      "build_id": "2042d7e0112320dc855cccee324af569"
+    },
+    "candidate": {
+      "size": 89192,
+      "sha256": "4916C492DD6B7F1CA8948D2B14394BAEEACD1E01CC8C0A7AF616975D19551B0F",
+      "build_id_note_retained": "2042d7e0112320dc855cccee324af569"
+    },
+    "disassembly_markers": ["d068: f006 bf4a", "13f4a: f8c5 20c0", "13f56: f7f9 b889"],
+    "elf_class": "ELF32",
+    "machine": "ARM",
+    "mode": "0644",
+    "uid": 0,
+    "gid": 0,
+    "ctime": "0x652f7ab5",
+    "atime": "0x652f7ab5",
+    "mtime": "0x652f7ab5",
+    "crtime": "0x65379527",
+    "selinux": "u:object_r:vendor_file:s0"
+  },
+  "preserved_runtime": {
+    "audio_impl32": {
+      "path": "/vendor/lib/hw/android.hardware.audio@7.0-impl.so",
+      "candidate_file": "preserved-audio_impl32",
+      "size": 170476,
+      "sha256": "E2F3D49D757AA4132180C3D247857FC9725D7113E92A079E10181AADBCC062ED"
+    },
+    "libstagefright64": {
+      "path": "/system/lib64/libstagefright.so",
+      "candidate_file": "preserved-libstagefright64",
+      "size": 2079968,
+      "sha256": "3FDE0D408ED26CE76C7CAE2DB3DD41E38B1783B982CFAB251518D778C39F13CF"
+    },
+    "gralloc32": {
+      "path": "/vendor/lib/hw/gralloc.apollo.so",
+      "candidate_file": "preserved-gralloc32",
+      "size": 64852,
+      "sha256": "7E654E0F9D968C5FA9C9F31893E0E60DCF6605E41A82783E6376A1D7D66194D5"
+    },
+    "gralloc64": {
+      "path": "/vendor/lib64/hw/gralloc.apollo.so",
+      "candidate_file": "preserved-gralloc64",
+      "size": 93664,
+      "sha256": "1F91BF6FA547DA11E42068C1A0C612E41B5C800AEE9CDAB2D320DD469295CB19"
+    },
+    "fbm_r1": {
+      "path": "/vendor/lib/libfbm.so",
+      "candidate_file": "preserved-fbm_r1",
+      "size": 20980,
+      "sha256": "786264793BB16083CD62BC3BC0B6A2AE4673DBC75504A79EAC189DB943840E9F"
+    },
+    "surfaceflinger": {
+      "path": "/system/bin/surfaceflinger",
+      "candidate_file": "compat1b-surfaceflinger",
+      "size": 8581800,
+      "sha256": "CC64B466C15C4E78917E4BED2BB61E59C9A3C90E816E85BE306BF73B19EB2A45"
+    }
+  },
+  "outer_delta": {
+    "changed_payloads_from_base": [
+      "Vsuper.fex",
+      "Vvbmeta_vendor.fex",
+      "super.fex",
+      "vbmeta_vendor.fex"
+    ]
+  },
+  "governance": {
+    "canonical_r7": "PASS_FROZEN_UNCHANGED",
+    "gate3": "PASS_WITH_EXPLICIT_USER_WAIVER_CLOSED",
+    "compat1a": "PHYSICAL_PASS_AUTHORIZED_SDR_1080P_YV12_BEHAVIOR_PRESERVED",
+    "audio_p1": "CLOSED",
+    "p2": "COMPLETE",
+    "p3a": "PHYSICAL_PASS_BOUNDED_MAIN8_SDR_4K30_SURFACE_ONLY",
+    "rc_a": "ORIGINAL_DRAIN_NULL_PHYSICAL_REPAIR_EFFECTIVE",
+    "rc_a2": "PHYSICAL_PASS_CLOSED",
+    "rc_b": "COMPAT1B_PHYSICAL_PASS_BOUNDED_MAIN8_SDR_4K30_SURFACE",
+    "p3b_main10": "NOT_AUTHORIZED",
+    "hdr_afbc_protected": "NOT_AUTHORIZED",
+    "full_vintf": "EXIT_65_INHERITED_CONFIG_NFS_FS_NOT_PASS",
+    "r8_authorized": false,
+    "r8_built": false,
+    "release": false,
+    "physical_validation_required": true,
+    "thumbnail": "PATCH_IMPLEMENTED_OFFLINE_CANDIDATE_BUILT_PHYSICAL_VALIDATION_PENDING"
+  },
+  "frozen_artifacts": {
+    "canonical_r7": {
+      "path": "out/candidates/a16-prototype-b-r7/x12-a16-prototype-b-r7.img",
+      "size": 1641773056,
+      "sha256": "A1F58668AEFFC9DC83CFFD8A49A309839332B6616C02153DCC00A71136A7AA27"
+    },
+    "rollback": {
+      "path": "/work/ubox10-a16-prototype-a-inputs/incoming/x12-test8r2-restore-contacts-provider.img",
+      "size": 2005954560,
+      "sha256": "6A52F3388E9ABF6AFA8A701CFD7198FE6C0090F16531F6E3BD3949E760892EC8"
+    }
+  }
+}
